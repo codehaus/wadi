@@ -15,10 +15,12 @@
  */
 package org.codehaus.wadi.group.vm;
 
-import java.util.Collections;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.ClusterException;
@@ -32,13 +34,13 @@ import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.impl.SeniorityElectionStrategy;
 
 /**
- * 
+ *
  * @version $Revision: 1603 $
  */
 public class VMCluster implements Cluster {
     protected static final Map clusters=new HashMap();
     protected final long inactiveTime=5000; // TODO - parameterise
-    
+
     public static VMCluster ensureCluster(String clusterName) {
         VMCluster cluster = (VMCluster) clusters.get(clusterName);
         if (null == cluster) {
@@ -47,7 +49,7 @@ public class VMCluster implements Cluster {
         }
         return cluster;
     }
-    
+
     private final String name;
     private final Address address;
     private final Map nodeNameToDispatcher = new HashMap();
@@ -56,7 +58,7 @@ public class VMCluster implements Cluster {
     private MessageRecorder messageRecorder;
     private MessageTransformer messageTransformer;
     private Peer coordinator;
-    
+
     public VMCluster(String name) {
         this.name = name;
 
@@ -86,9 +88,18 @@ public class VMCluster implements Cluster {
         synchronized (nodeNameToDispatcher) {
             nodeNameToDispatcher.put(nodeName, dispatcher);
         }
-        
+
         coordinator=(electionStrategy==null?null:electionStrategy.doElection(dispatcher.getCluster()));
-        listenerSupport.notifyMembershipChanged(Collections.singleton(dispatcher.getCluster().getLocalPeer()), Collections.EMPTY_SET, coordinator);
+        Collection tmp=dispatcher.getCluster().getRemotePeers().values();
+        Set peers=new TreeSet();
+        synchronized (tmp) {peers.addAll(tmp);}
+        // notify existing members of new peer
+//        Peer peer=Collections.singleton(localNode);
+//        for (Iterator i=peers.iterator(); i.hasNext(); ) {
+//            peer.XXX
+//        }
+        // notify new peer of existing members...
+        listenerSupport.notifyMembershipChanged(dispatcher.getCluster().getLocalPeer(), true, coordinator);
     }
 
     void unregisterDispatcher(VMDispatcher dispatcher) {
@@ -102,20 +113,20 @@ public class VMCluster implements Cluster {
         }
 
         coordinator=(electionStrategy==null?null:electionStrategy.doElection(dispatcher.getCluster()));
-        listenerSupport.notifyMembershipChanged(Collections.singleton(dispatcher.getCluster().getLocalPeer()), Collections.EMPTY_SET, coordinator);
+        listenerSupport.notifyMembershipChanged(dispatcher.getCluster().getLocalPeer(), false, coordinator);
     }
 
     void send(Address to, Message message) throws MessageExchangeException {
         if (null != messageRecorder) {
             messageRecorder.record(to, message);
         }
-      
+
         message = messageTransformer.transform(message);
-        
+
         if (to.equals(address)) {
             sendToClusterDestination(message);
         } else {
-            sendToAddress(to, message);        
+            sendToAddress(to, message);
         }
     }
 
@@ -138,7 +149,7 @@ public class VMCluster implements Cluster {
 
         throw new IllegalArgumentException("Node node having the name:" + name);
     }
-    
+
     void setDistributedState(VMLocalPeer localNode, Map state) throws MessageExchangeException {
         localNode.setState(state);
         listenerSupport.notifyUpdated(localNode);
@@ -155,7 +166,7 @@ public class VMCluster implements Cluster {
         for (Iterator iter = snapshotMap.entrySet().iterator(); iter.hasNext();) {
             Map.Entry entry = (Map.Entry) iter.next();
             Dispatcher dispatcher = (Dispatcher) entry.getValue();
-            entry.setValue(dispatcher.getCluster().getLocalPeer());  
+            entry.setValue(dispatcher.getCluster().getLocalPeer());
         }
         return snapshotMap;
     }
@@ -187,7 +198,7 @@ public class VMCluster implements Cluster {
     public LocalPeer getLocalPeer() {
         throw new UnsupportedOperationException();
     }
-    
+
     public void start() throws ClusterException {
     }
 
@@ -203,11 +214,11 @@ public class VMCluster implements Cluster {
             dispatcher = (VMDispatcher) nodeNameToDispatcher.remove(nodeName);
         }
         if (null == dispatcher) {
-            throw new IllegalArgumentException("Node " + nodeName + " is unknown.");  
+            throw new IllegalArgumentException("Node " + nodeName + " is unknown.");
         }
-        
+
         coordinator=electionStrategy==null?null:electionStrategy.doElection(this);
-        listenerSupport.notifyMembershipChanged(Collections.EMPTY_SET, Collections.singleton(getLocalPeer()), coordinator);
+        listenerSupport.notifyMembershipChanged(getLocalPeer(), false, coordinator);
     }
 
     public void setMessageRecorder(MessageRecorder messageRecorder) {
@@ -223,7 +234,7 @@ public class VMCluster implements Cluster {
 
     private void sendToAddress(Address to, Message message) {
         Map snapshotMap = snapshotDispatcherMap();
-        
+
         for (Iterator iter = snapshotMap.entrySet().iterator(); iter.hasNext();) {
             Map.Entry entry = (Map.Entry) iter.next();
             Dispatcher dispatcher = (Dispatcher) entry.getValue();
@@ -237,14 +248,14 @@ public class VMCluster implements Cluster {
 
     private void sendToClusterDestination(Message message) {
         Map snapshotMap = snapshotDispatcherMap();
-        
+
         for (Iterator iter = snapshotMap.entrySet().iterator(); iter.hasNext();) {
             Map.Entry entry = (Map.Entry) iter.next();
             Dispatcher dispatcher = (Dispatcher) entry.getValue();
             dispatcher.onMessage(message);
         }
     }
-    
+
     public long getInactiveTime() {
         return inactiveTime;
     }

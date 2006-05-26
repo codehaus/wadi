@@ -22,7 +22,7 @@ import org.codehaus.wadi.group.MessageExchangeException;
 
 
 /**
- * 
+ *
  * @version $Revision: 1603 $
  */
 public class VMLocalPeer extends VMPeer implements LocalPeer, Serializable, Comparable {
@@ -32,27 +32,29 @@ public class VMLocalPeer extends VMPeer implements LocalPeer, Serializable, Comp
         state.put(_peerNameKey, name);
         state.put(_birthTimeKey, new Long(System.currentTimeMillis()));
     }
-    
+
     public void setState(Map newState) throws MessageExchangeException {
         if (newState!=state) {
             synchronized (state) {
                 state.clear();
                 state.putAll(newState);
             }
+	    // TODO - notify other peers of state change
+
         }
     }
-    
+
     public boolean equals(Object obj) {
         return super.equals(obj);
     }
-    
+
     public String toString() {
         return "Local Peer :" + name;
     }
-    
+
     // should compare addresses - but I am going to collapse VM Address and Peer shortly...
     public int compareTo(Object object) {
             return System.identityHashCode(this)-System.identityHashCode(object);
     }
-    
+
 }
