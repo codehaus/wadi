@@ -16,7 +16,6 @@
 package org.codehaus.wadi.activecluster;
 
 import java.io.Serializable;
-import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
 import org.codehaus.wadi.group.Address;
@@ -28,128 +27,74 @@ import org.codehaus.wadi.group.impl.AbstractCluster;
  * @version $Revision: 1603 $
  */
 class ActiveClusterMessage implements Message {
-    private static final String INCOMING_COR_ID_KEY = "INCOMING_COR_ID_KEY";
-    private static final String OUTGOING_COR_ID_KEY = "OUTGOING_COR_ID_KEY";
+    
+    private static final String TARGET_COR_ID_KEY = "TARGET_COR_ID_KEY";
+    private static final String SOURCE_COR_ID_KEY = "SOURCE_COR_ID_KEY";
 
-    static ObjectMessage unwrap(Message message) {
-        if (false == message instanceof ActiveClusterMessage) {
-            throw new IllegalArgumentException("Expected " + 
-                            ActiveClusterMessage.class.getName() +
-                            ". Was:" + message.getClass().getName());
-        }
-        
-        return ((ActiveClusterMessage) message).adaptee;
+    protected ActiveClusterPeer _address;
+    protected ActiveClusterPeer _replyTo;
+    protected Serializable _payload;
+    protected String _sourceCorrelationId;
+    protected String _targetCorrelationId;
+
+    public ActiveClusterMessage(ActiveClusterCluster cluster, ObjectMessage message) throws JMSException {
+        _address=(ActiveClusterPeer)cluster.getPeer(message.getJMSDestination());
+        _replyTo=(ActiveClusterPeer)cluster.getPeer(message.getJMSReplyTo());
+        _sourceCorrelationId=message.getStringProperty(SOURCE_COR_ID_KEY);
+        _targetCorrelationId=message.getStringProperty(TARGET_COR_ID_KEY);
+        _payload=message.getObject();
     }
     
-    private final ObjectMessage adaptee;
-
-    private Address _address;
-    private Address _replyTo;
-    
-    public ActiveClusterMessage(ObjectMessage adaptee) {
-        this.adaptee = adaptee;
+    public ActiveClusterMessage() {
     }
 
-    public ActiveClusterMessage(javax.jms.Message message) {
-        if (false == message instanceof ObjectMessage) {
-            throw new IllegalArgumentException("Expected " +
-                            ObjectMessage.class.getName() + 
-                            ". Was " + message.getClass().getName());
-        }
-        
-        this.adaptee = (ObjectMessage) message;
+    public ObjectMessage fill(ObjectMessage message) throws JMSException {
+        message.setJMSDestination(_address.getACDestination());
+        message.setJMSReplyTo(_replyTo.getACDestination());
+        message.setStringProperty(SOURCE_COR_ID_KEY, _sourceCorrelationId);
+        message.setStringProperty(TARGET_COR_ID_KEY, _targetCorrelationId);
+        message.setObject(_payload);
+        return message;
     }
 
     public String getTargetCorrelationId() {
-        try {
-            return adaptee.getStringProperty(INCOMING_COR_ID_KEY);
-        } catch (JMSException e) {
-            throw new RuntimeJMSException(e);
-        }
+        return _targetCorrelationId;
     }
 
     public void setTargetCorrelationId(String correlationId) {
-        try {
-            adaptee.setStringProperty(INCOMING_COR_ID_KEY, correlationId);
-        } catch (JMSException e) {
-            throw new RuntimeJMSException(e);
-        }        
+        _targetCorrelationId=correlationId;
     }
 
     public String getSourceCorrelationId() {
-        try {
-            return adaptee.getStringProperty(OUTGOING_COR_ID_KEY);
-        } catch (JMSException e) {
-            throw new RuntimeJMSException(e);
-        }
+        return _sourceCorrelationId;
     }
 
     public void setSourceCorrelationId(String correlationId) {
-        try {
-            adaptee.setStringProperty(OUTGOING_COR_ID_KEY, correlationId);
-        } catch (JMSException e) {
-            throw new RuntimeJMSException(e);
-        }
+        _sourceCorrelationId=correlationId;
     }
 
     public Address getReplyTo() {
-        if (_replyTo!=null)
-            return _replyTo;
-        
-        try {
-            Destination replyTo = adaptee.getJMSReplyTo();
-            if (null == replyTo) {
-                return null;
-            }
-            
-            return (ActiveClusterPeer)AbstractCluster.get(replyTo);
-        } catch (JMSException e) {
-            throw new RuntimeJMSException(e);
-        }
+        return _replyTo;
     }
 
     public void setReplyTo(Address replyTo) {
-        _replyTo=replyTo;
-        try {
-            adaptee.setJMSReplyTo(((ActiveClusterPeer)replyTo).getACDestination());
-        } catch (JMSException e) {
-            throw new RuntimeJMSException(e);
-        }
+        _replyTo=(ActiveClusterPeer)replyTo;
     }
 
     public Address getAddress() {
-        if (_address!=null)
-            return _address;
-        
-        try {
-            return (ActiveClusterPeer)AbstractCluster.get(adaptee.getJMSDestination());
-        } catch (JMSException e) {
-            throw new RuntimeJMSException(e);
-        }
+        return _address;
     }
 
     public void setAddress(Address address) {
-        _address=address;
-        try {
-            adaptee.setJMSDestination(((ActiveClusterPeer)address).getACDestination());
-        } catch (JMSException e) {
-            throw new RuntimeJMSException(e);
-        }
+        _address=(ActiveClusterPeer)address;
     }
 
     public void setPayload(Serializable payload) {
-        try {
-            adaptee.setObject(payload);
-        } catch (JMSException e) {
-            throw new RuntimeJMSException(e);
-        }
+        _payload=payload;
     }
 
     public Serializable getPayload() {
-        try {
-            return adaptee.getObject();
-        } catch (JMSException e) {
-            throw new RuntimeJMSException(e);
-        }
+        return _payload;
     }
+    
 }

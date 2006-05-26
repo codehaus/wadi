@@ -144,11 +144,7 @@ public class ActiveClusterDispatcher extends AbstractDispatcher {
 	}
 
 	public Message createMessage() {
-		try {
-            return new ActiveClusterMessage(_acCluster.createObjectMessage());
-        } catch (JMSException e) {
-            throw new RuntimeJMSException(e);
-        }
+	    return new ActiveClusterMessage();
 	}
 
 	public void send(Address target, Message message) throws MessageExchangeException {
@@ -156,7 +152,7 @@ public class ActiveClusterDispatcher extends AbstractDispatcher {
             _messageLog.trace("outgoing: "+message.getPayload()+" {"+getInternalPeerName(message.getReplyTo())+"->"+getInternalPeerName(message.getAddress())+"} - "+message.getTargetCorrelationId()+"/"+message.getSourceCorrelationId()+" on "+Thread.currentThread().getName());
 		}
 		try {
-            _acCluster.send(((ActiveClusterPeer)target).getACDestination(), ActiveClusterMessage.unwrap(message));
+            _acCluster.send(((ActiveClusterPeer)target).getACDestination(), ((ActiveClusterMessage)message).fill(_acCluster.createObjectMessage()));
         } catch (JMSException e) {
             throw new MessageExchangeException(e);
         }
