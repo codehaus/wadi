@@ -22,7 +22,6 @@ import java.util.Map;
  * @version $Revision: 1603 $
  */
 public interface Cluster {
-
     void setElectionStrategy(ElectionStrategy strategy);
 
     Map getRemotePeers();
@@ -53,5 +52,4 @@ public interface Cluster {
      * @return - the number of millis that a Peer may remain silent before being declared suspect/dead..
      */
     long getInactiveTime();
-    
 }

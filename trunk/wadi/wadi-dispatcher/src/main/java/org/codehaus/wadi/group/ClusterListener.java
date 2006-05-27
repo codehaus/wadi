@@ -23,9 +23,7 @@ import java.util.Set;
  * @version $Revision: 1603 $
  */
 public interface ClusterListener {
-
     void onPeerUpdated(ClusterEvent event);
 
     void onMembershipChanged(Cluster cluster, Set joiners, Set leavers, Peer coordinator);
-    
 }
