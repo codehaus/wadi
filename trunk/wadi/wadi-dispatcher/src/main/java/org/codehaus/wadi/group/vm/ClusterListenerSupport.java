@@ -21,7 +21,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.ClusterEvent;
 import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.Peer;
@@ -31,22 +30,19 @@ import org.codehaus.wadi.group.Peer;
  * @version $Revision: 1603 $
  */
 class ClusterListenerSupport {
-    private final Cluster cluster;
+    private final VMBroker broker;
     private final List listeners = new ArrayList();
-    private final Set nodes = new HashSet();
 
-    public ClusterListenerSupport(Cluster cluster) {
-        this.cluster = cluster;
+    public ClusterListenerSupport(VMBroker broker) {
+        this.broker = broker;
     }
 
     public void addClusterListener(VMLocalClusterListener listener, Peer coordinator) {
-        Set snapshotExistingPeers;
         synchronized (listeners) {
             listeners.add(listener);
-            snapshotExistingPeers = new HashSet(nodes);
         }
-        
-        listener.notifyExistingPeersToPeer(cluster, snapshotExistingPeers, coordinator);
+        Set snapshotExistingPeers = snapshotExistingPeers();
+        listener.notifyExistingPeers(snapshotExistingPeers, coordinator);
     }
 
     public void removeClusterListener(VMLocalClusterListener listener) {
@@ -61,9 +57,10 @@ class ClusterListenerSupport {
             snapshotListeners = new ArrayList(listeners);
         }
         
-        ClusterEvent event = new ClusterEvent(cluster, node, ClusterEvent.PEER_UPDATED);
         for (Iterator iter = snapshotListeners.iterator(); iter.hasNext();) {
             VMLocalClusterListener listener = (VMLocalClusterListener) iter.next();
+            VMLocalCluster localCluster = listener.getLocalCluster();
+            ClusterEvent event = new ClusterEvent(localCluster, node, ClusterEvent.PEER_UPDATED);
             listener.onPeerUpdated(event);
         }
     }
@@ -74,15 +71,33 @@ class ClusterListenerSupport {
             snapshotListeners = new ArrayList(listeners);
         }
         
-        Set snapshotExistingPeers;
-        synchronized (listeners) {
-            snapshotExistingPeers = new HashSet(nodes);
-        }
-        
-        for (Iterator iter = snapshotListeners.iterator(); iter.hasNext();) {
-            VMLocalClusterListener listener = (VMLocalClusterListener) iter.next();
-            listener.notifyExistingPeersToPeer(cluster, snapshotExistingPeers, coordinator);
+        if (joining) {
+            notifyNewMembership(peer, coordinator, snapshotListeners);
+        } else {
+            notifyRemovedMembership(peer, coordinator, snapshotListeners);
         }
     }
-    
+
+    private void notifyNewMembership(LocalPeer peer, Peer coordinator, Collection listeners) {
+        Set existingPeers = snapshotExistingPeers();
+        for (Iterator iter = listeners.iterator(); iter.hasNext();) {
+            VMLocalClusterListener listener = (VMLocalClusterListener) iter.next();
+            listener.notifyExistingPeersToPeer(existingPeers, coordinator, peer);
+        }
+        for (Iterator iter = listeners.iterator(); iter.hasNext();) {
+            VMLocalClusterListener listener = (VMLocalClusterListener) iter.next();
+            listener.notifyJoiningPeerToPeers(coordinator, peer);
+        }
+    }
+
+    private void notifyRemovedMembership(LocalPeer peer, Peer coordinator, Collection listeners) {
+        for (Iterator iter = listeners.iterator(); iter.hasNext();) {
+            VMLocalClusterListener listener = (VMLocalClusterListener) iter.next();
+            listener.notifyLeavingPeerToPeers(coordinator, peer);
+        }
+    }
+
+    private Set snapshotExistingPeers() {
+        return new HashSet(broker.getPeers().values());
+    }
 }

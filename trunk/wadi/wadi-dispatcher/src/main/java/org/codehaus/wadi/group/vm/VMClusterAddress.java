@@ -22,9 +22,11 @@ import org.codehaus.wadi.group.Address;
  * @version $Revision: 1603 $
  */
 public class VMClusterAddress implements Address {
+    private static final long serialVersionUID = 4946807197547549412L;
+
     private final String clusterName;
 
-    public VMClusterAddress(VMCluster vmCluster) {
+    public VMClusterAddress(VMBroker vmCluster) {
         this.clusterName = vmCluster.getName();
     }
 

@@ -25,7 +25,7 @@ import org.codehaus.wadi.group.Message;
  */
 public class SysOutMessageRecorder implements MessageRecorder {
 
-    public void setVMCluster(VMCluster cluster) {
+    public void setVMCluster(VMBroker cluster) {
     }
     
     public void record(Address to, Message message) {

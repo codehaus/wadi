@@ -24,7 +24,7 @@ import org.codehaus.wadi.group.Message;
  * @version $Revision: 1603 $
  */
 public interface MessageRecorder {
-    void setVMCluster(VMCluster cluster);
+    void setVMCluster(VMBroker cluster);
     
     void record(Address to, Message message);
 }

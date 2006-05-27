@@ -17,13 +17,14 @@ package org.codehaus.wadi.group.vm;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.codehaus.wadi.group.AbstractTestGroup;
 import org.codehaus.wadi.group.Dispatcher;
 
 /**
  * 
  * @version $Revision: 1603 $
  */
-public class TestInVMGroup extends org.codehaus.wadi.group.AbstractTestGroup {
+public class TestInVMGroup extends AbstractTestGroup {
     private Map clusterNameToCluster = new HashMap();
     
     public TestInVMGroup(String name) {
@@ -36,9 +37,9 @@ public class TestInVMGroup extends org.codehaus.wadi.group.AbstractTestGroup {
     
     private class InVMDispatcherFactory implements DispatcherFactory {
         public Dispatcher create(String clusterName, String peerName, long inactiveTime) throws Exception {
-            VMCluster cluster = (VMCluster) clusterNameToCluster.get(clusterName);
+            VMBroker cluster = (VMBroker) clusterNameToCluster.get(clusterName);
             if (null == cluster) {
-                cluster = new VMCluster(clusterName);
+                cluster = new VMBroker(clusterName);
                 clusterNameToCluster.put(clusterName, cluster);
             }
             return new VMDispatcher(cluster, peerName, inactiveTime);
