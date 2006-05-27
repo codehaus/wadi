@@ -26,6 +26,7 @@ import org.codehaus.wadi.group.MessageExchangeException;
  * @version $Revision: 1603 $
  */
 public class VMLocalPeer extends VMPeer implements LocalPeer, Serializable, Comparable {
+    private static final long serialVersionUID = -1514102305096038623L;
 
     public VMLocalPeer(String name) {
         super(name);

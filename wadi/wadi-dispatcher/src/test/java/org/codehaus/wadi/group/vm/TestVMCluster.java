@@ -17,6 +17,7 @@ package org.codehaus.wadi.group.vm;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import junit.framework.TestCase;
@@ -32,7 +33,7 @@ import org.codehaus.wadi.group.Peer;
 public class TestVMCluster extends TestCase {
     
     public void testExistingPeerSeeJoiningPeerAndViceVersa() throws Exception {
-        VMCluster cluster = new VMCluster("clusterName");
+        VMBroker cluster = new VMBroker("clusterName");
         
         VMDispatcher dispatcher1 = new VMDispatcher(cluster, "node1", 1000);
         MockClusterListener listener1 = new MockClusterListener();
@@ -60,7 +61,7 @@ public class TestVMCluster extends TestCase {
     }
     
     public void testAddClusterListenerAfterStartSeeExistingPeer() throws Exception {
-        VMCluster cluster = new VMCluster("clusterName");
+        VMBroker cluster = new VMBroker("clusterName");
         
         VMDispatcher dispatcher1 = new VMDispatcher(cluster, "node1", 1000);
         dispatcher1.start();
@@ -78,7 +79,7 @@ public class TestVMCluster extends TestCase {
     }
 
     public void testPeerUpdatedIsNotPropagatedToStoppedPeer() throws Exception {
-        VMCluster cluster = new VMCluster("clusterName");
+        VMBroker cluster = new VMBroker("clusterName");
         
         VMDispatcher dispatcher1 = new VMDispatcher(cluster, "node1", 1000);
         dispatcher1.start();
@@ -112,7 +113,14 @@ public class TestVMCluster extends TestCase {
         }
         
         public void onMembershipChanged(Cluster cluster, Set joiners, Set leavers, Peer coordinator) {
-            // events.add(event); - FIXME   
+            for (Iterator iter = joiners.iterator(); iter.hasNext();) {
+                Peer joiner = (Peer) iter.next();
+                events.add(new ClusterEvent(cluster, joiner, ClusterEvent.PEER_ADDED));
+            }
+            for (Iterator iter = leavers.iterator(); iter.hasNext();) {
+                Peer joiner = (Peer) iter.next();
+                events.add(new ClusterEvent(cluster, joiner, ClusterEvent.PEER_REMOVED));
+            }
         }
 
         public void onPeerUpdated(ClusterEvent event) {

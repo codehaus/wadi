@@ -24,15 +24,15 @@ import java.io.ObjectInputStream;
  * @version $Revision: 1603 $
  */
 class VMClusterObjectInputStream extends ObjectInputStream {
-    private final VMCluster cluster;
+    private final VMBroker cluster;
     
-    public VMClusterObjectInputStream(VMCluster cluster, InputStream in) throws IOException {
+    public VMClusterObjectInputStream(VMBroker cluster, InputStream in) throws IOException {
         super(in);
 
         this.cluster = cluster;
     }
 
-    public VMCluster getCluster() {
+    public VMBroker getCluster() {
         return cluster;
     }
 }

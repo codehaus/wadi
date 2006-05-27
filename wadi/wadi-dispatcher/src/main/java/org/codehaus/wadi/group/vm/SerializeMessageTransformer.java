@@ -28,9 +28,9 @@ import org.codehaus.wadi.group.Message;
  * @version $Revision: 1603 $
  */
 public class SerializeMessageTransformer implements MessageTransformer {
-    private final VMCluster cluster;
+    private final VMBroker cluster;
     
-    public SerializeMessageTransformer(VMCluster cluster) {
+    public SerializeMessageTransformer(VMBroker cluster) {
         this.cluster = cluster;
     }
 

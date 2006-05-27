@@ -15,16 +15,11 @@
  */
 package org.codehaus.wadi.group.vm;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
 import org.codehaus.wadi.group.Address;
-import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.ClusterException;
-import org.codehaus.wadi.group.ClusterListener;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.ElectionStrategy;
 import org.codehaus.wadi.group.LocalPeer;
@@ -37,18 +32,8 @@ import org.codehaus.wadi.group.impl.SeniorityElectionStrategy;
  *
  * @version $Revision: 1603 $
  */
-public class VMCluster implements Cluster {
-    protected static final Map clusters=new HashMap();
+public class VMBroker {
     protected final long inactiveTime=5000; // TODO - parameterise
-
-    public static VMCluster ensureCluster(String clusterName) {
-        VMCluster cluster = (VMCluster) clusters.get(clusterName);
-        if (null == cluster) {
-            cluster = new VMCluster(clusterName);
-            clusters.put(clusterName, cluster);
-        }
-        return cluster;
-    }
 
     private final String name;
     private final Address address;
@@ -59,7 +44,7 @@ public class VMCluster implements Cluster {
     private MessageTransformer messageTransformer;
     private Peer coordinator;
 
-    public VMCluster(String name) {
+    public VMBroker(String name) {
         this.name = name;
 
         address = new VMClusterAddress(this);
@@ -67,7 +52,7 @@ public class VMCluster implements Cluster {
         messageTransformer = new SerializeMessageTransformer(this);
     }
 
-    public VMCluster(String name, boolean serializeMessages) {
+    public VMBroker(String name, boolean serializeMessages) {
         this.name = name;
 
         address = new VMClusterAddress(this);
@@ -84,26 +69,21 @@ public class VMCluster implements Cluster {
     }
 
     void registerDispatcher(VMDispatcher dispatcher) {
-        String nodeName = dispatcher.getCluster().getLocalPeer().getName();
+        LocalPeer localPeer = dispatcher.getCluster().getLocalPeer();
+        String nodeName = localPeer.getName();
         synchronized (nodeNameToDispatcher) {
             nodeNameToDispatcher.put(nodeName, dispatcher);
         }
 
-        coordinator=(electionStrategy==null?null:electionStrategy.doElection(dispatcher.getCluster()));
-        Collection tmp=dispatcher.getCluster().getRemotePeers().values();
-        Set peers=new TreeSet();
-        synchronized (tmp) {peers.addAll(tmp);}
-        // notify existing members of new peer
-//        Peer peer=Collections.singleton(localNode);
-//        for (Iterator i=peers.iterator(); i.hasNext(); ) {
-//            peer.XXX
-//        }
+        electCoordinator(dispatcher);
+
         // notify new peer of existing members...
-        listenerSupport.notifyMembershipChanged(dispatcher.getCluster().getLocalPeer(), true, coordinator);
+        listenerSupport.notifyMembershipChanged(localPeer, true, coordinator);
     }
 
     void unregisterDispatcher(VMDispatcher dispatcher) {
-        String nodeName = dispatcher.getCluster().getLocalPeer().getName();
+        LocalPeer localPeer = dispatcher.getCluster().getLocalPeer();
+        String nodeName = localPeer.getName();
         Object object;
         synchronized (nodeNameToDispatcher) {
             object = nodeNameToDispatcher.remove(nodeName);
@@ -112,8 +92,9 @@ public class VMCluster implements Cluster {
             throw new IllegalArgumentException("unknown dispatcher");
         }
 
-        coordinator=(electionStrategy==null?null:electionStrategy.doElection(dispatcher.getCluster()));
-        listenerSupport.notifyMembershipChanged(dispatcher.getCluster().getLocalPeer(), false, coordinator);
+        electCoordinator(dispatcher);
+
+        listenerSupport.notifyMembershipChanged(localPeer, false, coordinator);
     }
 
     void send(Address to, Message message) throws MessageExchangeException {
@@ -130,7 +111,7 @@ public class VMCluster implements Cluster {
         }
     }
 
-    public int getPeerCount() {
+    int getPeerCount() {
         synchronized (nodeNameToDispatcher) {
             return nodeNameToDispatcher.size();
         }
@@ -155,14 +136,12 @@ public class VMCluster implements Cluster {
         listenerSupport.notifyUpdated(localNode);
     }
 
-
     void setCoordinator(Peer coordinator) {
         this.coordinator = coordinator;
     }
 
     Map getPeers() {
         Map snapshotMap = snapshotDispatcherMap();
-
         for (Iterator iter = snapshotMap.entrySet().iterator(); iter.hasNext();) {
             Map.Entry entry = (Map.Entry) iter.next();
             Dispatcher dispatcher = (Dispatcher) entry.getValue();
@@ -171,32 +150,20 @@ public class VMCluster implements Cluster {
         return snapshotMap;
     }
 
-    public Address getAddress() {
+    Address getAddress() {
         return address;
     }
 
-    public Map getRemotePeers() {
-        throw new UnsupportedOperationException();
+    void addClusterListener(VMLocalClusterListener listener) {
+        listenerSupport.addClusterListener(listener, coordinator);
     }
 
-    public void setElectionStrategy(ElectionStrategy electionStrategy) {
-        throw new UnsupportedOperationException();
+    void removeClusterListener(VMLocalClusterListener listener) {
+        listenerSupport.removeClusterListener(listener);
     }
 
-    public void addClusterListener(ClusterListener listener) {
-        listenerSupport.addClusterListener((VMLocalClusterListener) listener, coordinator);
-    }
-
-    public void removeClusterListener(ClusterListener listener) {
-        listenerSupport.removeClusterListener((VMLocalClusterListener) listener);
-    }
-
-    public boolean waitOnMembershipCount(int membershipCount, long timeout) throws InterruptedException {
-        throw new UnsupportedOperationException();
-    }
-
-    public LocalPeer getLocalPeer() {
-        throw new UnsupportedOperationException();
+    long getInactiveTime() {
+        return inactiveTime;
     }
 
     public void start() throws ClusterException {
@@ -216,9 +183,6 @@ public class VMCluster implements Cluster {
         if (null == dispatcher) {
             throw new IllegalArgumentException("Node " + nodeName + " is unknown.");
         }
-
-        coordinator=electionStrategy==null?null:electionStrategy.doElection(this);
-        listenerSupport.notifyMembershipChanged(getLocalPeer(), false, coordinator);
     }
 
     public void setMessageRecorder(MessageRecorder messageRecorder) {
@@ -256,7 +220,9 @@ public class VMCluster implements Cluster {
         }
     }
 
-    public long getInactiveTime() {
-        return inactiveTime;
+    private void electCoordinator(VMDispatcher dispatcher) {
+        if (null != electionStrategy) {
+            coordinator = electionStrategy.doElection(dispatcher.getCluster());
+        }
     }
 }

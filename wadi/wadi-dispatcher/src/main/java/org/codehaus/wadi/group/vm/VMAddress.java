@@ -24,6 +24,8 @@ import org.codehaus.wadi.group.Peer;
  * @version $Revision: 1603 $
  */
 public class VMAddress implements Address {
+    private static final long serialVersionUID = -5832383187642249533L;
+
     private final VMPeer peer;
 
     public VMAddress(VMPeer node) {
@@ -32,6 +34,10 @@ public class VMAddress implements Address {
 
     public String getNodeName() {
         return peer.getName();
+    }
+
+    public Peer getPeer() {
+        return peer;
     }
 
     public boolean equals(Object obj) {
@@ -50,9 +56,4 @@ public class VMAddress implements Address {
     public Object writeReplace() throws ObjectStreamException {
         return new VMAddressInfo(peer.getName());
     };
-    
-    public Peer getPeer() {
-        return peer;
-    }
-    
 }

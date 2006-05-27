@@ -33,12 +33,12 @@ import org.codehaus.wadi.group.Peer;
  * @version $Revision: 1603 $
  */
 public class VMLocalCluster implements Cluster {
-    private final VMCluster delegate;
+    private final VMBroker delegate;
     private final LocalPeer node;
     private ElectionStrategy electionStrategy;
     private boolean running;
 
-    public VMLocalCluster(VMCluster delegate, LocalPeer node) {
+    public VMLocalCluster(VMBroker delegate, LocalPeer node) {
         this.delegate = delegate;
         this.node = node;
     }
@@ -62,16 +62,16 @@ public class VMLocalCluster implements Cluster {
         delegate.send(to, message);
     }
 
-    public int getPeerCount() {
-        return delegate.getPeerCount();
-    }
-
     Address getAddress(String name) {
         return delegate.getAddress(name);
     }
 
     void setDistributedState(VMLocalPeer localNode, Map state) throws MessageExchangeException {
         delegate.setDistributedState(localNode, state);
+    }
+
+    public int getPeerCount() {
+        return delegate.getPeerCount();
     }
 
     public Address getAddress() {
