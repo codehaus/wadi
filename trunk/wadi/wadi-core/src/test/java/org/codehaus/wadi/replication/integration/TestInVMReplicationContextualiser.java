@@ -16,7 +16,7 @@
 package org.codehaus.wadi.replication.integration;
 
 import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.group.vm.VMCluster;
+import org.codehaus.wadi.group.vm.VMBroker;
 import org.codehaus.wadi.group.vm.VMDispatcher;
 
 /**
@@ -24,7 +24,7 @@ import org.codehaus.wadi.group.vm.VMDispatcher;
  * @version $Revision: 1603 $
  */
 public class TestInVMReplicationContextualiser extends AbstractReplicationContextualiserTest {
-    private VMCluster cluster;
+    private VMBroker cluster;
 
     protected void failNode(String nodeName) {
         cluster.failNode(nodeName);
@@ -32,7 +32,7 @@ public class TestInVMReplicationContextualiser extends AbstractReplicationContex
     
     protected Dispatcher createDispatcher(String clusterName, String nodeName, long timeout) throws Exception {
         if (null == cluster) {
-            cluster = new VMCluster(clusterName);
+            cluster = new VMBroker(clusterName);
         }
         return new VMDispatcher(cluster, nodeName, timeout);
     }

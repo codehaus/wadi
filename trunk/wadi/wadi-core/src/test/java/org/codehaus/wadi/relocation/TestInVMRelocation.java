@@ -16,7 +16,7 @@
 package org.codehaus.wadi.relocation;
 
 import org.codehaus.wadi.group.vm.SysOutMessageRecorder;
-import org.codehaus.wadi.group.vm.VMCluster;
+import org.codehaus.wadi.group.vm.VMBroker;
 import org.codehaus.wadi.group.vm.VMDispatcher;
 
 /**
@@ -30,7 +30,7 @@ public class TestInVMRelocation extends AbstractTestRelocation {
 	}
 	
 	public void testSessionRelocation() throws Exception {
-        VMCluster cluster = new VMCluster("TEST");
+        VMBroker cluster = new VMBroker("TEST");
         cluster.setMessageRecorder(new SysOutMessageRecorder());
 		long timeout=5000;
 		testSessionRelocation(new VMDispatcher(cluster, "red", timeout), new VMDispatcher(cluster, "green", timeout));

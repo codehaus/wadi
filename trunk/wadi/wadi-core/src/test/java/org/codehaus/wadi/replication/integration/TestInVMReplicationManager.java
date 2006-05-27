@@ -17,15 +17,15 @@ package org.codehaus.wadi.replication.integration;
 
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.vm.SysOutMessageRecorder;
-import org.codehaus.wadi.group.vm.VMCluster;
+import org.codehaus.wadi.group.vm.VMBroker;
 import org.codehaus.wadi.group.vm.VMDispatcher;
 
 public class TestInVMReplicationManager extends AbstractReplicationManagerTest {
-    private VMCluster cluster;
+    private VMBroker cluster;
     
     protected Dispatcher createDispatcher(String clusterName, String nodeName, long timeout) throws Exception {
         if (null == cluster) {
-            cluster = new VMCluster(clusterName);
+            cluster = new VMBroker(clusterName);
             cluster.setMessageRecorder(new SysOutMessageRecorder());
         }
         return new VMDispatcher(cluster, nodeName, timeout);
