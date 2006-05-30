@@ -22,6 +22,7 @@
     <dependency>
       <groupId>org.codehaus.wadi</groupId>
       <artifactId>wadi-core</artifactId>
+      <version>${project.version}</version>
     </dependency>
 
     <dependency>
@@ -57,9 +58,6 @@
 	    <link>http://java.sun.com/j2ee/${jee.version}/docs/api</link>
 	    <link>http://jakarta.apache.org/commons/logging/apidocs</link>
 	    <link>http://jetty.mortbay.org/jetty6/jetty</link>
-	    <link>http://wadi.codehaus.org/wadi-core/apidocs</link>
-	    <link></link>
-	    <link></link>
 	  </links>
 	</configuration>
       </plugin>

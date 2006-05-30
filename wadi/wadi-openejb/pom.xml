@@ -17,6 +17,7 @@
     <dependency>
       <groupId>org.codehaus.wadi</groupId>
       <artifactId>wadi-core</artifactId>
+      <version>${project.version}</version>
     </dependency>
   </dependencies>
 
