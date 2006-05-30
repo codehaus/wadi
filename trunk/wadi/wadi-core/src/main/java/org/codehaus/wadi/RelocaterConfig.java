@@ -34,7 +34,7 @@ public interface RelocaterConfig extends Config {
     String getNodeName();
     SynchronizedBoolean getShuttingDown();
     InvocationProxy getInvocationProxy();
-    ProxiedLocation getProxiedLocation();
+    EndPoint getProxiedLocation();
 
     DIndex getDIndex();
     void notifySessionRelocation(String name);

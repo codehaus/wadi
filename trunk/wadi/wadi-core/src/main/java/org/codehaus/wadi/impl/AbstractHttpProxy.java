@@ -41,9 +41,9 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationProxy;
-import org.codehaus.wadi.ProxiedLocation;
+import org.codehaus.wadi.EndPoint;
 import org.codehaus.wadi.ProxyingException;
-import org.codehaus.wadi.web.WebProxiedLocation;
+import org.codehaus.wadi.web.WebEndPoint;
 import org.codehaus.wadi.web.WebInvocation;
 
 //HTTP/1.1 Methods:
@@ -132,15 +132,15 @@ public abstract class AbstractHttpProxy implements InvocationProxy {
 		return uri;
 	}
 	
-	public final void proxy(ProxiedLocation location, Invocation invocation) throws ProxyingException {
-		if (false == location instanceof WebProxiedLocation) {
-			throw new IllegalArgumentException(WebProxiedLocation.class +
+	public final void proxy(EndPoint location, Invocation invocation) throws ProxyingException {
+		if (false == location instanceof WebEndPoint) {
+			throw new IllegalArgumentException(WebEndPoint.class +
 			" is expected.");
 		} else if (false == invocation instanceof WebInvocation) {
 			throw new IllegalArgumentException(WebInvocation.class +
 			" is expected.");
 		}
-		WebProxiedLocation proxiedLocation = (WebProxiedLocation) location;
+		WebEndPoint proxiedLocation = (WebEndPoint) location;
 		InetSocketAddress address = proxiedLocation.getInetSocketAddress();
 		
 		WebInvocation context = (WebInvocation) invocation;

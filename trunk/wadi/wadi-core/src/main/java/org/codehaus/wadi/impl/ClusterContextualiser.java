@@ -34,7 +34,7 @@ import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.InvocationProxy;
 import org.codehaus.wadi.Location;
 import org.codehaus.wadi.Motable;
-import org.codehaus.wadi.ProxiedLocation;
+import org.codehaus.wadi.EndPoint;
 import org.codehaus.wadi.Relocater;
 import org.codehaus.wadi.RelocaterConfig;
 import org.codehaus.wadi.group.Cluster;
@@ -84,7 +84,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 	protected Dispatcher _dispatcher;
 	protected Cluster _cluster;
 	protected HttpProxyLocation _location;
-	protected ProxiedLocation _proxiedLocation;
+	protected EndPoint _endPoint;
 	protected DIndex _dindex;
 	protected Contextualiser _top;
 
@@ -95,8 +95,8 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 		_nodeName=ccc.getNodeName();
 		_dispatcher=ccc.getDispatcher();
 		_cluster=_dispatcher.getCluster();
-		_proxiedLocation = ccc.getProxiedLocation();
-		_location=new HttpProxyLocation(_cluster.getLocalPeer().getAddress(), _proxiedLocation, ccc.getInvocationProxy());
+		_endPoint = ccc.getEndPoint();
+		_location=new HttpProxyLocation(_cluster.getLocalPeer().getAddress(), _endPoint, ccc.getInvocationProxy());
 		_dindex=ccc.getDIndex();
 		_cluster.addClusterListener(this);
 		_dindex.getStateManager().setImmigrationListener(this);
@@ -313,8 +313,8 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 	public Collapser getCollapser() {return _collapser;}
 	public Dispatcher getDispatcher() {return _dispatcher;}
 	public Location getLocation() {return _location;}
-	public ProxiedLocation getProxiedLocation() {
-		return _proxiedLocation;
+	public EndPoint getProxiedLocation() {
+		return _endPoint;
 	}
 	public Contextualiser getContextualiser() {return _top;}
 	public String getNodeName() {return _nodeName;}

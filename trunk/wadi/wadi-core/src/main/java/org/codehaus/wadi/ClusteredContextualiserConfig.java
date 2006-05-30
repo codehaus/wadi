@@ -31,7 +31,7 @@ public interface ClusteredContextualiserConfig extends DistributableContextualis
 
 	InvocationProxy getInvocationProxy();
 
-	ProxiedLocation getProxiedLocation();
+	EndPoint getEndPoint();
 
 	Object getDistributedState(Object key);
 

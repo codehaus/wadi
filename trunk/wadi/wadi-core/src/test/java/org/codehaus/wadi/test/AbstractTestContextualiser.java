@@ -47,7 +47,7 @@ import org.codehaus.wadi.Location;
 import org.codehaus.wadi.Manager;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.PoolableInvocationWrapperPool;
-import org.codehaus.wadi.ProxiedLocation;
+import org.codehaus.wadi.EndPoint;
 import org.codehaus.wadi.ProxyingException;
 import org.codehaus.wadi.Router;
 import org.codehaus.wadi.Session;
@@ -93,7 +93,7 @@ import org.codehaus.wadi.impl.StandardValueFactory;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 import org.codehaus.wadi.impl.Utils;
 import org.codehaus.wadi.web.WebInvocation;
-import org.codehaus.wadi.web.WebProxiedLocation;
+import org.codehaus.wadi.web.WebEndPoint;
 import EDU.oswego.cs.dl.util.concurrent.NullSync;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
@@ -114,7 +114,7 @@ public abstract class AbstractTestContextualiser extends TestCase {
 	protected final PoolableInvocationWrapperPool _requestPool=new MyDummyHttpServletRequestWrapperPool();
 
 	protected final InvocationProxy _httpProxy=new StandardHttpProxy("jsessionid");
-	protected ProxiedLocation _location;
+	protected EndPoint _location;
 
 	/*
 	 * @see TestCase#setUp()
@@ -122,7 +122,7 @@ public abstract class AbstractTestContextualiser extends TestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 		_log.info("starting ...");
-		_location=new WebProxiedLocation(
+		_location=new WebEndPoint(
 				new InetSocketAddress(InetAddress.getLocalHost(), 8888));
 		_store.init();
 		_dir.mkdir();

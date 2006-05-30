@@ -22,7 +22,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationProxy;
 import org.codehaus.wadi.Location;
-import org.codehaus.wadi.ProxiedLocation;
+import org.codehaus.wadi.EndPoint;
 import org.codehaus.wadi.ProxyingException;
 import org.codehaus.wadi.group.Address;
 
@@ -37,22 +37,22 @@ public class HttpProxyLocation extends SimpleEvictable implements Location {
 	
 	protected final static Log _log = LogFactory.getLog(HttpProxyLocation.class);
 	
-	protected ProxiedLocation _location;
+	protected EndPoint _endPoint;
 	protected InvocationProxy _proxy;
 	
-	public HttpProxyLocation(Address address, ProxiedLocation location, InvocationProxy proxy) {
+	public HttpProxyLocation(Address address, EndPoint location, InvocationProxy proxy) {
 		super();
 		_address=address;
-		_location=location;
+		_endPoint=location;
 		_proxy=proxy;
 	}
 	
 	public void proxy(Invocation invocation) throws ProxyingException {
-		_proxy.proxy(_location, invocation);
+		_proxy.proxy(_endPoint, invocation);
 	}
 	
 	public String toString() {
-		return "<HttpProxyLocation:"+_location+">"; // we could include proxy strategy here...
+		return "<HttpProxyLocation:"+_endPoint+">"; // we could include proxy strategy here...
 	}
 	
 	protected final Address _address;
