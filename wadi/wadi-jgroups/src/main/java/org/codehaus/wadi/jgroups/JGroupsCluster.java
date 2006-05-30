@@ -194,11 +194,24 @@ public class JGroupsCluster extends AbstractCluster implements MembershipListene
         newMembers.remove(_localJGAddress);
         // this is being locked for quite a while - can we improve ? - TODO
         synchronized (_addressToPeer) {
+            // leavers :
+            for (Iterator i=_addressToPeer.entrySet().iterator(); i.hasNext(); ) {
+                Map.Entry entry=(Map.Entry)i.next();
+                JGroupsPeer address=(JGroupsPeer)entry.getKey();
+                Peer peer=(Peer)entry.getValue();
+                _log.trace("checking (leaver?): "+peer);
+                if (!newMembers.contains(address.getJGAddress())) {
+                    leavers.add(peer);
+                    i.remove(); // remove from _AddressToPeer
+                    // remove peer
+                    synchronized (_backendToPeer) {_backendToPeer.remove(address.getJGAddress());}
+                }
+            }
             // joiners :
-
             for (Iterator i=newMembers.iterator(); i.hasNext(); ) {
                 org.jgroups.Address jgaddress=(org.jgroups.Address)i.next();
                 JGroupsPeer peer=(JGroupsPeer)getPeer(jgaddress);
+                _log.trace("checking (joiner?): "+peer);
                 if (peer.getState().isEmpty()) {
                     // fetch state - a quick round trip to fetch the distributed data for this node - yeugh !
                     try {
@@ -216,20 +229,6 @@ public class JGroupsCluster extends AbstractCluster implements MembershipListene
                 if (!_addressToPeer.containsKey(peer)) {
                     _addressToPeer.put(peer, peer); // synched above...
                     joiners.add(peer);
-                }
-            }
-
-            // leavers :
-
-            for (Iterator i=_addressToPeer.entrySet().iterator(); i.hasNext(); ) {
-                Map.Entry entry=(Map.Entry)i.next();
-                JGroupsPeer address=(JGroupsPeer)entry.getKey();
-                Peer peer=(Peer)entry.getValue();
-                if (!newMembers.contains(address.getJGAddress())) {
-                    leavers.add(peer);
-                    i.remove(); // remove from _AddressToPeer
-                    // remove peer
-                    synchronized (_backendToPeer) {_backendToPeer.remove(address.getJGAddress());}
                 }
             }
         }
