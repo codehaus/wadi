@@ -75,7 +75,6 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  */
 public abstract class AbstractTestEvicters extends TestCase {
 
-	protected final String _clusterUri="peer://org.codehaus.wadi";
 	protected final String _clusterName="WADI.TEST";
 
 	public AbstractTestEvicters(String name) {

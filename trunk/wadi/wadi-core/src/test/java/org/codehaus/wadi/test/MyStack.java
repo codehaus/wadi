@@ -117,10 +117,6 @@ public class MyStack {
       ReplicaterFactory replicaterfactory=new MemoryReplicaterFactory(numPartitions);
       ProxiedLocation location = new WebProxiedLocation(new InetSocketAddress("localhost", 8080));
       InvocationProxy proxy=new StandardHttpProxy("jsessionid");
-      //String clusterUri="peer://wadi";
-      //String clusterUri="tcp://localhost:61616";
-      //String clusterUri="vm://localhost";
-      //Dispatcher dispatcher=new ActiveClusterDispatcher(nodeName, clusterName, clusterUri, 5000L);
       _manager=new ClusteredManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, _memory, _memory.getMap(), new DummyRouter(), true, streamer, true, replicaterfactory, location, proxy, dispatcher, 24, collapser);
 //    manager.setSessionListeners(new HttpSessionListener[]{});
       //manager.setAttributelisteners(new HttpSessionAttributeListener[]{});
