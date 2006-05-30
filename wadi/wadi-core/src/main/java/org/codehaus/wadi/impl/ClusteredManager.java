@@ -63,7 +63,7 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
 	protected final Map _distributedState;
 	protected final Collapser _collapser;
 	protected final int _numPartitions;
-    
+
 	public ClusteredManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map sessionMap, Router router, boolean errorIfSessionNotAcquired, Streamer streamer, boolean accessOnLoad, ReplicaterFactory replicaterFactory, ProxiedLocation location, InvocationProxy proxy, Dispatcher dispatcher, int numPartitions, Collapser collapser) {
 		super(sessionPool, attributesFactory, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, sessionMap, router, errorIfSessionNotAcquired, streamer, accessOnLoad, replicaterFactory);
 		_location=location;
@@ -88,7 +88,7 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
 			_dispatcher.init(this);
 			String peerName=_dispatcher.getCluster().getLocalPeer().getName();
 			_distributedState.put(Peer._peerNameKey, peerName);
-			_distributedState.put("http", _location);
+			//			_distributedState.put("http", _location);
 			PartitionMapper mapper=new SimplePartitionMapper(_numPartitions); // integrate with Session ID generator
 			_dindex=new DIndex(_numPartitions, _dispatcher, _distributedState, mapper);
 			_dindex.init(this);
