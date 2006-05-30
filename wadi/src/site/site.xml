@@ -54,6 +54,7 @@
       <item name="SRC snapshot (zip)" href="http://cvs.wadi.codehaus.org/viewrep/~tarball=zip/wadi/wadi.zip"/>
       <item name="SRC snapshot (tgz)" href="http://cvs.wadi.codehaus.org/viewrep/~tarball=tgz/wadi/wadi.tgz"/>
       <item name="SRC snapshot (tbz2)" href="http://cvs.wadi.codehaus.org/viewrep/~tarball=tbz2/wadi/wadi.tbz2"/>
+      <item name="Dependency Repo" href="http://dist.codehaus.org/wadi/distributions/dependencies"/>
     </menu>
 
     <menu name="Modules">
