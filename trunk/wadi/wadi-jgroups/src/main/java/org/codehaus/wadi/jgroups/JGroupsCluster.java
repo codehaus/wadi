@@ -40,7 +40,7 @@ import org.jgroups.MergeView;
 import org.jgroups.MessageListener;
 import org.jgroups.View;
 import EDU.oswego.cs.dl.util.concurrent.Latch;
-import EDU.oswego.cs.dl.util.concurrent.LinkedQueue;
+import EDU.oswego.cs.dl.util.concurrent.Slot;
 
 //TODO - regular state updates
 
@@ -62,7 +62,8 @@ public class JGroupsCluster extends AbstractCluster implements MembershipListene
     protected static final String _suffix=">";
 
     public static final String TEST_CLUSTER_NAME="org.codehaus.wadi.TEST-"+Math.random();
-    public static final String TEST_CLUSTER_CONFIG="default-minimalthreads.xml";
+    public static final String TEST_CLUSTER_CONFIG="default.xml";
+    //public static final String TEST_CLUSTER_CONFIG="default-minimalthreads.xml";
     
     protected final boolean _excludeSelf=true;
     // should probably be initialised in start() and dumped in stop()
@@ -72,7 +73,7 @@ public class JGroupsCluster extends AbstractCluster implements MembershipListene
     // initialised in init()
     protected JGroupsDispatcher _dispatcher;
     protected org.jgroups.Address _localJGAddress;
-
+    
     public JGroupsCluster(String clusterName, String localPeerName, String config) throws ChannelException {
         super(clusterName, localPeerName);
         _clusterPeer=new JGroupsClusterPeer(this);
@@ -137,7 +138,7 @@ public class JGroupsCluster extends AbstractCluster implements MembershipListene
 
     // JGroups MembershipListener API
 
-    protected final EDU.oswego.cs.dl.util.concurrent.Channel _viewQueue=new LinkedQueue();
+    protected final EDU.oswego.cs.dl.util.concurrent.Channel _viewQueue=new Slot();
 
     public synchronized void viewAccepted(View newView) {
         // this is meant to happen if a network split is healed and two
@@ -146,12 +147,12 @@ public class JGroupsCluster extends AbstractCluster implements MembershipListene
         if(newView instanceof MergeView)
             if (_log.isWarnEnabled()) _log.warn("NYI - merging: view is " + newView);
 
-        Set newMembers=new TreeSet(newView.getMembers());
+        Set members=new TreeSet(newView.getMembers());
         try {
             if (_log.isTraceEnabled()) _log.trace(_localPeerName+" - "+"handling JGroups viewAccepted("+newView+")...");
-            _viewQueue.put(newMembers);
+            _viewQueue.put(members);
         } catch (InterruptedException e) {
-            _log.warn("unexpected interruption", e);
+            if (_log.isWarnEnabled()) _log.warn("unexpected interruption", e);
         }
     }
 
@@ -176,9 +177,9 @@ public class JGroupsCluster extends AbstractCluster implements MembershipListene
         public void run() {
             while (_running) {
                 try {
-                    Set newMembers=(Set)_viewQueue.poll(2000);
-                    if (newMembers!=null)
-                        nextView(newMembers);
+                    Set members=(Set)_viewQueue.poll(2000);
+                    if (members!=null)
+                        nextView(members);
                 } catch (InterruptedException e) {
                     _log.warn("unexpected interruption", e);
                 }
@@ -206,13 +207,15 @@ public class JGroupsCluster extends AbstractCluster implements MembershipListene
                         Map state=((StateResponse)tmp.getPayload()).getState();
                         peer.setState(state);
 
-                        // insert node
-                        synchronized (_addressToPeer) {_addressToPeer.put(peer, peer);}
-                        joiners.add(peer);
                     } catch (Exception e) {
                         _log.warn("problem retrieving remote state for fresh joiner...", e);
                         return;
                     }
+                }
+
+                if (!_addressToPeer.containsKey(peer)) {
+                    _addressToPeer.put(peer, peer); // synched above...
+                    joiners.add(peer);
                 }
             }
 
