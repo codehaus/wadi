@@ -56,7 +56,6 @@ import org.codehaus.wadi.location.newmessages.MoveIMToPM;
 import org.codehaus.wadi.location.newmessages.MoveIMToSM;
 import org.codehaus.wadi.location.newmessages.MovePMToIM;
 import org.codehaus.wadi.location.newmessages.MoveSMToIM;
-import EDU.oswego.cs.dl.util.concurrent.Latch;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
@@ -70,7 +69,6 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 	protected final static String _correlationIDMapKey="correlationIDMap";
 
 	protected final Map _distributedState;
-	protected final Latch _coordinatorLatch=new Latch();
 	protected final Object _coordinatorLock=new Object();
 	protected final Dispatcher _dispatcher;
 	protected final Cluster _cluster;
@@ -94,7 +92,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 		_stateManager= new SimpleStateManager(_dispatcher, _inactiveTime);
 	}
 
-	protected Peer _coordinatorNode;
+	protected Peer _coordinatorPeer;
 	protected Coordinator _coordinator;
 	protected PartitionManagerConfig _config;
 
@@ -119,12 +117,8 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 
 		_partitionManager.start();
 
-		_log.info("sleeping...");
-		boolean isNotCoordinator=_coordinatorLatch.attempt(_inactiveTime); // wait to find out if we are the Coordinator
-		_log.info("...waking");
-
-		// If our wait timed out, then we must be the coordinator...
-		if (!isNotCoordinator) {
+		if (_cluster.getPeerCount()==1) {
+            // we are the first node...
 			_partitionManager.localise();
 			PartitionKeys k=_partitionManager.getPartitionKeys();
 			_distributedState.put(_partitionKeysKey, k);
@@ -206,26 +200,21 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 	}
 
 	public void onMembershipChanged(Cluster cluster, Set joiners, Set leavers, Peer coordinator) {
-
-        _log.info("COORDINATOR CHANGED: " + coordinator);
         synchronized (_coordinatorLock) {
-            if (_log.isDebugEnabled()) _log.debug("coordinator elected: " + getPeerName(coordinator));
-            if (false == coordinator.equals(_coordinatorNode)) {
-                if (null != _coordinatorNode && _coordinatorNode.equals(_localPeer)) {
+            if (false == coordinator.equals(_coordinatorPeer)) {
+                if (null != _coordinatorPeer && _coordinatorPeer.equals(_localPeer)) {
                     onDismissal(coordinator);
                 }
-                _coordinatorNode = coordinator;
-                if (_coordinatorNode.equals(_localPeer)) {
+                _coordinatorPeer = coordinator;
+                if (_coordinatorPeer.equals(_localPeer)) {
                     onElection(coordinator);
                 }
             }
-
-            _coordinatorLatch.release(); // we are still waiting in start() to find out if we are the Coordinator...
         }
         
         if (_log.isDebugEnabled()) _log.debug("membership changed - joiners:"+joiners+" leavers:"+leavers);
 
-	    if (_localPeer.equals(_coordinatorNode)) {
+	    if (_localPeer.equals(_coordinatorPeer)) {
 	        _coordinator.queueRebalancing();
 	    }
 
@@ -264,11 +253,11 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 
 
 	public boolean amCoordinator() {
-        if (null == _coordinatorNode) {
+        if (null == _coordinatorPeer) {
             return false;
         }
         
-		return _coordinatorNode.getAddress().equals(_localPeer.getAddress());
+		return _coordinatorPeer.getAddress().equals(_localPeer.getAddress());
 	}
 
 	public void onCoordinatorChanged(ClusterEvent event) {
@@ -309,13 +298,13 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 
 	public boolean isCoordinator() {
 		synchronized (_coordinatorLock) {
-			return _localPeer==_coordinatorNode;
+			return _localPeer==_coordinatorPeer;
 		}
 	}
 
 	public Peer getCoordinator() {
 		synchronized (_coordinatorLock) {
-			return _coordinatorNode;
+			return _coordinatorPeer;
 		}
 	}
 
