@@ -30,7 +30,7 @@ public class TestACPeerReplication extends AbstractTestReplication {
     String clusterName="org.codehaus.wadi.TEST-"+Math.random();
     String nodeName="test."+Math.random();
     long timeout=5000;
-    testReplication(new ActiveClusterDispatcher(clusterName, nodeName, "peer://org.codehaus.wadi."+Math.random(), timeout)); // TODO - stop() seems to run asynchronously - resolve
+    testReplication(new ActiveClusterDispatcher(clusterName, nodeName, ActiveClusterCluster.TEST_PEER_CLUSTER_URI, timeout)); // TODO - stop() seems to run asynchronously - resolve
   }
 
 }

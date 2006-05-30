@@ -28,7 +28,7 @@ public class TestACInVMReplicationContextualiser extends AbstractReplicationCont
     protected Dispatcher createDispatcher(String clusterName, String nodeName, long timeout) throws Exception {
         return new ActiveClusterDispatcher(clusterName, 
                 nodeName, 
-                "vm://localhost", 
+                ActiveClusterCluster.TEST_VM_CLUSTER_URI, 
                 timeout);
     }
 

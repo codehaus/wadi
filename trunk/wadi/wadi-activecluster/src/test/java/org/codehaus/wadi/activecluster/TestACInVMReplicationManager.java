@@ -22,6 +22,6 @@ import org.codehaus.wadi.replication.integration.AbstractReplicationManagerTest;
 public class TestACInVMReplicationManager extends AbstractReplicationManagerTest {
 
     protected Dispatcher createDispatcher(String clusterName, String nodeName, long timeout) throws Exception {
-        return new ActiveClusterDispatcher(clusterName, nodeName, "vm://localhost", timeout);
+        return new ActiveClusterDispatcher(clusterName, nodeName, ActiveClusterCluster.TEST_VM_CLUSTER_URI, timeout);
     }
 }

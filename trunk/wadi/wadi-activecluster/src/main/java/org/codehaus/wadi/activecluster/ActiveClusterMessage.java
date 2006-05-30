@@ -20,7 +20,6 @@ import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Message;
-import org.codehaus.wadi.group.impl.AbstractCluster;
 
 /**
  * 
