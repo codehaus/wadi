@@ -38,10 +38,10 @@ import org.mortbay.jetty.servlet.WebApplicationHandler;
  * TODO - JavaDoc this type
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
+ * @version $Revision:1846 $
  */
 
-public class TestJetty extends TestCase {
+public class TestJetty5 extends TestCase {
     
 	protected Log _log;
 	protected Server _server=new Server();
@@ -74,7 +74,7 @@ public class TestJetty extends TestCase {
             Class[] argTypes=new Class[]{HttpServletRequest.class, HttpServletResponse.class};
 	        Object[] argInstances=new Object[]{hreq, hres};
 	        try {
-	            TestJetty.class.getMethod(name, argTypes).invoke(TestJetty.this, argInstances);
+	            TestJetty5.class.getMethod(name, argTypes).invoke(TestJetty5.this, argInstances);
 	        } catch (Exception e) {
 		  _log.error(e);
                 assertTrue(false);
@@ -123,7 +123,7 @@ public class TestJetty extends TestCase {
 	 * Constructor for TestJetty.
 	 * @param name
 	 */
-	public TestJetty(String name) {
+	public TestJetty5(String name) {
 		super(name);
 	}
 
