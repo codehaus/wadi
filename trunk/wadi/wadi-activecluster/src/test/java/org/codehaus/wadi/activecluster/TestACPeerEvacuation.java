@@ -27,10 +27,9 @@ public class TestACPeerEvacuation extends AbstractTestEvacuation {
     }
     
     public void testEvacuation() throws Exception {
-        String clusterName="org.codehaus.wadi.TEST-"+Math.random();
-        long timeout=5000;
-        String clusterUri;
-        clusterUri=ActiveClusterCluster.TEST_PEER_CLUSTER_URI;
+        String clusterUri=ActiveClusterCluster.TEST_PEER_CLUSTER_URI;
+        String clusterName=ActiveClusterCluster.TEST_CLUSTER_NAME;
+        long timeout=ActiveClusterCluster.TEST_CLUSTER_INACTIVE_TIME;
         testEvacuation(new ActiveClusterDispatcher(clusterName, "red", clusterUri, timeout), new ActiveClusterDispatcher(clusterName, "green", clusterUri, timeout));
     }
     
