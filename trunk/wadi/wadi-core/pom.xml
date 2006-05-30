@@ -154,6 +154,7 @@
     <dependency>
       <groupId>org.codehaus.wadi</groupId>
       <artifactId>wadi-dispatcher</artifactId>
+      <version>${project.version}</version>
     </dependency>
 
     <dependency>
