@@ -176,11 +176,12 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 
 	public void onPeerUpdated(ClusterEvent event) {
 		Peer node=event.getPeer();
-		if (_log.isTraceEnabled()) _log.trace("onNodeUpdate: " + getPeerName(node) + ": " + node.getState());
+        Map state=node.getState();
+        synchronized (state) {state=new HashMap(state);} // snapshot state to avoid concurrency issues...
+		if (_log.isTraceEnabled()) _log.trace("onNodeUpdate: " + getPeerName(node) + ": " + state);
 
 		_partitionManager.update(node);
 
-		Map state=node.getState();
 		correlateStateUpdate(state);
 	}
 
