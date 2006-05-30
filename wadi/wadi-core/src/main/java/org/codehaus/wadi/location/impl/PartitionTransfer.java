@@ -21,8 +21,10 @@ import java.io.Serializable;
 import org.codehaus.wadi.group.Address;
 
 /**
+ * Sent from a Coordinator to a Peer, ordering it to transfer ownership of a number of Partitions to another Peer.
+ * 
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
+ * @version $Revision:1815 $
  */
 public class PartitionTransfer implements Serializable {
 

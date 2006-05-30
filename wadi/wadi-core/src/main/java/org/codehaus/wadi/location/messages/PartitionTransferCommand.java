@@ -22,10 +22,10 @@ import org.codehaus.wadi.OldMessage;
 import org.codehaus.wadi.location.impl.PartitionTransfer;
 
 /**
- * Sent from Coordinator to a cluster member, ordering it to transfer ownership of a number of Partitions to another member.
- * 
+ * Sent from Coordinator to a Peer, ordering it to transfer ownership of numbers of Partitions to other Peers.
+ *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
+ * @version $Revision:1815 $
  */
 public class PartitionTransferCommand implements OldMessage, Serializable {
 
