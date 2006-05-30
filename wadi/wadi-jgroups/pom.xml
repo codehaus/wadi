@@ -68,7 +68,6 @@
 	<configuration>
 	  <excludes>
 	    <exclude implementation="java.lang.String">**/*$*.java</exclude> <!-- stop surefire from trying to run nested classes -->
-	    <exclude implementation="java.lang.String">**/TestJGGroup.java</exclude>
 	  </excludes>
 	</configuration>
       </plugin>

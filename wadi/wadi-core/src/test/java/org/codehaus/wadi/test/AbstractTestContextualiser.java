@@ -22,20 +22,12 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.jms.ConnectionFactory;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.sql.DataSource;
-
 import junit.framework.TestCase;
-
-import org.apache.activecluster.Cluster;
-import org.apache.activecluster.ClusterFactory;
-import org.apache.activecluster.impl.DefaultClusterFactory;
-import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.axiondb.jdbc.AxionDataSource;
@@ -57,7 +49,6 @@ import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.PoolableInvocationWrapperPool;
 import org.codehaus.wadi.ProxiedLocation;
 import org.codehaus.wadi.ProxyingException;
-import org.codehaus.wadi.Relocater;
 import org.codehaus.wadi.Router;
 import org.codehaus.wadi.Session;
 import org.codehaus.wadi.SessionIdFactory;
@@ -65,21 +56,19 @@ import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.SessionWrapperFactory;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValuePool;
-import org.codehaus.wadi.activecluster.DummyDistributableContextualiserConfig;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.impl.AbsoluteEvicter;
 import org.codehaus.wadi.impl.AbstractContextualiser;
-import org.codehaus.wadi.impl.ClusterContextualiser;
 import org.codehaus.wadi.impl.ClusteredManager;
 import org.codehaus.wadi.impl.DatabaseStore;
 import org.codehaus.wadi.impl.DistributableAttributesFactory;
 import org.codehaus.wadi.impl.DistributableSessionFactory;
 import org.codehaus.wadi.impl.DistributableValueFactory;
 import org.codehaus.wadi.impl.DummyContextualiser;
-import org.codehaus.wadi.impl.DummyManagerConfig;
 import org.codehaus.wadi.impl.DummyEvicter;
 import org.codehaus.wadi.impl.DummyHttpServletRequest;
+import org.codehaus.wadi.impl.DummyManagerConfig;
 import org.codehaus.wadi.impl.DummyReplicaterFactory;
 import org.codehaus.wadi.impl.DummyRouter;
 import org.codehaus.wadi.impl.ExclusiveStoreContextualiser;
@@ -103,10 +92,8 @@ import org.codehaus.wadi.impl.StandardSessionWrapperFactory;
 import org.codehaus.wadi.impl.StandardValueFactory;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 import org.codehaus.wadi.impl.Utils;
-import org.codehaus.wadi.impl.WebHybridRelocater;
-import org.codehaus.wadi.web.WebProxiedLocation;
 import org.codehaus.wadi.web.WebInvocation;
-
+import org.codehaus.wadi.web.WebProxiedLocation;
 import EDU.oswego.cs.dl.util.concurrent.NullSync;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
@@ -121,7 +108,6 @@ public abstract class AbstractTestContextualiser extends TestCase {
 	protected DataSource _ds=new AxionDataSource("jdbc:axiondb:testdb");	// db springs into existance in-vm beneath us
 	protected String _table="MyTable";
 	protected DatabaseStore _store=new DatabaseStore("jdbc:axiondb:testdb", _ds, _table, false, false, false);
-	protected final String _clusterUri="peer://org.codehaus.wadi";
 	protected final String _clusterName="WADI.TEST";
 
 	protected final HttpServletRequest _request=new DummyHttpServletRequest();
@@ -587,71 +573,66 @@ public abstract class AbstractTestContextualiser extends TestCase {
 		public Address getAddress(){return null;}
 	}
 
-    public static ActiveMQConnectionFactory getConnectionFactory() {
-        ActiveMQConnectionFactory cf=new ActiveMQConnectionFactory("peer://org.codehaus.wadi");
-        return cf;
-    }
-    
-    public void donottestCluster() throws Exception {
-		ConnectionFactory connectionFactory = getConnectionFactory();
-		//((ActiveMQConnectionFactory)connectionFactory).setBrokerContainerFactory(new BrokerContainerFactoryImpl(new VMPersistenceAdapter()));
-		// TODO - figure out how to turn off persistance.
-		ClusterFactory clusterFactory = new DefaultClusterFactory(connectionFactory);
-		String clusterName            = "ORG.CODEHAUS.WADI.TEST.CLUSTER";
-		Cluster cluster0              = clusterFactory.createCluster(clusterName);
-		Cluster cluster1              = clusterFactory.createCluster(clusterName);
-
-		cluster0.start();
-		cluster1.start();
-		//-------------------
-		// do the test
-
-		//Location location0=new MyLocation();
-		//Map c0=new HashMap();
-		Relocater relocater0=new WebHybridRelocater(5000L, 5000L, true);
-		Collapser collapser0=new HashingCollapser(10, 2000);
-		ClusterContextualiser clstr0=new ClusterContextualiser(new DummyContextualiser(), collapser0, relocater0);
-		Map m0=new HashMap();
-		m0.put("foo", new MyContext("foo", "1"));
-		Contextualiser memory0=new MemoryContextualiser(clstr0, new NeverEvicter(30000, true), m0, new GZIPStreamer(), new MyContextPool(), _requestPool);
-		memory0.init(new DummyDistributableContextualiserConfig(cluster0));
-
-		//Location location1=new MyLocation();
-		//Map c1=new HashMap();
-		Relocater relocater1=new WebHybridRelocater(5000L, 5000L, true);
-		Collapser collapser1=new HashingCollapser(10, 2000);
-		ClusterContextualiser clstr1=new ClusterContextualiser(new DummyContextualiser(), collapser1, relocater1);
-		Map m1=new HashMap();
-		m1.put("bar", new MyContext("bar", "2"));
-		Contextualiser memory1=new MemoryContextualiser(clstr1, new NeverEvicter(30000, true), m1, new GZIPStreamer(), new MyContextPool(), _requestPool);
-		memory1.init(new DummyDistributableContextualiserConfig(cluster1));
-
-		Thread.sleep(2000); // activecluster needs a little time to sort itself out...
-		_log.info("STARTING NOW!");
-		FilterChain fc=new MyFilterChain();
-
-		assertTrue(!m0.containsKey("bar"));
-		assertTrue(!m1.containsKey("foo"));
-		// not sure what these were testing - if Context not available, these will return false...
-//		assertTrue(memory0.contextualise(null,null,fc,"bar", null, null, false));
-//		assertTrue(memory0.contextualise(null,null,fc,"bar", null, null, false));
-//		assertTrue(memory1.contextualise(null,null,fc,"foo", null, null, false));
-//		assertTrue(memory1.contextualise(null,null,fc,"foo", null, null, false));
-        WebInvocation invocation=new WebInvocation();
-        invocation.init(null,null,fc);
-		assertTrue(!memory0.contextualise(invocation,"baz", null, null, false));
-        invocation.init(null,null,fc);
-		assertTrue(!memory1.contextualise(invocation,"baz", null, null, false));
-
-		Thread.sleep(2000);
-		_log.info("STOPPING NOW!");
-		// ------------------
-		cluster1.stop();
-		cluster1=null;
-		cluster0.stop();
-		cluster0=null;
-		clusterFactory=null;
-		connectionFactory=null;
-	}
+//    public void donottestCluster() throws Exception {
+//		ConnectionFactory connectionFactory = getConnectionFactory();
+//		//((ActiveMQConnectionFactory)connectionFactory).setBrokerContainerFactory(new BrokerContainerFactoryImpl(new VMPersistenceAdapter()));
+//		// TODO - figure out how to turn off persistance.
+//		ClusterFactory clusterFactory = new DefaultClusterFactory(connectionFactory);
+//		String clusterName            = "ORG.CODEHAUS.WADI.TEST.CLUSTER";
+//		Cluster cluster0              = clusterFactory.createCluster(clusterName);
+//		Cluster cluster1              = clusterFactory.createCluster(clusterName);
+//
+//		cluster0.start();
+//		cluster1.start();
+//		//-------------------
+//		// do the test
+//
+//		//Location location0=new MyLocation();
+//		//Map c0=new HashMap();
+//		Relocater relocater0=new WebHybridRelocater(5000L, 5000L, true);
+//		Collapser collapser0=new HashingCollapser(10, 2000);
+//		ClusterContextualiser clstr0=new ClusterContextualiser(new DummyContextualiser(), collapser0, relocater0);
+//		Map m0=new HashMap();
+//		m0.put("foo", new MyContext("foo", "1"));
+//		Contextualiser memory0=new MemoryContextualiser(clstr0, new NeverEvicter(30000, true), m0, new GZIPStreamer(), new MyContextPool(), _requestPool);
+//		memory0.init(new DummyDistributableContextualiserConfig(cluster0));
+//
+//		//Location location1=new MyLocation();
+//		//Map c1=new HashMap();
+//		Relocater relocater1=new WebHybridRelocater(5000L, 5000L, true);
+//		Collapser collapser1=new HashingCollapser(10, 2000);
+//		ClusterContextualiser clstr1=new ClusterContextualiser(new DummyContextualiser(), collapser1, relocater1);
+//		Map m1=new HashMap();
+//		m1.put("bar", new MyContext("bar", "2"));
+//		Contextualiser memory1=new MemoryContextualiser(clstr1, new NeverEvicter(30000, true), m1, new GZIPStreamer(), new MyContextPool(), _requestPool);
+//		memory1.init(new DummyDistributableContextualiserConfig(cluster1));
+//
+//		Thread.sleep(2000); // activecluster needs a little time to sort itself out...
+//		_log.info("STARTING NOW!");
+//		FilterChain fc=new MyFilterChain();
+//
+//		assertTrue(!m0.containsKey("bar"));
+//		assertTrue(!m1.containsKey("foo"));
+//		// not sure what these were testing - if Context not available, these will return false...
+////		assertTrue(memory0.contextualise(null,null,fc,"bar", null, null, false));
+////		assertTrue(memory0.contextualise(null,null,fc,"bar", null, null, false));
+////		assertTrue(memory1.contextualise(null,null,fc,"foo", null, null, false));
+////		assertTrue(memory1.contextualise(null,null,fc,"foo", null, null, false));
+//        WebInvocation invocation=new WebInvocation();
+//        invocation.init(null,null,fc);
+//		assertTrue(!memory0.contextualise(invocation,"baz", null, null, false));
+//        invocation.init(null,null,fc);
+//		assertTrue(!memory1.contextualise(invocation,"baz", null, null, false));
+//
+//		Thread.sleep(2000);
+//		_log.info("STOPPING NOW!");
+//		// ------------------
+//		cluster1.stop();
+//		cluster1=null;
+//		cluster0.stop();
+//		cluster0=null;
+//		clusterFactory=null;
+//		connectionFactory=null;
+//	}
 
 }
