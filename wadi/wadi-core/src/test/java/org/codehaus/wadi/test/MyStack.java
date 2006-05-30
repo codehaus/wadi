@@ -28,7 +28,7 @@ import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Evicter;
 import org.codehaus.wadi.InvocationProxy;
 import org.codehaus.wadi.PoolableInvocationWrapperPool;
-import org.codehaus.wadi.ProxiedLocation;
+import org.codehaus.wadi.EndPoint;
 import org.codehaus.wadi.ReplicaterFactory;
 import org.codehaus.wadi.SessionIdFactory;
 import org.codehaus.wadi.SessionPool;
@@ -64,7 +64,7 @@ import org.codehaus.wadi.impl.StandardSessionWrapperFactory;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 import org.codehaus.wadi.impl.Utils;
 import org.codehaus.wadi.impl.WebHybridRelocater;
-import org.codehaus.wadi.web.WebProxiedLocation;
+import org.codehaus.wadi.web.WebEndPoint;
 
 public class MyStack {
 
@@ -115,7 +115,7 @@ public class MyStack {
       SessionWrapperFactory wrapperFactory=new StandardSessionWrapperFactory();
       SessionIdFactory idFactory=new TomcatSessionIdFactory();
       ReplicaterFactory replicaterfactory=new MemoryReplicaterFactory(numPartitions);
-      ProxiedLocation location = new WebProxiedLocation(new InetSocketAddress("localhost", 8080));
+      EndPoint location = new WebEndPoint(new InetSocketAddress("localhost", 8080));
       InvocationProxy proxy=new StandardHttpProxy("jsessionid");
       _manager=new ClusteredManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, _memory, _memory.getMap(), new DummyRouter(), true, streamer, true, replicaterfactory, location, proxy, dispatcher, 24, collapser);
 //    manager.setSessionListeners(new HttpSessionListener[]{});

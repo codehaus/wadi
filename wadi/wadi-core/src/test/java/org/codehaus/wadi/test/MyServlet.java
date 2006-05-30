@@ -37,7 +37,7 @@ import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.InvocationProxy;
 import org.codehaus.wadi.Manager;
 import org.codehaus.wadi.ManagerConfig;
-import org.codehaus.wadi.ProxiedLocation;
+import org.codehaus.wadi.EndPoint;
 import org.codehaus.wadi.Relocater;
 import org.codehaus.wadi.Router;
 import org.codehaus.wadi.SessionIdFactory;
@@ -66,7 +66,7 @@ import org.codehaus.wadi.impl.StandardManager;
 import org.codehaus.wadi.impl.StandardSessionWrapperFactory;
 import org.codehaus.wadi.impl.StatelessContextualiser;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
-import org.codehaus.wadi.web.WebProxiedLocation;
+import org.codehaus.wadi.web.WebEndPoint;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -97,7 +97,7 @@ public class MyServlet implements Servlet {
 	protected final AttributesFactory _distributableAttributesFactory=new DistributableAttributesFactory();
 	protected final ValuePool _distributableValuePool=new SimpleValuePool(new DistributableValueFactory());
 	protected final InvocationProxy _proxy;
-	protected final ProxiedLocation _location;
+	protected final EndPoint _location;
 	protected final StandardManager _manager;
 
 
@@ -116,7 +116,7 @@ public class MyServlet implements Servlet {
 		_serialContextualiser=new SerialContextualiser(_statelessContextualiser, _collapser, _memoryMap);
 		_memoryContextualiser=new MemoryContextualiser(_serialContextualiser, new NeverEvicter(30000, true), _memoryMap, new SimpleStreamer(), contextPool, new MyDummyHttpServletRequestWrapperPool());
 		_proxy=httpProxy;
-		_location=new WebProxiedLocation(httpAddress);
+		_location=new WebEndPoint(httpAddress);
 		_manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, _memoryContextualiser, _memoryMap, _router, true, _streamer, _accessOnLoad, new DummyReplicaterFactory(), _location, _proxy, dispatcher, 24, _collapser);
 	}
 

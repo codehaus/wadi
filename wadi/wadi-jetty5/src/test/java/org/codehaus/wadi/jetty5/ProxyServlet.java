@@ -28,10 +28,10 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.InvocationProxy;
-import org.codehaus.wadi.ProxiedLocation;
+import org.codehaus.wadi.EndPoint;
 import org.codehaus.wadi.impl.StandardHttpProxy;
 import org.codehaus.wadi.web.WebInvocation;
-import org.codehaus.wadi.web.WebProxiedLocation;
+import org.codehaus.wadi.web.WebEndPoint;
 import org.mortbay.http.SocketListener;
 import org.mortbay.jetty.Server;
 import org.mortbay.jetty.servlet.ServletHttpContext;
@@ -41,7 +41,7 @@ import org.mortbay.util.InetAddrPort;
  * TODO - JavaDoc this type
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
+ * @version $Revision:1846 $
  */
 public class ProxyServlet implements Servlet {
 	protected final Log _log = LogFactory.getLog(getClass());
@@ -71,9 +71,9 @@ public class ProxyServlet implements Servlet {
 //		return;
 //		}
 		
-		ProxiedLocation location=null;
+		EndPoint location=null;
 		try {
-			location=new WebProxiedLocation(new InetSocketAddress(req.getServerName(), req.getServerPort()));
+			location=new WebEndPoint(new InetSocketAddress(req.getServerName(), req.getServerPort()));
 			WebInvocation invocation=new WebInvocation();
 			invocation.init(hreq, hres, null);
 			_proxy.proxy(location, invocation);

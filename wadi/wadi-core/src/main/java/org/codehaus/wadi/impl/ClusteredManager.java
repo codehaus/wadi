@@ -34,7 +34,7 @@ import org.codehaus.wadi.InvocationProxy;
 import org.codehaus.wadi.ManagerConfig;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.PartitionMapper;
-import org.codehaus.wadi.ProxiedLocation;
+import org.codehaus.wadi.EndPoint;
 import org.codehaus.wadi.ReplicaterFactory;
 import org.codehaus.wadi.Router;
 import org.codehaus.wadi.Session;
@@ -64,9 +64,9 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
 	protected final Collapser _collapser;
 	protected final int _numPartitions;
 
-	public ClusteredManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map sessionMap, Router router, boolean errorIfSessionNotAcquired, Streamer streamer, boolean accessOnLoad, ReplicaterFactory replicaterFactory, ProxiedLocation location, InvocationProxy proxy, Dispatcher dispatcher, int numPartitions, Collapser collapser) {
+	public ClusteredManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map sessionMap, Router router, boolean errorIfSessionNotAcquired, Streamer streamer, boolean accessOnLoad, ReplicaterFactory replicaterFactory, EndPoint endPoint, InvocationProxy proxy, Dispatcher dispatcher, int numPartitions, Collapser collapser) {
 		super(sessionPool, attributesFactory, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, sessionMap, router, errorIfSessionNotAcquired, streamer, accessOnLoad, replicaterFactory);
-		_location=location;
+		_endPoint=endPoint;
 		_proxy=proxy;
 		_dispatcher=dispatcher;
         _numPartitions=numPartitions;
@@ -80,7 +80,7 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
 
 	protected DIndex _dindex;
 	protected final InvocationProxy _proxy;
-	protected final ProxiedLocation _location;
+	protected final EndPoint _endPoint;
 
 	public void init(ManagerConfig config) {
 		// must be done before super.init() so that ContextualiserConfig contains a Cluster
@@ -88,7 +88,7 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
 			_dispatcher.init(this);
 			String peerName=_dispatcher.getCluster().getLocalPeer().getName();
 			_distributedState.put(Peer._peerNameKey, peerName);
-			//			_distributedState.put("http", _location);
+			_distributedState.put("endpoint", _endPoint);
 			PartitionMapper mapper=new SimplePartitionMapper(_numPartitions); // integrate with Session ID generator
 			_dindex=new DIndex(_numPartitions, _dispatcher, _distributedState, mapper);
 			_dindex.init(this);
@@ -238,8 +238,8 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
 		return _proxy;
 	}
 
-	public ProxiedLocation getProxiedLocation() {
-		return _location;
+	public EndPoint getEndPoint() {
+		return _endPoint;
 	}
 
 	public Peer getCoordinatorNode() {

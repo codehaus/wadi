@@ -39,7 +39,7 @@ import org.codehaus.wadi.InvocationProxy;
 import org.codehaus.wadi.Manager;
 import org.codehaus.wadi.ManagerConfig;
 import org.codehaus.wadi.Motable;
-import org.codehaus.wadi.ProxiedLocation;
+import org.codehaus.wadi.EndPoint;
 import org.codehaus.wadi.Relocater;
 import org.codehaus.wadi.Router;
 import org.codehaus.wadi.SessionIdFactory;
@@ -72,7 +72,7 @@ import org.codehaus.wadi.impl.StandardHttpProxy;
 import org.codehaus.wadi.impl.StandardSessionWrapperFactory;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 import org.codehaus.wadi.impl.Utils;
-import org.codehaus.wadi.web.WebProxiedLocation;
+import org.codehaus.wadi.web.WebEndPoint;
 
 /**
  * Test the shutdown of a Contextualiser stack as live sessions are distributed to other nodes in the cluster
@@ -118,7 +118,7 @@ public abstract class AbstractTestCluster extends TestCase {
 			_clusterName=clusterName;
 			_nodeName=nodeName;
 			_dispatcher=createDispatcher(_clusterName, _nodeName, 5000L);
-			ProxiedLocation proxiedLocation= new WebProxiedLocation(new InetSocketAddress("localhost", 8080));
+			EndPoint proxiedLocation= new WebEndPoint(new InetSocketAddress("localhost", 8080));
 			InvocationProxy proxy=new StandardHttpProxy("jsessionid");
 			//_relocater=new SwitchableRelocationStrategy();
 			_relocater=new DummyRelocater();

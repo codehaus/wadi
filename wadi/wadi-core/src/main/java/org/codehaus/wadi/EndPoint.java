@@ -14,24 +14,16 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.web;
+package org.codehaus.wadi;
 
-import java.net.InetSocketAddress;
-
-import org.codehaus.wadi.ProxiedLocation;
+import java.io.Serializable;
 
 /**
+ * EndPoint - an opaque type encapsulating the EndPoint for an Invocation. e.g. a WebEndPoint
+ * might encapsulate the IP address and port of a Web Server...
+ *
+ * @author jules
  * @version $Revision$
  */
-public class WebProxiedLocation implements ProxiedLocation {
-	private final InetSocketAddress address;
-	
-	public WebProxiedLocation(InetSocketAddress address) {
-		this.address = address;
-	}
-	
-	public InetSocketAddress getInetSocketAddress() {
-		return address;
-	}
-	
+public interface EndPoint extends Serializable {
 }

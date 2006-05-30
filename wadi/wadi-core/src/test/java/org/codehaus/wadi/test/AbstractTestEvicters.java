@@ -35,7 +35,7 @@ import org.codehaus.wadi.EvicterConfig;
 import org.codehaus.wadi.InvocationProxy;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.PoolableInvocationWrapperPool;
-import org.codehaus.wadi.ProxiedLocation;
+import org.codehaus.wadi.EndPoint;
 import org.codehaus.wadi.SessionIdFactory;
 import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.SessionWrapperFactory;
@@ -64,7 +64,7 @@ import org.codehaus.wadi.impl.SimpleValuePool;
 import org.codehaus.wadi.impl.StandardHttpProxy;
 import org.codehaus.wadi.impl.StandardSessionWrapperFactory;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
-import org.codehaus.wadi.web.WebProxiedLocation;
+import org.codehaus.wadi.web.WebEndPoint;
 
 import EDU.oswego.cs.dl.util.concurrent.NullSync;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
@@ -143,7 +143,7 @@ public abstract class AbstractTestEvicters extends TestCase {
 		SessionWrapperFactory wrapperFactory=new StandardSessionWrapperFactory();
 		SessionIdFactory idFactory=new TomcatSessionIdFactory();
 		InvocationProxy proxy=new StandardHttpProxy("jsessionid");
-		ProxiedLocation location= new WebProxiedLocation(new InetSocketAddress(InetAddress.getLocalHost(), 8888));
+		EndPoint location= new WebEndPoint(new InetSocketAddress(InetAddress.getLocalHost(), 8888));
 		String nodeName="node0";
 		Dispatcher dispatcher=createDispatcher(_clusterName, nodeName, 5000L);
 		ClusteredManager manager=new ClusteredManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), new DummyRouter(), true, streamer, true, new DummyReplicaterFactory(), location, proxy, dispatcher, 24, collapser);
