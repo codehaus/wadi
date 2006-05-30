@@ -179,7 +179,7 @@ public abstract class AbstractTestGroup extends TestCase {
         
     }
     public void testDispatcher() throws Exception {
-        String clusterName="org.codehaus.wadi.cluster.TEST-"+System.currentTimeMillis();
+        String clusterName="org.codehaus.wadi.cluster.TEST-"+Math.random();
 
         DispatcherConfig config=new DummyDispatcherConfig();
         

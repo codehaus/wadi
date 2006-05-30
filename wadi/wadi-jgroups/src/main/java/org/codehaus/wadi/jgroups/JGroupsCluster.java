@@ -61,6 +61,9 @@ public class JGroupsCluster extends AbstractCluster implements MembershipListene
     protected static final String _prefix="<"+Utils.basename(JGroupsCluster.class)+": ";
     protected static final String _suffix=">";
 
+    public static final String TEST_CLUSTER_NAME="org.codehaus.wadi.TEST-"+Math.random();
+    public static final String TEST_CLUSTER_CONFIG="default-minimalthreads.xml";
+    
     protected final boolean _excludeSelf=true;
     // should probably be initialised in start() and dumped in stop()
     protected final Latch _viewLatch=new Latch();

@@ -26,9 +26,10 @@ public class TestJGEvacuation extends AbstractTestEvacuation {
   }
 
   public void testEvacuation() throws Exception {
-      String clusterName="org.codehaus.wadi.TEST-"+Math.random();
+      String clusterName=JGroupsCluster.TEST_CLUSTER_NAME;
+      String clusterConfig=JGroupsCluster.TEST_CLUSTER_CONFIG;
 	  long timeout=5000;
-	  testEvacuation(new JGroupsDispatcher("red", clusterName, timeout, "default.xml"), new JGroupsDispatcher("green", clusterName, timeout, "default-minimalthreads.xml"));
+	  testEvacuation(new JGroupsDispatcher("red", clusterName, timeout, clusterConfig), new JGroupsDispatcher("green", clusterName, timeout, clusterConfig));
   }
   
 }

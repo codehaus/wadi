@@ -11,9 +11,9 @@ public class TestJGRelocation extends AbstractTestRelocation {
 	}
 	
 	public void testSessionRelocation() throws Exception {
-        String clusterName="org.codehaus.wadi.TEST-"+Math.random();
+        String clusterName=JGroupsCluster.TEST_CLUSTER_NAME;
         long timeout=5000;
-		testSessionRelocation(new JGroupsDispatcher("red", clusterName, timeout, "default.xml"), new JGroupsDispatcher("green", clusterName, timeout, "default-minimalthreads.xml"));
+		testSessionRelocation(new JGroupsDispatcher("red", clusterName, timeout, JGroupsCluster.TEST_CLUSTER_CONFIG), new JGroupsDispatcher("green", clusterName, timeout, JGroupsCluster.TEST_CLUSTER_CONFIG));
 	}
 	
 }

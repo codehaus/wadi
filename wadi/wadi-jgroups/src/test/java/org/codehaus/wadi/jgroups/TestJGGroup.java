@@ -27,7 +27,7 @@ public class TestJGGroup extends AbstractTestGroup {
 
     public DispatcherFactory getDispatcherFactory() {
         return new DispatcherFactory() {
-            public Dispatcher create(String clusterName, String peerName, long inactiveTime) throws Exception {return new JGroupsDispatcher(peerName, clusterName, inactiveTime, "default-minimalthreads.xml");}
+            public Dispatcher create(String clusterName, String peerName, long inactiveTime) throws Exception {return new JGroupsDispatcher(peerName, clusterName, inactiveTime, JGroupsCluster.TEST_CLUSTER_CONFIG);}
         };
     }
 
