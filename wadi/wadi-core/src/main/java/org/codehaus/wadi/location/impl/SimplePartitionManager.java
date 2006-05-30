@@ -190,13 +190,15 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
         }
 	}
 
-	// receive a command to transfer IndexPartitions to another node
+	// receive a command to transfer IndexPartitions to other Peers
 	// send them in a request, waiting for response
 	// send an acknowledgement to Coordinator who sent original command
 	public void onPartitionTransferCommand(Message om, PartitionTransferCommand command) {
+        if (_log.isTraceEnabled()) _log.trace("received: "+command);
 		PartitionTransfer[] transfers=command.getTransfers();
 		for (int i=0; i<transfers.length; i++) {
 			PartitionTransfer transfer=transfers[i];
+            if (_log.isTraceEnabled()) _log.trace("starting Partition transfer: "+transfer);
 			int amount=transfer.getAmount();
 			Address target=transfer.getAddress();
 
