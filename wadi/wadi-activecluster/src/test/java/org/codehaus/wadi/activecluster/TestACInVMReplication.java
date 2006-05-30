@@ -31,7 +31,7 @@ public class TestACInVMReplication extends AbstractTestReplication {
     String nodeName="test."+Math.random();
     long timeout=5000;
 
-    testReplication(new ActiveClusterDispatcher(clusterName, nodeName, "vm://localhost", timeout));
+    testReplication(new ActiveClusterDispatcher(clusterName, nodeName, ActiveClusterCluster.TEST_VM_CLUSTER_URI, timeout));
   }
 
 }

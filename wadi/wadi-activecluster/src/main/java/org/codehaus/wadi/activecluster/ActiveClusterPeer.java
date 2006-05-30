@@ -89,8 +89,6 @@ public class ActiveClusterPeer implements Peer, Address, Comparable {
        synchronized (_state) {return _state.remove(key);}
    }
 
-   // 'org.codehaus.wadi.jgroups.JGroupsPeer' API
-
    public void setState(Map state) throws MessageExchangeException {
        synchronized (_state) {
            if (_state!=state) {

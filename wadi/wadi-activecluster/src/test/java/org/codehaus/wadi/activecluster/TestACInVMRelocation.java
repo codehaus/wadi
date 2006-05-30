@@ -32,7 +32,7 @@ public class TestACInVMRelocation extends AbstractTestRelocation {
         String clusterName="org.codehaus.wadi.TEST-"+Math.random();
         long timeout=5000;
 		String clusterUri;
-		clusterUri="vm://localhost";
+		clusterUri=ActiveClusterCluster.TEST_VM_CLUSTER_URI;
 		testSessionRelocation(new ActiveClusterDispatcher(clusterName, "red", clusterUri, timeout), new ActiveClusterDispatcher(clusterName, "green", clusterUri, timeout));
 	}
 	

@@ -26,7 +26,7 @@ public class TestACPeerGroup extends AbstractTestGroup {
     }
 
     public DispatcherFactory getDispatcherFactory() {
-        return new DispatcherFactory() {public Dispatcher create(String clusterName, String peerName, long inactiveTime) throws Exception {return new ActiveClusterDispatcher(clusterName, peerName, "peer://org.codehaus.wadi."+Math.random() , inactiveTime);}};
+        return new DispatcherFactory() {public Dispatcher create(String clusterName, String peerName, long inactiveTime) throws Exception {return new ActiveClusterDispatcher(clusterName, peerName, ActiveClusterCluster.TEST_PEER_CLUSTER_URI , inactiveTime);}};
     }
 
 }

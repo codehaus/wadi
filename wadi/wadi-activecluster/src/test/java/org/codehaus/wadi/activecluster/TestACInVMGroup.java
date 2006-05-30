@@ -26,7 +26,7 @@ public class TestACInVMGroup extends AbstractTestGroup {
     }
 
     public DispatcherFactory getDispatcherFactory() {
-        return new DispatcherFactory() {public Dispatcher create(String clusterName, String peerName, long inactiveTime) throws Exception {return new ActiveClusterDispatcher(clusterName, peerName, "vm://localhost" , inactiveTime);}};
+        return new DispatcherFactory() {public Dispatcher create(String clusterName, String peerName, long inactiveTime) throws Exception {return new ActiveClusterDispatcher(clusterName, peerName, ActiveClusterCluster.TEST_VM_CLUSTER_URI, inactiveTime);}};
     }
 
 }
