@@ -27,10 +27,9 @@ public class TestACInVMEvacuation extends AbstractTestEvacuation {
 	}
 	
 	public void testEvacuation() throws Exception {
-        String clusterName="org.codehaus.wadi.TEST-"+Math.random();
-		long timeout=5000;
-		String clusterUri;
-		clusterUri=ActiveClusterCluster.TEST_VM_CLUSTER_URI;
+        String clusterName=ActiveClusterCluster.TEST_CLUSTER_NAME;
+        String clusterUri=ActiveClusterCluster.TEST_VM_CLUSTER_URI;
+		long timeout=ActiveClusterCluster.TEST_CLUSTER_INACTIVE_TIME;
 		testEvacuation(new ActiveClusterDispatcher(clusterName, "red", clusterUri, timeout), new ActiveClusterDispatcher(clusterName, "green", clusterUri, timeout));
 	}
 	

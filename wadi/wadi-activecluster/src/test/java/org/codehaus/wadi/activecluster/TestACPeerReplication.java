@@ -22,15 +22,16 @@ import org.codehaus.wadi.replication.AbstractTestReplication;
 
 public class TestACPeerReplication extends AbstractTestReplication {
 
-  public TestACPeerReplication(String arg0) {
-    super(arg0);
-  }
+    public TestACPeerReplication(String name) {
+        super(name);
+    }
 
-  public void testReplication() throws Exception {
-    String clusterName="org.codehaus.wadi.TEST-"+Math.random();
-    String nodeName="test."+Math.random();
-    long timeout=5000;
-    testReplication(new ActiveClusterDispatcher(clusterName, nodeName, ActiveClusterCluster.TEST_PEER_CLUSTER_URI, timeout)); // TODO - stop() seems to run asynchronously - resolve
-  }
+    public void testReplication() throws Exception {
+        String clusterUri=ActiveClusterCluster.TEST_PEER_CLUSTER_URI;
+        String clusterName=ActiveClusterCluster.TEST_CLUSTER_NAME;
+        long timeout=ActiveClusterCluster.TEST_CLUSTER_INACTIVE_TIME;
+        String nodeName="red";
+        testReplication(new ActiveClusterDispatcher(clusterName, nodeName, clusterUri, timeout));
+    }
 
 }

@@ -27,11 +27,12 @@ public class TestACInVMReplication extends AbstractTestReplication {
   }
 
   public void testReplication() throws Exception {
-    String clusterName="org.codehaus.wadi.TEST-"+Math.random();
-    String nodeName="test."+Math.random();
-    long timeout=5000;
+    String clusterName=ActiveClusterCluster.TEST_CLUSTER_NAME;
+    String clusterUri=ActiveClusterCluster.TEST_VM_CLUSTER_URI;
+    long timeout=ActiveClusterCluster.TEST_CLUSTER_INACTIVE_TIME;
+    String peerName="red";
 
-    testReplication(new ActiveClusterDispatcher(clusterName, nodeName, ActiveClusterCluster.TEST_VM_CLUSTER_URI, timeout));
+    testReplication(new ActiveClusterDispatcher(clusterName, peerName, clusterUri, timeout));
   }
 
 }

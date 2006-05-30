@@ -44,7 +44,9 @@ class ActiveClusterCluster extends AbstractCluster {
     protected static final String _prefix="<"+Utils.basename(ActiveClusterCluster.class)+": ";
     protected static final String _suffix=">";
     
-    public static final String TEST_PEER_CLUSTER_URI="peer://"+ActiveClusterCluster.class.getPackage().getName()+"."+Math.random()+"?persistent=false&useJmx=false";
+    public static final String TEST_CLUSTER_NAME=ActiveClusterCluster.class.getPackage().getName()+".TEST";
+    public static final long TEST_CLUSTER_INACTIVE_TIME=5000;
+    public static final String TEST_PEER_CLUSTER_URI="peer://"+ActiveClusterCluster.class.getPackage().getName()+".TEST-"+Math.random()+"?persistent=false&useJmx=false";
     public static final String TEST_VM_CLUSTER_URI="vm://localhost?broker.persistent=false&broker.useJmx=false";
 
     protected ActiveMQConnectionFactory _connectionFactory;
