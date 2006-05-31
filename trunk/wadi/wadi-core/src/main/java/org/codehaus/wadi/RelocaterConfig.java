@@ -29,12 +29,9 @@ public interface RelocaterConfig extends Config {
 
     Collapser getCollapser();
     Dispatcher getDispatcher();
-    Location getLocation();
     Contextualiser getContextualiser();
     String getNodeName();
     SynchronizedBoolean getShuttingDown();
-    InvocationProxy getInvocationProxy();
-    EndPoint getProxiedLocation();
 
     DIndex getDIndex();
     void notifySessionRelocation(String name);

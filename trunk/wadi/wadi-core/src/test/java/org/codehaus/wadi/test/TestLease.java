@@ -70,7 +70,7 @@ public class TestLease extends TestCase {
     
     public void testLease() throws Exception {
         CountedSync sync=new CountedSync();
-        Lease lease=new SimpleLease(sync);
+        Lease lease=new SimpleLease("TEST", sync);
 
         // acquire a Sync
         {

@@ -22,7 +22,6 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
-import org.codehaus.wadi.Location;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Dispatcher;
@@ -332,9 +331,9 @@ public class SimpleStateManager implements StateManager, StateManagerMessageList
 		}
 	}
 
-	public void acceptImmigrant(Message message, Location location, String name, Motable motable) {
+	public void acceptImmigrant(Message message, String name, Motable motable) {
         try {
-            _dispatcher.reply(message, new ReleaseEntryResponse(name, location));
+            _dispatcher.reply(message, new ReleaseEntryResponse(name));
         } catch (MessageExchangeException e) {
             _log.error("could not acknowledge safe receipt: "+name);
         }
