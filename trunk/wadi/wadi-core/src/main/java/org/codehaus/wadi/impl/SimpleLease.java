@@ -146,12 +146,15 @@ public class SimpleLease implements Lease {
     }
 
     public boolean release(Handle handle) {
-        if (_log.isTraceEnabled()) _log.trace("explicit release: "+handle+"/"+this);
+        if (handle==null) throw new IllegalArgumentException("bad Handle: "+handle);
         boolean extant;
         synchronized (_handles) {extant=_handles.remove(handle);}
         if (extant) {
             ClockDaemon.cancel(((SimpleHandle)handle).getTaskId());
             _sync.release();
+            if (_log.isTraceEnabled()) _log.trace("explicit release: "+handle+"/"+this);
+        } else {
+            if (_log.isTraceEnabled()) _log.trace("explicit release missed: "+handle+"/"+this);
         }
         return extant;
     }

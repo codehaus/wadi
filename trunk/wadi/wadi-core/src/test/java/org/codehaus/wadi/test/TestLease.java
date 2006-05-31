@@ -49,8 +49,12 @@ public class TestLease extends TestCase {
         }
 
         public boolean attempt(long msecs) throws InterruptedException {
-            _count++;
-            return _sync.attempt(msecs);
+            if (_sync.attempt(msecs)) {
+                _count++;
+                return true;
+            } else {
+                return false;
+            }
         }
 
         public void release() {
@@ -113,24 +117,41 @@ public class TestLease extends TestCase {
             assertTrue(sync.getCount()==0);
             long started=System.currentTimeMillis();
             Handle handle=lease.acquire(10000); // acquire a 10 second lease
-            lease.release(handle);
+            assertTrue(lease.release(handle));
             lease.acquire(); // in order for us to acquire it, it must have been released somehow...
             long elapsed=System.currentTimeMillis()-started;
             assertTrue(elapsed<5000);
             lease.release();
             assertTrue(sync.getCount()==0);
         }
-        // attempt a Lease - explicit release
+        // acquire a Lease - implicit and missed explicit release
         {
             assertTrue(sync.getCount()==0);
-            long started=System.currentTimeMillis();
-            Handle handle=lease.attempt(0, 10000); // attempt a 10 second lease
-            lease.release(handle);
+            Handle handle=lease.acquire(1); // acquire a 1 millisecond lease
             lease.acquire(); // in order for us to acquire it, it must have been released somehow...
-            long elapsed=System.currentTimeMillis()-started;
-            assertTrue(elapsed<5000);
             lease.release();
             assertTrue(sync.getCount()==0);
+            assertTrue(!lease.release(handle));
+            assertTrue(sync.getCount()==0);
+        }
+        // fail to acquire a Lease...
+        {
+            assertTrue(sync.getCount()==0);
+            lease.acquire();
+            assertTrue(sync.getCount()==1);
+            assertTrue(lease.attempt(0, 1)==null); // wanted a 1 millisecond lease
+            assertTrue(sync.getCount()==1);
+            lease.release();
+            assertTrue(sync.getCount()==0);
+        }
+        // bad handle...
+        {
+            try {
+                lease.release(null);
+                assertTrue(false); // should not get to here...
+            } catch (IllegalArgumentException e) {
+                // ignore
+            }
         }
     }
     
