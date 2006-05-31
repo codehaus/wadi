@@ -443,7 +443,7 @@
     >
     <constructor-arg><value>CLUSTER0</value></constructor-arg>
     <constructor-arg><value>${node.name}</value></constructor-arg>
-    <constructor-arg><value>peer://org.codehaus.wadi?persistent=false</value></constructor-arg>
+    <constructor-arg><value>peer://org.codehaus.wadi?persistent=false&amp;useJmx=false</value></constructor-arg>
     <constructor-arg type="long"><value>5000</value></constructor-arg>
   </bean>
 -->
