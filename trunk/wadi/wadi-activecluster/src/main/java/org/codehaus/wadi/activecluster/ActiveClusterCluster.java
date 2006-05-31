@@ -125,6 +125,12 @@ class ActiveClusterCluster extends AbstractCluster {
             _cluster.set(ActiveClusterCluster.this);
             Node node=event.getNode();
             Peer peer=(Peer)_addressToPeer.remove(_backendToPeer.get(node.getDestination()));
+            
+            if (peer==null) {
+                if (_log.isWarnEnabled()) _log.warn("ActiveCluster issue - we have been notified of the loss of an unknown Peer - ignoring");
+                return;
+            }
+                
             Map state=node.getState();
             try {
                 ((ActiveClusterRemotePeer)peer).setState(state);
