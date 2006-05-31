@@ -39,14 +39,14 @@ public class SimpleLease implements Lease {
     
     static {
         _daemon=new ClockDaemon();
-//        ThreadFactory factory=new ThreadFactory() {
-//            public Thread newThread(Runnable command) {
-//                Thread thread=new Thread("WADI Lease Management");
-//                thread.setDaemon(true);
-//                return thread;
-//            }
-//        };
-//        _daemon.setThreadFactory(factory);
+        ThreadFactory factory=new ThreadFactory() {
+            public Thread newThread(Runnable command) {
+                Thread thread=new Thread(command, "WADI Lease Management");
+                thread.setDaemon(true);
+                return thread;
+            }
+        };
+        _daemon.setThreadFactory(factory);
     }
 
     public static class SimpleHandle implements Handle {
