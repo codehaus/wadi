@@ -21,6 +21,7 @@ import javax.servlet.FilterChain;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.codehaus.wadi.EndPoint;
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.PoolableHttpServletRequestWrapper;
@@ -44,9 +45,13 @@ public class WebInvocation implements Invocation {
 	private FilterChain chain;
 	private boolean proxiedInvocation=true;
     
-    public WebInvocation() {
-    }
-    
+    /**
+     * Initialise this WebInvocation for action after being taken from a Pool
+     * 
+     * @param hreq
+     * @param hres
+     * @param chain
+     */
     public void init(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain) {
         this.hreq=hreq;
         this.hres=hres;
@@ -54,7 +59,7 @@ public class WebInvocation implements Invocation {
         this.proxiedInvocation=(null==hreq);
     }
     
-    // Invocation
+    // 'org.wadi.codehaus.Invocation' API
     
     public void clear() {
         hreq=null;
@@ -79,20 +84,13 @@ public class WebInvocation implements Invocation {
         return true;
     }
     
+    public void relocate(EndPoint endPoint) {
+        //WebEndPoint wep=(WebEndPoint)endPoint;
+        throw new UnsupportedOperationException("Not hooked up yet");
+    }
+    
     // old
     
-	public FilterChain getChain() {
-		return chain;
-	}
-	
-	public HttpServletRequest getHreq() {
-		return hreq;
-	}
-	
-	public HttpServletResponse getHres() {
-		return hres;
-	}
-	
 	public boolean isProxiedInvocation() {
 		return proxiedInvocation;
 	}
@@ -113,4 +111,19 @@ public class WebInvocation implements Invocation {
 			throw new InvocationException(e);
 		}
 	}
+
+    // 'org.codehaus.wadi.web.WebInvocation' API
+    
+    public FilterChain getChain() {
+        return chain;
+    }
+    
+    public HttpServletRequest getHreq() {
+        return hreq;
+    }
+    
+    public HttpServletResponse getHres() {
+        return hres;
+    }
+    
 }

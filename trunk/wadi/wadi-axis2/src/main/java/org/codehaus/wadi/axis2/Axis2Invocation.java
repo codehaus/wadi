@@ -18,6 +18,7 @@ package org.codehaus.wadi.axis2;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.EndPoint;
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.Manager;
@@ -105,6 +106,10 @@ public class Axis2Invocation implements Invocation, Runnable {
     
     public boolean getRelocatable() {
         return false;
+    }
+    
+    public void relocate(EndPoint endPoint) {
+        throw new UnsupportedOperationException("Axis2 Invocations do not yet support their own relocation");
     }
     
     // we'll just reuse the way that this is done for webcontainers - but, rather than actually wrap our non-existant

@@ -22,12 +22,36 @@ package org.codehaus.wadi;
  */
 public interface Invocation {
 
-    // new
-    
+    /**
+     * prepare this Invocation for recycling via a Pool
+     */
     void clear();
+    
+    /**
+     * @return the key associating a Session with this Invocation
+     */
     String getKey();
+    
+    /**
+     * Send an error back to the client from which the Invocation originated
+     * 
+     * @param code an error code
+     * @param message an error message
+     * @throws InvocationException
+     */
     void sendError(int code, String message) throws InvocationException; // a little web specific ?
+    
+    /**
+     * @return whether or not this Invocation knows how to relocate itself to a given EndPoint
+     */
     boolean getRelocatable();
+    
+    /**
+     * Ask this Invocation to relocate itself to a given EndPoint
+     * 
+     * @param endPoint the EndPoint
+     */
+    public void relocate(EndPoint endPoint);
     
     // old
     

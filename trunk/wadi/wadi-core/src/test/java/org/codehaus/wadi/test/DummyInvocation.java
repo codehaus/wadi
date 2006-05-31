@@ -18,6 +18,7 @@ package org.codehaus.wadi.test;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.EndPoint;
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.PoolableInvocationWrapper;
@@ -48,6 +49,10 @@ public class DummyInvocation implements Invocation {
 
     public boolean getRelocatable() {
         return false;
+    }
+    
+    public void relocate(EndPoint endPoint) {
+        throw new UnsupportedOperationException("DummyInvocations do not support relocation");
     }
 
     public void invoke(PoolableInvocationWrapper wrapper) throws InvocationException {
