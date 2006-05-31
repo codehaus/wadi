@@ -70,11 +70,10 @@ public class HybridRelocater extends AbstractRelocater {
 	  String sessionName=name;
 	  String nodeName=_config.getNodeName();
 	  boolean shuttingDown=_shuttingDown.get();
-	  int concurrentRequestThreads=1;
 	  
 	  Motable immotable=null;
 	  try {
-	    immotable=_config.getDIndex().relocate(sessionName, nodeName, concurrentRequestThreads, shuttingDown, _resTimeout, immoter);
+	    immotable=_config.getDIndex().relocate(invocation, sessionName, nodeName, shuttingDown, _resTimeout, immoter);
 	  } catch (Exception e) {
 	    _log.error("unexpected error", e);
 	  }

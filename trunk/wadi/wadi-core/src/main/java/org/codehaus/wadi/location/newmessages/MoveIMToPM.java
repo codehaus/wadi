@@ -23,35 +23,35 @@ import org.codehaus.wadi.location.impl.AbstractDIndexRequest;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
+ * @version $Revision:1815 $
  */
 public class MoveIMToPM extends AbstractDIndexRequest implements OldMessage, Serializable {
 
-    private String _nodeName;
-    private int _numConcurrentInvocations;
-    private boolean _shuttingDown;
+    protected String _peerName;
+    protected boolean _shuttingDown;
+    protected boolean _invocationIsRelocatable;
 
-    public MoveIMToPM(String sessionName, String nodeName, int numConcurrentInvocations, boolean shuttingDown) {
+    public MoveIMToPM(String sessionName, String peerName, boolean shuttingDown, boolean invocationIsRelocatable) {
         super(sessionName);
-        _nodeName=nodeName;
-        _numConcurrentInvocations=numConcurrentInvocations;
+        _peerName=peerName;
         _shuttingDown=shuttingDown;
+        _invocationIsRelocatable=invocationIsRelocatable;
     }
 
     public String getNodeName() {
-    	return _nodeName;
-    }
-
-    public int getNumConcurrentInvocations() {
-    	return _numConcurrentInvocations;
+    	return _peerName;
     }
 
     public boolean getShuttingDown() {
         return _shuttingDown;
     }
 
+    public boolean getInvocationIsRelocatable() {
+        return _invocationIsRelocatable;
+    }
+    
     public String toString() {
-        return "<MoveIMToPM:"+_key+"->"+_nodeName+">";
+        return "<MoveIMToPM:"+_key+"->"+_peerName+">";
     }
 
 }

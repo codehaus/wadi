@@ -435,8 +435,8 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 		}
 	}
 
-	public Motable relocate(String sessionName, String nodeName, int concurrentRequestThreads, boolean shuttingDown, long timeout, Immoter immoter) throws Exception {
-		MoveIMToPM request=new MoveIMToPM(sessionName, nodeName, concurrentRequestThreads, shuttingDown);
+	public Motable relocate(Invocation invocation, String sessionName, String peerName, boolean shuttingDown, long timeout, Immoter immoter) throws Exception {
+		MoveIMToPM request=new MoveIMToPM(sessionName, peerName, shuttingDown, invocation.getRelocatable());
 		Message message=getPartition(sessionName).exchange(request, timeout);
 
 		if (message==null) {
