@@ -31,10 +31,7 @@ import org.codehaus.wadi.Evictable;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
-import org.codehaus.wadi.InvocationProxy;
-import org.codehaus.wadi.Location;
 import org.codehaus.wadi.Motable;
-import org.codehaus.wadi.EndPoint;
 import org.codehaus.wadi.Relocater;
 import org.codehaus.wadi.RelocaterConfig;
 import org.codehaus.wadi.group.Cluster;
@@ -83,8 +80,6 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 	protected String _nodeName;
 	protected Dispatcher _dispatcher;
 	protected Cluster _cluster;
-	protected HttpProxyLocation _location;
-	protected EndPoint _endPoint;
 	protected DIndex _dindex;
 	protected Contextualiser _top;
 
@@ -95,8 +90,6 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 		_nodeName=ccc.getNodeName();
 		_dispatcher=ccc.getDispatcher();
 		_cluster=_dispatcher.getCluster();
-		_endPoint = ccc.getEndPoint();
-		_location=new HttpProxyLocation(_cluster.getLocalPeer().getAddress(), _endPoint, ccc.getInvocationProxy());
 		_dindex=ccc.getDIndex();
 		_cluster.addClusterListener(this);
 		_dindex.getStateManager().setImmigrationListener(this);
@@ -196,7 +189,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 
 		public boolean prepare(String name, Motable emotable, Motable immotable) {
 			if (super.prepare(name, emotable, immotable)) {
-				_dindex.getStateManager().acceptImmigrant(_message, _location, name, emotable);
+				_dindex.getStateManager().acceptImmigrant(_message, name, emotable);
 				return true;
 			} else {
 				return false;
@@ -312,14 +305,9 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 
 	public Collapser getCollapser() {return _collapser;}
 	public Dispatcher getDispatcher() {return _dispatcher;}
-	public Location getLocation() {return _location;}
-	public EndPoint getProxiedLocation() {
-		return _endPoint;
-	}
 	public Contextualiser getContextualiser() {return _top;}
 	public String getNodeName() {return _nodeName;}
 	public SynchronizedBoolean getShuttingDown() {return _shuttingDown;}
-	public InvocationProxy getInvocationProxy() {return ((ClusteredContextualiserConfig)_config).getInvocationProxy();}
 
 	public DIndex getDIndex() {
 		return _dindex;

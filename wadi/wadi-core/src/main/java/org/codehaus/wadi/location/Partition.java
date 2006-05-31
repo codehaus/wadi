@@ -28,12 +28,36 @@ import org.codehaus.wadi.location.newmessages.MoveIMToPM;
  * @version $Revision$
  */
 public interface Partition extends PMPartition, SMPartition {
+    
+	/**
+     * A Peer has created a Session...
+     * 
+	 * @param message
+	 * @param request
+	 */
 	void onMessage(Message message, InsertIMToPM request);
 
+    /**
+     * A Peer has destroyed a Session...
+     * @param message
+     * @param request
+     */
     void onMessage(Message message, DeleteIMToPM request);
 	
+    /**
+     * A Peer wishes to evacuate a Session...
+     * 
+     * @param message
+     * @param request
+     */
     void onMessage(Message message, EvacuateIMToPM request);
 	
+    /**
+     * A Peer has an Invocation for an unknown Session...
+     * 
+     * @param message
+     * @param request
+     */
     void onMessage(Message message, MoveIMToPM request);
 
 	Message exchange(DIndexRequest request, long timeout) throws Exception;

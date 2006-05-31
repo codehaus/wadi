@@ -34,7 +34,7 @@ import EDU.oswego.cs.dl.util.concurrent.ThreadFactory;
  */
 public class SimpleLease implements Lease {
     
-    protected static final Log _log = LogFactory.getLog(SimpleLease.class);
+    protected static final Log _lockLog = LogFactory.getLog("org.codehaus.wadi.LOCKS");
     protected static final ClockDaemon _daemon;
     
     static {
@@ -60,7 +60,7 @@ public class SimpleLease implements Lease {
         // 'Object' API
         
         public String toString() {
-            return "<"+Utils.basename(getClass())+":"+_taskId+">";
+            return "<"+Utils.basename(getClass())+">";
         }
         
         // 'Comparable' API
@@ -87,7 +87,7 @@ public class SimpleLease implements Lease {
         }
 
         public void run() {
-            if (_log.isTraceEnabled()) _log.trace("implicit release: "+_handle+"/"+SimpleLease.this);
+            if (_lockLog.isTraceEnabled()) _lockLog.trace(_label+" - implicit release: "+SimpleLease.this+"."+_handle);
             // only release iff handle is still extant - and within sync block
             synchronized (_handles) {
                 if (_handles.remove(_handle))
@@ -96,25 +96,39 @@ public class SimpleLease implements Lease {
         }
     }
     
+    protected final String _label;
     protected final Sync _sync;
     protected final Set _handles=new TreeSet();
 
     // 'Sync' API
     
-    public SimpleLease(Sync sync) {
+    public SimpleLease(String label, Sync sync) {
+        _label=label;
         _sync=sync;
     }
     
+    // 'java.lang.Object' API
+    
+    public String toString() {
+        return "<"+Utils.basename(getClass())+":"+_label+">";
+    }
+    
+    // 'Sync' API
+    
     public void acquire() throws InterruptedException {
         _sync.acquire();
+        if (_lockLog.isTraceEnabled()) _lockLog.trace(_label+" - acquisition: "+this);
     }
 
     public boolean attempt(long msecs) throws InterruptedException {
-        return _sync.attempt(msecs);
+        boolean success=_sync.attempt(msecs);
+        if (_lockLog.isTraceEnabled()) _lockLog.trace(_label+" - acquisition: "+this);
+        return success;
     }
 
     public void release() {
         _sync.release();
+        if (_lockLog.isTraceEnabled()) _lockLog.trace(_label+" - explicit release: "+this);
     }
 
     // 'Lease' API
@@ -128,7 +142,7 @@ public class SimpleLease implements Lease {
             _handles.add(handle);
             releaser.init(handle);
         }
-        if (_log.isTraceEnabled()) _log.trace("acquisition: "+handle+"/"+this);
+        if (_lockLog.isTraceEnabled()) _lockLog.trace(_label+" - acquisition: "+this+"."+handle);
         return handle;
     }
 
@@ -136,7 +150,7 @@ public class SimpleLease implements Lease {
         if (_sync.attempt(timeframe)) {
             Releaser releaser=new Releaser();
             Handle handle=new SimpleHandle(_daemon.executeAfterDelay(leasePeriod, releaser));
-            if (_log.isTraceEnabled()) _log.trace("acquisition: "+handle+"/"+this);
+            if (_lockLog.isTraceEnabled()) _lockLog.trace(_label+" - acquisition: "+this+"."+handle);
             synchronized (_handles) {_handles.add(handle);}
             releaser.init(handle);
             return handle;
@@ -152,9 +166,9 @@ public class SimpleLease implements Lease {
         if (extant) {
             ClockDaemon.cancel(((SimpleHandle)handle).getTaskId());
             _sync.release();
-            if (_log.isTraceEnabled()) _log.trace("explicit release: "+handle+"/"+this);
+            if (_lockLog.isTraceEnabled()) _lockLog.trace(_label+" - explicit release: "+this+"."+handle);
         } else {
-            if (_log.isTraceEnabled()) _log.trace("explicit release missed: "+handle+"/"+this);
+            if (_lockLog.isTraceEnabled()) _lockLog.trace(_label+" - explicit release missed: "+this+"."+handle);
         }
         return extant;
     }

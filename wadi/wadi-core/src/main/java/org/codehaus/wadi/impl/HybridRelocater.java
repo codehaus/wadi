@@ -22,7 +22,6 @@ import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
-import org.codehaus.wadi.InvocationProxy;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.RelocaterConfig;
 import org.codehaus.wadi.group.Dispatcher;
@@ -55,7 +54,6 @@ public class HybridRelocater extends AbstractRelocater {
 	protected Dispatcher _dispatcher;
 	protected String _nodeName;
 	protected Contextualiser _contextualiser;
-	protected InvocationProxy _proxy;
 
 	public void init(RelocaterConfig config) {
 		super.init(config);
@@ -63,7 +61,6 @@ public class HybridRelocater extends AbstractRelocater {
 		_dispatcher=_config.getDispatcher();
 		_nodeName=_config.getNodeName();
 		_contextualiser=_config.getContextualiser();
-		_proxy=_config.getInvocationProxy();
 	}
 
 	public boolean relocate(Invocation invocation, String name, Immoter immoter, Sync motionLock) throws InvocationException {

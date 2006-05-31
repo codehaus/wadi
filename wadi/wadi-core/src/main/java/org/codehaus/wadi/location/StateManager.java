@@ -17,7 +17,6 @@
 package org.codehaus.wadi.location;
 
 
-import org.codehaus.wadi.Location;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.group.Message;
 
@@ -34,7 +33,7 @@ public interface StateManager {
 	interface ImmigrationListener { void onImmigration(Message message, Motable immigrant); }
 
 	boolean offerEmigrant(String key, Motable emotable, long timeout);
-	void acceptImmigrant(Message message, Location location, String name, Motable immotable);
+	void acceptImmigrant(Message message, String name, Motable immotable);
 
 	void setImmigrationListener(ImmigrationListener listener);
 	void unsetImmigrationListener(ImmigrationListener listener);

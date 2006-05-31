@@ -18,7 +18,6 @@ package org.codehaus.wadi.location.newmessages;
 
 import java.io.Serializable;
 
-import org.codehaus.wadi.Location;
 import org.codehaus.wadi.OldMessage;
 
 /**
@@ -26,24 +25,18 @@ import org.codehaus.wadi.OldMessage;
  * should be a LocationResponse object sent whence this request arrived.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
+ * @version $Revision:1815 $
  */
 public class ReleaseEntryResponse implements OldMessage, Serializable {
 
 	protected String _name;
-	protected Location _location;
 
-	public ReleaseEntryResponse(String name, Location location) {
+	public ReleaseEntryResponse(String name) {
 		_name=name;
-		_location=location;
 	}
 
 	public String getId() {
 		return _name;
-	}
-
-	public Location getLocation() {
-		return _location;
 	}
 
 	public String toString() {
