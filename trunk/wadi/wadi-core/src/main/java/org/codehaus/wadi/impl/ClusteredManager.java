@@ -88,7 +88,7 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
 			_dispatcher.init(this);
 			String peerName=_dispatcher.getCluster().getLocalPeer().getName();
 			_distributedState.put(Peer._peerNameKey, peerName);
-			_distributedState.put("endpoint", _endPoint);
+			_distributedState.put("endPoint", _endPoint); // TODO - needs to be a public final String somewhere
 			PartitionMapper mapper=new SimplePartitionMapper(_numPartitions); // integrate with Session ID generator
 			_dindex=new DIndex(_numPartitions, _dispatcher, _distributedState, mapper);
 			_dindex.init(this);
