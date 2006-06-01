@@ -95,6 +95,11 @@ public class JGroupsCluster extends AbstractCluster implements MembershipListene
         return _localPeer;
     }
 
+    
+    public Peer getPeerFromAddress(Address address) {
+        return (JGroupsPeer)address;
+    }
+
     public void start() throws ClusterException {
         try {
             //_channel.setOpt(Channel.LOCAL, Boolean.FALSE); // exclude ourselves from our own broadcasts... - BUT also from Unicasts :-(
@@ -275,7 +280,7 @@ public class JGroupsCluster extends AbstractCluster implements MembershipListene
             org.jgroups.Address src=msg.getSrc();
             org.jgroups.Address dest=msg.getDest();
             if (_excludeSelf && (dest==null || dest.isMulticastAddress()) && src==_localJGAddress) {
-                if (_log.isDebugEnabled()) _log.debug(_localPeerName+" - "+"ignoring message from self: "+msg);
+                if (_log.isTraceEnabled()) _log.trace(_localPeerName+" - "+"ignoring message from self: "+msg);
             } else {
                 _cluster.set(this); // setup a ThreadLocal to be read during deserialisation...
                 Object o=msg.getObject();
