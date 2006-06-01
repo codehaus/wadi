@@ -62,12 +62,6 @@
       <name>Mortbay Repository</name>
       <url>http://www.mortbay.org/maven2/snapshot</url>
     </pluginRepository>
-    <!-- JSPC Plugin -->
-    <pluginRepository>
-      <id>wadi-stuff</id>
-      <name>WADI specific repo</name>
-      <url>http://codehaus.org/~jules/maven2</url>
-    </pluginRepository>
   </pluginRepositories>
 
   <build>
