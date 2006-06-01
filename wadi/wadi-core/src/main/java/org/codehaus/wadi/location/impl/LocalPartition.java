@@ -79,21 +79,21 @@ public class LocalPartition extends AbstractPartition implements Serializable {
     public void put(String name, Address address) {
         synchronized (_map) {
             // TODO - check key was not already in use...
-            _map.put(name, new Locus(name, address));
+            _map.put(name, new Location(name, address));
         }
     }
 
-    // a Locus provides two things :
+    // a Location provides two things :
     // - a sync point for the session destination which is not the destination itself
     // - a container for the session destination, reducing access to id:destination table
-    static class Locus implements Serializable {
+    static class Location implements Serializable {
 
         protected String _key; // needed for logging :-(
         protected Address _address;
         protected transient Lease _sharedLease;
         protected transient Sync _exclusiveLock;
 
-        public Locus(String key, Address address) {
+        public Location(String key, Address address) {
             _key=key;
             _address=address;
             WriterPreferenceReadWriteLock rwLock=new WriterPreferenceReadWriteLock();
@@ -138,15 +138,15 @@ public class LocalPartition extends AbstractPartition implements Serializable {
         String key=request.getKey();
 
         // optimised for expected case - id not already in use...
-        Locus newLocus=new Locus(key, newAddress);
+        Location newLocation=new Location(key, newAddress);
         synchronized (_map) {
-            Locus oldLocus=(Locus)_map.put(key, newLocus); // remember location of new session
-            if (oldLocus==null) {
+            Location oldLocation=(Location)_map.put(key, newLocation); // remember location of new session
+            if (oldLocation==null) {
                 // id was not already in use - expected outcome
                 success=true;
             } else {
                 // id was already in use - unexpected outcome - put it back and forget new location
-                _map.put(key, oldLocus);
+                _map.put(key, oldLocation);
             }
         }
 
@@ -167,15 +167,15 @@ public class LocalPartition extends AbstractPartition implements Serializable {
 
     public void onMessage(Message message, DeleteIMToPM request) {
         String key=request.getKey();
-        Locus locus=null;
+        Location location=null;
         boolean success=false;
 
         synchronized (_map) {
-            locus=(Locus)_map.remove(key);
+            location=(Location)_map.remove(key);
         }
 
-        if (locus!=null) {
-            Address oldAddress=locus.getAddress();
+        if (location!=null) {
+            Address oldAddress=location.getAddress();
             if (_log.isDebugEnabled()) _log.debug("delete: "+key+" {"+_config.getPeerName(oldAddress)+"}");
             success=true;
         } else {
@@ -201,12 +201,12 @@ public class LocalPartition extends AbstractPartition implements Serializable {
         Dispatcher dispatcher=_config.getDispatcher();
         try {
 
-            Locus locus=null;
+            Location location=null;
             synchronized (_map) { // although we are not changing the structure of the map - others may be doing so...
-                locus=(Locus)_map.get(key);
+                location=(Location)_map.get(key);
             }
 
-            if (locus==null) {
+            if (location==null) {
                 // session does not exist - tell IM
                 dispatcher.reply(message,new MovePMToIM());
                 return;
@@ -235,21 +235,21 @@ public class LocalPartition extends AbstractPartition implements Serializable {
                 //_log.info("**** RELOCATING: "+(relocateSession?"SESSION":"INVOCATION")+" *****");
 
                 if (relocateSession)
-                    relocateSession(locus, key, im, pm, sourceCorrelationId);
+                    relocateSession(location, key, im, pm, sourceCorrelationId);
                 else
-                    relocateInvocation(locus, key, im, pm, sourceCorrelationId);
+                    relocateInvocation(location, key, im, pm, sourceCorrelationId);
             }
         } catch (Exception e) {
             _log.error("UNEXPECTED PROBLEM RELOCATING STATE: "+key);
         }
     }
 
-    public void relocateSession(Locus locus, String key, Address im, Address pm, String imCorrelationId) throws MessageExchangeException {
+    public void relocateSession(Location location, String key, Address im, Address pm, String imCorrelationId) throws MessageExchangeException {
         // session does exist - we need to ask SM to move it to IM
-        Sync lock=locus.getExclusiveLock();
+        Sync lock=location.getExclusiveLock();
         try {
             lock.acquire(); // ensures that no-one else tries to relocate session whilst we are doing so...
-            Address sm=locus.getAddress(); // wait til we have a lock on Locus before retrieving the SM
+            Address sm=location.getAddress(); // wait til we have a lock on Location before retrieving the SM
             if (sm.equals(im)) {
                 // session does exist - but is already located at the IM
                 // whilst we were waiting for the partition lock, another thread must have migrated the session to the IM...
@@ -281,7 +281,7 @@ public class LocalPartition extends AbstractPartition implements Serializable {
                 MoveSMToPM response=(MoveSMToPM)tmp.getPayload();
                 if (response.getSuccess()) {
                     // alter location
-                    locus.setAddress(im);
+                    location.setAddress(im);
                     if (_log.isDebugEnabled()) _log.debug("move: "+key+" {"+_config.getPeerName(sm)+"->"+_config.getPeerName(im)+"}");
                 } else {
                     if (_log.isWarnEnabled()) _log.warn("move: "+key+" {"+_config.getPeerName(sm)+"->"+_config.getPeerName(im)+"} - failed - no response from "+_config.getPeerName(sm));
@@ -294,12 +294,12 @@ public class LocalPartition extends AbstractPartition implements Serializable {
         }
     }
 
-    public void relocateInvocation(Locus locus, String key, Address im, Address pm, String imCorrelationId) throws MessageExchangeException {
+    public void relocateInvocation(Location location, String key, Address im, Address pm, String imCorrelationId) throws MessageExchangeException {
         long leasePeriod=5000;  // TODO - parameterise
         try {
-            Lease.Handle handle=locus.getSharedLease().acquire(leasePeriod);
+            Lease.Handle handle=location.getSharedLease().acquire(leasePeriod);
             handle=null; // need to work on making these Serializable - TODO
-            Address sm=locus.getAddress(); // wait til we have a lock on Locus before retrieving the SM
+            Address sm=location.getAddress(); // wait til we have a lock on Location before retrieving the SM
             
             if (sm.equals(im)) {
                 // do something similar to above - but remember - we only have a lease...
@@ -321,23 +321,23 @@ public class LocalPartition extends AbstractPartition implements Serializable {
         String key=request.getKey();
         boolean success=false;
 
-        Locus locus=null;
+        Location location=null;
         synchronized (_map) {
-            locus=(Locus)_map.get(key);
+            location=(Location)_map.get(key);
         }
 
         Address oldAddress=null;
-        if (locus==null) {
+        if (location==null) {
             if (_log.isWarnEnabled()) _log.warn("evacuate: "+key+" {"+_config.getPeerName(newAddress)+"} failed - key not in use");
         } else {
-            Sync lock=locus.getExclusiveLock();
+            Sync lock=location.getExclusiveLock();
             try {
                 lock.acquire();
-                oldAddress=locus.getAddress();
+                oldAddress=location.getAddress();
                 if (oldAddress.equals(newAddress)) {
                     if (_log.isWarnEnabled()) _log.warn("evacuate: "+key+" {"+_config.getPeerName(newAddress)+"} failed - evacuee is already there !");
                 } else {
-                    locus.setAddress(newAddress);
+                    location.setAddress(newAddress);
                     if (_log.isDebugEnabled()) _log.debug("evacuate {"+request.getKey()+" : "+_config.getPeerName(oldAddress)+" -> "+_config.getPeerName(newAddress)+"}");
                     success=true;
                 }
