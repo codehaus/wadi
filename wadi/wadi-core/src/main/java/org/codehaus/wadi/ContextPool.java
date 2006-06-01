@@ -24,7 +24,7 @@ package org.codehaus.wadi;
  */
 public interface ContextPool {
 
-	void put(Context context);
-	Context take();
+	void put(Session context);
+	Session take();
 
 }

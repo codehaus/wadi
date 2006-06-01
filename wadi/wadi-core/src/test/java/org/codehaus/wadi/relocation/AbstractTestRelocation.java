@@ -13,7 +13,7 @@ import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.axiondb.jdbc.AxionDataSource;
-import org.codehaus.wadi.Context;
+import org.codehaus.wadi.Session;
 import org.codehaus.wadi.EndPoint;
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
@@ -68,7 +68,7 @@ public class AbstractTestRelocation extends TestCase {
             return true;
         }
 
-        public void setSession(Context session) {
+        public void setSession(Session session) {
             throw new UnsupportedOperationException("NYI");
         }
         

@@ -37,7 +37,7 @@ public interface Invocation {
      * 
      * @param session The Session
      */
-    public void setSession(Context session);
+    public void setSession(Session session);
     
     /**
      * Send an error back to the client from which the Invocation originated

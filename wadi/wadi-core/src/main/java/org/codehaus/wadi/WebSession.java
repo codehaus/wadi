@@ -23,7 +23,7 @@ import java.util.Set;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public interface WebSession extends Context {
+public interface WebSession extends Session {
 
 	String getId();
 

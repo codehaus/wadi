@@ -20,7 +20,7 @@ import java.nio.ByteBuffer;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.Context;
+import org.codehaus.wadi.Session;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
@@ -28,12 +28,12 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * TODO - JavaDoc this type
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
+ * @version $Revision: 1533 $
  */
 
-public abstract class AbstractContext extends AbstractMotable implements Context {
+public abstract class AbstractSession extends AbstractMotable implements Session {
   
-  protected static Log _log = LogFactory.getLog(AbstractContext.class);
+  protected static Log _log = LogFactory.getLog(AbstractSession.class);
   
   protected final RankedRWLock _lock=new RankedRWLock(); // TODO - initially - we will pool the lock with the session - risky :-)
   public Sync getSharedLock(){return _lock.readLock();}

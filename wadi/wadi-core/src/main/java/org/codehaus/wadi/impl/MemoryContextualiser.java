@@ -20,7 +20,7 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.Context;
+import org.codehaus.wadi.Session;
 import org.codehaus.wadi.ContextPool;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Emoter;
@@ -82,7 +82,7 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
 	}
 
 	public boolean contextualiseLocally(Invocation invocation, String id, Sync invocationLock, Motable motable)  throws InvocationException {
-		Sync stateLock=((Context)motable).getSharedLock();
+		Sync stateLock=((Session)motable).getSharedLock();
 		boolean stateLockAcquired=false;
 		try {
 			try {
@@ -104,14 +104,14 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
 
 
 			motable.setLastAccessedTime(System.currentTimeMillis());
-            invocation.setSession((Context)motable);  // we need a solution - MemoryContextualiser needs to separate Contexts and Motables cleanly...
+            invocation.setSession((Session)motable);  // we need a solution - MemoryContextualiser needs to separate Contexts and Motables cleanly...
 			if (false == invocation.isProxiedInvocation()) {
 				// part of the proxying proedure runs a null req...
 				// restick clients whose session is here, but whose routing info points elsewhere...
 				_config.getRouter().reroute(invocation); // TODO - hmm... still thinking
 				// take wrapper from pool...
 				PoolableInvocationWrapper wrapper = _requestPool.take();
-				wrapper.init(invocation, (Context)motable);
+				wrapper.init(invocation, (Session)motable);
 				invocation.invoke(wrapper);
 				wrapper.destroy();
 				_requestPool.put(wrapper);
@@ -133,7 +133,7 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
 		}
 
 		public boolean prepare(String name, Motable emotable, Motable immotable) {
-			Sync stateLock=((Context)emotable).getExclusiveLock();
+			Sync stateLock=((Session)emotable).getExclusiveLock();
 			try {
 				Utils.acquireUninterrupted("State (excl.)", name, stateLock); // released in commit/rollback
 			} catch (TimeoutException e) {
@@ -152,14 +152,14 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
 			// removes emotable from map
 			// destroys emotable
 			super.commit(name, emotable);
-			Sync stateLock=((Context)emotable).getExclusiveLock();
+			Sync stateLock=((Session)emotable).getExclusiveLock();
 			Utils.release("State (excl.)", name, stateLock);
 		}
 
 		public void rollback(String name, Motable emotable) {
 			// noop
 			super.rollback(name, emotable);
-			Sync stateLock=((Context)emotable).getExclusiveLock();
+			Sync stateLock=((Session)emotable).getExclusiveLock();
 			Utils.release("State (excl.)", name, stateLock);
 		}
 
@@ -191,7 +191,7 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
 	public Emoter getEmoter(){return _emoter;}
 	public Immoter getPromoter(Immoter immoter) {return immoter==null?_immoter:immoter;}
 
-	public Sync getEvictionLock(String id, Motable motable){return ((Context)motable).getExclusiveLock();}
+	public Sync getEvictionLock(String id, Motable motable){return ((Session)motable).getExclusiveLock();}
 	public Emoter getEvictionEmoter(){return _evictionEmoter;} // leave lock-taking to evict()...
 
 	public void setLastAccessTime(Evictable evictable, long oldTime, long newTime) {_evicter.setLastAccessedTime(evictable, oldTime, newTime);}
