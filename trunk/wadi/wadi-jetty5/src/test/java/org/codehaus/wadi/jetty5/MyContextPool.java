@@ -16,7 +16,7 @@
  */
 package org.codehaus.wadi.jetty5;
 
-import org.codehaus.wadi.Context;
+import org.codehaus.wadi.Session;
 import org.codehaus.wadi.ContextPool;
 import org.codehaus.wadi.test.MyContext;
 
@@ -26,11 +26,11 @@ import org.codehaus.wadi.test.MyContext;
  * @version $Revision:1846 $
  */
 public class MyContextPool implements ContextPool {
-    public void put(Context context) {
+    public void put(Session context) {
         // we are not going to bother to pool :-)
     }
 
-    public Context take() {
+    public Session take() {
         return new MyContext();
     }
 }

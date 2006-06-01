@@ -22,7 +22,7 @@ package org.codehaus.wadi;
  */
 public interface PoolableInvocationWrapper {
 
-    void init(Invocation invocation, Context context);
+    void init(Invocation invocation, Session context);
     void destroy();
 
 }

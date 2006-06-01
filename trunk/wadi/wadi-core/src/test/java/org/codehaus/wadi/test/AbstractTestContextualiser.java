@@ -33,7 +33,7 @@ import org.apache.commons.logging.LogFactory;
 import org.axiondb.jdbc.AxionDataSource;
 import org.codehaus.wadi.AttributesFactory;
 import org.codehaus.wadi.Collapser;
-import org.codehaus.wadi.Context;
+import org.codehaus.wadi.Session;
 import org.codehaus.wadi.ContextPool;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Emoter;
@@ -351,7 +351,7 @@ public abstract class AbstractTestContextualiser extends TestCase {
 
 		public boolean contextualise(Invocation invocation, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws InvocationException {
 			_counter++;
-			Context context=_context;
+			Session context=_context;
 			Sync shared=context.getSharedLock();
 			try {
 				shared.acquire();

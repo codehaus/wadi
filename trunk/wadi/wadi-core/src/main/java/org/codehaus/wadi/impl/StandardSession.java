@@ -43,7 +43,7 @@ import org.codehaus.wadi.WADIHttpSession;
  * @version $Revision$
  */
 
-public class StandardSession extends AbstractContext implements WADIHttpSession, AttributesConfig {
+public class StandardSession extends AbstractSession implements WADIHttpSession, AttributesConfig {
 	
 	protected final static Log _log = LogFactory.getLog(StandardSession.class);
 	protected final SessionConfig _config;

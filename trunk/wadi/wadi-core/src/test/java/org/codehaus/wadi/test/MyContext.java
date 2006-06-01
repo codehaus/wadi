@@ -24,7 +24,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.StreamerConfig;
-import org.codehaus.wadi.impl.AbstractContext;
+import org.codehaus.wadi.impl.AbstractSession;
 import org.codehaus.wadi.impl.SimpleStreamer;
 import org.codehaus.wadi.impl.Utils;
 
@@ -32,7 +32,7 @@ import org.codehaus.wadi.impl.Utils;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class MyContext extends AbstractContext implements StreamerConfig {
+public class MyContext extends AbstractSession implements StreamerConfig {
   
   protected static Log _log = LogFactory.getLog(MyContext.class);
   protected String _val;

@@ -21,7 +21,7 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Collapser;
-import org.codehaus.wadi.Context;
+import org.codehaus.wadi.Session;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Invocation;
@@ -66,7 +66,7 @@ public class SerialContextualiser extends AbstractDelegatingContextualiser {
 	      
 	      // whilst we were waiting for the motionLock, the session in question may have been moved back into memory somehow.
 	      // before we proceed, confirm that this has not happened.
-	      Context context=(Context)_map.get(id);
+	      Session context=(Session)_map.get(id);
 	      if (null!=context) {
 	        // oops - it HAS happened...
 	        if (_log.isTraceEnabled()) _log.trace("session has reappeared in memory whilst we were waiting to immote it...: "+id+ " ["+Thread.currentThread().getName()+"]");

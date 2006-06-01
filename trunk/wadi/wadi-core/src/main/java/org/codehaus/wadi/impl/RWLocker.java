@@ -16,7 +16,7 @@
  */
 package org.codehaus.wadi.impl;
 
-import org.codehaus.wadi.Context;
+import org.codehaus.wadi.Session;
 import org.codehaus.wadi.Locker;
 import org.codehaus.wadi.Motable;
 
@@ -33,7 +33,7 @@ public class RWLocker implements Locker {
     }
 
     public Sync getLock(String id, Motable motable) {
-        return ((Context)motable).getExclusiveLock();
+        return ((Session)motable).getExclusiveLock();
     }
 
 }

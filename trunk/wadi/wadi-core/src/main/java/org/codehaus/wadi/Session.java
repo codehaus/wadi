@@ -20,12 +20,12 @@ package org.codehaus.wadi;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
- * Base API for client state
+ * Base API for client state - A Session has Time-To-Live and Locking
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public interface Context extends Motable, SerializableContent {
+public interface Session extends Motable, SerializableContent {
 
 	Sync getSharedLock();
 	Sync getExclusiveLock();

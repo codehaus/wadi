@@ -16,7 +16,7 @@
  */
 package org.codehaus.wadi.jetty5;
 
-import org.codehaus.wadi.Context;
+import org.codehaus.wadi.Session;
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.PoolableHttpServletRequestWrapper;
 
@@ -26,7 +26,7 @@ import org.codehaus.wadi.PoolableHttpServletRequestWrapper;
  */
 class MyPoolableHttpServletRequestWrapper extends MyHttpServletRequest implements PoolableHttpServletRequestWrapper {
 
-	public void init(Invocation invocation, Context context) {
+	public void init(Invocation invocation, Session context) {
 		/* I KNOW */
 	}
 

@@ -18,7 +18,7 @@ package org.codehaus.wadi.test;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.codehaus.wadi.Context;
+import org.codehaus.wadi.Session;
 import org.codehaus.wadi.ContextPool;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Evicter;
@@ -27,7 +27,7 @@ import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.PoolableInvocationWrapper;
 import org.codehaus.wadi.PoolableInvocationWrapperPool;
 import org.codehaus.wadi.Streamer;
-import org.codehaus.wadi.impl.AbstractContext;
+import org.codehaus.wadi.impl.AbstractSession;
 import org.codehaus.wadi.impl.DummyContextualiser;
 import org.codehaus.wadi.impl.DummyEvicter;
 import org.codehaus.wadi.impl.MemoryContextualiser;
@@ -56,7 +56,7 @@ public class TestSharedStack extends TestCase {
     //---------------------------------------------------------------------
     // Tier1 components...
     
-    static class Tier1Context extends AbstractContext {
+    static class Tier1Context extends AbstractSession {
 
         public void setBodyAsByteArray(byte[] bytes) throws Exception {
             throw new UnsupportedOperationException("NYI");
@@ -66,11 +66,11 @@ public class TestSharedStack extends TestCase {
     
     static class Tier1ContextPool implements ContextPool {
 
-        public void put(Context context) {
+        public void put(Session context) {
             // throw it away...
         }
 
-        public Context take() {
+        public Session take() {
            // create a new one...
             return new Tier1Context();
         }
@@ -83,9 +83,9 @@ public class TestSharedStack extends TestCase {
     static class Tier1Wrapper implements PoolableInvocationWrapper {
 
         protected Invocation _invocation;
-        protected Context _context;
+        protected Session _context;
         
-        public void init(Invocation invocation, Context context) {
+        public void init(Invocation invocation, Session context) {
             _invocation=invocation;
             _context=context;
         }
@@ -127,7 +127,7 @@ public class TestSharedStack extends TestCase {
         
         // add a session...
         String key="xxx";
-        Context value=contextPool.take();
+        Session value=contextPool.take();
         map.put(key, value);
         
         // run an Invocation over it...
