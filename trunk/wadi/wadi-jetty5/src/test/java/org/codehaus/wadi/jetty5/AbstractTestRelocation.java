@@ -34,7 +34,6 @@ import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.InvocationProxy;
-import org.codehaus.wadi.Location;
 import org.codehaus.wadi.Relocater;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.impl.AbstractRelocater;
@@ -64,8 +63,6 @@ public abstract class AbstractTestRelocation extends TestCase {
 	protected MyFilter _filter1;
 	protected MyServlet _servlet0;
 	protected MyServlet _servlet1;
-	protected Location _location0;
-	protected Location _location1;
 	protected Dispatcher _dispatcher0;
 	protected Dispatcher _dispatcher1;
 	protected SwitchableRelocater _relocater0;
