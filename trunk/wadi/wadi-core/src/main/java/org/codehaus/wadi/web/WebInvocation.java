@@ -86,7 +86,7 @@ public class WebInvocation implements Invocation {
     
     public void relocate(EndPoint endPoint) {
         //WebEndPoint wep=(WebEndPoint)endPoint;
-        throw new UnsupportedOperationException("Not hooked up yet");
+        throw new UnsupportedOperationException("Not hooked up yet - Invocation relocation to: "+endPoint);
     }
     
     // old
