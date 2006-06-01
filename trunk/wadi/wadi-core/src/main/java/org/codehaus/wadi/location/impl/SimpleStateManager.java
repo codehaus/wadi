@@ -43,6 +43,7 @@ import org.codehaus.wadi.location.newmessages.InsertPMToIM;
 import org.codehaus.wadi.location.newmessages.MoveIMToPM;
 import org.codehaus.wadi.location.newmessages.MoveIMToSM;
 import org.codehaus.wadi.location.newmessages.MovePMToIM;
+import org.codehaus.wadi.location.newmessages.MovePMToIMInvocation;
 import org.codehaus.wadi.location.newmessages.MovePMToSM;
 import org.codehaus.wadi.location.newmessages.MoveSMToIM;
 import org.codehaus.wadi.location.newmessages.MoveSMToPM;
@@ -85,8 +86,10 @@ public class SimpleStateManager implements StateManager, StateManagerMessageList
         _endpointBuilder.addCallback(_dispatcher, MoveSMToIM.class);
         _endpointBuilder.addCallback(_dispatcher, MoveIMToSM.class);
         _endpointBuilder.addCallback(_dispatcher, MoveSMToPM.class);
-		// or possibly - IM->PM->IM (failure)
+        // or possibly - IM->PM->IM (failure)
         _endpointBuilder.addCallback(_dispatcher, MovePMToIM.class);
+        // or possibly - IM->PM->IM (Invocation relocation)
+        _endpointBuilder.addCallback(_dispatcher, MovePMToIMInvocation.class);
         
         _endpointBuilder.addCallback(_dispatcher, ReleaseEntryResponse.class);
 	}

@@ -27,6 +27,7 @@ import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Emoter;
+import org.codehaus.wadi.EndPoint;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
@@ -55,6 +56,7 @@ import org.codehaus.wadi.location.newmessages.InsertPMToIM;
 import org.codehaus.wadi.location.newmessages.MoveIMToPM;
 import org.codehaus.wadi.location.newmessages.MoveIMToSM;
 import org.codehaus.wadi.location.newmessages.MovePMToIM;
+import org.codehaus.wadi.location.newmessages.MovePMToIMInvocation;
 import org.codehaus.wadi.location.newmessages.MoveSMToIM;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
@@ -468,6 +470,12 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
             }
         } else if (dm instanceof MovePMToIM) {
             if (_log.isTraceEnabled()) _log.trace("unknown session: "+sessionName);
+            return null;
+        } else if (dm instanceof MovePMToIMInvocation) {
+            // we are going to relocate our Invocation to the PM...
+            Peer sm=_cluster.getPeerFromAddress(((MovePMToIMInvocation)dm).getStateMaster());
+            EndPoint endPoint=(EndPoint)sm.getState().get("endPoint");
+            invocation.relocate(endPoint);
             return null;
         } else {
             _log.warn("unexpected response returned - what should I do? : "+dm);
