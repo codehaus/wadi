@@ -42,6 +42,8 @@ import org.codehaus.wadi.location.newmessages.MovePMToIM;
 import org.codehaus.wadi.location.newmessages.MovePMToSM;
 import org.codehaus.wadi.location.newmessages.MoveSMToPM;
 import EDU.oswego.cs.dl.util.concurrent.Mutex;
+import EDU.oswego.cs.dl.util.concurrent.Sync;
+import EDU.oswego.cs.dl.util.concurrent.WriterPreferenceReadWriteLock;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -84,11 +86,14 @@ public class LocalPartition extends AbstractPartition implements Serializable {
   static class Locus implements Serializable {
 
     protected Address _address;
-    protected Lease _lease;
+    protected Lease _readLease;
+    protected Sync _writeLock;
     
     public Locus(String label, Address address) {
       _address=address;
-      _lease=new SimpleLease(label, new Mutex());
+      WriterPreferenceReadWriteLock rwLock=new WriterPreferenceReadWriteLock();
+      _readLease=new SimpleLease(label, rwLock.readLock());
+      _writeLock=rwLock.writeLock();
     }
 
     public Address getAddress() {
@@ -99,10 +104,14 @@ public class LocalPartition extends AbstractPartition implements Serializable {
       _address=address;
     }
 
-    public Lease getLease() {
-        return _lease;
+    public Lease getReadLease() {
+        return _readLease;
     }
-    
+
+    public Sync getWriteLock() {
+        return _writeLock;
+    }
+
   }
 
   public void onMessage(Message message, InsertIMToPM request) {
@@ -184,9 +193,9 @@ public class LocalPartition extends AbstractPartition implements Serializable {
               dispatcher.reply(message,new MovePMToIM());
               return;
           } else {
-              Lease lease=locus.getLease();
+              Sync lock=locus.getWriteLock();
               try {
-                  lease.acquire(); // ensures that no-one else tries to relocate session whilst we are doing so...
+                  lock.acquire(); // ensures that no-one else tries to relocate session whilst we are doing so...
 
                   Address im=message.getReplyTo();
                   Address sm=locus.getAddress();
@@ -225,7 +234,7 @@ public class LocalPartition extends AbstractPartition implements Serializable {
               } catch (InterruptedException e) {
                   _log.error("unexpected interruption waiting to perform relocation: "+key, e);
               } finally {
-                  lease.release();
+                  lock.release();
               }
           }
       } catch (Exception e) {
@@ -247,9 +256,9 @@ public class LocalPartition extends AbstractPartition implements Serializable {
       if (locus==null) {
           if (_log.isWarnEnabled()) _log.warn("evacuate: "+key+" {"+_config.getPeerName(newAddress)+"} failed - key not in use");
       } else {
-          Lease lease=locus.getLease();
+          Sync lock=locus.getWriteLock();
           try {
-              lease.acquire();
+              lock.acquire();
               oldAddress=locus.getAddress();
               if (oldAddress.equals(newAddress)) {
                   if (_log.isWarnEnabled()) _log.warn("evacuate: "+key+" {"+_config.getPeerName(newAddress)+"} failed - evacuee is already there !");
@@ -261,7 +270,7 @@ public class LocalPartition extends AbstractPartition implements Serializable {
           } catch (InterruptedException e) {
               _log.error("unexpected interruption waiting to perform relocation: "+key, e);
           } finally {
-              lease.release();
+              lock.release();
           }
       }
 
