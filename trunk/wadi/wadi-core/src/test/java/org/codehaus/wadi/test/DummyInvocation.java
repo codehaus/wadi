@@ -18,10 +18,12 @@ package org.codehaus.wadi.test;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.Context;
 import org.codehaus.wadi.EndPoint;
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.PoolableInvocationWrapper;
+import org.codehaus.wadi.WebSession;
 
 public class DummyInvocation implements Invocation {
     
@@ -65,6 +67,10 @@ public class DummyInvocation implements Invocation {
 
     public boolean isProxiedInvocation() {
         return false;
+    }
+
+    public void setSession(Context session) {
+        // not used
     }
     
 }

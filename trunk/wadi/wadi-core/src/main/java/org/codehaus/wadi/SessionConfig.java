@@ -33,7 +33,7 @@ public interface SessionConfig extends Config {
     HttpSessionAttributeListener[] getAttributeListeners();
     ServletContext getServletContext();
 
-    void destroy(Session session);
+    void destroy(WebSession session);
     SessionWrapperFactory getSessionWrapperFactory();
     SessionIdFactory getSessionIdFactory();
 

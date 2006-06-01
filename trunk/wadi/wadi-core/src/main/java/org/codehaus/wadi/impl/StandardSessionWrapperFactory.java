@@ -18,7 +18,7 @@ package org.codehaus.wadi.impl;
 
 import javax.servlet.http.HttpSession;
 
-import org.codehaus.wadi.Session;
+import org.codehaus.wadi.WebSession;
 import org.codehaus.wadi.SessionWrapperFactory;
 
 /**
@@ -27,7 +27,7 @@ import org.codehaus.wadi.SessionWrapperFactory;
  */
 public class StandardSessionWrapperFactory implements SessionWrapperFactory {
 
-    public HttpSession create(Session session) {
+    public HttpSession create(WebSession session) {
     	return new SessionWrapper(session);
     }
 

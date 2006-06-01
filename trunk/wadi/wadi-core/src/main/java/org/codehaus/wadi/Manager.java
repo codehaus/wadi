@@ -26,9 +26,9 @@ public interface Manager {
 
     void destroy();
 
-    Session create();
+    WebSession create();
 
-    void destroy(Session session);
+    void destroy(WebSession session);
 
     Manager getManager();
 

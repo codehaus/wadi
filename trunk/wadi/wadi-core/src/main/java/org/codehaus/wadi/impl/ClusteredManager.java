@@ -37,7 +37,7 @@ import org.codehaus.wadi.PartitionMapper;
 import org.codehaus.wadi.EndPoint;
 import org.codehaus.wadi.ReplicaterFactory;
 import org.codehaus.wadi.Router;
-import org.codehaus.wadi.Session;
+import org.codehaus.wadi.WebSession;
 import org.codehaus.wadi.SessionIdFactory;
 import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.SessionWrapperFactory;
@@ -130,14 +130,14 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
 	}
 
 	public void destroy(String key) {
-		Session session = (Session) _map.get(key);
+		WebSession session = (WebSession) _map.get(key);
 		if (null == session) {
 			throw new IllegalArgumentException("Provided session id is unknown.");
 		}
 		destroy(session);
 	}
 
-	public void destroy(Session session) {
+	public void destroy(WebSession session) {
 		// this destroySession method must not chain the one in super - otherwise the
 		// notification aspect fires twice - once around each invocation... - DOH !
 		Collection names=new ArrayList((_attributeListeners.length>0)?(Collection)session.getAttributeNameSet():((DistributableSession)session).getListenerNames());

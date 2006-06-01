@@ -43,7 +43,7 @@ import org.codehaus.wadi.AttributesFactory;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Manager;
 import org.codehaus.wadi.Router;
-import org.codehaus.wadi.Session;
+import org.codehaus.wadi.WebSession;
 import org.codehaus.wadi.SessionFactory;
 import org.codehaus.wadi.SessionIdFactory;
 import org.codehaus.wadi.SessionPool;
@@ -1237,9 +1237,9 @@ public class TestHttpSession extends TestCase {
         manager.registerHelper(Integer.class, new NotSerializableHelper()); // this one will not be used
         manager.registerHelper(type, new NotSerializableHelper());
 
-        Session s0=manager.create();
+        WebSession s0=manager.create();
         s0.setAttribute(content, val0);
-        Session s1=manager.create();
+        WebSession s1=manager.create();
         s1.setBodyAsByteArray(s0.getBodyAsByteArray());
         NotSerializable val1=(NotSerializable)s1.getAttribute(content);
         assertTrue(val0._content.equals(val1._content));
@@ -1491,7 +1491,7 @@ public class TestHttpSession extends TestCase {
 //    }
 
     public void testSeparateAttributes(Manager manager) throws Exception {
-        Session sess0=manager.create();
+        WebSession sess0=manager.create();
         Object val=new String("value");
         String key0="foo";
         String key1="bar";
@@ -1499,7 +1499,7 @@ public class TestHttpSession extends TestCase {
         sess0.setAttribute(key1, val);
         assertTrue(sess0.getAttribute(key0)==sess0.getAttribute(key1));
         byte[] bytes=sess0.getBodyAsByteArray();
-        Session sess1=manager.create();
+        WebSession sess1=manager.create();
         sess1.setBodyAsByteArray(bytes);
         assertTrue(sess1.getAttribute(key0)!=sess1.getAttribute(key1)); // after deserialisation values are no longer '='
         assertTrue(sess1.getAttribute(key0).equals(sess1.getAttribute(key1)));

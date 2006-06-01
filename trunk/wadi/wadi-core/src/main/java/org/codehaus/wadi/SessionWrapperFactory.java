@@ -24,6 +24,6 @@ import javax.servlet.http.HttpSession;
  */
 public interface SessionWrapperFactory {
 
-    HttpSession create(Session session);
+    HttpSession create(WebSession session);
 
 }

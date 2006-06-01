@@ -6,8 +6,6 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import javax.sql.DataSource;
 
 import junit.framework.TestCase;
@@ -15,8 +13,14 @@ import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.axiondb.jdbc.AxionDataSource;
+import org.codehaus.wadi.Context;
+import org.codehaus.wadi.EndPoint;
 import org.codehaus.wadi.Invocation;
+import org.codehaus.wadi.InvocationException;
+import org.codehaus.wadi.PoolableInvocationWrapper;
+import org.codehaus.wadi.WebSession;
 import org.codehaus.wadi.group.Dispatcher;
+import org.codehaus.wadi.impl.StandardManager;
 import org.codehaus.wadi.test.MockInvocation;
 import org.codehaus.wadi.test.MyHttpServletRequest;
 import org.codehaus.wadi.test.MyHttpServletResponse;
@@ -24,7 +28,7 @@ import org.codehaus.wadi.test.MyStack;
 
 public class AbstractTestRelocation extends TestCase {
 
-	protected Log _log = LogFactory.getLog(getClass());
+    protected Log _log = LogFactory.getLog(getClass());
 	protected String _url = "jdbc:axiondb:WADI";
 	protected DataSource _ds = new AxionDataSource(_url);
 
@@ -39,6 +43,57 @@ public class AbstractTestRelocation extends TestCase {
 	protected void tearDown() throws Exception {
 		super.tearDown();
 	}
+    
+    static class MyInvocation implements Invocation {
+
+        protected Log _log = LogFactory.getLog(getClass());
+        protected StandardManager _manager;
+        protected String _key;
+        protected WebSession _session;
+        
+        public void init(StandardManager manager, String key) {
+            _manager=manager;
+            _key=key;
+        }
+        
+        public void clear() {
+            _key=null;
+        }
+
+        public String getKey() {
+            return _key;
+        }
+
+        public boolean getRelocatable() {
+            return true;
+        }
+
+        public void setSession(Context session) {
+            throw new UnsupportedOperationException("NYI");
+        }
+        
+        public void invoke(PoolableInvocationWrapper wrapper) throws InvocationException {
+            throw new UnsupportedOperationException("NYI");
+        }
+
+        public void invoke() throws InvocationException {
+            assertTrue(_session!=null);
+        }
+
+        public boolean isProxiedInvocation() {
+            throw new UnsupportedOperationException("NYI");
+        }
+
+        public void relocate(EndPoint endPoint) {
+            throw new UnsupportedOperationException("NYI - relocate to: "+endPoint);
+            // clever stuff here...
+        }
+
+        public void sendError(int code, String message) throws InvocationException {
+            throw new UnsupportedOperationException("NYI");
+        }
+
+    }
 
 	public void testSessionRelocation(Dispatcher redD, Dispatcher greenD) throws Exception {
 		MyStack red=new MyStack(_url, _ds, redD);
@@ -72,9 +127,6 @@ public class AbstractTestRelocation extends TestCase {
 
 		FilterChain fc=new FilterChain() {
 			public void doFilter(ServletRequest req, ServletResponse res) throws IOException, ServletException {
-				HttpSession session=((HttpServletRequest)req).getSession();
-				assertTrue(session!=null);
-				_log.info("ACQUIRED SESSION: "+session.getId());
 			}
 		};
 

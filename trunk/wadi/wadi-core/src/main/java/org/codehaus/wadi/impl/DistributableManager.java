@@ -29,7 +29,7 @@ import org.codehaus.wadi.ReplicableSessionConfig;
 import org.codehaus.wadi.Replicater;
 import org.codehaus.wadi.ReplicaterFactory;
 import org.codehaus.wadi.Router;
-import org.codehaus.wadi.Session;
+import org.codehaus.wadi.WebSession;
 import org.codehaus.wadi.SessionIdFactory;
 import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.SessionWrapperFactory;
@@ -126,10 +126,10 @@ public class DistributableManager extends StandardManager implements ReplicableS
 		return _streamer;
 	}
 
-    public Session rehydrate(String key, byte[] body) throws RehydrationException {
+    public WebSession rehydrate(String key, byte[] body) throws RehydrationException {
         notifySessionRelocation(key);
 
-        Session session = _sessionPool.take();
+        WebSession session = _sessionPool.take();
         long time = System.currentTimeMillis();
         session.rehydrate(time, time, _maxInactiveInterval, key, body);
         _map.put(key, session);

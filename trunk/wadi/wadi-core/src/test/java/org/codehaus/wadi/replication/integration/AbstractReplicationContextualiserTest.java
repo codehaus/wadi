@@ -29,7 +29,7 @@ import org.codehaus.wadi.Evicter;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.PoolableInvocationWrapperPool;
 import org.codehaus.wadi.RWLockListener;
-import org.codehaus.wadi.Session;
+import org.codehaus.wadi.WebSession;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.impl.AlwaysEvicter;
@@ -89,7 +89,7 @@ public abstract class AbstractReplicationContextualiserTest extends TestCase {
 	}
 
 	public void testGetSessionFromReplicationManager() throws Exception {
-		Session session = nodeInfo1.clusteredManager.create();
+		WebSession session = nodeInfo1.clusteredManager.create();
 		String attrValue = "bar";
 		String attrName = "foo";
         session.setAttribute(attrName, attrValue);
@@ -100,7 +100,7 @@ public abstract class AbstractReplicationContextualiserTest extends TestCase {
         
         promoteNode(nodeInfo2, sessionId);
         
-        Session node2Session = (Session) nodeInfo2.mmap.get(sessionId);
+        WebSession node2Session = (WebSession) nodeInfo2.mmap.get(sessionId);
         assertNotNull(node2Session);
         String actualAttrValue = (String) node2Session.getAttribute(attrName);
         assertEquals(attrValue, actualAttrValue);

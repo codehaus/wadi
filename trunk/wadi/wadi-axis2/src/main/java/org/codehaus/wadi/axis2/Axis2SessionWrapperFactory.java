@@ -23,7 +23,7 @@ import org.codehaus.wadi.SessionWrapperFactory;
 
 public class Axis2SessionWrapperFactory implements SessionWrapperFactory {
     
-    public HttpSession create(org.codehaus.wadi.Session session) {
+    public HttpSession create(org.codehaus.wadi.WebSession session) {
         return new Axis2Session(session);
     }
     

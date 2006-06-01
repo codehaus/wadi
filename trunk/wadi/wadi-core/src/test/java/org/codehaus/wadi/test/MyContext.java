@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.impl;
+package org.codehaus.wadi.test;
 
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -24,6 +24,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.StreamerConfig;
+import org.codehaus.wadi.impl.AbstractContext;
+import org.codehaus.wadi.impl.SimpleStreamer;
+import org.codehaus.wadi.impl.Utils;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>

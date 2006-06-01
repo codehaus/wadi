@@ -18,11 +18,13 @@ package org.codehaus.wadi.axis2;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.Context;
 import org.codehaus.wadi.EndPoint;
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.Manager;
 import org.codehaus.wadi.PoolableInvocationWrapper;
+import org.codehaus.wadi.WebSession;
 import org.codehaus.wadi.impl.StatefulHttpServletRequestWrapper;
 import EDU.oswego.cs.dl.util.concurrent.Rendezvous;
 
@@ -50,8 +52,8 @@ public class Axis2Invocation implements Invocation, Runnable {
         _key=key;
     }
     
-    public void setSession(Axis2Session session) {
-        _session=session;
+    public void setSession(Context session) {
+        _session=(Axis2Session)session;
     }
     
     public Axis2Session getSession() {
@@ -148,5 +150,5 @@ public class Axis2Invocation implements Invocation, Runnable {
     public boolean isProxiedInvocation() {
         return false;
     }
-    
+
 }

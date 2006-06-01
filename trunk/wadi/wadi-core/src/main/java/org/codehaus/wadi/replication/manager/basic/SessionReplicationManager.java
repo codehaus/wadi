@@ -16,7 +16,7 @@
 package org.codehaus.wadi.replication.manager.basic;
 
 import org.codehaus.wadi.RehydrationException;
-import org.codehaus.wadi.Session;
+import org.codehaus.wadi.WebSession;
 import org.codehaus.wadi.replication.ReplicationException;
 import org.codehaus.wadi.replication.common.ReplicaInfo;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
@@ -35,7 +35,7 @@ public class SessionReplicationManager implements ReplicationManager {
     }
 
     public void create(Object key, Object tmp) {
-        Session session = castAndEnsureType(tmp);
+        WebSession session = castAndEnsureType(tmp);
         try {
             replicationManager.create(key, session.getBodyAsByteArray());
         } catch (Exception e) {
@@ -44,7 +44,7 @@ public class SessionReplicationManager implements ReplicationManager {
     }
 
     public void update(Object key, Object tmp) {
-        Session session = castAndEnsureType(tmp);
+        WebSession session = castAndEnsureType(tmp);
         try {
             replicationManager.update(key, session.getBodyAsByteArray());
         } catch (Exception e) {
@@ -94,10 +94,10 @@ public class SessionReplicationManager implements ReplicationManager {
         replicationManager.stop();
     }
 
-    private Session castAndEnsureType(Object tmp) {
-        if (false == tmp instanceof Session) {
+    private WebSession castAndEnsureType(Object tmp) {
+        if (false == tmp instanceof WebSession) {
             throw new IllegalArgumentException("tmp is not a Session");
         }
-        return (Session) tmp;
+        return (WebSession) tmp;
     }
 }

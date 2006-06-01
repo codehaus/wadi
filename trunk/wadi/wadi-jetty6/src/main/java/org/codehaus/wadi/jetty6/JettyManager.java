@@ -134,7 +134,7 @@ public class JettyManager extends AbstractLifeCycle implements ManagerConfig, Se
 	}
 
 	public HttpSession newHttpSession(HttpServletRequest request) {
-		org.codehaus.wadi.Session session = _wadi.create();
+		org.codehaus.wadi.WebSession session = _wadi.create();
 		if (false == session instanceof WADIHttpSession) {
 			throw new IllegalStateException(WADIHttpSession.class +
 			" is expected.");

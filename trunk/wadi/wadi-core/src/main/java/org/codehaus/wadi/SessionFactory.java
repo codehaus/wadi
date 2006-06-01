@@ -21,5 +21,5 @@ package org.codehaus.wadi;
  * @version $Revision$
  */
 public interface SessionFactory {
-    Session create(SessionConfig config);
+    WebSession create(SessionConfig config);
 }

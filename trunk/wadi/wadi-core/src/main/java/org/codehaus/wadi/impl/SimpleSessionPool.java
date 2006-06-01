@@ -16,7 +16,7 @@
  */
 package org.codehaus.wadi.impl;
 
-import org.codehaus.wadi.Session;
+import org.codehaus.wadi.WebSession;
 import org.codehaus.wadi.SessionConfig;
 import org.codehaus.wadi.SessionFactory;
 import org.codehaus.wadi.SessionPool;
@@ -45,11 +45,11 @@ public class SimpleSessionPool implements SessionPool {
         _config=null;
     }
 
-    public Session take() {
+    public WebSession take() {
         return _factory.create(_config);
     }
 
-    public void put(Session session) {
+    public void put(WebSession session) {
         // just drop the session - truly pool later
     }
 

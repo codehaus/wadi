@@ -50,7 +50,7 @@ import org.codehaus.wadi.PoolableInvocationWrapperPool;
 import org.codehaus.wadi.EndPoint;
 import org.codehaus.wadi.ProxyingException;
 import org.codehaus.wadi.Router;
-import org.codehaus.wadi.Session;
+import org.codehaus.wadi.WebSession;
 import org.codehaus.wadi.SessionIdFactory;
 import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.SessionWrapperFactory;
@@ -75,7 +75,6 @@ import org.codehaus.wadi.impl.ExclusiveStoreContextualiser;
 import org.codehaus.wadi.impl.GZIPStreamer;
 import org.codehaus.wadi.impl.HashingCollapser;
 import org.codehaus.wadi.impl.MemoryContextualiser;
-import org.codehaus.wadi.impl.MyContext;
 import org.codehaus.wadi.impl.NeverEvicter;
 import org.codehaus.wadi.impl.SerialContextualiser;
 import org.codehaus.wadi.impl.SessionToContextPoolAdapter;
@@ -243,19 +242,19 @@ public abstract class AbstractTestContextualiser extends TestCase {
 		assertTrue(m.size()==3);
 
 		// check their content...
-		Session baz=(Session)m.get("baz");
+		WebSession baz=(WebSession)m.get("baz");
 		assertTrue(baz!=null);
 		assertTrue("baz".equals(baz.getName()));
 		assertTrue(baz.getCreationTime()==3);
 		assertTrue(baz.getMaxInactiveInterval()==6);
 
-		Session bar=(Session)m.get("bar");
+		WebSession bar=(WebSession)m.get("bar");
 		assertTrue(bar!=null);
 		assertTrue("bar".equals(bar.getName()));
 		assertTrue(bar.getCreationTime()==2);
 		assertTrue(bar.getMaxInactiveInterval()==4);
 
-		Session foo=(Session)m.get("foo");
+		WebSession foo=(WebSession)m.get("foo");
 		assertTrue(foo!=null);
 		assertTrue("foo".equals(foo.getName()));
 		assertTrue(foo.getCreationTime()==1);
@@ -293,7 +292,7 @@ public abstract class AbstractTestContextualiser extends TestCase {
 		assertTrue(m.size()==1); // foo should be here now...
 
 		// check it's content
-		Session foo=(Session)m.get("foo");
+		WebSession foo=(WebSession)m.get("foo");
 		assertTrue(foo!=null);
 		assertTrue("foo".equals(foo.getName()));
 		assertTrue(foo.getCreationTime()==2);
@@ -489,7 +488,7 @@ public abstract class AbstractTestContextualiser extends TestCase {
 		MemoryContextualiser memory=new MemoryContextualiser(_dummyContextualiser, memoryEvicter, m, _streamer, _standardContextPool, _requestPool);
 		Manager manager=new StandardManager(_standardSessionPool, _standardAttributesFactory, _standardValuePool, _sessionWrapperFactory, _sessionIdFactory, memory, m, _router, true);
 		manager.init(new DummyManagerConfig());
-		Session session=manager.create();
+		WebSession session=manager.create();
 		session.setMaxInactiveInterval(1);
 		assertTrue(m.size()==1); // in memory
 		memoryEvicter.evict();
@@ -511,7 +510,7 @@ public abstract class AbstractTestContextualiser extends TestCase {
 		Manager manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, memory, m, _router, true, _streamer, _accessOnLoad, new DummyReplicaterFactory(), _location, _httpProxy, dispatcher, 24, _collapser);
 		manager.init(new DummyManagerConfig());
 
-		Session session=manager.create();
+		WebSession session=manager.create();
 		session.setMaxInactiveInterval(2);// times out 2 seconds from now...
 
 		assertTrue(m.size()==1); // in memory
@@ -548,7 +547,7 @@ public abstract class AbstractTestContextualiser extends TestCase {
 		Manager manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, memory, m, _router, true, _streamer, _accessOnLoad, new DummyReplicaterFactory(), _location, _httpProxy, dispatcher, 24, _collapser);
 		manager.init(new DummyManagerConfig());
 
-		Session session=manager.create();
+		WebSession session=manager.create();
 		String id=session.getName();
 		session.setMaxInactiveInterval(2);// times out 2 seconds from now...
 

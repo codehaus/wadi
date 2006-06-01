@@ -44,7 +44,7 @@ import org.codehaus.wadi.PoolableInvocationWrapper;
 import org.codehaus.wadi.PoolableInvocationWrapperPool;
 import org.codehaus.wadi.Router;
 import org.codehaus.wadi.RouterConfig;
-import org.codehaus.wadi.Session;
+import org.codehaus.wadi.WebSession;
 import org.codehaus.wadi.SessionConfig;
 import org.codehaus.wadi.SessionIdFactory;
 import org.codehaus.wadi.SessionPool;
@@ -147,7 +147,7 @@ public class StandardManager implements Lifecycle, SessionConfig, Contextualiser
 		_log.info("stopped"); // although this sometimes does not appear, it IS called...
 	}
 
-	protected void notifySessionCreation(Session session) {
+	protected void notifySessionCreation(WebSession session) {
 		WADIHttpSession httpSession = ensureTypeAndCast(session);
 		int l=_sessionListeners.length;
 		HttpSessionEvent hse=httpSession.getHttpSessionEvent();
@@ -155,7 +155,7 @@ public class StandardManager implements Lifecycle, SessionConfig, Contextualiser
 			_sessionListeners[i].sessionCreated(hse);
 	}
 
-	protected void notifySessionDestruction(Session session) {
+	protected void notifySessionDestruction(WebSession session) {
 		WADIHttpSession httpSession = ensureTypeAndCast(session);
 		int l=_sessionListeners.length;
 		HttpSessionEvent hse=httpSession.getHttpSessionEvent();
@@ -163,7 +163,7 @@ public class StandardManager implements Lifecycle, SessionConfig, Contextualiser
 			_sessionListeners[i].sessionDestroyed(hse); // actually - about-to-be-destroyed - hasn't happened yet - see SRV.15.1.14.1
 	}
 
-	private WADIHttpSession ensureTypeAndCast(Session session) {
+	private WADIHttpSession ensureTypeAndCast(WebSession session) {
 		if (false == session instanceof WADIHttpSession) {
 			throw new IllegalArgumentException(WADIHttpSession.class +
 			" instance is expected.");
@@ -182,13 +182,13 @@ public class StandardManager implements Lifecycle, SessionConfig, Contextualiser
 		return true;
 	}
 
-	public Session create() {
+	public WebSession create() {
 		String name=null;
 		do {
 			name=_sessionIdFactory.create(); // TODO - API on this class is wrong...
 		} while (!validateSessionName(name));
 
-		Session session=_sessionPool.take();
+		WebSession session=_sessionPool.take();
 		long time=System.currentTimeMillis();
 		session.init(time, time, _maxInactiveInterval, name);
 		_map.put(name, session);
@@ -200,7 +200,7 @@ public class StandardManager implements Lifecycle, SessionConfig, Contextualiser
 		return session;
 	}
 
-	public void destroy(Session session) {
+	public void destroy(WebSession session) {
 		for (Iterator i=new ArrayList(session.getAttributeNameSet()).iterator(); i.hasNext();) // ALLOC ?
 			session.removeAttribute((String)i.next()); // TODO - very inefficient
 		// _contextualiser.getEvicter().remove(session);
@@ -271,7 +271,7 @@ public class StandardManager implements Lifecycle, SessionConfig, Contextualiser
 	public void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval) {_contextualiser.setMaxInactiveInterval(evictable, oldInterval, newInterval);}
 
 	public void expire(Motable motable) {
-		destroy((Session)motable);
+		destroy((WebSession)motable);
 	}
 
 	public Immoter getEvictionImmoter() {

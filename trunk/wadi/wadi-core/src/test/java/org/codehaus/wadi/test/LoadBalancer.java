@@ -30,12 +30,12 @@ import javax.servlet.http.HttpServletResponse;
 interface
   LoadBalancer
 {
-  Context createContext(InetSocketAddress hostAndPort, String path);
-  void destroyContext(Context context);
+  AppContext createContext(InetSocketAddress hostAndPort, String path);
+  void destroyContext(AppContext context);
 }
 
 interface
-  Context			// a webapp
+  AppContext			// a webapp
 {
   InetSocketAddress getHostAndPort();
   String getPath();
@@ -65,7 +65,7 @@ interface
 interface
   Cluster
 {
-  Context locate(String sessionId);
+  AppContext locate(String sessionId);
 }
 
 // Other thoughts:

@@ -21,6 +21,7 @@ import javax.servlet.FilterChain;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.codehaus.wadi.Context;
 import org.codehaus.wadi.EndPoint;
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
@@ -124,6 +125,10 @@ public class WebInvocation implements Invocation {
     
     public HttpServletResponse getHres() {
         return hres;
+    }
+
+    public void setSession(Context session) {
+        // not used at the moment - the session is retrieved via the request, from the Manager - not cached on the Invocation - we could improve things...
     }
     
 }

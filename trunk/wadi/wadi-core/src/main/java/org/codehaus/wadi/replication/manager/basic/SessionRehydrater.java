@@ -16,12 +16,12 @@
 package org.codehaus.wadi.replication.manager.basic;
 
 import org.codehaus.wadi.RehydrationException;
-import org.codehaus.wadi.Session;
+import org.codehaus.wadi.WebSession;
 
 /**
  * 
  * @version $Revision: 1603 $
  */
 public interface SessionRehydrater {
-    Session rehydrate(String key, byte[] body) throws RehydrationException;
+    WebSession rehydrate(String key, byte[] body) throws RehydrationException;
 }
