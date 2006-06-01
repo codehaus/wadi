@@ -52,4 +52,7 @@ public interface Cluster {
      * @return - the number of millis that a Peer may remain silent before being declared suspect/dead..
      */
     long getInactiveTime();
+    
+    Peer getPeerFromAddress(Address address);
+    
 }

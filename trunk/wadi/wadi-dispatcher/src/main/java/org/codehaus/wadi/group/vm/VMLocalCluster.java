@@ -78,6 +78,10 @@ public class VMLocalCluster implements Cluster {
         return delegate.getAddress();
     }
 
+    public Peer getPeerFromAddress(Address address) {
+        throw new UnsupportedOperationException("NYI");
+    }
+
     public void addClusterListener(ClusterListener listener) {
         delegate.addClusterListener(new VMLocalClusterListener(this, listener, node));
     }

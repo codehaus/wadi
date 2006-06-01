@@ -77,12 +77,18 @@ class ActiveClusterCluster extends AbstractCluster {
         return _prefix+_localPeerName+"/"+_clusterName+_suffix;
     }
     
+    // 'org.codehaus.wadi.group.Cluster' API
+    
     public Address getAddress() {
         return (ActiveClusterPeer)_clusterPeer;
     }
 
     public LocalPeer getLocalPeer() {
         return _localPeer;
+    }
+    
+    public Peer getPeerFromAddress(Address address) {
+        return (ActiveClusterPeer)address;
     }
 
     class ACListener implements org.apache.activecluster.ClusterListener {
