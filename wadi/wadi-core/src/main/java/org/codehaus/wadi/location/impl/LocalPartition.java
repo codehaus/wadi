@@ -42,6 +42,7 @@ import org.codehaus.wadi.location.newmessages.InsertIMToPM;
 import org.codehaus.wadi.location.newmessages.InsertPMToIM;
 import org.codehaus.wadi.location.newmessages.MoveIMToPM;
 import org.codehaus.wadi.location.newmessages.MovePMToIM;
+import org.codehaus.wadi.location.newmessages.MovePMToIMInvocation;
 import org.codehaus.wadi.location.newmessages.MovePMToSM;
 import org.codehaus.wadi.location.newmessages.MoveSMToPM;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
@@ -53,257 +54,306 @@ import EDU.oswego.cs.dl.util.concurrent.WriterPreferenceReadWriteLock;
  */
 public class LocalPartition extends AbstractPartition implements Serializable {
 
-    protected transient Log _log=LogFactory.getLog(getClass());
+  protected transient Log _log=LogFactory.getLog(getClass());
 
-    protected Map _map=new HashMap();
-    protected transient PartitionConfig _config;
+  protected Map _map=new HashMap();
+  protected transient PartitionConfig _config;
 
-    public LocalPartition(int key) {
-        super(key);
+  public LocalPartition(int key) {
+    super(key);
+  }
+
+  public void init(PartitionConfig config) {
+    _config=config;
+    _log=LogFactory.getLog(getClass().getName()+"#"+_key+"@"+_config.getLocalPeerName());
+  }
+
+  public boolean isLocal() {
+    return true;
+  }
+
+  public String toString() {
+    return "<LocalPartition:"+_key+"@"+(_config==null?"<unknown>":_config.getLocalPeerName())+">";
+  }
+
+  public void put(String name, Address address) {
+    synchronized (_map) {
+      // TODO - check key was not already in use...
+      _map.put(name, new Locus(name, address));
+    }
+  }
+
+  // a Locus provides two things :
+  // - a sync point for the session destination which is not the destination itself
+  // - a container for the session destination, reducing access to id:destination table
+  static class Locus implements Serializable {
+
+    protected String _key; // needed for logging :-(
+    protected Address _address;
+    protected transient Lease _sharedLease;
+    protected transient Sync _exclusiveLock;
+
+    public Locus(String key, Address address) {
+      _key=key;
+      _address=address;
+      WriterPreferenceReadWriteLock rwLock=new WriterPreferenceReadWriteLock();
+      _sharedLease=new SimpleLease(key, rwLock.readLock());
+      _exclusiveLock=rwLock.writeLock();
     }
 
-    public void init(PartitionConfig config) {
-        _config=config;
-        _log=LogFactory.getLog(getClass().getName()+"#"+_key+"@"+_config.getLocalPeerName());
+    private void writeObject(ObjectOutputStream stream) throws IOException {
+      stream.writeObject(_key);
+      stream.writeObject(_address);
     }
 
-    public boolean isLocal() {
-        return true;
+    private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
+      _key=(String)stream.readObject();
+      _address=(Address)stream.readObject();
+      WriterPreferenceReadWriteLock rwLock=new WriterPreferenceReadWriteLock();
+      _sharedLease=new SimpleLease(_key, rwLock.readLock());
+      _exclusiveLock=rwLock.writeLock();
     }
 
-    public String toString() {
-        return "<LocalPartition:"+_key+"@"+(_config==null?"<unknown>":_config.getLocalPeerName())+">";
+    public Address getAddress() {
+      return _address;
     }
 
-    public void put(String name, Address address) {
-        synchronized (_map) {
-            // TODO - check key was not already in use...
-            _map.put(name, new Locus(name, address));
-        }
+    public void setAddress(Address address) {
+      _address=address;
     }
 
-    // a Locus provides two things :
-    // - a sync point for the session destination which is not the destination itself
-    // - a container for the session destination, reducing access to id:destination table
-    static class Locus implements Serializable {
-
-        protected String _key; // needed for logging :-(
-        protected Address _address;
-        protected transient Lease _sharedLease;
-        protected transient Sync _exclusiveLock;
-
-        public Locus(String key, Address address) {
-            _key=key;
-            _address=address;
-            WriterPreferenceReadWriteLock rwLock=new WriterPreferenceReadWriteLock();
-            _sharedLease=new SimpleLease(key, rwLock.readLock());
-            _exclusiveLock=rwLock.writeLock();
-        }
-
-        private void writeObject(ObjectOutputStream stream) throws IOException {
-            stream.writeObject(_key);
-            stream.writeObject(_address);
-        }
-
-        private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
-            _key=(String)stream.readObject();
-            _address=(Address)stream.readObject();
-            WriterPreferenceReadWriteLock rwLock=new WriterPreferenceReadWriteLock();
-            _sharedLease=new SimpleLease(_key, rwLock.readLock());
-            _exclusiveLock=rwLock.writeLock();
-        }
-
-        public Address getAddress() {
-            return _address;
-        }
-
-        public void setAddress(Address address) {
-            _address=address;
-        }
-
-        public Lease getSharedLease() {
-            return _sharedLease;
-        }
-
-        public Sync getExclusiveLock() {
-            return _exclusiveLock;
-        }
-
+    public Lease getSharedLease() {
+      return _sharedLease;
     }
 
-    public void onMessage(Message message, InsertIMToPM request) {
-        Address newAddress=message.getReplyTo();
-        boolean success=false;
-        String key=request.getKey();
-
-        // optimised for expected case - id not already in use...
-        Locus newLocus=new Locus(key, newAddress);
-        synchronized (_map) {
-            Locus oldLocus=(Locus)_map.put(key, newLocus); // remember location of new session
-            if (oldLocus==null) {
-                // id was not already in use - expected outcome
-                success=true;
-            } else {
-                // id was already in use - unexpected outcome - put it back and forget new location
-                _map.put(key, oldLocus);
-            }
-        }
-
-        // log outside sync block...
-        if (success) {
-            if (_log.isDebugEnabled()) _log.debug("insert: "+key+" {"+_config.getPeerName(newAddress)+"}");
-        } else {
-            if (_log.isWarnEnabled()) _log.warn("insert: "+key+" {"+_config.getPeerName(newAddress)+"} failed - key already in use");
-        }
-
-        DIndexResponse response=new InsertPMToIM(success);
-        try {
-            _config.getDispatcher().reply(message, response);
-        } catch (MessageExchangeException e) {
-            _log.warn("See exception", e);
-        }
+    public Sync getExclusiveLock() {
+      return _exclusiveLock;
     }
 
-    public void onMessage(Message message, DeleteIMToPM request) {
-        String key=request.getKey();
-        Locus locus=null;
-        boolean success=false;
+  }
 
-        synchronized (_map) {
-            locus=(Locus)_map.remove(key);
-        }
+  public void onMessage(Message message, InsertIMToPM request) {
+    Address newAddress=message.getReplyTo();
+    boolean success=false;
+    String key=request.getKey();
 
-        if (locus!=null) {
-            Address oldAddress=locus.getAddress();
-            if (_log.isDebugEnabled()) _log.debug("delete: "+key+" {"+_config.getPeerName(oldAddress)+"}");
-            success=true;
-        } else {
-            if (_log.isWarnEnabled()) _log.warn("delete: "+key+" failed - key not present");
-        }
-
-        DIndexResponse response=new DeletePMToIM(success);
-        try {
-            _config.getDispatcher().reply(message, response);
-        } catch (MessageExchangeException e) {
-            _log.warn("See exception", e);
-        }
+    // optimised for expected case - id not already in use...
+    Locus newLocus=new Locus(key, newAddress);
+    synchronized (_map) {
+      Locus oldLocus=(Locus)_map.put(key, newLocus); // remember location of new session
+      if (oldLocus==null) {
+	// id was not already in use - expected outcome
+	success=true;
+      } else {
+	// id was already in use - unexpected outcome - put it back and forget new location
+	_map.put(key, oldLocus);
+      }
     }
 
-    // called on Partition Master
-    public void onMessage(Message message, MoveIMToPM request) {
-
-        // TODO - whilst we are in here, we should have a SHARED lock on this Partition, so it cannot be moved
-        // The Partitions lock should be held in the Facade, so that it can swap Partitions in and out whilst holding an exclusive lock
-        // Partition may only be migrated when exclusive lock has been taken, this may only happen when all shared locks are released - this implies that no PM session locks will be in place...
-
-        String key=request.getKey();
-        Dispatcher dispatcher=_config.getDispatcher();
-        try {
-
-            Locus locus=null;
-            synchronized (_map) { // although we are not changing the structure of the map - others may be doing so...
-                locus=(Locus)_map.get(key);
-            }
-
-            if (locus==null) {
-                // session does not exist - tell IM
-                dispatcher.reply(message,new MovePMToIM());
-                return;
-            } else {
-                Sync lock=locus.getExclusiveLock();
-                try {
-                    lock.acquire(); // ensures that no-one else tries to relocate session whilst we are doing so...
-
-                    Address im=message.getReplyTo();
-                    Address sm=locus.getAddress();
-
-                    if (sm.equals(im)) {
-                        // session does exist - but is already located at the IM
-                        // whilst we were waiting for the partition lock, another thread must have migrated the session to the IM...
-                        // How can this happen - the first Thread should have been holding the InvocationLock...
-                        _log.warn("session already at required location: "+key+" {"+_config.getPeerName(im)+"} - should not happen");
-                        // FIXME - need to reply to IM with something
-                        // I think we need a further two messages here :
-                        // MovePMToIM - holds lock in Partition whilst informing IM that it already has session
-                        // MoveIMToPM2 - IM acquires local state-lock and then acks to PM so that it can release distributed lock in partition
-                    } else {
-                        // session does exist - we need to ask SM to move it to IM
-                        Address pm=dispatcher.getCluster().getLocalPeer().getAddress();
-                        String imCorrelationId=message.getSourceCorrelationId();
-                        MovePMToSM request2=new MovePMToSM(key, im, pm, imCorrelationId);
-                        Message tmp=dispatcher.exchangeSend(sm, request2, _config.getInactiveTime());
-
-                        if (tmp==null) {
-                            _log.error("move: "+key+" {"+_config.getPeerName(sm)+"->"+_config.getPeerName(im)+"}");
-                            // FIXME - error condition - what should we do ?
-                            // we should check whether SM is still alive and send it another message... - CONSIDER
-                        } else {
-                            MoveSMToPM response=(MoveSMToPM)tmp.getPayload();
-                            if (response.getSuccess()) {
-                                // alter location
-                                locus.setAddress(im);
-                                if (_log.isDebugEnabled()) _log.debug("move: "+key+" {"+_config.getPeerName(sm)+"->"+_config.getPeerName(im)+"}");
-                            } else {
-                                if (_log.isWarnEnabled()) _log.warn("move: "+key+" {"+_config.getPeerName(sm)+"->"+_config.getPeerName(im)+"} - failed - no response from "+_config.getPeerName(sm));
-                            }
-                        }
-                    }
-                } catch (InterruptedException e) {
-                    _log.error("unexpected interruption waiting to perform relocation: "+key, e);
-                } finally {
-                    lock.release();
-                }
-            }
-        } catch (Exception e) {
-            _log.error("UNEXPECTED PROBLEM RELOCATING STATE: "+key);
-        }
+    // log outside sync block...
+    if (success) {
+      if (_log.isDebugEnabled()) _log.debug("insert: "+key+" {"+_config.getPeerName(newAddress)+"}");
+    } else {
+      if (_log.isWarnEnabled()) _log.warn("insert: "+key+" {"+_config.getPeerName(newAddress)+"} failed - key already in use");
     }
 
-    public void onMessage(Message message, EvacuateIMToPM request) {
-        Address newAddress=message.getReplyTo();
-        String key=request.getKey();
-        boolean success=false;
+    DIndexResponse response=new InsertPMToIM(success);
+    try {
+      _config.getDispatcher().reply(message, response);
+    } catch (MessageExchangeException e) {
+      _log.warn("See exception", e);
+    }
+  }
 
-        Locus locus=null;
-        synchronized (_map) {
-            locus=(Locus)_map.get(key);
-        }
+  public void onMessage(Message message, DeleteIMToPM request) {
+    String key=request.getKey();
+    Locus locus=null;
+    boolean success=false;
 
-        Address oldAddress=null;
-        if (locus==null) {
-            if (_log.isWarnEnabled()) _log.warn("evacuate: "+key+" {"+_config.getPeerName(newAddress)+"} failed - key not in use");
-        } else {
-            Sync lock=locus.getExclusiveLock();
-            try {
-                lock.acquire();
-                oldAddress=locus.getAddress();
-                if (oldAddress.equals(newAddress)) {
-                    if (_log.isWarnEnabled()) _log.warn("evacuate: "+key+" {"+_config.getPeerName(newAddress)+"} failed - evacuee is already there !");
-                } else {
-                    locus.setAddress(newAddress);
-                    if (_log.isDebugEnabled()) _log.debug("evacuate {"+request.getKey()+" : "+_config.getPeerName(oldAddress)+" -> "+_config.getPeerName(newAddress)+"}");
-                    success=true;
-                }
-            } catch (InterruptedException e) {
-                _log.error("unexpected interruption waiting to perform relocation: "+key, e);
-            } finally {
-                lock.release();
-            }
-        }
-
-        DIndexResponse response=new EvacuatePMToIM(success);
-        try {
-            _config.getDispatcher().reply(message, response);
-        } catch (MessageExchangeException e) {
-            _log.warn("See exception", e);
-        }
+    synchronized (_map) {
+      locus=(Locus)_map.remove(key);
     }
 
-    public Message exchange(DIndexRequest request, long timeout) throws Exception {
-        if (_log.isTraceEnabled()) _log.trace("local dispatch - needs optimisation");
-        Dispatcher dispatcher=_config.getDispatcher();
-        Address target=dispatcher.getCluster().getLocalPeer().getAddress();
-        return dispatcher.exchangeSend(target, request, timeout);
+    if (locus!=null) {
+      Address oldAddress=locus.getAddress();
+      if (_log.isDebugEnabled()) _log.debug("delete: "+key+" {"+_config.getPeerName(oldAddress)+"}");
+      success=true;
+    } else {
+      if (_log.isWarnEnabled()) _log.warn("delete: "+key+" failed - key not present");
     }
+
+    DIndexResponse response=new DeletePMToIM(success);
+    try {
+      _config.getDispatcher().reply(message, response);
+    } catch (MessageExchangeException e) {
+      _log.warn("See exception", e);
+    }
+  }
+
+  // called on Partition Master
+  public void onMessage(Message message, MoveIMToPM request) {
+
+    // TODO - whilst we are in here, we should have a SHARED lock on this Partition, so it cannot be moved
+    // The Partitions lock should be held in the Facade, so that it can swap Partitions in and out whilst holding an exclusive lock
+    // Partition may only be migrated when exclusive lock has been taken, this may only happen when all shared locks are released - this implies that no PM session locks will be in place...
+
+    String key=request.getKey();
+    Dispatcher dispatcher=_config.getDispatcher();
+    try {
+
+      Locus locus=null;
+      synchronized (_map) { // although we are not changing the structure of the map - others may be doing so...
+	locus=(Locus)_map.get(key);
+      }
+
+      if (locus==null) {
+	// session does not exist - tell IM
+	dispatcher.reply(message,new MovePMToIM());
+	return;
+      } else {
+	Sync lock=locus.getExclusiveLock();
+	try {
+	  lock.acquire(); // ensures that no-one else tries to relocate session whilst we are doing so...
+
+	  Address im=message.getReplyTo();
+	  Address sm=locus.getAddress();
+
+	  if (sm.equals(im)) {
+	    // session does exist - but is already located at the IM
+	    // whilst we were waiting for the partition lock, another thread must have migrated the session to the IM...
+	    // How can this happen - the first Thread should have been holding the InvocationLock...
+	    _log.warn("session already at required location: "+key+" {"+_config.getPeerName(im)+"} - should not happen");
+	    // FIXME - need to reply to IM with something
+	    // I think we need a further two messages here :
+	    // MovePMToIM - holds lock in Partition whilst informing IM that it already has session
+	    // MoveIMToPM2 - IM acquires local state-lock and then acks to PM so that it can release distributed lock in partition
+	  } else {
+	    // session does exist - we need to ask SM to move it to IM
+	    Address pm=dispatcher.getCluster().getLocalPeer().getAddress();
+	    String imCorrelationId=message.getSourceCorrelationId();
+	    MovePMToSM request2=new MovePMToSM(key, im, pm, imCorrelationId);
+	    Message tmp=dispatcher.exchangeSend(sm, request2, _config.getInactiveTime());
+
+	    if (tmp==null) {
+	      _log.error("move: "+key+" {"+_config.getPeerName(sm)+"->"+_config.getPeerName(im)+"}");
+	      // FIXME - error condition - what should we do ?
+	      // we should check whether SM is still alive and send it another message... - CONSIDER
+	    } else {
+	      MoveSMToPM response=(MoveSMToPM)tmp.getPayload();
+	      if (response.getSuccess()) {
+		// alter location
+		locus.setAddress(im);
+		if (_log.isDebugEnabled()) _log.debug("move: "+key+" {"+_config.getPeerName(sm)+"->"+_config.getPeerName(im)+"}");
+	      } else {
+		if (_log.isWarnEnabled()) _log.warn("move: "+key+" {"+_config.getPeerName(sm)+"->"+_config.getPeerName(im)+"} - failed - no response from "+_config.getPeerName(sm));
+	      }
+	    }
+	  }
+	} catch (InterruptedException e) {
+	  _log.error("unexpected interruption waiting to perform relocation: "+key, e);
+	} finally {
+	  lock.release();
+	}
+      }
+    } catch (Exception e) {
+      _log.error("UNEXPECTED PROBLEM RELOCATING STATE: "+key);
+    }
+  }
+
+  public void relocateSession(Locus locus, String key, Address im, Address pm, Address sm, String imCorrelationId) throws MessageExchangeException {
+    // session does exist - we need to ask SM to move it to IM
+    //Sync lock=locus.getExclusiveLock();
+    //try {
+    //lock.acquire(); // ensures that no-one else tries to relocate session whilst we are doing so...
+
+    synchronized(locus)
+    {
+      Dispatcher dispatcher=_config.getDispatcher();
+
+      MovePMToSM request=new MovePMToSM(key, im, pm, imCorrelationId);
+      Message tmp=dispatcher.exchangeSend(sm, request, _config.getInactiveTime());
+
+      if (tmp==null) {
+	_log.error("move: "+key+" {"+_config.getPeerName(sm)+"->"+_config.getPeerName(im)+"}");
+	// FIXME - error condition - what should we do ?
+	// we should check whether SM is still alive and send it another message... - CONSIDER
+      } else {
+	MoveSMToPM response=(MoveSMToPM)tmp.getPayload();
+	if (response.getSuccess()) {
+	  // alter location
+	  locus.setAddress(im);
+	  if (_log.isDebugEnabled()) _log.debug("move: "+key+" {"+_config.getPeerName(sm)+"->"+_config.getPeerName(im)+"}");
+	} else {
+	  if (_log.isWarnEnabled()) _log.warn("move: "+key+" {"+_config.getPeerName(sm)+"->"+_config.getPeerName(im)+"} - failed - no response from "+_config.getPeerName(sm));
+	}
+      }
+    } //catch (InterruptedException e) {
+    //            _log.error("unexpected interruption waiting to perform Session relocation: "+key, e);
+    //}// finally {
+    //lock.release();
+    //}
+  }
+
+  public void relocateInvocation(Locus locus, String key, Address im, Address pm, Address sm, String imCorrelationId) throws MessageExchangeException {
+    long leasePeriod=5000;  // TODO - parameterise
+    try {
+      Lease.Handle handle=locus.getSharedLease().acquire(leasePeriod);
+      handle=null; // need to work on making these Serializable - TODO
+      Dispatcher dispatcher=_config.getDispatcher();
+      // send a message back to the IM, informing it that it has a lease and should relocate its invocation to the SM...
+      MovePMToIMInvocation response=new MovePMToIMInvocation(handle, leasePeriod, sm);
+      dispatcher.reply(pm, im, imCorrelationId, response);
+    } catch (InterruptedException e) {
+      _log.error("unexpected interruption waiting to perform Invocation relocation: "+key, e);
+    }
+    // think about how a further message from the IM could release the sharedLease...
+  }
+
+  public void onMessage(Message message, EvacuateIMToPM request) {
+    Address newAddress=message.getReplyTo();
+    String key=request.getKey();
+    boolean success=false;
+
+    Locus locus=null;
+    synchronized (_map) {
+      locus=(Locus)_map.get(key);
+    }
+
+    Address oldAddress=null;
+    if (locus==null) {
+      if (_log.isWarnEnabled()) _log.warn("evacuate: "+key+" {"+_config.getPeerName(newAddress)+"} failed - key not in use");
+    } else {
+      Sync lock=locus.getExclusiveLock();
+      try {
+	lock.acquire();
+	oldAddress=locus.getAddress();
+	if (oldAddress.equals(newAddress)) {
+	  if (_log.isWarnEnabled()) _log.warn("evacuate: "+key+" {"+_config.getPeerName(newAddress)+"} failed - evacuee is already there !");
+	} else {
+	  locus.setAddress(newAddress);
+	  if (_log.isDebugEnabled()) _log.debug("evacuate {"+request.getKey()+" : "+_config.getPeerName(oldAddress)+" -> "+_config.getPeerName(newAddress)+"}");
+	  success=true;
+	}
+      } catch (InterruptedException e) {
+	_log.error("unexpected interruption waiting to perform relocation: "+key, e);
+      } finally {
+	lock.release();
+      }
+    }
+
+    DIndexResponse response=new EvacuatePMToIM(success);
+    try {
+      _config.getDispatcher().reply(message, response);
+    } catch (MessageExchangeException e) {
+      _log.warn("See exception", e);
+    }
+  }
+
+  public Message exchange(DIndexRequest request, long timeout) throws Exception {
+    if (_log.isTraceEnabled()) _log.trace("local dispatch - needs optimisation");
+    Dispatcher dispatcher=_config.getDispatcher();
+    Address target=dispatcher.getCluster().getLocalPeer().getAddress();
+    return dispatcher.exchangeSend(target, request, timeout);
+  }
 
 }
