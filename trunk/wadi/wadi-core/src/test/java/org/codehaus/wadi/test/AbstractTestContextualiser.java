@@ -17,7 +17,6 @@
 package org.codehaus.wadi.test;
 
 import java.io.File;
-import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
@@ -43,12 +42,10 @@ import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.InvocationProxy;
-import org.codehaus.wadi.Location;
 import org.codehaus.wadi.Manager;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.PoolableInvocationWrapperPool;
 import org.codehaus.wadi.EndPoint;
-import org.codehaus.wadi.ProxyingException;
 import org.codehaus.wadi.Router;
 import org.codehaus.wadi.WebSession;
 import org.codehaus.wadi.SessionIdFactory;
@@ -56,7 +53,6 @@ import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.SessionWrapperFactory;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValuePool;
-import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.impl.AbsoluteEvicter;
 import org.codehaus.wadi.impl.AbstractContextualiser;
@@ -79,7 +75,6 @@ import org.codehaus.wadi.impl.NeverEvicter;
 import org.codehaus.wadi.impl.SerialContextualiser;
 import org.codehaus.wadi.impl.SessionToContextPoolAdapter;
 import org.codehaus.wadi.impl.SharedStoreContextualiser;
-import org.codehaus.wadi.impl.SimpleEvictable;
 import org.codehaus.wadi.impl.SimpleSessionPool;
 import org.codehaus.wadi.impl.SimpleStreamer;
 import org.codehaus.wadi.impl.SimpleValuePool;
@@ -563,15 +558,6 @@ public abstract class AbstractTestContextualiser extends TestCase {
 		assertTrue(d.size()==0); // no longer on disc
 	}
 
-	static class MyLocation extends SimpleEvictable implements Location, Serializable {
-
-		public void proxy(Invocation invocation) throws ProxyingException {
-			System.out.println("PROXYING");
-		}
-
-		public Address getAddress(){return null;}
-	}
-
 //    public void donottestCluster() throws Exception {
 //		ConnectionFactory connectionFactory = getConnectionFactory();
 //		//((ActiveMQConnectionFactory)connectionFactory).setBrokerContainerFactory(new BrokerContainerFactoryImpl(new VMPersistenceAdapter()));
@@ -586,7 +572,6 @@ public abstract class AbstractTestContextualiser extends TestCase {
 //		//-------------------
 //		// do the test
 //
-//		//Location location0=new MyLocation();
 //		//Map c0=new HashMap();
 //		Relocater relocater0=new WebHybridRelocater(5000L, 5000L, true);
 //		Collapser collapser0=new HashingCollapser(10, 2000);
@@ -596,7 +581,6 @@ public abstract class AbstractTestContextualiser extends TestCase {
 //		Contextualiser memory0=new MemoryContextualiser(clstr0, new NeverEvicter(30000, true), m0, new GZIPStreamer(), new MyContextPool(), _requestPool);
 //		memory0.init(new DummyDistributableContextualiserConfig(cluster0));
 //
-//		//Location location1=new MyLocation();
 //		//Map c1=new HashMap();
 //		Relocater relocater1=new WebHybridRelocater(5000L, 5000L, true);
 //		Collapser collapser1=new HashingCollapser(10, 2000);
