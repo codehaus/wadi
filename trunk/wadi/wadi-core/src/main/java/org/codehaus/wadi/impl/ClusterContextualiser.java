@@ -27,7 +27,6 @@ import org.codehaus.wadi.Collapser;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.ContextualiserConfig;
 import org.codehaus.wadi.Emoter;
-import org.codehaus.wadi.Evictable;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
@@ -265,41 +264,6 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 	}
 
 	protected int _locationMaxInactiveInterval=30;
-
-	class MyLocation implements Evictable {
-
-		protected long _lastAccessedTime;
-		protected String _nodeName;
-
-		public MyLocation(long timestamp, String nodeName) {
-			_lastAccessedTime=timestamp;
-			_nodeName=nodeName;
-		}
-
-		public void init(long creationTime, long lastAccessedTime, int maxInactiveInterval) {
-			// ignore creationTime;
-			_lastAccessedTime=lastAccessedTime;
-			// ignore maxInactiveInterval
-		}
-
-		public void destroy() throws Exception {throw new UnsupportedOperationException();}
-
-		public void copy(Evictable evictable) {throw new UnsupportedOperationException();}
-		public void mote(Evictable recipient) {throw new UnsupportedOperationException();}
-
-		public long getCreationTime() {return _lastAccessedTime;}
-		public long getLastAccessedTime() {return _lastAccessedTime;}
-		public void setLastAccessedTime(long lastAccessedTime) {throw new UnsupportedOperationException();}
-		public int  getMaxInactiveInterval() {return _locationMaxInactiveInterval;}
-		public void setMaxInactiveInterval(int maxInactiveInterval) {throw new UnsupportedOperationException();}
-
-		public boolean isNew() {throw new UnsupportedOperationException();}
-
-		public long getTimeToLive(long time) {return _lastAccessedTime+(_locationMaxInactiveInterval*1000)-time;}
-		public boolean getTimedOut(long time) {return getTimeToLive(time)<=0;}
-		public boolean checkTimeframe(long time) {throw new UnsupportedOperationException();}
-
-	}
 
 	// RelocaterConfig
 
