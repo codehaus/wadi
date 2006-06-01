@@ -18,12 +18,12 @@ package org.codehaus.wadi.jetty5;
 
 import org.codehaus.wadi.Context;
 import org.codehaus.wadi.ContextPool;
-import org.codehaus.wadi.impl.MyContext;
+import org.codehaus.wadi.test.MyContext;
 
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
+ * @version $Revision:1846 $
  */
 public class MyContextPool implements ContextPool {
     public void put(Context context) {

@@ -39,9 +39,9 @@ import org.codehaus.wadi.Relocater;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.impl.AbstractRelocater;
 import org.codehaus.wadi.impl.CommonsHttpProxy;
-import org.codehaus.wadi.impl.MyContext;
 import org.codehaus.wadi.impl.StandardHttpProxy;
 import org.codehaus.wadi.impl.WebHybridRelocater;
+import org.codehaus.wadi.test.MyContext;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
@@ -51,7 +51,7 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * their innards for the expected changes,
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
+ * @version $Revision:1846 $
  */
 
 public abstract class AbstractTestRelocation extends TestCase {

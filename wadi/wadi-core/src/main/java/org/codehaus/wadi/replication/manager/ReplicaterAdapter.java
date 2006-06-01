@@ -16,7 +16,7 @@
 package org.codehaus.wadi.replication.manager;
 
 import org.codehaus.wadi.Replicater;
-import org.codehaus.wadi.Session;
+import org.codehaus.wadi.WebSession;
 
 /**
  * 
@@ -30,22 +30,22 @@ public class ReplicaterAdapter implements Replicater {
     }
 
     public void create(Object tmp) {
-        Session session = castAndEnsureType(tmp);
+        WebSession session = castAndEnsureType(tmp);
         replicationManager.create(session.getName(), session);
     }
 
     public void update(Object tmp) {
-        Session session = castAndEnsureType(tmp);
+        WebSession session = castAndEnsureType(tmp);
         replicationManager.update(session.getName(), session);
     }
 
     public void destroy(Object tmp) {
-        Session session = castAndEnsureType(tmp);
+        WebSession session = castAndEnsureType(tmp);
         replicationManager.destroy(session.getName());
     }
 
     public void acquireFromOtherReplicater(Object tmp) {
-        Session session = castAndEnsureType(tmp);
+        WebSession session = castAndEnsureType(tmp);
         Object object = replicationManager.acquirePrimary(session.getName());
         // TODO initialize the state of the session. This is required to 
         // support reusingStore set to true.
@@ -57,10 +57,10 @@ public class ReplicaterAdapter implements Replicater {
         return false;
     }
     
-    private Session castAndEnsureType(Object tmp) {
-        if (false == tmp instanceof Session) {
+    private WebSession castAndEnsureType(Object tmp) {
+        if (false == tmp instanceof WebSession) {
             throw new IllegalArgumentException("tmp is not a Session");
         }
-        return (Session) tmp;
+        return (WebSession) tmp;
     }
 }

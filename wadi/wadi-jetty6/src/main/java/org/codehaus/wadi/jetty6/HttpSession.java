@@ -16,7 +16,7 @@
  */
 package org.codehaus.wadi.jetty6;
 
-import org.codehaus.wadi.Session;
+import org.codehaus.wadi.WebSession;
 import org.codehaus.wadi.impl.SessionWrapper;
 
 /**
@@ -28,7 +28,7 @@ import org.codehaus.wadi.impl.SessionWrapper;
 
 public class HttpSession extends SessionWrapper {
 
-    HttpSession(Session session) {super(session);}
+    HttpSession(WebSession session) {super(session);}
     
     public boolean isValid() {
         return _session.getName()!=null;

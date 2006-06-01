@@ -25,7 +25,7 @@ import org.codehaus.wadi.AttributesFactory;
 import org.codehaus.wadi.DistributableSessionConfig;
 import org.codehaus.wadi.Evictable;
 import org.codehaus.wadi.Router;
-import org.codehaus.wadi.Session;
+import org.codehaus.wadi.WebSession;
 import org.codehaus.wadi.SessionIdFactory;
 import org.codehaus.wadi.SessionWrapperFactory;
 import org.codehaus.wadi.Streamer;
@@ -77,7 +77,7 @@ public class DummyDistributableSessionConfig implements DistributableSessionConf
         throw new UnsupportedOperationException();
     }
 
-    public void destroy(Session session) {
+    public void destroy(WebSession session) {
         throw new UnsupportedOperationException();
     }
 

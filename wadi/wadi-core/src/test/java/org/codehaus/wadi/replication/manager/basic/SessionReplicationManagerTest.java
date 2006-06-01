@@ -18,7 +18,7 @@ package org.codehaus.wadi.replication.manager.basic;
 import junit.framework.TestCase;
 
 import org.codehaus.wadi.RehydrationException;
-import org.codehaus.wadi.Session;
+import org.codehaus.wadi.WebSession;
 import org.codehaus.wadi.impl.DistributableSession;
 import org.codehaus.wadi.replication.common.NodeInfo;
 import org.codehaus.wadi.replication.common.ReplicaInfo;
@@ -44,7 +44,7 @@ public class SessionReplicationManagerTest extends TestCase {
         SessionReplicationManager manager = new SessionReplicationManager(repManager, sessionRehydrater);
         
         String key = "key";
-        Session session = new DistributableSession(new DummyDistributableSessionConfig());
+        WebSession session = new DistributableSession(new DummyDistributableSessionConfig());
         manager.create(key, session);
 
         assertSame(key, parameters[0]);
@@ -64,7 +64,7 @@ public class SessionReplicationManagerTest extends TestCase {
         SessionReplicationManager manager = new SessionReplicationManager(repManager, sessionRehydrater);
         
         String key = "key";
-        Session session = new DistributableSession(new DummyDistributableSessionConfig());
+        WebSession session = new DistributableSession(new DummyDistributableSessionConfig());
         manager.update(key, session);
 
         assertSame(key, parameters[0]);
@@ -89,7 +89,7 @@ public class SessionReplicationManagerTest extends TestCase {
     }
 
     public void testAcquirePrimary() throws Exception {
-        Session session = new DistributableSession(new DummyDistributableSessionConfig());
+        WebSession session = new DistributableSession(new DummyDistributableSessionConfig());
         
         final Object[] parameters = new Object[1];
         final Object returned = session.getBodyAsByteArray();
@@ -173,9 +173,9 @@ public class SessionReplicationManagerTest extends TestCase {
     public class MockSessionRehydrater implements SessionRehydrater {
         private byte[] body;
         private String key;
-        private Session session;
+        private WebSession session;
         
-        public Session rehydrate(String key, byte[] body) throws RehydrationException {
+        public WebSession rehydrate(String key, byte[] body) throws RehydrationException {
             this.key = key;
             this.body = body;
             return session;

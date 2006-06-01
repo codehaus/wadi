@@ -16,7 +16,7 @@
 package org.codehaus.wadi.replication.manager.basic;
 
 import org.codehaus.wadi.RehydrationException;
-import org.codehaus.wadi.Session;
+import org.codehaus.wadi.WebSession;
 import org.codehaus.wadi.impl.DistributableManager;
 
 /**
@@ -33,7 +33,7 @@ public class DistributableManagerRehydrater implements SessionRehydrater {
         this.manager = manager;
     }
     
-    public Session rehydrate(String key, byte[] body) throws RehydrationException {
+    public WebSession rehydrate(String key, byte[] body) throws RehydrationException {
         return manager.rehydrate(key, body);
     }
 

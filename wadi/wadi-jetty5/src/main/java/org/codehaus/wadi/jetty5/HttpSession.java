@@ -16,7 +16,7 @@
  */
 package org.codehaus.wadi.jetty5;
 
-import org.codehaus.wadi.Session;
+import org.codehaus.wadi.WebSession;
 import org.codehaus.wadi.impl.SessionWrapper;
 import org.mortbay.jetty.servlet.SessionManager;
 
@@ -29,7 +29,7 @@ import org.mortbay.jetty.servlet.SessionManager;
 
 public class HttpSession extends SessionWrapper implements SessionManager.Session {
 
-    HttpSession(Session session) {super(session);}
+    HttpSession(WebSession session) {super(session);}
     
     public boolean isValid() {
         return _session.getName()!=null;

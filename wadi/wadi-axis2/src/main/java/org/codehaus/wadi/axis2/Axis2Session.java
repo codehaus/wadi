@@ -22,7 +22,7 @@ import org.codehaus.wadi.impl.SessionWrapper;
 
 public class Axis2Session extends SessionWrapper implements Session, HttpSession {
     
-    Axis2Session(org.codehaus.wadi.Session session) {
+    Axis2Session(org.codehaus.wadi.WebSession session) {
         super(session);
     }
     

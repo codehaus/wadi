@@ -33,6 +33,13 @@ public interface Invocation {
     String getKey();
     
     /**
+     * Attach the relevant session to this Invocation for its lifetime
+     * 
+     * @param session The Session
+     */
+    public void setSession(Context session);
+    
+    /**
      * Send an error back to the client from which the Invocation originated
      * 
      * @param code an error code

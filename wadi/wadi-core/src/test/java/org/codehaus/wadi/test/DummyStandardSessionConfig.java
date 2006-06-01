@@ -24,7 +24,7 @@ import org.codehaus.wadi.AttributesFactory;
 import org.codehaus.wadi.Evictable;
 import org.codehaus.wadi.EvicterConfig;
 import org.codehaus.wadi.Router;
-import org.codehaus.wadi.Session;
+import org.codehaus.wadi.WebSession;
 import org.codehaus.wadi.SessionConfig;
 import org.codehaus.wadi.SessionIdFactory;
 import org.codehaus.wadi.SessionWrapperFactory;
@@ -56,7 +56,7 @@ public class DummyStandardSessionConfig implements SessionConfig {
 
     public ServletContext getServletContext() {return null;}
 
-    public void destroy(Session session) {_config.expire(session);}
+    public void destroy(WebSession session) {_config.expire(session);}
 
     protected final SessionWrapperFactory _sessionWrapperfactory=new StandardSessionWrapperFactory();
     public SessionWrapperFactory getSessionWrapperFactory() {return _sessionWrapperfactory;}

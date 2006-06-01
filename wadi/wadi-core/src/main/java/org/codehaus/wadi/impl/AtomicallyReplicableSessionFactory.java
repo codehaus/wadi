@@ -17,7 +17,7 @@
 package org.codehaus.wadi.impl;
 
 import org.codehaus.wadi.ReplicableSessionConfig;
-import org.codehaus.wadi.Session;
+import org.codehaus.wadi.WebSession;
 import org.codehaus.wadi.SessionConfig;
 import org.codehaus.wadi.SessionFactory;
 
@@ -27,7 +27,7 @@ import org.codehaus.wadi.SessionFactory;
  */
 public class AtomicallyReplicableSessionFactory implements SessionFactory {
 
-    public Session create(SessionConfig config) {
+    public WebSession create(SessionConfig config) {
         return new AtomicallyReplicableSession((ReplicableSessionConfig)config);
     }
 }
