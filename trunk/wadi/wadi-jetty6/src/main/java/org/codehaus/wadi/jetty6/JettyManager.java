@@ -53,7 +53,7 @@ public class JettyManager extends AbstractLifeCycle implements ManagerConfig, Se
 
 	protected final ListenerSupport _listeners=new ListenerSupport();
 
-	protected StandardManager _wadi;
+	protected Manager _wadi;
 	protected ContextHandler.Context _context;
 	protected boolean _usingCookies=true;
 	protected int _maxInactiveInterval=60*30;
@@ -65,7 +65,7 @@ public class JettyManager extends AbstractLifeCycle implements ManagerConfig, Se
 	}
 
 	public void callback(Manager manager) {
-		_listeners.installListeners((StandardManager)manager);
+		_listeners.installListeners((StandardManager)manager); // TODO - http://jira.codehaus.org/browse/WADI-81
 	}
 
 	// org.mortbay.thread.AbstractLifecycle
@@ -75,7 +75,7 @@ public class JettyManager extends AbstractLifeCycle implements ManagerConfig, Se
 
 		try {
 			InputStream descriptor=_context.getContextHandler().getBaseResource().addPath("WEB-INF/wadi-web.xml").getInputStream();
-			_wadi=(StandardManager)SpringManagerFactory.create(descriptor, "SessionManager", new AtomicallyReplicableSessionFactory(), new JettySessionWrapperFactory());
+			_wadi=SpringManagerFactory.create(descriptor, "SessionManager", new AtomicallyReplicableSessionFactory(), new JettySessionWrapperFactory());
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
