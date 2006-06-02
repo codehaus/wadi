@@ -25,7 +25,7 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * invoke()-ing the Invocation...
  * 
  * Each Contextualiser contains a store of Sessions. These may be held e.g. in Memory, on Disc,
- * in a Database, or on another Peer in the Cluster. These are arranged in a liked list.
+ * in a Database, or on another Peer in the Cluster. These are arranged in a linked list.
  * 
  * This 'Contextualiser stack' is generally arranged with fastest, most volatile storage (i.e. Memory) at
  * the top, and slowest, securest storage (e.g. Database), at the bottom.
