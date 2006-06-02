@@ -18,8 +18,8 @@ package org.codehaus.wadi.web.impl;
 
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.RWLockListener;
-import org.codehaus.wadi.ReplicableSessionConfig;
 import org.codehaus.wadi.Replicater;
+import org.codehaus.wadi.web.ReplicableSessionConfig;
 
 /**
  * A DistributableSession enhanced with functionality associated with replication - the frequent 'backing-up' of its content to provide against catastrophic failure.

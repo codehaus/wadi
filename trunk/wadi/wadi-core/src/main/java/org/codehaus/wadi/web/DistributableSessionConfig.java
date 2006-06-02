@@ -14,22 +14,24 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.web;
+
+import org.codehaus.wadi.Streamer;
+import org.codehaus.wadi.ValueHelper;
 
 /**
- * Superclass of Exceptions thrown by HTTP proxying code.
+ * Defines Objects holding the configuration required by a DistributableSession
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
 
-public class ProxyingException extends Exception {
+public interface DistributableSessionConfig extends WebSessionConfig {
 
-	public ProxyingException(String message) {
-		super(message);
-	}
+    // Distributable
+    Streamer getStreamer();
+    ValueHelper findHelper(Class type);
 
-	public ProxyingException(String message, Exception cause) {
-		super(message, cause);
-	}
+    // Lazy
+    boolean getHttpSessionAttributeListenersRegistered();
 }

@@ -21,7 +21,7 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Session;
-import org.codehaus.wadi.ContextPool;
+import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Emoter;
 import org.codehaus.wadi.Evictable;
@@ -44,7 +44,7 @@ import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
  * @version $Revision$
  */
 public class MemoryContextualiser extends AbstractExclusiveContextualiser {
-	protected final ContextPool _pool;
+	protected final SessionPool _pool;
 	protected final Streamer _streamer;
 	protected final Immoter _immoter;
 	protected final Emoter _emoter;
@@ -52,7 +52,7 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
 	protected final PoolableInvocationWrapperPool _requestPool;
 	protected final Log _lockLog=LogFactory.getLog("org.codehaus.wadi.LOCKS");
 
-	public MemoryContextualiser(Contextualiser next, Evicter evicter, Map map, Streamer streamer, ContextPool pool, PoolableInvocationWrapperPool requestPool) {
+	public MemoryContextualiser(Contextualiser next, Evicter evicter, Map map, Streamer streamer, SessionPool pool, PoolableInvocationWrapperPool requestPool) {
 		super(next, new RWLocker(), false, evicter, map);
 		_pool=pool;
 

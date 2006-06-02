@@ -23,7 +23,7 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.ContextPool;
+import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Invocation;
@@ -40,13 +40,13 @@ import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.impl.DummyContextualiser;
 import org.codehaus.wadi.impl.MemoryContextualiser;
 import org.codehaus.wadi.impl.NeverEvicter;
-import org.codehaus.wadi.impl.SessionToContextPoolAdapter;
 import org.codehaus.wadi.impl.SimpleSessionPool;
 import org.codehaus.wadi.impl.SimpleStreamer;
 import org.codehaus.wadi.location.PartitionManagerConfig;
 import org.codehaus.wadi.location.impl.DIndex;
 import org.codehaus.wadi.web.WebSessionPool;
 import org.codehaus.wadi.web.impl.DistributableSessionFactory;
+import org.codehaus.wadi.web.impl.WebSessionToSessionPoolAdapter;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 import EDU.oswego.cs.dl.util.concurrent.Latch;
@@ -70,7 +70,7 @@ public class DIndexNode implements DispatcherConfig, PartitionManagerConfig {
 	protected final DistributableSessionFactory _distributableSessionFactory=new DistributableSessionFactory();
 	protected final WebSessionPool _distributableSessionPool=new SimpleSessionPool(_distributableSessionFactory);
 	protected final PoolableInvocationWrapperPool _requestPool=new MyDummyHttpServletRequestWrapperPool();
-	protected final ContextPool _distributableContextPool=new SessionToContextPoolAdapter(_distributableSessionPool);
+	protected final SessionPool _distributableContextPool=new WebSessionToSessionPoolAdapter(_distributableSessionPool);
 	protected final Streamer _streamer;
 	protected DIndex _dindex;
 	protected final long _birthTime=System.currentTimeMillis();

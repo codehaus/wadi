@@ -19,7 +19,7 @@ package org.codehaus.wadi.test;
 import java.util.HashMap;
 import java.util.Map;
 import org.codehaus.wadi.Session;
-import org.codehaus.wadi.ContextPool;
+import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Evicter;
 import org.codehaus.wadi.Immoter;
@@ -64,7 +64,7 @@ public class TestSharedStack extends TestCase {
         
     }
     
-    static class Tier1ContextPool implements ContextPool {
+    static class Tier1ContextPool implements SessionPool {
 
         public void put(Session context) {
             // throw it away...
@@ -120,7 +120,7 @@ public class TestSharedStack extends TestCase {
         
         // app specific components... - should be injected via the Invocation...
         Streamer streamer=new SimpleStreamer();
-        ContextPool contextPool=new Tier1ContextPool();
+        SessionPool contextPool=new Tier1ContextPool();
         PoolableInvocationWrapperPool invocationWrapperPool=new Tier1WrapperPool(); // can't remember why we need this... - investigate
         
         Contextualiser memory=new MemoryContextualiser(terminator, evicter, map, streamer, contextPool, invocationWrapperPool);

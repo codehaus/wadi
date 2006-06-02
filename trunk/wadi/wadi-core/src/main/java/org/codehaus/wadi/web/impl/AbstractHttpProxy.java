@@ -42,7 +42,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationProxy;
 import org.codehaus.wadi.EndPoint;
-import org.codehaus.wadi.ProxyingException;
 
 //HTTP/1.1 Methods:
 

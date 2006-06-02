@@ -16,8 +16,8 @@
  */
 package org.codehaus.wadi.jetty6;
 
-import org.codehaus.wadi.impl.SessionWrapper;
 import org.codehaus.wadi.web.WebSession;
+import org.codehaus.wadi.web.impl.WebSessionWrapper;
 
 /**
  * A SessionWrapper that integrates correctly with Jetty.
@@ -26,7 +26,7 @@ import org.codehaus.wadi.web.WebSession;
  * @version $Revision$
  */
 
-public class HttpSession extends SessionWrapper {
+public class HttpSession extends WebSessionWrapper {
 
     HttpSession(WebSession session) {super(session);}
     

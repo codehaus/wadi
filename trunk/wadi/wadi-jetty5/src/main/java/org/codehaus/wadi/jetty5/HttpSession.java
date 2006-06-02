@@ -16,8 +16,8 @@
  */
 package org.codehaus.wadi.jetty5;
 
-import org.codehaus.wadi.impl.SessionWrapper;
 import org.codehaus.wadi.web.WebSession;
+import org.codehaus.wadi.web.impl.WebSessionWrapper;
 import org.mortbay.jetty.servlet.SessionManager;
 
 /**
@@ -27,7 +27,7 @@ import org.mortbay.jetty.servlet.SessionManager;
  * @version $Revision$
  */
 
-public class HttpSession extends SessionWrapper implements SessionManager.Session {
+public class HttpSession extends WebSessionWrapper implements SessionManager.Session {
 
     HttpSession(WebSession session) {super(session);}
     

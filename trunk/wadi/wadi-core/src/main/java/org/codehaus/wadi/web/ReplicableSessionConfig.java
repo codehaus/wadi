@@ -14,22 +14,19 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.impl;
 
-import java.util.HashMap;
+package org.codehaus.wadi.web;
 
-import org.codehaus.wadi.web.Attributes;
-import org.codehaus.wadi.web.AttributesConfig;
-import org.codehaus.wadi.web.AttributesFactory;
+import org.codehaus.wadi.Replicater;
 
 /**
+ * Defines Objects holding the configuration required by a ReplicableSession
+ *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class LazyAttributesFactory implements AttributesFactory {
+public interface ReplicableSessionConfig extends DistributableSessionConfig {
 
-    public Attributes create(AttributesConfig config) {
-        return new LazyAttributes(config, new HashMap());
-    }
-
+	Replicater getReplicater();
+	
 }

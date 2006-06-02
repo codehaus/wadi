@@ -29,7 +29,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Collapser;
-import org.codehaus.wadi.ContextPool;
+import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.InvocationProxy;
 import org.codehaus.wadi.Manager;
@@ -48,7 +48,6 @@ import org.codehaus.wadi.impl.HashingCollapser;
 import org.codehaus.wadi.impl.MemoryContextualiser;
 import org.codehaus.wadi.impl.NeverEvicter;
 import org.codehaus.wadi.impl.SerialContextualiser;
-import org.codehaus.wadi.impl.SessionToContextPoolAdapter;
 import org.codehaus.wadi.impl.SimpleSessionPool;
 import org.codehaus.wadi.impl.SimpleStreamer;
 import org.codehaus.wadi.impl.SimpleValuePool;
@@ -65,6 +64,7 @@ import org.codehaus.wadi.web.impl.DistributableValueFactory;
 import org.codehaus.wadi.web.impl.DummyRouter;
 import org.codehaus.wadi.web.impl.StandardSessionWrapperFactory;
 import org.codehaus.wadi.web.impl.WebEndPoint;
+import org.codehaus.wadi.web.impl.WebSessionToSessionPoolAdapter;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -91,7 +91,7 @@ public class MyServlet implements Servlet {
 	protected final boolean _accessOnLoad=true;
 	protected final Router _router=new DummyRouter();
 	protected final WebSessionPool _distributableSessionPool=new SimpleSessionPool(new DistributableSessionFactory());
-	protected final ContextPool _distributableContextPool=new SessionToContextPoolAdapter(_distributableSessionPool);
+	protected final SessionPool _distributableContextPool=new WebSessionToSessionPoolAdapter(_distributableSessionPool);
 	protected final AttributesFactory _distributableAttributesFactory=new DistributableAttributesFactory();
 	protected final ValuePool _distributableValuePool=new SimpleValuePool(new DistributableValueFactory());
 	protected final InvocationProxy _httpProxy;
@@ -99,7 +99,7 @@ public class MyServlet implements Servlet {
 	protected final StandardManager _manager;
 
 
-	public MyServlet(String nodeName, String clusterName, ContextPool contextPool, Relocater relocater, InvocationProxy httpProxy, InetSocketAddress httpAddress, Dispatcher dispatcher) throws Exception {
+	public MyServlet(String nodeName, String clusterName, SessionPool contextPool, Relocater relocater, InvocationProxy httpProxy, InetSocketAddress httpAddress, Dispatcher dispatcher) throws Exception {
 		_log=LogFactory.getLog(getClass().getName()+"#"+nodeName);
 		_clusterName=clusterName;
 		_nodeName=nodeName;

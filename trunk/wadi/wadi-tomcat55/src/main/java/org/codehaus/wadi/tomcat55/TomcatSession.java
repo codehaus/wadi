@@ -31,7 +31,7 @@ import org.apache.catalina.Session;
 import org.apache.catalina.SessionListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.ReplicableSessionConfig;
+import org.codehaus.wadi.web.ReplicableSessionConfig;
 import org.codehaus.wadi.web.impl.AtomicallyReplicableSession;
 
 /**

@@ -14,17 +14,19 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+package org.codehaus.wadi.web.impl;
 
-package org.codehaus.wadi;
+import javax.servlet.http.HttpSession;
+
+import org.codehaus.wadi.web.WebSession;
+import org.codehaus.wadi.web.WebSessionWrapperFactory;
 
 /**
- * Defines Objects holding the configuration required by a ReplicableSession
- *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
+ * @version $Revision: 1893 $
  */
-public interface ReplicableSessionConfig extends DistributableSessionConfig {
+public class DummyWebSessionWrapperFactory implements WebSessionWrapperFactory {
 
-	Replicater getReplicater();
-	
+    public HttpSession create(WebSession session) {return new WebSessionWrapper(session);}
+
 }

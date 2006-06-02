@@ -26,7 +26,7 @@ import java.util.Timer;
 import junit.framework.TestCase;
 
 import org.codehaus.wadi.Collapser;
-import org.codehaus.wadi.ContextPool;
+import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Emoter;
 import org.codehaus.wadi.Evicter;
@@ -49,7 +49,6 @@ import org.codehaus.wadi.impl.ExclusiveStoreContextualiser;
 import org.codehaus.wadi.impl.HashingCollapser;
 import org.codehaus.wadi.impl.MemoryContextualiser;
 import org.codehaus.wadi.impl.NeverEvicter;
-import org.codehaus.wadi.impl.SessionToContextPoolAdapter;
 import org.codehaus.wadi.impl.SimpleSessionPool;
 import org.codehaus.wadi.impl.SimpleStreamer;
 import org.codehaus.wadi.impl.SimpleValuePool;
@@ -65,6 +64,7 @@ import org.codehaus.wadi.web.impl.DummyStatefulHttpServletRequestWrapperPool;
 import org.codehaus.wadi.web.impl.StandardHttpProxy;
 import org.codehaus.wadi.web.impl.StandardSessionWrapperFactory;
 import org.codehaus.wadi.web.impl.WebEndPoint;
+import org.codehaus.wadi.web.impl.WebSessionToSessionPoolAdapter;
 
 import EDU.oswego.cs.dl.util.concurrent.NullSync;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
@@ -134,7 +134,7 @@ public abstract class AbstractTestEvicters extends TestCase {
 		int inactivityInterval=1; // second
 		Evicter mevicter=new AbsoluteEvicter(sweepInterval, strictOrdering, inactivityInterval);
 		WebSessionPool sessionPool=new SimpleSessionPool(new DistributableSessionFactory());
-		ContextPool contextPool=new SessionToContextPoolAdapter(sessionPool);
+		SessionPool contextPool=new WebSessionToSessionPoolAdapter(sessionPool);
 		PoolableInvocationWrapperPool requestPool=new DummyStatefulHttpServletRequestWrapperPool();
 		AbstractExclusiveContextualiser memory=new MemoryContextualiser(disc, mevicter, mmap, streamer, contextPool, requestPool);
 		// Manager

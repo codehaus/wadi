@@ -14,17 +14,23 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.web.impl;
+
 
 /**
- * API for a pool of Contexts
+ * Indicates an exceptional case which is recoverable.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public interface ContextPool {
 
-	void put(Session context);
-	Session take();
+public class RecoverableException extends ProxyingException {
 
+	/**
+	 * @param message
+	 * @param cause
+	 */
+	public RecoverableException(String message, Exception cause) {
+		super(message, cause);
+	}
 }

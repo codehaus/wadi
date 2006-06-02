@@ -16,7 +16,7 @@
  */
 package org.codehaus.wadi.web.impl;
 
-import org.codehaus.wadi.ReplicableSessionConfig;
+import org.codehaus.wadi.web.ReplicableSessionConfig;
 import org.codehaus.wadi.web.WebSession;
 import org.codehaus.wadi.web.WebSessionConfig;
 import org.codehaus.wadi.web.WebSessionFactory;

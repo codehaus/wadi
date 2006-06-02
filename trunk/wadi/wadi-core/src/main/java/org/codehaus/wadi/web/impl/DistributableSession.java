@@ -21,12 +21,12 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Set;
 
-import org.codehaus.wadi.DistributableSessionConfig;
 import org.codehaus.wadi.RehydrationException;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValueHelper;
 import org.codehaus.wadi.impl.Utils;
 import org.codehaus.wadi.web.DistributableAttributesConfig;
+import org.codehaus.wadi.web.DistributableSessionConfig;
 
 /**
  * A Standard Session enhanced with functionality associated with [de]serialisation - necessary to allow the movement of the session from jvm to jvm/storage.

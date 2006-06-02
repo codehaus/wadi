@@ -32,7 +32,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.derby.jdbc.EmbeddedDataSource;
 //import org.axiondb.jdbc.AxionDataSource;
 import org.codehaus.wadi.Collapser;
-import org.codehaus.wadi.ContextPool;
+import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Evicter;
 import org.codehaus.wadi.PoolableInvocationWrapperPool;
@@ -52,7 +52,6 @@ import org.codehaus.wadi.impl.MemoryContextualiser;
 //import org.codehaus.wadi.impl.MySqlLog;
 import org.codehaus.wadi.impl.NeverEvicter;
 import org.codehaus.wadi.impl.SerialContextualiser;
-import org.codehaus.wadi.impl.SessionToContextPoolAdapter;
 import org.codehaus.wadi.impl.SimpleSessionPool;
 import org.codehaus.wadi.impl.SimpleStreamer;
 import org.codehaus.wadi.impl.SimpleValuePool;
@@ -69,6 +68,7 @@ import org.codehaus.wadi.web.impl.DistributableValueFactory;
 import org.codehaus.wadi.web.impl.DummyRouter;
 import org.codehaus.wadi.web.impl.DummyStatefulHttpServletRequestWrapperPool;
 import org.codehaus.wadi.web.impl.StandardSessionWrapperFactory;
+import org.codehaus.wadi.web.impl.WebSessionToSessionPoolAdapter;
 
 //import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 
@@ -140,7 +140,7 @@ public class TestGianni extends TestCase {
 
 		// Memory
 		Evicter mevicter=new AlwaysEvicter(sweepInterval, strictOrdering);
-		ContextPool contextPool=new SessionToContextPoolAdapter(sessionPool);
+		SessionPool contextPool=new WebSessionToSessionPoolAdapter(sessionPool);
 		PoolableInvocationWrapperPool requestPool=new DummyStatefulHttpServletRequestWrapperPool();
 		AbstractExclusiveContextualiser memory=new MemoryContextualiser(serial, mevicter, mmap, streamer, contextPool, requestPool);
 
@@ -257,7 +257,7 @@ public class TestGianni extends TestCase {
 
 		// Memory
 		Evicter mevicter=new AlwaysEvicter(sweepInterval, strictOrdering);
-		ContextPool contextPool=new SessionToContextPoolAdapter(sessionPool);
+		SessionPool contextPool=new WebSessionToSessionPoolAdapter(sessionPool);
 		PoolableInvocationWrapperPool requestPool=new DummyStatefulHttpServletRequestWrapperPool();
 		AbstractExclusiveContextualiser memory=new MemoryContextualiser(serial, mevicter, mmap, streamer, contextPool, requestPool);
 

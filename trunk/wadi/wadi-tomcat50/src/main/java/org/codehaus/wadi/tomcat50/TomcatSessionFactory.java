@@ -16,7 +16,7 @@
  */
 package org.codehaus.wadi.tomcat50;
 
-import org.codehaus.wadi.DistributableSessionConfig;
+import org.codehaus.wadi.web.DistributableSessionConfig;
 import org.codehaus.wadi.web.WebSession;
 import org.codehaus.wadi.web.WebSessionConfig;
 import org.codehaus.wadi.web.WebSessionFactory;

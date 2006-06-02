@@ -32,7 +32,7 @@ import org.apache.commons.logging.LogFactory;
 import org.axiondb.jdbc.AxionDataSource;
 import org.codehaus.wadi.Collapser;
 import org.codehaus.wadi.Session;
-import org.codehaus.wadi.ContextPool;
+import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Emoter;
 import org.codehaus.wadi.Evictable;
@@ -63,7 +63,6 @@ import org.codehaus.wadi.impl.HashingCollapser;
 import org.codehaus.wadi.impl.MemoryContextualiser;
 import org.codehaus.wadi.impl.NeverEvicter;
 import org.codehaus.wadi.impl.SerialContextualiser;
-import org.codehaus.wadi.impl.SessionToContextPoolAdapter;
 import org.codehaus.wadi.impl.SharedStoreContextualiser;
 import org.codehaus.wadi.impl.SimpleSessionPool;
 import org.codehaus.wadi.impl.SimpleStreamer;
@@ -88,6 +87,7 @@ import org.codehaus.wadi.web.impl.StandardSessionWrapperFactory;
 import org.codehaus.wadi.web.impl.StandardValueFactory;
 import org.codehaus.wadi.web.impl.WebEndPoint;
 import org.codehaus.wadi.web.impl.WebInvocation;
+import org.codehaus.wadi.web.impl.WebSessionToSessionPoolAdapter;
 import EDU.oswego.cs.dl.util.concurrent.NullSync;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
@@ -467,13 +467,13 @@ public abstract class AbstractTestContextualiser extends TestCase {
 
 	// standard
 	protected final WebSessionPool _standardSessionPool=new SimpleSessionPool(new StandardSessionFactory());
-	protected final ContextPool _standardContextPool=new SessionToContextPoolAdapter(_standardSessionPool);
+	protected final SessionPool _standardContextPool=new WebSessionToSessionPoolAdapter(_standardSessionPool);
 	protected final AttributesFactory _standardAttributesFactory=new StandardAttributesFactory();
 	protected final ValuePool _standardValuePool=new SimpleValuePool(new StandardValueFactory());
 
 	// distributable
 	protected final WebSessionPool _distributableSessionPool=new SimpleSessionPool(new DistributableSessionFactory());
-	protected final ContextPool _distributableContextPool=new SessionToContextPoolAdapter(_distributableSessionPool);
+	protected final SessionPool _distributableContextPool=new WebSessionToSessionPoolAdapter(_distributableSessionPool);
 	protected final AttributesFactory _distributableAttributesFactory=new DistributableAttributesFactory();
 	protected final ValuePool _distributableValuePool=new SimpleValuePool(new DistributableValueFactory());
 

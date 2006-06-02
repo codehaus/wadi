@@ -153,8 +153,8 @@
   </bean>
 
   <bean
-    id="ContextPool"
-    class="org.codehaus.wadi.impl.SessionToContextPoolAdapter"
+    id="WebSessionPool"
+    class="org.codehaus.wadi.web.impl.WebSessionToSessionPoolAdapter"
     >
     <constructor-arg><ref bean="SessionPool"/></constructor-arg>
   </bean>
@@ -343,7 +343,7 @@
 
   <bean
     id="RequestPool"
-    class="org.codehaus.wadi.impl.DummyStatefulHttpServletRequestWrapperPool"
+    class="org.codehaus.wadi.web.impl.DummyStatefulHttpServletRequestWrapperPool"
     >
   </bean>
 
@@ -355,7 +355,7 @@
     <constructor-arg><ref bean="MemoryEvicter"/></constructor-arg>
     <constructor-arg><ref bean="MemoryMap"/></constructor-arg>
     <constructor-arg><ref bean="SessionStreamer"/></constructor-arg>
-    <constructor-arg><ref bean="ContextPool"/></constructor-arg>
+    <constructor-arg><ref bean="WebSessionPool"/></constructor-arg>
     <constructor-arg><ref bean="RequestPool"/></constructor-arg>
   </bean>
 
@@ -373,7 +373,7 @@
 
   <bean
     id="Router"
-    class="org.codehaus.wadi.impl.DummyRouter"
+    class="org.codehaus.wadi.web.impl.DummyRouter"
     >
   </bean>
 

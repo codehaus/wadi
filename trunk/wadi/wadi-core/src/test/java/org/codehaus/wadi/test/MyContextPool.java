@@ -17,14 +17,14 @@
 package org.codehaus.wadi.test;
 
 import org.codehaus.wadi.Session;
-import org.codehaus.wadi.ContextPool;
+import org.codehaus.wadi.SessionPool;
 
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class MyContextPool implements ContextPool {
+public class MyContextPool implements SessionPool {
     public void put(Session context) {
         // we are not going to bother to pool :-)
     }

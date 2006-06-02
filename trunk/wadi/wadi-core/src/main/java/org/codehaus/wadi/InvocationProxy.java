@@ -17,6 +17,7 @@
 package org.codehaus.wadi;
 
 import java.io.Serializable;
+import org.codehaus.wadi.web.impl.ProxyingException;
 
 /**
  * defines the API used for relocating requests to other nodes..

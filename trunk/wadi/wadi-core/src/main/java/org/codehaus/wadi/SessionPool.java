@@ -16,21 +16,15 @@
  */
 package org.codehaus.wadi;
 
-import org.codehaus.wadi.web.WebSessionConfig;
-
 /**
- * Defines Objects holding the configuration required by a DistributableSession
+ * API for a pool of Contexts
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
+public interface SessionPool {
 
-public interface DistributableSessionConfig extends WebSessionConfig {
+	void put(Session context);
+	Session take();
 
-    // Distributable
-    Streamer getStreamer();
-    ValueHelper findHelper(Class type);
-
-    // Lazy
-    boolean getHttpSessionAttributeListenersRegistered();
 }
