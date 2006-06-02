@@ -60,9 +60,9 @@ public abstract class AbstractMotingContextualiser extends AbstractChainedContex
 	/* (non-Javadoc)
 	 * @see org.codehaus.wadi.sandbox.context.Contextualiser#contextualise(javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain, java.lang.String, org.codehaus.wadi.sandbox.context.Contextualiser)
 	 */
-	public boolean contextualise(Invocation invocation, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws InvocationException {
-		return (handle(invocation, id, immoter, motionLock) ||
-				((!(exclusiveOnly && !_next.isExclusive())) && _next.contextualise(invocation, id, getPromoter(immoter), motionLock, exclusiveOnly)));
+	public boolean contextualise(Invocation invocation, String key, Immoter immoter, Sync invocationLock, boolean exclusiveOnly) throws InvocationException {
+		return (handle(invocation, key, immoter, invocationLock) ||
+				((!(exclusiveOnly && !_next.isExclusive())) && _next.contextualise(invocation, key, getPromoter(immoter), invocationLock, exclusiveOnly)));
 	}
 	
 	// TODO - I don't think that we need test isExclusive anymore - or even need this flag...

@@ -82,16 +82,16 @@ public class StatelessContextualiser extends AbstractDelegatingContextualiser {
 		}
 	};
 
-	public boolean contextualise(Invocation invocation, String id, Immoter immoter, Sync invocationLock, boolean exclusiveOnly) throws InvocationException {
+	public boolean contextualise(Invocation invocation, String key, Immoter immoter, Sync invocationLock, boolean exclusiveOnly) throws InvocationException {
 		WebInvocation context = (WebInvocation) invocation;
 		HttpServletRequest hreq = context.getHreq();
 		if (hreq==null || isStateful(hreq)) {
 			// we cannot optimise...
-			return _next.contextualise(invocation, id, immoter, invocationLock, exclusiveOnly);
+			return _next.contextualise(invocation, key, immoter, invocationLock, exclusiveOnly);
 		} else {
 			// we know that we can run the request locally...
 			if (invocationLock!=null) {
-				Utils.release("Invocation", id, invocationLock);
+				Utils.release("Invocation", key, invocationLock);
 			}
 			// wrap the request so that session is inaccessible and process here...
 			PoolableHttpServletRequestWrapper wrapper=(PoolableHttpServletRequestWrapper)_wrapper.get();

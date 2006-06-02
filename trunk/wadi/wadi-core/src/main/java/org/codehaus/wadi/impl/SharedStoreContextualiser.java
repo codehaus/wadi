@@ -127,7 +127,7 @@ public class SharedStoreContextualiser extends AbstractSharedContextualiser {
 	/**
 	 * Shared Contextualisers do nothing at runtime. They exist only to load data at startup and store it at shutdown.
 	 */
-	public boolean contextualise(Invocation invocation, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws InvocationException {
+	public boolean contextualise(Invocation invocation, String key, Immoter immoter, Sync invocationLock, boolean exclusiveOnly) throws InvocationException {
 		return false;
 	}
 

@@ -135,8 +135,8 @@ public class SimpleContextualiserStack implements Contextualiser {
 		// ready to rock !
 	}
 
-	public boolean contextualise(Invocation invocation, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws InvocationException {
-		return _memory.contextualise(invocation, id, immoter, motionLock, exclusiveOnly);
+	public boolean contextualise(Invocation invocation, String key, Immoter immoter, Sync invocationLock, boolean exclusiveOnly) throws InvocationException {
+		return _memory.contextualise(invocation, key, immoter, invocationLock, exclusiveOnly);
 	}
 
 	public Evicter getEvicter() {

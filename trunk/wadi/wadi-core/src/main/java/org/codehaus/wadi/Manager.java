@@ -20,10 +20,9 @@ import org.codehaus.wadi.web.WebSession;
 import org.codehaus.wadi.web.WebSessionPool;
 import org.codehaus.wadi.web.WebSessionWrapperFactory;
 
-
 /**
  * Manager - A Session Manager abstraction. Responsibilities include Session creation, destruction, storage
- * and Invocation interception and processing in the presence of the Session.
+ * and the processing of Invocations in the presence of the Session.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
@@ -54,7 +53,7 @@ public interface Manager extends Lifecycle {
     /**
      * Destroy the Manager - clean up any associated resources
      */
-    void destroy(); // should take an Invocation
+    void destroy();
 
     /**
      * Create a new Session
@@ -62,7 +61,7 @@ public interface Manager extends Lifecycle {
      * @param invocation the Invocation
      * @return the Session  
      */
-    WebSession create(Invocation invocation);
+    WebSession create(Invocation invocation); // should return Session, not WebSession
     
     /**
      * Destroy a Session
@@ -89,7 +88,7 @@ public interface Manager extends Lifecycle {
     /**
      * @return The Pool from/to which Sessions are allocated/returned
      */
-    WebSessionPool getSessionPool(); // should be a SessionPool - not a WebSessionPool
+    WebSessionPool getSessionPool(); // should be a SessionPool, not a WebSessionPool
     
     /**
      * @return The factory responsible for the generation of Session IDs
@@ -105,8 +104,8 @@ public interface Manager extends Lifecycle {
     boolean getErrorIfSessionNotAcquired();
 
     /**
-     * Contextualise an Invocation - somehow bring the Invocation and the relevant Session together within
-     * a JVM somewhere in the Cluster, give the Invocation the Session and invoke() it. The Manager possesses
+     * Contextualise an Invocation - somehow colocate the Invocation and the relevant Session within the same
+     * JVM somewhere in the Cluster, give the Invocation the Session and invoke() it. The Manager possesses
      * a stack of Contextualisers, down which the Invocation is passed in order to achieve this.
      * 
      * @param invocation

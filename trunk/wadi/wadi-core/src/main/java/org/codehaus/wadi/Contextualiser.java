@@ -21,26 +21,25 @@ import java.util.Collection;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
- * Contextualising an Invocation is bringing it and the relevant Session into the same JVM and then
+ * Contextualising an Invocation is colocating it and the relevant Session within the same JVM and then
  * invoke()-ing the Invocation...
  * 
  * Each Contextualiser contains a store of Sessions. These may be held e.g. in Memory, on Disc,
  * in a Database, or on another Peer in the Cluster. These are arranged in a linked list.
  * 
- * This 'Contextualiser stack' is generally arranged with fastest, most volatile storage (i.e. Memory) at
- * the top, and slowest, securest storage (e.g. Database), at the bottom.
+ * This 'Contextualiser stack' is generally arranged with the most expensive, fastest, most volatile storage
+ * (i.e. Memory) at the top, and cheapest, slowest, securest storage (e.g. Database), at the bottom.
  * 
- * As Sessions age, they may be evicted downwards from faster, more expensive storage (e.g. Memory) 
- * to cheaper, longer term storage (e.g. Disc) to free up resources.
+ * As Sessions age, they are be evicted downwards to free up valuable and scarce resources.
  * 
- * Incoming Invocations are passed down a linked list of Contextualisers until they meet the relevant
+ * Incoming Invocations are passed down the Contextualiser stack until they meet the relevant
  * Session. At this point, the Session is promoted up to Memory and the Invocation is invoke()-ed in
  * its presence.
  * 
- * If the Invocation reaches the ClusterContextualiser without its Session being found and its
+ * If the Invocation reaches the ClusterContextualiser without meeting its Session and its
  * Session is found to be located elsewhere in the Cluster, then the ClusterContextualiser has the option
  * of relocating the Session to the Invocation in the local JVM OR the Invocation to the Session
- * in the remote JVM. The location of the invocations contextualisation is unimportant, provided that
+ * in the remote JVM. The location of the invocation's contextualisation is unimportant, provided that
  * it occurs somewhere.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -48,14 +47,33 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  */
 public interface Contextualiser extends Lifecycle {
 	
-	// I'd like to add Manager to param list, but it bloats dependency tree - can we get along without it ?
-	public boolean contextualise(Invocation invocation, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws InvocationException;
+    /**
+     * Initialise this Contextualiser with a configuration object, injecting information
+     * which was not readily available at construction time.
+     * 
+     * @param config the configuration object
+     */
+    void init(ContextualiserConfig config);
     
-	void setLastAccessedTime(Evictable evictable, long oldTime, long newTime);
+    /**
+     * Destroy this Contextualiser - releasing all associated resources.
+     */
+    void destroy();
     
-	void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval);
+    /**
+     * Contextualise the given Invocation. 
+     * 
+     * @param invocation the Invocation
+     * @param key the Session key
+     * @param immoter an Immoter that can be used to promote the Session when found
+     * @param invocationLock a Lock that can be used to prevent more than one Invocation going to shared storage at the same time
+     * @param exclusiveOnly whether we should only look in exclusive stores, or descend to shared ones as well
+     * @return whether or not the Invocation was contextualised.
+     * @throws InvocationException
+     */
+    public boolean contextualise(Invocation invocation, String key, Immoter immoter, Sync invocationLock, boolean exclusiveOnly) throws InvocationException;
 
-	/**
+    /**
      * Does this Contextualiser exclusively own, or share, the store in which it keeps its Sessions ?
      * 
 	 * @return whether or not our store is exclusively owned
@@ -63,26 +81,42 @@ public interface Contextualiser extends Lifecycle {
 	boolean isExclusive();
 	
 	/**
-	 * Return a Demoter to the first Contextualiser which would be happy to accept this Motable - in other words - would not evict() it.
+	 * Return an immoter to the first Contextualiser below us, which would be happy to accept this Motable -
+     * in other words - would not evict() it.
+
 	 * @param name - uid of the Motable
 	 * @param motable - the Motable in question
 	 * @return - a Demoter - a delegate capable of arranging immotion into the correct Contextualiser
 	 */
 	Immoter getDemoter(String name, Motable motable);
     
+	/**
+     * Return an Immoter to the first SharedContextualiser below us.
+     * 
+	 * @return the Immoter
+	 */
 	Immoter getSharedDemoter();
 	
-	// perhaps these two could be collapsed...
-	void promoteToExclusive(Immoter immoter); // TODO - 'orrible name...
+	/**
+     * Pass this Immoter up to the first ExclusiveContextualiser above us, where...
+     * 
+	 * @param immoter the Immoter
+	 */
+	void promoteToExclusive(Immoter immoter);
+    
     
 	void load(Emoter emoter, Immoter immoter);
-	
-	void init(ContextualiserConfig config);
-    
-	void destroy();
 	
 	void findRelevantSessionNames(int numPartitions, Collection[] resultSet);
 	
 	int getLocalSessionCount();
-	
+
+    // lose these
+    
+	void setLastAccessedTime(Evictable evictable, long oldTime, long newTime);
+    
+    void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval);
+
+    
+
 }
