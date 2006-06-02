@@ -58,15 +58,16 @@ public interface Manager extends Lifecycle {
 
     /**
      * Create a new Session
-     * @param invocation TODO
      * 
+     * @param invocation the Invocation
      * @return the Session  
      */
     WebSession create(Invocation invocation);
     
     /**
      * Destroy a Session
-     * @param invocation TODO
+     * 
+     * @param invocation the Invocation
      * @param session the Session
      */
     void destroy(Invocation invocation, WebSession session);
