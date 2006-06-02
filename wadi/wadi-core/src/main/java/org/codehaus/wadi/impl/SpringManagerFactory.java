@@ -23,8 +23,8 @@ import java.io.InputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Manager;
-import org.codehaus.wadi.SessionFactory;
-import org.codehaus.wadi.SessionWrapperFactory;
+import org.codehaus.wadi.web.WebSessionFactory;
+import org.codehaus.wadi.web.WebSessionWrapperFactory;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
@@ -41,10 +41,10 @@ public class SpringManagerFactory {
 
     protected final InputStream _descriptor;
     protected final String _beanName;
-    protected final SessionFactory _sessionFactory;
-    protected final SessionWrapperFactory _sessionWrapperFactory;
+    protected final WebSessionFactory _sessionFactory;
+    protected final WebSessionWrapperFactory _sessionWrapperFactory;
 
-    public SpringManagerFactory(InputStream descriptor, String beanName, SessionFactory sessionFactory, SessionWrapperFactory sessionWrapperFactory) {
+    public SpringManagerFactory(InputStream descriptor, String beanName, WebSessionFactory sessionFactory, WebSessionWrapperFactory sessionWrapperFactory) {
         _descriptor=descriptor;
         _beanName=beanName;
         _sessionFactory=sessionFactory;
@@ -55,7 +55,7 @@ public class SpringManagerFactory {
         return create(_descriptor, _beanName, _sessionFactory, _sessionWrapperFactory);
     }
 
-    public static Manager create(InputStream descriptor, String beanName, SessionFactory sessionFactory, SessionWrapperFactory sessionWrapperFactory) throws FileNotFoundException {
+    public static Manager create(InputStream descriptor, String beanName, WebSessionFactory sessionFactory, WebSessionWrapperFactory sessionWrapperFactory) throws FileNotFoundException {
     	DefaultListableBeanFactory dlbf=new DefaultListableBeanFactory();
         String wadiPropsName = System.getProperty("wadi.properties");
         FileSystemResource props = null;

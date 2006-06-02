@@ -18,14 +18,14 @@ package org.codehaus.wadi.impl;
 
 import javax.servlet.http.HttpSession;
 
-import org.codehaus.wadi.WebSession;
-import org.codehaus.wadi.SessionWrapperFactory;
+import org.codehaus.wadi.web.WebSession;
+import org.codehaus.wadi.web.WebSessionWrapperFactory;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class DummySessionWrapperFactory implements SessionWrapperFactory {
+public class DummySessionWrapperFactory implements WebSessionWrapperFactory {
 
     public HttpSession create(WebSession session) {return new SessionWrapper(session);}
 

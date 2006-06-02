@@ -16,13 +16,13 @@
  */
 package org.codehaus.wadi.jetty6;
 
-import org.codehaus.wadi.WebSession;
+import org.codehaus.wadi.web.WebSession;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class JettySessionWrapperFactory implements org.codehaus.wadi.SessionWrapperFactory {
+public class JettySessionWrapperFactory implements org.codehaus.wadi.web.WebSessionWrapperFactory {
 
     public javax.servlet.http.HttpSession create(WebSession session) {return new HttpSession(session);}
 

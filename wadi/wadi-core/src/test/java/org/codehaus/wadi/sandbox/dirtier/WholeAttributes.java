@@ -34,9 +34,9 @@ import javax.servlet.http.HttpSessionEvent;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.Attributes;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.sandbox.dirtier.Dirtier;
+import org.codehaus.wadi.web.Attributes;
 
 // TODO - consider mode where rep is shifted from byte->Object->byte for the duration of any change
 // this would be useful for testing that apps were distributable

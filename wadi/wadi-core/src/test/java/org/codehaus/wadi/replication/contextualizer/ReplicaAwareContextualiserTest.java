@@ -4,11 +4,11 @@ import junit.framework.TestCase;
 
 import org.codehaus.wadi.Emoter;
 import org.codehaus.wadi.Motable;
-import org.codehaus.wadi.WebSession;
-import org.codehaus.wadi.impl.DistributableSession;
 import org.codehaus.wadi.replication.manager.BaseMockReplicationManager;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
 import org.codehaus.wadi.test.DummyDistributableSessionConfig;
+import org.codehaus.wadi.web.WebSession;
+import org.codehaus.wadi.web.impl.DistributableSession;
 
 public class ReplicaAwareContextualiserTest extends TestCase {
 

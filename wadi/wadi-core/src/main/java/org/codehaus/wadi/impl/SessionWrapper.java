@@ -23,7 +23,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionContext;
 
-import org.codehaus.wadi.WebSession;
+import org.codehaus.wadi.web.WebSession;
 
 /**
  * Wraps a Session instance, presenting ONLY an HttpSession facade to the application.

@@ -19,7 +19,7 @@ package org.codehaus.wadi.test;
 import javax.servlet.FilterChain;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.codehaus.wadi.web.WebInvocation;
+import org.codehaus.wadi.web.impl.WebInvocation;
 
 public class TestInvocation extends WebInvocation {
     

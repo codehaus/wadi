@@ -48,6 +48,7 @@ import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.PoolableInvocationWrapperPool;
 import org.codehaus.wadi.Relocater;
 import org.codehaus.wadi.Streamer;
+import org.codehaus.wadi.web.impl.DummyStatefulHttpServletRequestWrapperPool;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 import EDU.oswego.cs.dl.util.concurrent.Sync;

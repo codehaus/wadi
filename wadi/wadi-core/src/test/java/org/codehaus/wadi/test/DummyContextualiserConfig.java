@@ -23,11 +23,11 @@ import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.ContextualiserConfig;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Motable;
-import org.codehaus.wadi.Router;
-import org.codehaus.wadi.SessionConfig;
-import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.impl.AbstractMotingContextualiser;
-import org.codehaus.wadi.impl.DummyRouter;
+import org.codehaus.wadi.web.Router;
+import org.codehaus.wadi.web.WebSessionConfig;
+import org.codehaus.wadi.web.WebSessionPool;
+import org.codehaus.wadi.web.impl.DummyRouter;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -38,10 +38,10 @@ class DummyContextualiserConfig implements ContextualiserConfig {
     protected final Contextualiser _top;
     protected final Map _map;
     protected final Timer _timer=new Timer();
-    protected final SessionPool _sessionPool;
-    protected final SessionConfig _sessionConfig=new DummyDistributableSessionConfig();
+    protected final WebSessionPool _sessionPool;
+    protected final WebSessionConfig _sessionConfig=new DummyDistributableSessionConfig();
 
-    public DummyContextualiserConfig(Contextualiser top, Map map, SessionPool sessionPool) {
+    public DummyContextualiserConfig(Contextualiser top, Map map, WebSessionPool sessionPool) {
         _top=top;
         _map=map;
         _sessionPool=sessionPool;
@@ -53,7 +53,7 @@ class DummyContextualiserConfig implements ContextualiserConfig {
     public Immoter getEvictionImmoter() {return ((AbstractMotingContextualiser)_top).getImmoter();} // HACK - FIXME
     public Timer getTimer() {return _timer;}
 
-    public SessionPool getSessionPool(){return _sessionPool;}
+    public WebSessionPool getSessionPool(){return _sessionPool;}
 
     protected final Router _router=new DummyRouter();
     public Router getRouter() {return _router;}

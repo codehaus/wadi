@@ -16,6 +16,10 @@
  */
 package org.codehaus.wadi;
 
+import org.codehaus.wadi.web.WebSession;
+import org.codehaus.wadi.web.WebSessionPool;
+import org.codehaus.wadi.web.WebSessionWrapperFactory;
+
 
 public interface Manager {
     void init(ManagerConfig config);
@@ -32,7 +36,7 @@ public interface Manager {
 
     Manager getManager();
 
-    SessionWrapperFactory getSessionWrapperFactory();
+    WebSessionWrapperFactory getSessionWrapperFactory();
 
     SessionIdFactory getSessionIdFactory();
 
@@ -44,7 +48,7 @@ public interface Manager {
 
     void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval);
 
-    SessionPool getSessionPool();
+    WebSessionPool getSessionPool();
 
     boolean getErrorIfSessionNotAcquired();
 

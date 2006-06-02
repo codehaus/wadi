@@ -27,9 +27,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Manager;
 import org.codehaus.wadi.ManagerConfig;
-import org.codehaus.wadi.WADIHttpSession;
-import org.codehaus.wadi.impl.AtomicallyReplicableSessionFactory;
 import org.codehaus.wadi.impl.SpringManagerFactory;
+import org.codehaus.wadi.web.WADIHttpSession;
+import org.codehaus.wadi.web.impl.AtomicallyReplicableSessionFactory;
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 import EDU.oswego.cs.dl.util.concurrent.Rendezvous;
 
@@ -100,7 +100,7 @@ public class Axis2Manager implements SessionManager, ManagerConfig {
     public Session createSession() {
         _log.debug("create()");
         Axis2Invocation invocation=Axis2Invocation.getThreadLocalInstance();
-        org.codehaus.wadi.WebSession session=_wadi.create();
+        org.codehaus.wadi.web.WebSession session=_wadi.create();
         invocation.setKey(session.getId());
         invocation.setSession(session);
         WADIHttpSession httpSession = (WADIHttpSession)session;

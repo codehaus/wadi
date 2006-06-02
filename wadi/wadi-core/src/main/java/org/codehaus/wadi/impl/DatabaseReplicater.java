@@ -22,6 +22,7 @@ import java.sql.Connection;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Replicater;
+import org.codehaus.wadi.web.impl.AbstractReplicableSession;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>

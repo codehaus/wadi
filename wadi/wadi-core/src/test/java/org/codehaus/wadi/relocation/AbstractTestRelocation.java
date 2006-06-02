@@ -18,13 +18,13 @@ import org.codehaus.wadi.EndPoint;
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.PoolableInvocationWrapper;
-import org.codehaus.wadi.WebSession;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.impl.StandardManager;
 import org.codehaus.wadi.test.MockInvocation;
 import org.codehaus.wadi.test.MyHttpServletRequest;
 import org.codehaus.wadi.test.MyHttpServletResponse;
 import org.codehaus.wadi.test.MyStack;
+import org.codehaus.wadi.web.WebSession;
 
 public class AbstractTestRelocation extends TestCase {
 

@@ -16,8 +16,8 @@
  */
 package org.codehaus.wadi.jetty6;
 
-import org.codehaus.wadi.WebSession;
 import org.codehaus.wadi.impl.SessionWrapper;
+import org.codehaus.wadi.web.WebSession;
 
 /**
  * A SessionWrapper that integrates correctly with Jetty.

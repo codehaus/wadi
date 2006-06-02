@@ -20,7 +20,7 @@ import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.RelocaterConfig;
-import org.codehaus.wadi.SessionRelocater;
+import org.codehaus.wadi.web.WebSessionRelocater;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
@@ -28,7 +28,7 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class StreamingMigratingRelocater implements SessionRelocater {
+public class StreamingMigratingRelocater implements WebSessionRelocater {
 
 	public StreamingMigratingRelocater() {
 		super();
