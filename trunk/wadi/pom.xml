@@ -426,7 +426,18 @@
 	<configuration>
 	  <excludes>
 	    <exclude implementation="java.lang.String">**/*$*.java</exclude><!-- stop surefire from trying to run nested classes... -->
-	    <exclude implementation="java.lang.String">**/Abstract*Test.java</exclude><!-- stop surefire from trying to run nested classes... -->
+<!--
+	    <exclude implementation="java.lang.String">**/Abstract*Test.java</exclude>
+	    <exclude implementation="java.lang.String">**/TestInVMEvacuation.java</exclude>
+	    <exclude implementation="java.lang.String">**/TestInVMRelocation.java</exclude>
+	    <exclude implementation="java.lang.String">**/TestInVMReplicationManager.java</exclude>
+	    <exclude implementation="java.lang.String">**/TestInVMReplicationContextualiser.java</exclude>
+	    <exclude implementation="java.lang.String">**/TestACInVMReplicationContextualiser.java</exclude>
+	    <exclude implementation="java.lang.String">**/TestACInVMReplicationManager.java</exclude>
+	    <exclude implementation="java.lang.String">**/TestACPeerReplicationContextualiser.java</exclude>
+	    <exclude implementation="java.lang.String">**/TestACPeerReplicationManager.java</exclude>
+	    <exclude implementation="java.lang.String">**/TestACInVMEvacuation.java</exclude>
+-->
 	  </excludes>
 	  <!--
 	  <childDelegation>false</childDelegation>
