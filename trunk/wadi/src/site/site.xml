@@ -26,7 +26,7 @@
     </links>
 
     <menu name="Users">
-      <item name="Home" href="./index.html"/>
+      <item name="Project Page" href="http://xircles.codehaus.org/projects/wadi"/>
       <item name="Getting Started" href="./getting-started/index.html"/>
       <item name="Documentation" href="./documentation/index.html"/>
       <item name="FAQ" href="./faq.html"/>
@@ -36,7 +36,7 @@
       <item name="How To Help" href="./help.html"/>
       <item name="Distributions" href="http://dist.codehaus.org/wadi/distributions/"/>
       <item name="Release Repo" href="http://repository.codehaus.org/org/codehaus/wadi"/>
-      <item name="SnapShot Repo" href="http://snapshot.repository.codehaus.org/org/codehaus/wadi"/>
+      <item name="SnapShot Repo" href="http://dist.codehaus.org/wadi/org/codehaus/wadi/"/>
     </menu>
 
     <menu name="Developers">
@@ -50,11 +50,13 @@
       <item name="#WADI" href="irc://irc.codehaus.org/wadi"/>
       <item name="Jira" href="http://jira.codehaus.org/browse/WADI"/>
       <item name="Beetlejuice" href="http://ci.codehaus.org/beetlejuice/viewProjectSummary.action?projectName=WADI"/>
-      <item name="FishEye" href="http://cvs.wadi.codehaus.org/viewrep/wadi/trunk/wadi"/>
-      <item name="SRC snapshot (zip)" href="http://cvs.wadi.codehaus.org/viewrep/~tarball=zip/wadi/wadi.zip"/>
-      <item name="SRC snapshot (tgz)" href="http://cvs.wadi.codehaus.org/viewrep/~tarball=tgz/wadi/wadi.tgz"/>
-      <item name="SRC snapshot (tbz2)" href="http://cvs.wadi.codehaus.org/viewrep/~tarball=tbz2/wadi/wadi.tbz2"/>
-      <item name="Dependency Repo" href="http://dist.codehaus.org/wadi/distributions/dependencies"/>
+      <item name="FishEye" href="http://svn.wadi.codehaus.org/viewrep/wadi/trunk/wadi"/>
+<!--
+      <item name="SRC snapshot (zip)" href="http://svn.wadi.codehaus.org/viewrep/~tarball=zip/wadi/wadi.zip"/>
+      <item name="SRC snapshot (tgz)" href="http://svn.wadi.codehaus.org/viewrep/~tarball=tgz/wadi/wadi.tgz"/>
+      <item name="SRC snapshot (tbz2)" href="http://svn.wadi.codehaus.org/viewrep/~tarball=tbz2/wadi/wadi.tbz2"/>
+-->
+      <item name="Dependency Repo" href="http://dist.codehaus.org/wadi/dependencies/"/>
     </menu>
 
     <menu name="Modules">
