@@ -244,10 +244,6 @@ public class StandardManager implements Lifecycle, WebSessionConfig, Contextuali
 	public AttributesFactory getAttributesFactory() {return _attributesFactory;}
 	public ValuePool getValuePool() {return _valuePool;}
 
-	public Manager getManager(){return this;}
-
-	// this should really be abstract, but is useful for testing - TODO
-
 	public WebSessionWrapperFactory getSessionWrapperFactory() {return _sessionWrapperFactory;}
 
 	public SessionIdFactory getSessionIdFactory() {return _sessionIdFactory;}
@@ -327,7 +323,7 @@ public class StandardManager implements Lifecycle, WebSessionConfig, Contextuali
 
 	// Deal with incoming/outgoing invocations... - taking over flow control
     
-    public void around(Invocation invocation) throws InvocationException {
+    public void process(Invocation invocation) throws InvocationException {
         String key=invocation.getSessionKey();
         if (_log.isTraceEnabled()) _log.trace("potentially stateful request: "+key);
         

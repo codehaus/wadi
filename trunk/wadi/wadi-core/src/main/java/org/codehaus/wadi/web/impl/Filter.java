@@ -63,7 +63,7 @@ public class Filter implements javax.servlet.Filter {
             WebInvocation invocation=WebInvocation.getThreadLocalInstance();
             invocation.init((HttpServletRequest)request, (HttpServletResponse)response, filterChain);
             try {
-                _manager.around(invocation);
+                _manager.process(invocation);
             } catch (InvocationException e) {
                 Throwable throwable = e.getCause();
                 if (throwable instanceof IOException) {
