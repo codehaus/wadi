@@ -16,10 +16,10 @@
 package org.codehaus.wadi.replication.manager.basic;
 
 import org.codehaus.wadi.RehydrationException;
-import org.codehaus.wadi.WebSession;
 import org.codehaus.wadi.replication.ReplicationException;
 import org.codehaus.wadi.replication.common.ReplicaInfo;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
+import org.codehaus.wadi.web.WebSession;
 
 /**
  * 

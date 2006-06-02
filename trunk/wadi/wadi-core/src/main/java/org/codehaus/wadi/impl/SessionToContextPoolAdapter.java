@@ -18,9 +18,9 @@ package org.codehaus.wadi.impl;
 
 import org.codehaus.wadi.Session;
 import org.codehaus.wadi.ContextPool;
-import org.codehaus.wadi.WebSession;
-import org.codehaus.wadi.SessionConfig;
-import org.codehaus.wadi.SessionPool;
+import org.codehaus.wadi.web.WebSession;
+import org.codehaus.wadi.web.WebSessionConfig;
+import org.codehaus.wadi.web.WebSessionPool;
 
 
 /**
@@ -33,14 +33,14 @@ import org.codehaus.wadi.SessionPool;
  */
 public class SessionToContextPoolAdapter implements ContextPool {
 
-    protected final SessionPool _pool;
+    protected final WebSessionPool _pool;
     
-    public SessionToContextPoolAdapter(SessionPool pool) {
+    public SessionToContextPoolAdapter(WebSessionPool pool) {
         super();
         _pool=pool;
     }
     
-    public void init(SessionConfig config) {
+    public void init(WebSessionConfig config) {
         _pool.init(config);
     }
 

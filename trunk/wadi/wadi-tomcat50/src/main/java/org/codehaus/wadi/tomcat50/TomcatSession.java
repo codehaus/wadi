@@ -32,7 +32,7 @@ import org.apache.catalina.SessionListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.DistributableSessionConfig;
-import org.codehaus.wadi.impl.DistributableSession;
+import org.codehaus.wadi.web.impl.DistributableSession;
 
 /**
  * Interestingly, in Tomcat a Session is a facade (for internal use) over an HttpSession (for external use), but

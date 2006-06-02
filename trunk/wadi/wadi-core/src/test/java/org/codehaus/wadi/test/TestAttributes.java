@@ -30,11 +30,11 @@ import org.codehaus.wadi.Value;
 import org.codehaus.wadi.ValueFactory;
 import org.codehaus.wadi.ValueHelper;
 import org.codehaus.wadi.ValuePool;
-import org.codehaus.wadi.impl.DistributableValue;
-import org.codehaus.wadi.impl.DistributableValueFactory;
 import org.codehaus.wadi.impl.SimpleStreamer;
 import org.codehaus.wadi.impl.SimpleValuePool;
 import org.codehaus.wadi.impl.Utils;
+import org.codehaus.wadi.web.impl.DistributableValue;
+import org.codehaus.wadi.web.impl.DistributableValueFactory;
 
 import junit.framework.TestCase;
 

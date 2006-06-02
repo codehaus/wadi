@@ -24,7 +24,7 @@ import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.Manager;
 import org.codehaus.wadi.PoolableInvocationWrapper;
-import org.codehaus.wadi.impl.StatefulHttpServletRequestWrapper;
+import org.codehaus.wadi.web.impl.StatefulHttpServletRequestWrapper;
 import EDU.oswego.cs.dl.util.concurrent.Rendezvous;
 
 public class Axis2Invocation implements Invocation, Runnable {

@@ -24,13 +24,13 @@
 
   <bean
     id="AttributesFactory"
-    class="org.codehaus.wadi.impl.DistributableAttributesFactory"
+    class="org.codehaus.wadi.web.impl.DistributableAttributesFactory"
     >
   </bean>
 
   <bean
     id="ValueFactory"
-    class="org.codehaus.wadi.impl.DistributableValueFactory"
+    class="org.codehaus.wadi.web.impl.DistributableValueFactory"
     >
   </bean>
 
@@ -365,7 +365,7 @@
 <!--
   <bean
     id="Router"
-    class="org.codehaus.wadi.impl.JkRouter"
+    class="org.codehaus.wadi.web.impl.JkRouter"
     >
     <constructor-arg><value>${node.name}</value></constructor-arg>
   </bean>
@@ -381,7 +381,7 @@
 
   <bean
     id="HttpProxy"
-    class="org.codehaus.wadi.impl.StandardHttpProxy"
+    class="org.codehaus.wadi.web.impl.StandardHttpProxy"
     >
     <constructor-arg><value>jsessionid</value></constructor-arg>
   </bean>
@@ -417,7 +417,7 @@
 
   <bean
     id="EndPoint"
-    class="org.codehaus.wadi.web.WebEndPoint"
+    class="org.codehaus.wadi.web.impl.WebEndPoint"
     >
     <constructor-arg><ref bean="HttpAddress"/></constructor-arg>
   </bean>

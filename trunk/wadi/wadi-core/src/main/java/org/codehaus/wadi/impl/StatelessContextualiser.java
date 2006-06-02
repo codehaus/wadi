@@ -26,8 +26,9 @@ import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
-import org.codehaus.wadi.PoolableHttpServletRequestWrapper;
-import org.codehaus.wadi.web.WebInvocation;
+import org.codehaus.wadi.web.PoolableHttpServletRequestWrapper;
+import org.codehaus.wadi.web.impl.StatelessHttpServletRequestWrapper;
+import org.codehaus.wadi.web.impl.WebInvocation;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 

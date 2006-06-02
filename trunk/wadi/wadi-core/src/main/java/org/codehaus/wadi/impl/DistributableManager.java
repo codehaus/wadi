@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.codehaus.wadi.AttributesFactory;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.DistributableContextualiserConfig;
 import org.codehaus.wadi.ManagerConfig;
@@ -28,16 +27,17 @@ import org.codehaus.wadi.RehydrationException;
 import org.codehaus.wadi.ReplicableSessionConfig;
 import org.codehaus.wadi.Replicater;
 import org.codehaus.wadi.ReplicaterFactory;
-import org.codehaus.wadi.Router;
-import org.codehaus.wadi.WebSession;
 import org.codehaus.wadi.SessionIdFactory;
-import org.codehaus.wadi.SessionPool;
-import org.codehaus.wadi.SessionWrapperFactory;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.StreamerConfig;
 import org.codehaus.wadi.ValueHelper;
 import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.impl.ClusteredManager.HelperPair;
+import org.codehaus.wadi.web.AttributesFactory;
+import org.codehaus.wadi.web.Router;
+import org.codehaus.wadi.web.WebSession;
+import org.codehaus.wadi.web.WebSessionPool;
+import org.codehaus.wadi.web.WebSessionWrapperFactory;
 
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
 
@@ -53,7 +53,7 @@ public class DistributableManager extends StandardManager implements ReplicableS
 	protected final boolean _accessOnLoad;
 	protected final ReplicaterFactory _replicaterFactory;
 	
-	public DistributableManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map map, Router router, boolean errorIfSessionNotAcquired, Streamer streamer, boolean accessOnLoad, ReplicaterFactory replicaterFactory) {
+	public DistributableManager(WebSessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, WebSessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map map, Router router, boolean errorIfSessionNotAcquired, Streamer streamer, boolean accessOnLoad, ReplicaterFactory replicaterFactory) {
 		super(sessionPool, attributesFactory, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, map, router, errorIfSessionNotAcquired);
 		(_streamer=streamer).init(this);
 		_accessOnLoad=accessOnLoad;

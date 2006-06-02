@@ -30,7 +30,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.InvocationException;
-import org.codehaus.wadi.web.WebInvocation;
+import org.codehaus.wadi.web.impl.WebInvocation;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>

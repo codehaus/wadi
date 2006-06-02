@@ -17,13 +17,13 @@
 package org.codehaus.wadi.axis2;
 
 import javax.servlet.http.HttpSession;
-import org.codehaus.wadi.SessionWrapperFactory;
+import org.codehaus.wadi.web.WebSessionWrapperFactory;
 
 // hmm... - we need to return an Axis2Session, not an HttpSession...
 
-public class Axis2SessionWrapperFactory implements SessionWrapperFactory {
+public class Axis2SessionWrapperFactory implements WebSessionWrapperFactory {
     
-    public HttpSession create(org.codehaus.wadi.WebSession session) {
+    public HttpSession create(org.codehaus.wadi.web.WebSession session) {
         return new Axis2Session(session);
     }
     

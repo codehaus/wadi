@@ -18,9 +18,9 @@ package org.codehaus.wadi.impl;
 
 import java.util.HashMap;
 
-import org.codehaus.wadi.Attributes;
-import org.codehaus.wadi.AttributesConfig;
-import org.codehaus.wadi.AttributesFactory;
+import org.codehaus.wadi.web.Attributes;
+import org.codehaus.wadi.web.AttributesConfig;
+import org.codehaus.wadi.web.AttributesFactory;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>

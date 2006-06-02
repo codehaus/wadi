@@ -29,7 +29,6 @@ import javax.servlet.http.HttpSessionListener;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.AttributesFactory;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.ContextualiserConfig;
 import org.codehaus.wadi.Evictable;
@@ -42,16 +41,18 @@ import org.codehaus.wadi.ManagerConfig;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.PoolableInvocationWrapper;
 import org.codehaus.wadi.PoolableInvocationWrapperPool;
-import org.codehaus.wadi.Router;
-import org.codehaus.wadi.RouterConfig;
-import org.codehaus.wadi.WebSession;
-import org.codehaus.wadi.SessionConfig;
 import org.codehaus.wadi.SessionIdFactory;
-import org.codehaus.wadi.SessionPool;
-import org.codehaus.wadi.SessionWrapperFactory;
 import org.codehaus.wadi.ValuePool;
-import org.codehaus.wadi.WADIHttpSession;
-import org.codehaus.wadi.web.Filter;
+import org.codehaus.wadi.web.AttributesFactory;
+import org.codehaus.wadi.web.Router;
+import org.codehaus.wadi.web.RouterConfig;
+import org.codehaus.wadi.web.WADIHttpSession;
+import org.codehaus.wadi.web.WebSession;
+import org.codehaus.wadi.web.WebSessionConfig;
+import org.codehaus.wadi.web.WebSessionPool;
+import org.codehaus.wadi.web.WebSessionWrapperFactory;
+import org.codehaus.wadi.web.impl.DummyStatefulHttpServletRequestWrapperPool;
+import org.codehaus.wadi.web.impl.Filter;
 
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
@@ -63,14 +64,14 @@ import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
  * @version $Revision$
  */
 
-public class StandardManager implements Lifecycle, SessionConfig, ContextualiserConfig, RouterConfig, Manager {
+public class StandardManager implements Lifecycle, WebSessionConfig, ContextualiserConfig, RouterConfig, Manager {
 
 	protected final Log _log = LogFactory.getLog(getClass());
 
-	protected final SessionPool _sessionPool;
+	protected final WebSessionPool _sessionPool;
 	protected final AttributesFactory _attributesFactory;
 	protected final ValuePool _valuePool;
-	protected final SessionWrapperFactory _sessionWrapperFactory;
+	protected final WebSessionWrapperFactory _sessionWrapperFactory;
 	protected final SessionIdFactory _sessionIdFactory;
 	protected final Contextualiser _contextualiser;
 	protected final Map _map;
@@ -83,7 +84,7 @@ public class StandardManager implements Lifecycle, SessionConfig, Contextualiser
 	protected HttpSessionListener[] _sessionListeners;
 	protected HttpSessionAttributeListener[] _attributeListeners;
 
-	public StandardManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map map, Router router, boolean errorIfSessionNotAcquired) {
+	public StandardManager(WebSessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, WebSessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map map, Router router, boolean errorIfSessionNotAcquired) {
 		_sessionPool=sessionPool;
 		_attributesFactory=attributesFactory;
 		_valuePool=valuePool;
@@ -247,7 +248,7 @@ public class StandardManager implements Lifecycle, SessionConfig, Contextualiser
 
 	// this should really be abstract, but is useful for testing - TODO
 
-	public SessionWrapperFactory getSessionWrapperFactory() {return _sessionWrapperFactory;}
+	public WebSessionWrapperFactory getSessionWrapperFactory() {return _sessionWrapperFactory;}
 
 	public SessionIdFactory getSessionIdFactory() {return _sessionIdFactory;}
 
@@ -280,7 +281,7 @@ public class StandardManager implements Lifecycle, SessionConfig, Contextualiser
 
 	public Timer getTimer() {return _timer;}
 
-	public SessionPool getSessionPool() {return _sessionPool;}
+	public WebSessionPool getSessionPool() {return _sessionPool;}
 
 	public Router getRouter() {return _router;}
 

@@ -18,7 +18,7 @@ package org.codehaus.wadi.jetty5;
 
 import org.codehaus.wadi.Session;
 import org.codehaus.wadi.Invocation;
-import org.codehaus.wadi.PoolableHttpServletRequestWrapper;
+import org.codehaus.wadi.web.PoolableHttpServletRequestWrapper;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>

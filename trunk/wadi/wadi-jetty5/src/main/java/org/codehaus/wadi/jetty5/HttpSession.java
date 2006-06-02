@@ -16,8 +16,8 @@
  */
 package org.codehaus.wadi.jetty5;
 
-import org.codehaus.wadi.WebSession;
 import org.codehaus.wadi.impl.SessionWrapper;
+import org.codehaus.wadi.web.WebSession;
 import org.mortbay.jetty.servlet.SessionManager;
 
 /**

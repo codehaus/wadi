@@ -21,7 +21,6 @@ import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 import javax.sql.DataSource;
-import org.codehaus.wadi.AttributesFactory;
 import org.codehaus.wadi.Collapser;
 import org.codehaus.wadi.ContextPool;
 import org.codehaus.wadi.Contextualiser;
@@ -31,23 +30,16 @@ import org.codehaus.wadi.PoolableInvocationWrapperPool;
 import org.codehaus.wadi.EndPoint;
 import org.codehaus.wadi.ReplicaterFactory;
 import org.codehaus.wadi.SessionIdFactory;
-import org.codehaus.wadi.SessionPool;
-import org.codehaus.wadi.SessionWrapperFactory;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.impl.AbstractExclusiveContextualiser;
 import org.codehaus.wadi.impl.AlwaysEvicter;
-import org.codehaus.wadi.impl.AtomicallyReplicableSessionFactory;
 import org.codehaus.wadi.impl.ClusterContextualiser;
 import org.codehaus.wadi.impl.ClusteredManager;
 import org.codehaus.wadi.impl.DatabaseStore;
-import org.codehaus.wadi.impl.DistributableAttributesFactory;
-import org.codehaus.wadi.impl.DistributableValueFactory;
 import org.codehaus.wadi.impl.DummyContextualiser;
 import org.codehaus.wadi.impl.DummyManagerConfig;
-import org.codehaus.wadi.impl.DummyRouter;
-import org.codehaus.wadi.impl.DummyStatefulHttpServletRequestWrapperPool;
 import org.codehaus.wadi.impl.ExclusiveStoreContextualiser;
 import org.codehaus.wadi.impl.HashingCollapser;
 import org.codehaus.wadi.impl.MemoryContextualiser;
@@ -59,12 +51,20 @@ import org.codehaus.wadi.impl.SharedStoreContextualiser;
 import org.codehaus.wadi.impl.SimpleSessionPool;
 import org.codehaus.wadi.impl.SimpleStreamer;
 import org.codehaus.wadi.impl.SimpleValuePool;
-import org.codehaus.wadi.impl.StandardHttpProxy;
-import org.codehaus.wadi.impl.StandardSessionWrapperFactory;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 import org.codehaus.wadi.impl.Utils;
-import org.codehaus.wadi.impl.WebHybridRelocater;
-import org.codehaus.wadi.web.WebEndPoint;
+import org.codehaus.wadi.web.AttributesFactory;
+import org.codehaus.wadi.web.WebSessionPool;
+import org.codehaus.wadi.web.WebSessionWrapperFactory;
+import org.codehaus.wadi.web.impl.AtomicallyReplicableSessionFactory;
+import org.codehaus.wadi.web.impl.DistributableAttributesFactory;
+import org.codehaus.wadi.web.impl.DistributableValueFactory;
+import org.codehaus.wadi.web.impl.DummyRouter;
+import org.codehaus.wadi.web.impl.DummyStatefulHttpServletRequestWrapperPool;
+import org.codehaus.wadi.web.impl.StandardHttpProxy;
+import org.codehaus.wadi.web.impl.StandardSessionWrapperFactory;
+import org.codehaus.wadi.web.impl.WebEndPoint;
+import org.codehaus.wadi.web.impl.WebHybridRelocater;
 
 public class MyStack {
 
@@ -100,7 +100,7 @@ public class MyStack {
 
       Contextualiser serial=new SerialContextualiser(spool, collapser, mmap);
 
-      SessionPool sessionPool=new SimpleSessionPool(new AtomicallyReplicableSessionFactory());
+      WebSessionPool sessionPool=new SimpleSessionPool(new AtomicallyReplicableSessionFactory());
 
       // Memory
       Evicter mevicter=new AlwaysEvicter(sweepInterval, strictOrdering);
@@ -112,7 +112,7 @@ public class MyStack {
       int numPartitions=72;
       AttributesFactory attributesFactory=new DistributableAttributesFactory();
       ValuePool valuePool=new SimpleValuePool(new DistributableValueFactory());
-      SessionWrapperFactory wrapperFactory=new StandardSessionWrapperFactory();
+      WebSessionWrapperFactory wrapperFactory=new StandardSessionWrapperFactory();
       SessionIdFactory idFactory=new TomcatSessionIdFactory();
       ReplicaterFactory replicaterfactory=new MemoryReplicaterFactory(numPartitions);
       EndPoint location = new WebEndPoint(new InetSocketAddress("localhost", 8080));

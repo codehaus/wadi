@@ -21,8 +21,8 @@ import java.util.Timer;
 import org.codehaus.wadi.ContextualiserConfig;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Motable;
-import org.codehaus.wadi.Router;
-import org.codehaus.wadi.SessionPool;
+import org.codehaus.wadi.web.Router;
+import org.codehaus.wadi.web.WebSessionPool;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -55,7 +55,7 @@ public class DummyContextualiserConfig implements ContextualiserConfig {
         return null;
     }
 
-    public SessionPool getSessionPool() {
+    public WebSessionPool getSessionPool() {
         // TODO Auto-generated method stub
         return null;
     }

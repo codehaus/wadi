@@ -37,10 +37,10 @@ import org.codehaus.wadi.InvocationProxy;
 import org.codehaus.wadi.Relocater;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.impl.AbstractRelocater;
-import org.codehaus.wadi.impl.CommonsHttpProxy;
-import org.codehaus.wadi.impl.StandardHttpProxy;
-import org.codehaus.wadi.impl.WebHybridRelocater;
 import org.codehaus.wadi.test.MyContext;
+import org.codehaus.wadi.web.impl.CommonsHttpProxy;
+import org.codehaus.wadi.web.impl.StandardHttpProxy;
+import org.codehaus.wadi.web.impl.WebHybridRelocater;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**

@@ -17,17 +17,17 @@
 package org.codehaus.wadi.tomcat55;
 
 import org.codehaus.wadi.ReplicableSessionConfig;
-import org.codehaus.wadi.WebSession;
-import org.codehaus.wadi.SessionConfig;
-import org.codehaus.wadi.SessionFactory;
+import org.codehaus.wadi.web.WebSession;
+import org.codehaus.wadi.web.WebSessionConfig;
+import org.codehaus.wadi.web.WebSessionFactory;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class TomcatSessionFactory implements SessionFactory {
+public class TomcatSessionFactory implements WebSessionFactory {
 
-    public WebSession create(SessionConfig config) {
+    public WebSession create(WebSessionConfig config) {
         return new TomcatSession((ReplicableSessionConfig)config);
     }
 

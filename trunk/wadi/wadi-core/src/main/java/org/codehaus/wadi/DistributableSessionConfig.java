@@ -16,6 +16,8 @@
  */
 package org.codehaus.wadi;
 
+import org.codehaus.wadi.web.WebSessionConfig;
+
 /**
  * Defines Objects holding the configuration required by a DistributableSession
  *
@@ -23,7 +25,7 @@ package org.codehaus.wadi;
  * @version $Revision$
  */
 
-public interface DistributableSessionConfig extends SessionConfig {
+public interface DistributableSessionConfig extends WebSessionConfig {
 
     // Distributable
     Streamer getStreamer();

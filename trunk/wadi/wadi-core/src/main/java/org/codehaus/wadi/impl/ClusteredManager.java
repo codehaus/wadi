@@ -23,7 +23,6 @@ import java.util.Iterator;
 import java.util.Map;
 
 
-import org.codehaus.wadi.AttributesFactory;
 import org.codehaus.wadi.ClusteredContextualiserConfig;
 import org.codehaus.wadi.Collapser;
 import org.codehaus.wadi.Contextualiser;
@@ -36,11 +35,7 @@ import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.PartitionMapper;
 import org.codehaus.wadi.EndPoint;
 import org.codehaus.wadi.ReplicaterFactory;
-import org.codehaus.wadi.Router;
-import org.codehaus.wadi.WebSession;
 import org.codehaus.wadi.SessionIdFactory;
-import org.codehaus.wadi.SessionPool;
-import org.codehaus.wadi.SessionWrapperFactory;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValueHelper;
 import org.codehaus.wadi.ValuePool;
@@ -50,6 +45,12 @@ import org.codehaus.wadi.group.DispatcherConfig;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.location.PartitionManagerConfig;
 import org.codehaus.wadi.location.impl.DIndex;
+import org.codehaus.wadi.web.AttributesFactory;
+import org.codehaus.wadi.web.Router;
+import org.codehaus.wadi.web.WebSession;
+import org.codehaus.wadi.web.WebSessionPool;
+import org.codehaus.wadi.web.WebSessionWrapperFactory;
+import org.codehaus.wadi.web.impl.DistributableSession;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
@@ -64,7 +65,7 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
 	protected final Collapser _collapser;
 	protected final int _numPartitions;
 
-	public ClusteredManager(SessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, SessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map sessionMap, Router router, boolean errorIfSessionNotAcquired, Streamer streamer, boolean accessOnLoad, ReplicaterFactory replicaterFactory, EndPoint endPoint, InvocationProxy proxy, Dispatcher dispatcher, int numPartitions, Collapser collapser) {
+	public ClusteredManager(WebSessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, WebSessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map sessionMap, Router router, boolean errorIfSessionNotAcquired, Streamer streamer, boolean accessOnLoad, ReplicaterFactory replicaterFactory, EndPoint endPoint, InvocationProxy proxy, Dispatcher dispatcher, int numPartitions, Collapser collapser) {
 		super(sessionPool, attributesFactory, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, sessionMap, router, errorIfSessionNotAcquired, streamer, accessOnLoad, replicaterFactory);
 		_endPoint=endPoint;
 		_proxy=proxy;

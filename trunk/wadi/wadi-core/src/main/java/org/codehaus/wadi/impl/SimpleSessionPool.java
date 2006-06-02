@@ -16,26 +16,26 @@
  */
 package org.codehaus.wadi.impl;
 
-import org.codehaus.wadi.WebSession;
-import org.codehaus.wadi.SessionConfig;
-import org.codehaus.wadi.SessionFactory;
-import org.codehaus.wadi.SessionPool;
+import org.codehaus.wadi.web.WebSession;
+import org.codehaus.wadi.web.WebSessionConfig;
+import org.codehaus.wadi.web.WebSessionFactory;
+import org.codehaus.wadi.web.WebSessionPool;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class SimpleSessionPool implements SessionPool {
+public class SimpleSessionPool implements WebSessionPool {
 
-    protected final SessionFactory _factory;
-    protected SessionConfig _config;
+    protected final WebSessionFactory _factory;
+    protected WebSessionConfig _config;
 
-    public SimpleSessionPool(SessionFactory factory) {
+    public SimpleSessionPool(WebSessionFactory factory) {
         super();
         _factory=factory;
     }
 
-    public void init(SessionConfig config) {
+    public void init(WebSessionConfig config) {
       assert (_config==null);
         _config=config;
     }

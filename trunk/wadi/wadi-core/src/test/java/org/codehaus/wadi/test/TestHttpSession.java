@@ -39,32 +39,32 @@ import junit.framework.TestCase;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.AttributesFactory;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Manager;
-import org.codehaus.wadi.Router;
-import org.codehaus.wadi.WebSession;
-import org.codehaus.wadi.SessionFactory;
 import org.codehaus.wadi.SessionIdFactory;
-import org.codehaus.wadi.SessionPool;
-import org.codehaus.wadi.SessionWrapperFactory;
 import org.codehaus.wadi.ValueFactory;
 import org.codehaus.wadi.ValueHelper;
 import org.codehaus.wadi.ValuePool;
-import org.codehaus.wadi.WADIHttpSession;
 import org.codehaus.wadi.impl.ClusteredManager;
-import org.codehaus.wadi.impl.DistributableSession;
 import org.codehaus.wadi.impl.DummyContextualiser;
 import org.codehaus.wadi.impl.DummyManagerConfig;
-import org.codehaus.wadi.impl.DummyRouter;
 import org.codehaus.wadi.impl.StandardManager;
 import org.codehaus.wadi.impl.SimpleSessionPool;
 import org.codehaus.wadi.impl.SimpleValuePool;
-import org.codehaus.wadi.impl.StandardAttributesFactory;
-import org.codehaus.wadi.impl.StandardSessionFactory;
-import org.codehaus.wadi.impl.StandardSessionWrapperFactory;
-import org.codehaus.wadi.impl.StandardValueFactory;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
+import org.codehaus.wadi.web.AttributesFactory;
+import org.codehaus.wadi.web.Router;
+import org.codehaus.wadi.web.WADIHttpSession;
+import org.codehaus.wadi.web.WebSession;
+import org.codehaus.wadi.web.WebSessionFactory;
+import org.codehaus.wadi.web.WebSessionPool;
+import org.codehaus.wadi.web.WebSessionWrapperFactory;
+import org.codehaus.wadi.web.impl.DistributableSession;
+import org.codehaus.wadi.web.impl.DummyRouter;
+import org.codehaus.wadi.web.impl.StandardAttributesFactory;
+import org.codehaus.wadi.web.impl.StandardSessionFactory;
+import org.codehaus.wadi.web.impl.StandardSessionWrapperFactory;
+import org.codehaus.wadi.web.impl.StandardValueFactory;
 
 /**
  * Test WADI's HttpSession implementation
@@ -83,11 +83,11 @@ public class TestHttpSession extends TestCase {
     protected Router                  _router=new DummyRouter();
     // Standard
     protected Contextualiser          _standardContextualiser=new DummyContextualiser();
-    protected SessionWrapperFactory   _standardSessionWrapperFactory=new StandardSessionWrapperFactory();
+    protected WebSessionWrapperFactory   _standardSessionWrapperFactory=new StandardSessionWrapperFactory();
     protected SessionIdFactory        _standardSessionIdFactory=new TomcatSessionIdFactory();
     protected AttributesFactory       _standardAttributesFactory=new StandardAttributesFactory();
-    protected SessionFactory          _standardSessionFactory=new StandardSessionFactory();
-    protected SessionPool             _standardSessionPool=new SimpleSessionPool(_standardSessionFactory);
+    protected WebSessionFactory          _standardSessionFactory=new StandardSessionFactory();
+    protected WebSessionPool             _standardSessionPool=new SimpleSessionPool(_standardSessionFactory);
     protected ValueFactory            _standardValueFactory=new StandardValueFactory();
     protected ValuePool               _standardValuePool=new SimpleValuePool(_standardValueFactory);
     protected StandardManager         _standardManager=new StandardManager(_standardSessionPool, _standardAttributesFactory, _standardValuePool, _standardSessionWrapperFactory, _standardSessionIdFactory, _standardContextualiser, _sessionMap, _router, true);
@@ -970,7 +970,7 @@ public class TestHttpSession extends TestCase {
     }
 
     public void
-    testIsNew(Manager manager, SessionPool sessionPool)
+    testIsNew(Manager manager, WebSessionPool sessionPool)
     {
         WADIHttpSession s= (WADIHttpSession) sessionPool.take();
         HttpSession session=s.getWrapper();
@@ -1035,7 +1035,7 @@ public class TestHttpSession extends TestCase {
 //    }
 
     public void
-    testActivation(Manager manager, SessionPool pool) // Distributable only
+    testActivation(Manager manager, WebSessionPool pool) // Distributable only
     throws Exception
     {
         DistributableSession s0=(DistributableSession)pool.take();
@@ -1073,7 +1073,7 @@ public class TestHttpSession extends TestCase {
     }
 
     public void
-    testMigration(Manager manager, SessionPool pool) // Distributable only
+    testMigration(Manager manager, WebSessionPool pool) // Distributable only
     throws Exception
     {
         // test that a 'copy' (the basis of all motion/migration) completely copies

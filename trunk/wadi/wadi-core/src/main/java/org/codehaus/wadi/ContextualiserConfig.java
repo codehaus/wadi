@@ -17,6 +17,8 @@
 package org.codehaus.wadi;
 
 import java.util.Timer;
+import org.codehaus.wadi.web.Router;
+import org.codehaus.wadi.web.WebSessionPool;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -28,7 +30,7 @@ public interface ContextualiserConfig extends Config {
     void expire(Motable motable);
     Immoter getEvictionImmoter();
     Timer getTimer();
-    SessionPool getSessionPool();
+    WebSessionPool getSessionPool();
     Router getRouter();
 
     void notifySessionInsertion(String name);

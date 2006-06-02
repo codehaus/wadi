@@ -16,7 +16,7 @@
 package org.codehaus.wadi.replication.manager;
 
 import org.codehaus.wadi.Replicater;
-import org.codehaus.wadi.WebSession;
+import org.codehaus.wadi.web.WebSession;
 
 /**
  * 

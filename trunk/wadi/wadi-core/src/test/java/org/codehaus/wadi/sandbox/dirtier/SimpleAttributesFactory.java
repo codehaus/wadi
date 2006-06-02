@@ -16,9 +16,9 @@
  */
 package org.codehaus.wadi.sandbox.dirtier;
 
-import org.codehaus.wadi.Attributes;
-import org.codehaus.wadi.AttributesConfig;
-import org.codehaus.wadi.AttributesFactory;
+import org.codehaus.wadi.web.Attributes;
+import org.codehaus.wadi.web.AttributesConfig;
+import org.codehaus.wadi.web.AttributesFactory;
 
 
 /**

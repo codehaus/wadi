@@ -44,9 +44,9 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Manager;
 import org.codehaus.wadi.ManagerConfig;
 import org.codehaus.wadi.impl.StandardManager;
-import org.codehaus.wadi.impl.StandardSessionWrapperFactory;
 import org.codehaus.wadi.impl.SpringManagerFactory;
-import org.codehaus.wadi.web.Filter;
+import org.codehaus.wadi.web.impl.Filter;
+import org.codehaus.wadi.web.impl.StandardSessionWrapperFactory;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>

@@ -16,6 +16,8 @@
  */
 package org.codehaus.wadi;
 
+import org.codehaus.wadi.web.Attributes;
+
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$

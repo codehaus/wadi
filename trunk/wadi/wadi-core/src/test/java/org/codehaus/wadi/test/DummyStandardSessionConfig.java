@@ -20,27 +20,27 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSessionAttributeListener;
 import javax.servlet.http.HttpSessionListener;
 
-import org.codehaus.wadi.AttributesFactory;
 import org.codehaus.wadi.Evictable;
 import org.codehaus.wadi.EvicterConfig;
-import org.codehaus.wadi.Router;
-import org.codehaus.wadi.WebSession;
-import org.codehaus.wadi.SessionConfig;
 import org.codehaus.wadi.SessionIdFactory;
-import org.codehaus.wadi.SessionWrapperFactory;
 import org.codehaus.wadi.ValuePool;
-import org.codehaus.wadi.impl.DistributableAttributesFactory;
-import org.codehaus.wadi.impl.DistributableValueFactory;
-import org.codehaus.wadi.impl.DummyRouter;
 import org.codehaus.wadi.impl.SimpleValuePool;
-import org.codehaus.wadi.impl.StandardSessionWrapperFactory;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
+import org.codehaus.wadi.web.AttributesFactory;
+import org.codehaus.wadi.web.Router;
+import org.codehaus.wadi.web.WebSession;
+import org.codehaus.wadi.web.WebSessionConfig;
+import org.codehaus.wadi.web.WebSessionWrapperFactory;
+import org.codehaus.wadi.web.impl.DistributableAttributesFactory;
+import org.codehaus.wadi.web.impl.DistributableValueFactory;
+import org.codehaus.wadi.web.impl.DummyRouter;
+import org.codehaus.wadi.web.impl.StandardSessionWrapperFactory;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class DummyStandardSessionConfig implements SessionConfig {
+public class DummyStandardSessionConfig implements WebSessionConfig {
 
     protected final EvicterConfig _config;
     public DummyStandardSessionConfig(EvicterConfig config) {_config=config;}
@@ -58,8 +58,8 @@ public class DummyStandardSessionConfig implements SessionConfig {
 
     public void destroy(WebSession session) {_config.expire(session);}
 
-    protected final SessionWrapperFactory _sessionWrapperfactory=new StandardSessionWrapperFactory();
-    public SessionWrapperFactory getSessionWrapperFactory() {return _sessionWrapperfactory;}
+    protected final WebSessionWrapperFactory _sessionWrapperfactory=new StandardSessionWrapperFactory();
+    public WebSessionWrapperFactory getSessionWrapperFactory() {return _sessionWrapperfactory;}
 
     protected SessionIdFactory _sessionIdFactory=new TomcatSessionIdFactory();
     public SessionIdFactory getSessionIdFactory() {return _sessionIdFactory;}

@@ -16,8 +16,8 @@
 package org.codehaus.wadi.replication.manager.basic;
 
 import org.codehaus.wadi.RehydrationException;
-import org.codehaus.wadi.WebSession;
 import org.codehaus.wadi.impl.DistributableManager;
+import org.codehaus.wadi.web.WebSession;
 
 /**
  * 

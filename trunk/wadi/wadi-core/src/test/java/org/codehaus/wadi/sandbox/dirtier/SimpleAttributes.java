@@ -25,10 +25,10 @@ import java.util.Set;
 
 import javax.servlet.http.HttpSessionEvent;
 
-import org.codehaus.wadi.Attributes;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.impl.SimpleStreamer;
 import org.codehaus.wadi.impl.Utils;
+import org.codehaus.wadi.web.Attributes;
 
 /**
  * TODO - JavaDoc this type

@@ -28,12 +28,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Manager;
 import org.codehaus.wadi.ManagerConfig;
-import org.codehaus.wadi.WADIHttpSession;
-import org.codehaus.wadi.impl.AtomicallyReplicableSessionFactory;
-import org.codehaus.wadi.impl.ListenerSupport;
 import org.codehaus.wadi.impl.SpringManagerFactory;
 import org.codehaus.wadi.impl.StandardManager;
-import org.codehaus.wadi.web.Filter;
+import org.codehaus.wadi.web.WADIHttpSession;
+import org.codehaus.wadi.web.impl.AtomicallyReplicableSessionFactory;
+import org.codehaus.wadi.web.impl.Filter;
+import org.codehaus.wadi.web.impl.ListenerSupport;
 import org.mortbay.jetty.servlet.Dispatcher;
 import org.mortbay.jetty.servlet.ServletHandler;
 import org.mortbay.jetty.servlet.SessionManager;
@@ -84,7 +84,7 @@ public class JettyManager implements ManagerConfig, SessionManager {
 	}
 
 	public HttpSession newHttpSession(HttpServletRequest request) {
-		org.codehaus.wadi.WebSession session = _wadi.create();
+		org.codehaus.wadi.web.WebSession session = _wadi.create();
 		if (false == session instanceof WADIHttpSession) {
 			throw new IllegalStateException(WADIHttpSession.class + " is expected.");
 		}
