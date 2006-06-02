@@ -103,13 +103,14 @@ public interface Manager extends Lifecycle {
     boolean getErrorIfSessionNotAcquired();
 
     /**
-     * Process an Invocation - somehow bring the Invocation and the relevant Session together within
-     * a JVM somewhere in the Cluster, give the Invocation the Session and invoke() it.
+     * Contextualise an Invocation - somehow bring the Invocation and the relevant Session together within
+     * a JVM somewhere in the Cluster, give the Invocation the Session and invoke() it. The Manager possesses
+     * a stack of Contextualisers, down which the Invocation is passed in order to achieve this.
      * 
      * @param invocation
      * @throws InvocationException
      */
-    void process(Invocation invocation) throws InvocationException;
+    void contextualise(Invocation invocation) throws InvocationException;
     
     // lose these
     void setLastAccessedTime(Evictable evictable, long oldTime, long newTime);

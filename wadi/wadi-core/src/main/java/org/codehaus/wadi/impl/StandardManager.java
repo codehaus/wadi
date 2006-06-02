@@ -315,7 +315,7 @@ public class StandardManager implements Lifecycle, WebSessionConfig, Contextuali
 
 	// Deal with incoming/outgoing invocations... - taking over flow control
     
-    public void process(Invocation invocation) throws InvocationException {
+    public void contextualise(Invocation invocation) throws InvocationException {
         String key=invocation.getSessionKey();
         if (_log.isTraceEnabled()) _log.trace("potentially stateful request: "+key);
         
