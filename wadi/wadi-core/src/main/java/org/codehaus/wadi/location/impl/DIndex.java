@@ -215,7 +215,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
             }
         }
         
-        if (_log.isDebugEnabled()) _log.debug("membership changed - joiners:"+joiners+" leavers:"+leavers);
+        if (_log.isDebugEnabled()) _log.debug("membership changed - joiners:"+joiners+" leavers:"+leavers+" coordinator:"+coordinator);
 
 	    if (_localPeer.equals(_coordinatorPeer)) {
 	        _coordinator.queueRebalancing();
