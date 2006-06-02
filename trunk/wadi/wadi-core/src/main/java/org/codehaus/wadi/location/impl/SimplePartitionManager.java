@@ -129,20 +129,34 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 		}
 	}
 	
-	public void evacuate() throws Exception {
-		_log.info("evacuating...");
+	public void evacuate() {
+	    _log.info("evacuating...");
 
-		PartitionEvacuationRequest request=new PartitionEvacuationRequest();
-		Peer localPeer=_localPeer;
-		Peer coordPeer=_config.getCoordinator();
-		String correlationId=_localPeer.getName();
-		if (_log.isTraceEnabled()) _log.trace("evacuating partitions...: "+_dispatcher.getPeerName(localPeer.getAddress())+" -> "+coordPeer.getState().get(Peer._peerNameKey));
-		while (_dispatcher.exchangeSend(coordPeer.getAddress(), correlationId, request, _inactiveTime)==null) {
-			if (_log.isWarnEnabled()) _log.warn("could not contact Coordinator - backing off for "+ _inactiveTime+" millis...");
-			Thread.sleep(_config.getInactiveTime());
-		}
+	    PartitionEvacuationRequest request=new PartitionEvacuationRequest();
+	    Peer localPeer=_localPeer;
+        Peer coordPeer=_config.getCoordinator();
+	    String correlationId=_localPeer.getName();
+	    if (_log.isTraceEnabled()) _log.trace("evacuating partitions...: "+_dispatcher.getPeerName(localPeer.getAddress())+" -> "+coordPeer.getState().get(Peer._peerNameKey));
 
-		_log.info("...evacuated");
+	    int failures=0;
+	    boolean success=false;
+	    while (!success && failures<5) {
+	        coordPeer=_config.getCoordinator(); // reinitialise in case coordinator has changed...
+	        try {
+	            Message response=_dispatcher.exchangeSend(coordPeer.getAddress(), correlationId, request, _inactiveTime);
+	            if (response==null) {
+	                failures++;
+	                if (_log.isWarnEnabled()) _log.warn("could not contact Coordinator - backing off for "+ _inactiveTime+" millis...");
+	                Thread.sleep(_config.getInactiveTime());
+	            } else {
+	                success=true;
+	            }
+	        } catch (Exception e) {
+	            _log.warn("problem evacuating partitions", e);
+	        } 
+	    }
+
+	    _log.info("...evacuated");
 	}
 
 	public void stop() throws Exception {
