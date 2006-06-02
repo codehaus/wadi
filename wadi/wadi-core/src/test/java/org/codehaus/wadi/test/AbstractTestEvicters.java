@@ -153,7 +153,7 @@ public abstract class AbstractTestEvicters extends TestCase {
 		mevicter.stop(); // we'll run it by hand...
 		devicter.stop();
 
-		manager.create();
+		manager.create(null);
 		assertTrue(mmap.size()==1);
 		assertTrue(dmap.size()==0);
 		Thread.sleep(1100);

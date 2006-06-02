@@ -135,10 +135,10 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
 		if (null == session) {
 			throw new IllegalArgumentException("Provided session id is unknown.");
 		}
-		destroy(session);
+		destroy(null, session);
 	}
 
-	public void destroy(WebSession session) {
+	public void destroy(Invocation invocation, WebSession session) {
 		// this destroySession method must not chain the one in super - otherwise the
 		// notification aspect fires twice - once around each invocation... - DOH !
 		Collection names=new ArrayList((_attributeListeners.length>0)?(Collection)session.getAttributeNameSet():((DistributableSession)session).getListenerNames());

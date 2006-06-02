@@ -120,7 +120,7 @@ public class AbstractTestRelocation extends TestCase {
 		_log.info("...DONE");
 
 		_log.info("CREATING SESSION...");
-		String id=red.getManager().create().getId();
+		String id=red.getManager().create(null).getId();
 		_log.info("...DONE");
 
 		assertTrue(id!=null);

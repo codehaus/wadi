@@ -175,7 +175,7 @@ public class StandardManager implements Lifecycle, WebSessionConfig, Contextuali
 		return true;
 	}
 
-	public WebSession create() {
+	public WebSession create(Invocation invocation) {
 		String name=null;
 		do {
 			name=_sessionIdFactory.create(); // TODO - API on this class is wrong...
@@ -193,7 +193,7 @@ public class StandardManager implements Lifecycle, WebSessionConfig, Contextuali
 		return session;
 	}
 
-	public void destroy(WebSession session) {
+	public void destroy(Invocation invocation, WebSession session) {
 		for (Iterator i=new ArrayList(session.getAttributeNameSet()).iterator(); i.hasNext();) // ALLOC ?
 			session.removeAttribute((String)i.next()); // TODO - very inefficient
 		// _contextualiser.getEvicter().remove(session);
@@ -260,7 +260,7 @@ public class StandardManager implements Lifecycle, WebSessionConfig, Contextuali
 	public void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval) {_contextualiser.setMaxInactiveInterval(evictable, oldInterval, newInterval);}
 
 	public void expire(Motable motable) {
-		destroy((WebSession)motable);
+		destroy(null, (WebSession)motable);
 	}
 
 	public Immoter getEvictionImmoter() {
