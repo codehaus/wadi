@@ -20,7 +20,7 @@ package org.codehaus.wadi;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
- * A Session is an object Time-To-Live (See Motable) and Locking semantics.
+ * A Session is an object with Time-To-Live (See Motable) and Locking semantics.
  * In a distributable situation its content is Serializable. Different subtypes
  * of Session may choose to implement their payload differently - i.e. a Stateful
  * Session Bean (EJB) looks very different from an HttpSession (Web), but both could
