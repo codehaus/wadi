@@ -50,7 +50,7 @@ public class SerialContextualiser extends AbstractDelegatingContextualiser {
 		_map=map;
 	}
 	
-	public boolean contextualise(Invocation invocation, String id, Immoter immoter, Sync invocationLock, boolean exclusiveOnly) throws InvocationException {
+	public boolean contextualise(Invocation invocation, String key, Immoter immoter, Sync invocationLock, boolean exclusiveOnly) throws InvocationException {
 	  boolean release=false;
 	  
 	  try {
@@ -59,21 +59,21 @@ public class SerialContextualiser extends AbstractDelegatingContextualiser {
 	    } else {
 	      // the promotion begins here...
 	      // allocate a lock and continue...
-	      invocationLock=_collapser.getLock(id);
+	      invocationLock=_collapser.getLock(key);
 	      
-	      Utils.acquireUninterrupted("Invocation(SerialContextualiser)", id, invocationLock);
+	      Utils.acquireUninterrupted("Invocation(SerialContextualiser)", key, invocationLock);
 	      release=true;
 	      
 	      // whilst we were waiting for the motionLock, the session in question may have been moved back into memory somehow.
 	      // before we proceed, confirm that this has not happened.
-	      Session context=(Session)_map.get(id);
+	      Session context=(Session)_map.get(key);
 	      if (null!=context) {
 	        // oops - it HAS happened...
-	        if (_log.isTraceEnabled()) _log.trace("session has reappeared in memory whilst we were waiting to immote it...: "+id+ " ["+Thread.currentThread().getName()+"]");
+	        if (_log.isTraceEnabled()) _log.trace("session has reappeared in memory whilst we were waiting to immote it...: "+key+ " ["+Thread.currentThread().getName()+"]");
 	        // overlap two locking systems until we have secured the session in memory, then run the request
 	        // and release the lock.
 	        
-	        if (immoter.contextualise(invocation, id, context, invocationLock)) {
+	        if (immoter.contextualise(invocation, key, context, invocationLock)) {
 	          release=false;
 	          return true;
 	        }
@@ -83,15 +83,15 @@ public class SerialContextualiser extends AbstractDelegatingContextualiser {
 	    // session was not promoted whilst we were waiting for motionLock. Continue down Contextualiser stack
 	    // it may be below us...
 	    // lock is to be released as soon as context is available to subsequent contextualisations...
-	    boolean found=_next.contextualise(invocation, id, immoter, invocationLock, exclusiveOnly);
+	    boolean found=_next.contextualise(invocation, key, immoter, invocationLock, exclusiveOnly);
 	    release=!found;
 	    return found;
 	  } catch (TimeoutException e) {
-	    _log.error("could not acquire session within timeframe: "+id);
+	    _log.error("could not acquire session within timeframe: "+key);
 	    return false;
 	  } finally {
 	    if (release) {
-	      Utils.release("Invocation", id, invocationLock);
+	      Utils.release("Invocation", key, invocationLock);
 	    }
 	  }
 	}

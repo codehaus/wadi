@@ -32,6 +32,7 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
 public interface Session extends Motable, SerializableContent {
 
 	Sync getSharedLock();
+    
 	Sync getExclusiveLock();
     
 }

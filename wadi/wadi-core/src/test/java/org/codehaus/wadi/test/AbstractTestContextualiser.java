@@ -302,14 +302,14 @@ public abstract class AbstractTestContextualiser extends TestCase {
 			_context=new MyContext(context, context);
 		}
 
-		public boolean contextualise(Invocation invocation, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws InvocationException {
+		public boolean contextualise(Invocation invocation, String key, Immoter immoter, Sync invocationLock, boolean exclusiveOnly) throws InvocationException {
 			_counter++;
 
 			Motable emotable=_context;
 			Emoter emoter=new EtherEmoter();
-			Motable immotable=Utils.mote(emoter, immoter, emotable, id);
+			Motable immotable=Utils.mote(emoter, immoter, emotable, key);
 			if (immotable!=null) {
-				return immoter.contextualise(invocation, id, immotable, motionLock);
+				return immoter.contextualise(invocation, key, immotable, invocationLock);
 			} else {
 				return false;
 			}
@@ -344,21 +344,21 @@ public abstract class AbstractTestContextualiser extends TestCase {
 			_context=new MyContext(context, context);
 		}
 
-		public boolean contextualise(Invocation invocation, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws InvocationException {
+		public boolean contextualise(Invocation invocation, String key, Immoter immoter, Sync invocationLock, boolean exclusiveOnly) throws InvocationException {
 			_counter++;
 			Session context=_context;
 			Sync shared=context.getSharedLock();
 			try {
 				shared.acquire();
-				motionLock.release();
+				invocationLock.release();
 				if ( _log.isInfoEnabled() ) {
-					_log.info("running locally: " + id);
+					_log.info("running locally: " + key);
 				}
 				invocation.invoke();
 				shared.release();
 				return true;
 			} catch (InterruptedException e) {
-				throw new InvocationException("problem processing request for: "+id, e);
+				throw new InvocationException("problem processing request for: "+key, e);
 			}
 		}
 

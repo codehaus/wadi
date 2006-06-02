@@ -25,16 +25,15 @@ package org.codehaus.wadi;
  * etc...
  * 
  * A Stateful Invocation is one that is associated with Server-side state - a Session. This Session is
- * identified by a unique key, given to the client, which it will present along with each Invocation that
+ * identified by a unique key, given to the client, which it will present along with each invocation that
  * needs to be processed in the context of this state/Session.
  * 
  * Some Invocation types may know how to relocate themselves from one Peer in a Cluster to another. In the
  * e.g. web-tier, this might be achieved by e.g. redirection or proxying. In the e.g. EJB tier this might
  * be implemented using similar strategies implemented on top of the EJB RMI's transport protocol.
  *  
- *  etc.
+ * etc.
  *
- * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
 public interface Invocation {
