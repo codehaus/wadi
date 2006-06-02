@@ -18,9 +18,9 @@ package org.codehaus.wadi.axis2;
 
 import javax.servlet.http.HttpSession;
 import org.apache.axis2.session.Session;
-import org.codehaus.wadi.impl.SessionWrapper;
+import org.codehaus.wadi.web.impl.WebSessionWrapper;
 
-public class Axis2Session extends SessionWrapper implements Session, HttpSession {
+public class Axis2Session extends WebSessionWrapper implements Session, HttpSession {
     
     Axis2Session(org.codehaus.wadi.web.WebSession session) {
         super(session);

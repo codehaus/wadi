@@ -21,7 +21,6 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSessionAttributeListener;
 import javax.servlet.http.HttpSessionListener;
 
-import org.codehaus.wadi.DistributableSessionConfig;
 import org.codehaus.wadi.Evictable;
 import org.codehaus.wadi.SessionIdFactory;
 import org.codehaus.wadi.Streamer;
@@ -32,6 +31,7 @@ import org.codehaus.wadi.impl.SimpleStreamer;
 import org.codehaus.wadi.impl.SimpleValuePool;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 import org.codehaus.wadi.web.AttributesFactory;
+import org.codehaus.wadi.web.DistributableSessionConfig;
 import org.codehaus.wadi.web.Router;
 import org.codehaus.wadi.web.WebSession;
 import org.codehaus.wadi.web.WebSessionWrapperFactory;

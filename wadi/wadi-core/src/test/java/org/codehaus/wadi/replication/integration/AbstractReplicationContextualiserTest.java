@@ -23,7 +23,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import junit.framework.TestCase;
 import org.codehaus.wadi.Collapser;
-import org.codehaus.wadi.ContextPool;
+import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Evicter;
 import org.codehaus.wadi.InvocationException;
@@ -39,7 +39,6 @@ import org.codehaus.wadi.impl.DummyManagerConfig;
 import org.codehaus.wadi.impl.HashingCollapser;
 import org.codehaus.wadi.impl.HybridRelocater;
 import org.codehaus.wadi.impl.MemoryContextualiser;
-import org.codehaus.wadi.impl.SessionToContextPoolAdapter;
 import org.codehaus.wadi.impl.SimpleSessionPool;
 import org.codehaus.wadi.impl.SimpleStreamer;
 import org.codehaus.wadi.impl.SimpleValuePool;
@@ -62,6 +61,7 @@ import org.codehaus.wadi.web.impl.DummyStatefulHttpServletRequestWrapperPool;
 import org.codehaus.wadi.web.impl.StandardHttpProxy;
 import org.codehaus.wadi.web.impl.StandardSessionWrapperFactory;
 import org.codehaus.wadi.web.impl.WebEndPoint;
+import org.codehaus.wadi.web.impl.WebSessionToSessionPoolAdapter;
 
 /**
  * 
@@ -156,7 +156,7 @@ public abstract class AbstractReplicationContextualiserTest extends TestCase {
         SimpleSessionPool sessionPool = new SimpleSessionPool(new AtomicallyReplicableSessionFactory());
 
         Evicter mevicter = new AlwaysEvicter(sweepInterval, true);
-        ContextPool contextPool = new SessionToContextPoolAdapter(sessionPool);
+        SessionPool contextPool = new WebSessionToSessionPoolAdapter(sessionPool);
         PoolableInvocationWrapperPool requestPool = new DummyStatefulHttpServletRequestWrapperPool();
         
         ReplicationManager replicationManager = createReplicationManager(dispatcher);

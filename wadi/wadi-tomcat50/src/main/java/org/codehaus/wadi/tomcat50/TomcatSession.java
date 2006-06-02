@@ -31,7 +31,7 @@ import org.apache.catalina.Session;
 import org.apache.catalina.SessionListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.DistributableSessionConfig;
+import org.codehaus.wadi.web.DistributableSessionConfig;
 import org.codehaus.wadi.web.impl.DistributableSession;
 
 /**

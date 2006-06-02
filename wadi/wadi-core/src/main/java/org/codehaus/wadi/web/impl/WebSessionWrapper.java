@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.impl;
+package org.codehaus.wadi.web.impl;
 
 import java.util.Collections;
 import java.util.Enumeration;
@@ -29,14 +29,14 @@ import org.codehaus.wadi.web.WebSession;
  * Wraps a Session instance, presenting ONLY an HttpSession facade to the application.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
+ * @version $Revision: 1893 $
  */
 
-public class SessionWrapper implements HttpSession {
+public class WebSessionWrapper implements HttpSession {
 
     protected final WebSession _session;
 
-    public SessionWrapper(WebSession session) {
+    public WebSessionWrapper(WebSession session) {
         _session=session;
     }
 

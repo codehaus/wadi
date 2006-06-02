@@ -14,19 +14,22 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.impl;
-
-import javax.servlet.http.HttpSession;
-
-import org.codehaus.wadi.web.WebSession;
-import org.codehaus.wadi.web.WebSessionWrapperFactory;
+package org.codehaus.wadi.web.impl;
 
 /**
+ * Superclass of Exceptions thrown by HTTP proxying code.
+ *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class DummySessionWrapperFactory implements WebSessionWrapperFactory {
 
-    public HttpSession create(WebSession session) {return new SessionWrapper(session);}
+public class ProxyingException extends Exception {
 
+	public ProxyingException(String message) {
+		super(message);
+	}
+
+	public ProxyingException(String message, Exception cause) {
+		super(message, cause);
+	}
 }

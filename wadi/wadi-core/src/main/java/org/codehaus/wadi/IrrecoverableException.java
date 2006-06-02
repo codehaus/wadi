@@ -16,6 +16,8 @@
  */
 package org.codehaus.wadi;
 
+import org.codehaus.wadi.web.impl.ProxyingException;
+
 /**
  * Indicates an exceptional case which is not recoverable.
  *

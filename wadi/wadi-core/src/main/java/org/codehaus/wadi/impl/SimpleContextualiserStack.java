@@ -35,7 +35,7 @@ import javax.sql.DataSource;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Collapser;
-import org.codehaus.wadi.ContextPool;
+import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.ContextualiserConfig;
 import org.codehaus.wadi.Emoter;
@@ -87,13 +87,13 @@ public class SimpleContextualiserStack implements Contextualiser {
 
 	protected final SerialContextualiser _serial;
 
-	protected final ContextPool _memoryPool;
+	protected final SessionPool _memoryPool;
 	protected final PoolableInvocationWrapperPool _requestPool;
 	protected final Evicter _memoryEvicter;
 	protected final Map _memoryMap;
 	protected final MemoryContextualiser _memory;
 
-	public SimpleContextualiserStack(Map sessionMap, ContextPool pool, DataSource dataSource, Relocater relocater) throws Exception {
+	public SimpleContextualiserStack(Map sessionMap, SessionPool pool, DataSource dataSource, Relocater relocater) throws Exception {
 		super();
 		_streamer=new SimpleStreamer();
 		_collapser=new DebugCollapser();

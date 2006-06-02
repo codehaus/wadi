@@ -14,22 +14,22 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.web.impl;
+
+import java.util.HashMap;
+
+import org.codehaus.wadi.web.Attributes;
+import org.codehaus.wadi.web.AttributesConfig;
+import org.codehaus.wadi.web.AttributesFactory;
 
 /**
- * Indicates an exceptional case which is recoverable.
- *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
+public class LazyAttributesFactory implements AttributesFactory {
 
-public class RecoverableException extends ProxyingException {
+    public Attributes create(AttributesConfig config) {
+        return new LazyAttributes(config, new HashMap());
+    }
 
-	/**
-	 * @param message
-	 * @param cause
-	 */
-	public RecoverableException(String message, Exception cause) {
-		super(message, cause);
-	}
 }

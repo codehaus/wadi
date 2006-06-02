@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.sql.DataSource;
 import org.codehaus.wadi.Collapser;
-import org.codehaus.wadi.ContextPool;
+import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Evicter;
 import org.codehaus.wadi.InvocationProxy;
@@ -46,7 +46,6 @@ import org.codehaus.wadi.impl.MemoryContextualiser;
 import org.codehaus.wadi.impl.MemoryReplicaterFactory;
 import org.codehaus.wadi.impl.NeverEvicter;
 import org.codehaus.wadi.impl.SerialContextualiser;
-import org.codehaus.wadi.impl.SessionToContextPoolAdapter;
 import org.codehaus.wadi.impl.SharedStoreContextualiser;
 import org.codehaus.wadi.impl.SimpleSessionPool;
 import org.codehaus.wadi.impl.SimpleStreamer;
@@ -65,6 +64,7 @@ import org.codehaus.wadi.web.impl.StandardHttpProxy;
 import org.codehaus.wadi.web.impl.StandardSessionWrapperFactory;
 import org.codehaus.wadi.web.impl.WebEndPoint;
 import org.codehaus.wadi.web.impl.WebHybridRelocater;
+import org.codehaus.wadi.web.impl.WebSessionToSessionPoolAdapter;
 
 public class MyStack {
 
@@ -104,7 +104,7 @@ public class MyStack {
 
       // Memory
       Evicter mevicter=new AlwaysEvicter(sweepInterval, strictOrdering);
-      ContextPool contextPool=new SessionToContextPoolAdapter(sessionPool);
+      SessionPool contextPool=new WebSessionToSessionPoolAdapter(sessionPool);
       PoolableInvocationWrapperPool requestPool=new DummyStatefulHttpServletRequestWrapperPool();
       _memory=new MemoryContextualiser(serial, mevicter, mmap, streamer, contextPool, requestPool);
 

@@ -14,10 +14,10 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.impl;
+package org.codehaus.wadi.web.impl;
 
 import org.codehaus.wadi.Session;
-import org.codehaus.wadi.ContextPool;
+import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.web.WebSession;
 import org.codehaus.wadi.web.WebSessionConfig;
 import org.codehaus.wadi.web.WebSessionPool;
@@ -29,13 +29,13 @@ import org.codehaus.wadi.web.WebSessionPool;
  * different APIs. To be resolved ASAP.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
+ * @version $Revision: 1893 $
  */
-public class SessionToContextPoolAdapter implements ContextPool {
+public class WebSessionToSessionPoolAdapter implements SessionPool {
 
     protected final WebSessionPool _pool;
     
-    public SessionToContextPoolAdapter(WebSessionPool pool) {
+    public WebSessionToSessionPoolAdapter(WebSessionPool pool) {
         super();
         _pool=pool;
     }

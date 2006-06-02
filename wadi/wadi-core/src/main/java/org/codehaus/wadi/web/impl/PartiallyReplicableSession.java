@@ -16,7 +16,7 @@
  */
 package org.codehaus.wadi.web.impl;
 
-import org.codehaus.wadi.ReplicableSessionConfig;
+import org.codehaus.wadi.web.ReplicableSessionConfig;
 
 // A Session from which we can generate replication deltas, instead of complete backup copies...
 
