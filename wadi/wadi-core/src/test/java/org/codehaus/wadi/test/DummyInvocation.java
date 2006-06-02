@@ -40,7 +40,7 @@ public class DummyInvocation implements Invocation {
         _key=null;
     }
 
-    public String getKey() {
+    public String getSessionKey() {
         return _key;
     }
 

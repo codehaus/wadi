@@ -97,7 +97,7 @@ public class Axis2Invocation implements Invocation, Runnable {
         _rendezvous.restart();
     }
     
-    public String getKey() {
+    public String getSessionKey() {
         return _key;
     }
     

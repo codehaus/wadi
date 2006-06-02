@@ -20,8 +20,8 @@ import java.nio.ByteBuffer;
 
 
 /**
- * Lit. 'able to be moved' - an Object the can be [promoted and] demoted.
- * An Evictable with an ID and a payload.
+ * Lit. 'able to be moved' - an Object the can be [promoted and] demoted
+ * up and down a Contextualiser stack. An Evictable with an ID and a payload.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$

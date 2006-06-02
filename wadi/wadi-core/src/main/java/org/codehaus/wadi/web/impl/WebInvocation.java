@@ -69,7 +69,7 @@ public class WebInvocation implements Invocation {
         proxiedInvocation=true;
     }
     
-	public String getKey() {
+	public String getSessionKey() {
 	    return hreq.getRequestedSessionId();   
     }
     

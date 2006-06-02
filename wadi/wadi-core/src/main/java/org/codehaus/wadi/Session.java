@@ -20,7 +20,11 @@ package org.codehaus.wadi;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
- * Base API for client state - A Session has Time-To-Live and Locking
+ * A Session is an object Time-To-Live (See Motable) and Locking semantics.
+ * In a distributable situation its content is Serializable. Different subtypes
+ * of Session may choose to implement their payload differently - i.e. a Stateful
+ * Session Bean (EJB) looks very different from an HttpSession (Web), but both could
+ * inherit or be wrapped by this interface.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
@@ -29,4 +33,5 @@ public interface Session extends Motable, SerializableContent {
 
 	Sync getSharedLock();
 	Sync getExclusiveLock();
+    
 }

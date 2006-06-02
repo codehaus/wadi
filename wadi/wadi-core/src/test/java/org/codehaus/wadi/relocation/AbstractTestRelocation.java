@@ -60,7 +60,7 @@ public class AbstractTestRelocation extends TestCase {
             _key=null;
         }
 
-        public String getKey() {
+        public String getSessionKey() {
             return _key;
         }
 
