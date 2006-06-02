@@ -72,7 +72,7 @@ public class Axis2Invocation implements Invocation, Runnable {
         // rendezvous with it again
         // ascend the contextualiser stack
         try {
-            _wadi.around(this);
+            _wadi.process(this);
         } catch (InvocationException e) {
             _log.error(e); // FIXME - should be passed back to main thread...
         }

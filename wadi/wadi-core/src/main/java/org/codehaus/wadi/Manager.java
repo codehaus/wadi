@@ -21,36 +21,101 @@ import org.codehaus.wadi.web.WebSessionPool;
 import org.codehaus.wadi.web.WebSessionWrapperFactory;
 
 
-public interface Manager {
+/**
+ * Manager - A Session Manager abstraction. Responsibilities include Session creation, destruction, storage
+ * and Invocation interception and processing in the presence of the Session.
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
+ */
+public interface Manager extends Lifecycle {
+    
+    /**
+     * Initialise the Manager with information not readily available at construction time.
+     * 
+     * @param config An object carrying configuration informations
+     */
     void init(ManagerConfig config);
 
+    /**
+     * Start the Manager and subcomponents/threads
+     * 
+     * @throws Exception
+     */
     void start() throws Exception;
-
+    
+    /**
+     * Stop the Manager and subcomponents/threads
+     * 
+     * @throws Exception
+     */
     void stop() throws Exception;
 
-    void destroy();
+    /**
+     * Destroy the Manager - clean up any associated resources
+     */
+    void destroy(); // should take an Invocation
 
-    WebSession create();
+    /**
+     * Create a new Session
+     * 
+     * @return the Session  
+     */
+    WebSession create(); // should take an Invocation
+    
+    /**
+     * Destroy a Session
+     * 
+     * @param session the Session
+     */
+    void destroy(WebSession session); // should take an Invocation
 
-    void destroy(WebSession session);
-
-    Manager getManager();
-
-    WebSessionWrapperFactory getSessionWrapperFactory();
-
-    SessionIdFactory getSessionIdFactory();
-
+    /**
+     * @return The maximum amount of time (in seconds) that a Session
+     * may lie inactive (i.e. without receiving an Invocation) before it 
+     * should be garbage collected.
+     */
     int getMaxInactiveInterval();
 
+    /**
+     * @param The maximum amount of time (in seconds) that a Session
+     * may lie inactive (i.e. without receiving an Invocation) before it 
+     * should be garbage collected.
+     */
     void setMaxInactiveInterval(int interval);
 
+    /**
+     * @return The Pool from/to which Sessions are allocated/returned
+     */
+    WebSessionPool getSessionPool(); // should be a SessionPool - not a WebSessionPool
+    
+    /**
+     * @return The factory responsible for the generation of Session IDs
+     */
+    SessionIdFactory getSessionIdFactory();
+
+    /**
+     * Return a flag which indicates whether failure to find the relevant Session for an
+     * Invocation should be considered an error or not.
+     * 
+     * @return whether failure to find a Session should be considered an error
+     */
+    boolean getErrorIfSessionNotAcquired();
+
+    /**
+     * Process an Invocation - somehow bring the Invocation and the relevant Session together within
+     * a JVM somewhere in the Cluster, give the Invocation the Session and invoke() it.
+     * 
+     * @param invocation
+     * @throws InvocationException
+     */
+    void process(Invocation invocation) throws InvocationException;
+    
+    // lose these
     void setLastAccessedTime(Evictable evictable, long oldTime, long newTime);
 
     void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval);
 
-    WebSessionPool getSessionPool();
+    WebSessionWrapperFactory getSessionWrapperFactory();
 
-    boolean getErrorIfSessionNotAcquired();
-
-    void around(Invocation invocation) throws InvocationException;
 }
