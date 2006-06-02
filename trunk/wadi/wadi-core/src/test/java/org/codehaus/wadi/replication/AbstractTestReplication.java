@@ -157,7 +157,7 @@ public abstract class AbstractTestReplication extends TestCase {
 		//devicter.stop();
 
 		_log.info("CREATING SESSION");
-		AbstractReplicableSession session=(AbstractReplicableSession)manager.create();
+		AbstractReplicableSession session=(AbstractReplicableSession)manager.create(null);
 		String foo="bar";
 		session.setAttribute("foo", foo);
 		String name=session.getId();
@@ -196,7 +196,7 @@ public abstract class AbstractTestReplication extends TestCase {
 		assertTrue(dmap.size()==0);
 
 		_log.info("DESTROYING SESSION");
-		manager.destroy(session);
+		manager.destroy(null, session);
 		assertTrue(mmap.size()==0);
 		assertTrue(dmap.size()==0);
 

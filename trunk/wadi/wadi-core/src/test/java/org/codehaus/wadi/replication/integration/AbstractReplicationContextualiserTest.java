@@ -89,7 +89,7 @@ public abstract class AbstractReplicationContextualiserTest extends TestCase {
 	}
 
 	public void testGetSessionFromReplicationManager() throws Exception {
-		WebSession session = nodeInfo1.clusteredManager.create();
+		WebSession session = nodeInfo1.clusteredManager.create(null);
 		String attrValue = "bar";
 		String attrName = "foo";
         session.setAttribute(attrName, attrValue);

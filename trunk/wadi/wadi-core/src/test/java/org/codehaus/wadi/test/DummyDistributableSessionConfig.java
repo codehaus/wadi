@@ -22,6 +22,7 @@ import javax.servlet.http.HttpSessionAttributeListener;
 import javax.servlet.http.HttpSessionListener;
 
 import org.codehaus.wadi.Evictable;
+import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.SessionIdFactory;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.StreamerConfig;
@@ -77,7 +78,7 @@ public class DummyDistributableSessionConfig implements DistributableSessionConf
         throw new UnsupportedOperationException();
     }
 
-    public void destroy(WebSession session) {
+    public void destroy(Invocation invocation, WebSession session) {
         throw new UnsupportedOperationException();
     }
 

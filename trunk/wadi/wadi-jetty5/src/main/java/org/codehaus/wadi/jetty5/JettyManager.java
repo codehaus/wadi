@@ -85,7 +85,7 @@ public class JettyManager implements ManagerConfig, SessionManager {
 	}
 
 	public HttpSession newHttpSession(HttpServletRequest request) {
-		org.codehaus.wadi.web.WebSession session = _wadi.create();
+		org.codehaus.wadi.web.WebSession session = _wadi.create(null);
 		if (false == session instanceof WADIHttpSession) {
 			throw new IllegalStateException(WADIHttpSession.class + " is expected.");
 		}

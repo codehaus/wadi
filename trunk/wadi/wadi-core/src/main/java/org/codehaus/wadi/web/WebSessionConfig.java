@@ -21,6 +21,7 @@ import javax.servlet.http.HttpSessionAttributeListener;
 import javax.servlet.http.HttpSessionListener;
 import org.codehaus.wadi.Config;
 import org.codehaus.wadi.Evictable;
+import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.SessionIdFactory;
 import org.codehaus.wadi.ValuePool;
 
@@ -37,7 +38,7 @@ public interface WebSessionConfig extends Config {
     HttpSessionAttributeListener[] getAttributeListeners();
     ServletContext getServletContext();
 
-    void destroy(WebSession session);
+    void destroy(Invocation invocation, WebSession session);
     WebSessionWrapperFactory getSessionWrapperFactory();
     SessionIdFactory getSessionIdFactory();
 

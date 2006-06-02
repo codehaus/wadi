@@ -266,7 +266,7 @@ public class TestHttpSession extends TestCase {
         _events.clear();
 
         // create a session
-        HttpSession session= ((WADIHttpSession) manager.create()).getWrapper();
+        HttpSession session= ((WADIHttpSession) manager.create(null)).getWrapper();
         assertTrue(!session.getAttributeNames().hasMoreElements());
         assertTrue(session.getValueNames().length==0);
         Pair pair=(Pair)_events.remove(0);
@@ -290,7 +290,7 @@ public class TestHttpSession extends TestCase {
     throws Exception
     {
         // create session
-        WADIHttpSession session= (WADIHttpSession) manager.create();
+        WADIHttpSession session= (WADIHttpSession) manager.create(null);
         HttpSession wrapper=session.getWrapper();
 
         // set up test
@@ -301,7 +301,7 @@ public class TestHttpSession extends TestCase {
         _events.clear();
 
         // destroy session
-        manager.destroy(session);
+        manager.destroy(null, session);
 
         // analyse results
         assertTrue(_events.size()==4);
@@ -363,7 +363,7 @@ public class TestHttpSession extends TestCase {
         manager.setAttributelisteners(new HttpSessionAttributeListener[]{});
 
         // create session
-        WADIHttpSession session= (WADIHttpSession) manager.create();
+        WADIHttpSession session= (WADIHttpSession) manager.create(null);
         HttpSession wrapper=session.getWrapper();
 
         // set up test
@@ -374,7 +374,7 @@ public class TestHttpSession extends TestCase {
         _events.clear();
 
         // destroy session
-        manager.destroy(session);
+        manager.destroy(null, session);
 
         // analyse results
         assertTrue(_events.size()==1);
@@ -409,7 +409,7 @@ public class TestHttpSession extends TestCase {
     public void
     testInvalidate(Manager manager)
     {
-        HttpSession session= ((WADIHttpSession) manager.create()).getWrapper();
+        HttpSession session= ((WADIHttpSession) manager.create(null)).getWrapper();
         session.invalidate();
         // TODO - what should we test here ?
     }
@@ -427,7 +427,7 @@ public class TestHttpSession extends TestCase {
     public void
     testSetAttribute(Manager manager)
     {
-        HttpSession session= ((WADIHttpSession) manager.create()).getWrapper();
+        HttpSession session= ((WADIHttpSession) manager.create(null)).getWrapper();
         assertTrue(_events.size()==1); // sessionCreated
         _events.clear();
 
@@ -472,7 +472,7 @@ public class TestHttpSession extends TestCase {
     public void
     testPutValue(Manager manager)
     {
-        HttpSession session= ((WADIHttpSession) manager.create()).getWrapper();
+        HttpSession session= ((WADIHttpSession) manager.create(null)).getWrapper();
         assertTrue(_events.size()==1); // sessionCreated
         _events.clear();
 
@@ -517,7 +517,7 @@ public class TestHttpSession extends TestCase {
     public void
     testGetAttribute(Manager manager)
     {
-        HttpSession session= ((WADIHttpSession) manager.create()).getWrapper();
+        HttpSession session= ((WADIHttpSession) manager.create(null)).getWrapper();
         String key="foo";
         Object val=new Listener();
         session.setAttribute(key, val);
@@ -539,7 +539,7 @@ public class TestHttpSession extends TestCase {
     public void
     testGetValue(Manager manager)
     {
-        HttpSession session= ((WADIHttpSession) manager.create()).getWrapper();
+        HttpSession session= ((WADIHttpSession) manager.create(null)).getWrapper();
         String key="foo";
         Object val=new Listener();
         session.setAttribute(key, val);
@@ -561,7 +561,7 @@ public class TestHttpSession extends TestCase {
     public void
     testRemoveAttribute(Manager manager)
     {
-        HttpSession session= ((WADIHttpSession) manager.create()).getWrapper();
+        HttpSession session= ((WADIHttpSession) manager.create(null)).getWrapper();
         assertTrue(_events.size()==1); // sessionCreated
         String key="foo";
         Object val=new Listener();
@@ -614,7 +614,7 @@ public class TestHttpSession extends TestCase {
     public void
     testRemoveValue(Manager manager)
     {
-        HttpSession session= ((WADIHttpSession) manager.create()).getWrapper();
+        HttpSession session= ((WADIHttpSession) manager.create(null)).getWrapper();
         assertTrue(_events.size()==1); // sessionCreated
         String key="foo";
         Object val=new Listener();
@@ -663,7 +663,7 @@ public class TestHttpSession extends TestCase {
     public void
     testSetAttributeNull(Manager manager)
     {
-        HttpSession session= ((WADIHttpSession) manager.create()).getWrapper();
+        HttpSession session= ((WADIHttpSession) manager.create(null)).getWrapper();
         assertTrue(_events.size()==1); // sessionCreated
         String key="foo";
         Object val=new Listener();
@@ -712,7 +712,7 @@ public class TestHttpSession extends TestCase {
     public void
     testPutValueNull(Manager manager)
     {
-        HttpSession session= ((WADIHttpSession) manager.create()).getWrapper();
+        HttpSession session= ((WADIHttpSession) manager.create(null)).getWrapper();
         assertTrue(_events.size()==1); // sessionCreated
         String key="foo";
         Object val=new Listener();
@@ -761,7 +761,7 @@ public class TestHttpSession extends TestCase {
     public void
     testReplaceAttribute(Manager manager)
     {
-        HttpSession session= ((WADIHttpSession) manager.create()).getWrapper();
+        HttpSession session= ((WADIHttpSession) manager.create(null)).getWrapper();
         assertTrue(_events.size()==1); // sessionCreated
         String key="foo";
         Object oldVal=new Listener();
@@ -821,7 +821,7 @@ public class TestHttpSession extends TestCase {
     public void
     testReplaceValue(Manager manager)
     {
-        HttpSession session= ((WADIHttpSession) manager.create()).getWrapper();
+        HttpSession session= ((WADIHttpSession) manager.create(null)).getWrapper();
         String key="foo";
         Object oldVal=new Listener();
         Object newVal=new Listener();
@@ -888,7 +888,7 @@ public class TestHttpSession extends TestCase {
     public void
     testGetAttributeNames(Manager manager)
     {
-        HttpSession session= ((WADIHttpSession) manager.create()).getWrapper();
+        HttpSession session= ((WADIHttpSession) manager.create(null)).getWrapper();
         assertTrue(enumerationLength(session.getAttributeNames())==0);
         session.setAttribute("foo", "bar");
         assertTrue(enumerationLength(session.getAttributeNames())==1);
@@ -917,7 +917,7 @@ public class TestHttpSession extends TestCase {
     public void
     testGetValueNames(Manager manager)
     {
-        HttpSession session= ((WADIHttpSession) manager.create()).getWrapper();
+        HttpSession session= ((WADIHttpSession) manager.create(null)).getWrapper();
         assertTrue(session.getValueNames().length==0);
         session.setAttribute("foo", "bar");
         assertTrue(session.getValueNames().length==1);
@@ -946,7 +946,7 @@ public class TestHttpSession extends TestCase {
     public void
     testMaxInactiveInterval(Manager manager)
     {
-        HttpSession session= ((WADIHttpSession) manager.create()).getWrapper();
+        HttpSession session= ((WADIHttpSession) manager.create(null)).getWrapper();
         {
             int interval=60*60;
             session.setMaxInactiveInterval(interval);
@@ -992,7 +992,7 @@ public class TestHttpSession extends TestCase {
     public void
     testNullName(Manager manager)
     {
-        HttpSession session= ((WADIHttpSession) manager.create()).getWrapper();
+        HttpSession session= ((WADIHttpSession) manager.create(null)).getWrapper();
         try{session.setAttribute(null,"a");assertTrue(false);}catch(IllegalArgumentException e){}
         try{session.getAttribute(null);assertTrue(false);}catch(IllegalArgumentException e){}
         try{session.removeAttribute(null);assertTrue(false);}catch(IllegalArgumentException e){}
@@ -1125,8 +1125,8 @@ public class TestHttpSession extends TestCase {
     }
 
     public void testDeserialisationOnReplacement(ClusteredManager manager) throws Exception {
-        DistributableSession s0=(DistributableSession)manager.create();
-        DistributableSession s1=(DistributableSession)manager.create();
+        DistributableSession s0=(DistributableSession)manager.create(null);
+        DistributableSession s1=(DistributableSession)manager.create(null);
 
         s0.setAttribute("dummy", "dummy");
         s0.setAttribute("binding-listener", new BindingListener());
@@ -1183,7 +1183,7 @@ public class TestHttpSession extends TestCase {
     testStandardValidation(Manager manager) // Distributable only
     throws Exception
     {
-        HttpSession session= ((WADIHttpSession) manager.create()).getWrapper();
+        HttpSession session= ((WADIHttpSession) manager.create(null)).getWrapper();
         // try some Serializables...
         session.setAttribute("0", "foo");
         session.setAttribute("1", new Integer(1));
@@ -1198,7 +1198,7 @@ public class TestHttpSession extends TestCase {
     testDistributableValidation(Manager manager) // Distributable only
     throws Exception
     {
-        HttpSession session= ((WADIHttpSession) manager.create()).getWrapper();
+        HttpSession session= ((WADIHttpSession) manager.create(null)).getWrapper();
         // try some Serializables...
         session.setAttribute("0", "foo");
         session.setAttribute("1", new Integer(1));
@@ -1237,9 +1237,9 @@ public class TestHttpSession extends TestCase {
         manager.registerHelper(Integer.class, new NotSerializableHelper()); // this one will not be used
         manager.registerHelper(type, new NotSerializableHelper());
 
-        WebSession s0=manager.create();
+        WebSession s0=manager.create(null);
         s0.setAttribute(content, val0);
-        WebSession s1=manager.create();
+        WebSession s1=manager.create(null);
         s1.setBodyAsByteArray(s0.getBodyAsByteArray());
         NotSerializable val1=(NotSerializable)s1.getAttribute(content);
         assertTrue(val0._content.equals(val1._content));
@@ -1491,7 +1491,7 @@ public class TestHttpSession extends TestCase {
 //    }
 
     public void testSeparateAttributes(Manager manager) throws Exception {
-        WebSession sess0=manager.create();
+        WebSession sess0=manager.create(null);
         Object val=new String("value");
         String key0="foo";
         String key1="bar";
@@ -1499,7 +1499,7 @@ public class TestHttpSession extends TestCase {
         sess0.setAttribute(key1, val);
         assertTrue(sess0.getAttribute(key0)==sess0.getAttribute(key1));
         byte[] bytes=sess0.getBodyAsByteArray();
-        WebSession sess1=manager.create();
+        WebSession sess1=manager.create(null);
         sess1.setBodyAsByteArray(bytes);
         assertTrue(sess1.getAttribute(key0)!=sess1.getAttribute(key1)); // after deserialisation values are no longer '='
         assertTrue(sess1.getAttribute(key0).equals(sess1.getAttribute(key1)));
@@ -1629,7 +1629,7 @@ public class TestHttpSession extends TestCase {
     testRest(Manager manager)
     {
         long start=System.currentTimeMillis();
-        HttpSession session= ((WADIHttpSession) manager.create()).getWrapper();
+        HttpSession session= ((WADIHttpSession) manager.create(null)).getWrapper();
         long end=System.currentTimeMillis();
         assertTrue(session.getSessionContext().getSession(null)==null);
         assertTrue(session.getSessionContext().getIds()!=null);

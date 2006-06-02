@@ -67,7 +67,7 @@ public class WebSessionWrapper implements HttpSession {
 
     // delegate to Manager
     public ServletContext getServletContext() {return _session.getConfig().getServletContext();}
-    public void invalidate() {_session.getConfig().destroy(_session);}
+    public void invalidate() {_session.getConfig().destroy(null, _session);}
     
     // handle ourselves...
     protected static final HttpSessionContext _httpSessionContext=new HttpSessionContext() {

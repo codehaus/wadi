@@ -483,7 +483,7 @@ public abstract class AbstractTestContextualiser extends TestCase {
 		MemoryContextualiser memory=new MemoryContextualiser(_dummyContextualiser, memoryEvicter, m, _streamer, _standardContextPool, _requestPool);
 		Manager manager=new StandardManager(_standardSessionPool, _standardAttributesFactory, _standardValuePool, _sessionWrapperFactory, _sessionIdFactory, memory, m, _router, true);
 		manager.init(new DummyManagerConfig());
-		WebSession session=manager.create();
+		WebSession session=manager.create(null);
 		session.setMaxInactiveInterval(1);
 		assertTrue(m.size()==1); // in memory
 		memoryEvicter.evict();
@@ -505,7 +505,7 @@ public abstract class AbstractTestContextualiser extends TestCase {
 		Manager manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, memory, m, _router, true, _streamer, _accessOnLoad, new DummyReplicaterFactory(), _location, _httpProxy, dispatcher, 24, _collapser);
 		manager.init(new DummyManagerConfig());
 
-		WebSession session=manager.create();
+		WebSession session=manager.create(null);
 		session.setMaxInactiveInterval(2);// times out 2 seconds from now...
 
 		assertTrue(m.size()==1); // in memory
@@ -542,7 +542,7 @@ public abstract class AbstractTestContextualiser extends TestCase {
 		Manager manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, memory, m, _router, true, _streamer, _accessOnLoad, new DummyReplicaterFactory(), _location, _httpProxy, dispatcher, 24, _collapser);
 		manager.init(new DummyManagerConfig());
 
-		WebSession session=manager.create();
+		WebSession session=manager.create(null);
 		String id=session.getName();
 		session.setMaxInactiveInterval(2);// times out 2 seconds from now...
 

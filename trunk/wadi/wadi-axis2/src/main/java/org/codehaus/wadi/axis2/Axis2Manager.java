@@ -100,7 +100,7 @@ public class Axis2Manager implements SessionManager, ManagerConfig {
     public Session createSession() {
         _log.debug("create()");
         Axis2Invocation invocation=Axis2Invocation.getThreadLocalInstance();
-        org.codehaus.wadi.web.WebSession session=_wadi.create();
+        org.codehaus.wadi.web.WebSession session=_wadi.create(null);
         invocation.setKey(session.getId());
         invocation.setSession(session);
         WADIHttpSession httpSession = (WADIHttpSession)session;

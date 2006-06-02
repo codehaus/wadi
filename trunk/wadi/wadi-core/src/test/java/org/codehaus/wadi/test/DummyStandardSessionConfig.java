@@ -22,6 +22,7 @@ import javax.servlet.http.HttpSessionListener;
 
 import org.codehaus.wadi.Evictable;
 import org.codehaus.wadi.EvicterConfig;
+import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.SessionIdFactory;
 import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.impl.SimpleValuePool;
@@ -56,7 +57,7 @@ public class DummyStandardSessionConfig implements WebSessionConfig {
 
     public ServletContext getServletContext() {return null;}
 
-    public void destroy(WebSession session) {_config.expire(session);}
+    public void destroy(Invocation invocation, WebSession session) {_config.expire(session);}
 
     protected final WebSessionWrapperFactory _sessionWrapperfactory=new StandardSessionWrapperFactory();
     public WebSessionWrapperFactory getSessionWrapperFactory() {return _sessionWrapperfactory;}

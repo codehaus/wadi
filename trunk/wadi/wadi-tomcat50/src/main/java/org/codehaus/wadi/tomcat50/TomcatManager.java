@@ -258,7 +258,7 @@ public class TomcatManager implements ManagerConfig, Lifecycle, org.apache.catal
 	}
 
 	public Session createSession() {
-		return (TomcatSession)_wadi.create();
+		return (TomcatSession)_wadi.create(null);
 	}
 
 	public Session findSession(String id) throws IOException {
