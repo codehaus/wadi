@@ -111,12 +111,6 @@ public class StandardManager implements Lifecycle, WebSessionConfig, Contextuali
 		_router.init(this);
 	}
 
-	protected boolean _started;
-
-	public boolean isStarted() {
-		return _started;
-	}
-
 	public void start() throws Exception {
 		_log.info("starting");
 
@@ -128,7 +122,6 @@ public class StandardManager implements Lifecycle, WebSessionConfig, Contextuali
 		} else {
 			context.setAttribute(Manager.class.getName(), this); // TODO - security risk ?
 		}
-		_started=true;
 
 		String version=getClass().getPackage().getImplementationVersion(); // maven2 puts version into MANIFEST.MF
 		version=(version==null?System.getProperty("wadi.version"):version); // using Eclipse, I add it as a property
@@ -140,7 +133,6 @@ public class StandardManager implements Lifecycle, WebSessionConfig, Contextuali
 	}
 
 	public void stop() throws Exception {
-		_started=false;
 		_acceptingSessions.set(false);
 		// if we are clustered, partitions must be evacuated before sessions - hack
 		aboutToStop();

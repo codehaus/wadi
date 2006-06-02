@@ -49,11 +49,12 @@ public class JettyManager implements ManagerConfig, SessionManager {
 
 	protected final ListenerSupport _listeners=new ListenerSupport();
 
-	protected StandardManager _wadi;
+	protected Manager _wadi;
 	protected ServletHandler _handler;
 	protected boolean _secureCookies=false;
 	protected boolean _httpOnly=true;
 	protected boolean _useRequestedId=false;
+    protected boolean _started=false;
 
 	// org.codehaus.wadi.ManagerConfig
 
@@ -62,7 +63,7 @@ public class JettyManager implements ManagerConfig, SessionManager {
 	}
 
 	public void callback(Manager manager) {
-		_listeners.installListeners((StandardManager)manager);
+		_listeners.installListeners((StandardManager)manager); // TODO - http://jira.codehaus.org/browse/WADI-81
 	}
 
 	// org.mortbay.jetty.servlet.SessionManager
@@ -71,7 +72,7 @@ public class JettyManager implements ManagerConfig, SessionManager {
 		_handler=handler;
 		try {
 			InputStream descriptor=_handler.getHttpContext().getResource("WEB-INF/wadi-web.xml").getInputStream();
-			_wadi=(StandardManager)SpringManagerFactory.create(descriptor, "SessionManager", new AtomicallyReplicableSessionFactory(), new JettySessionWrapperFactory());
+			_wadi=SpringManagerFactory.create(descriptor, "SessionManager", new AtomicallyReplicableSessionFactory(), new JettySessionWrapperFactory());
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -153,6 +154,7 @@ public class JettyManager implements ManagerConfig, SessionManager {
 		String name="WadiFilter";
 		handler.defineFilter(name, Filter.class.getName());;
 		handler.addFilterPathMapping("/*", name, Dispatcher.__ALL);
+        _started=true;
 	}
 
 	public void stop() throws InterruptedException {
@@ -161,10 +163,11 @@ public class JettyManager implements ManagerConfig, SessionManager {
 		} catch (Exception e) {
 			_log.warn("unexpected problem shutting down", e);
 		}
+        _started=false;
 	}
 
 	public boolean isStarted() {
-		return _wadi.isStarted();
+		return _started;
 	}
 
 	// org.codehaus.wadi.jetty5.JettyManager

@@ -81,7 +81,7 @@ public class TomcatManager implements ManagerConfig, Lifecycle, org.apache.catal
       if (listener instanceof HttpSessionListener)
 	sll.add(listener);
     }
-    ((StandardManager)manager).setSessionListeners((HttpSessionListener[])sll.toArray(new HttpSessionListener[sll.size()]));
+    ((StandardManager)manager).setSessionListeners((HttpSessionListener[])sll.toArray(new HttpSessionListener[sll.size()]));  // TODO - http://jira.codehaus.org/browse/WADI-81
 
     Object[] attributeListeners=context.getApplicationEventListeners();
     List all=new ArrayList();
@@ -90,7 +90,7 @@ public class TomcatManager implements ManagerConfig, Lifecycle, org.apache.catal
       if (listener instanceof HttpSessionAttributeListener)
 	all.add(listener);
     }
-    ((StandardManager)manager).setAttributelisteners((HttpSessionAttributeListener[])all.toArray(new HttpSessionAttributeListener[all.size()]));
+    ((StandardManager)manager).setAttributelisteners((HttpSessionAttributeListener[])all.toArray(new HttpSessionAttributeListener[all.size()]));  // TODO - http://jira.codehaus.org/browse/WADI-81
   }
 
   // org.apache.catalina.Lifecycle
