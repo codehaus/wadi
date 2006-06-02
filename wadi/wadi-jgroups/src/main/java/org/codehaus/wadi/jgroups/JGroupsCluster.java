@@ -17,6 +17,7 @@
 package org.codehaus.wadi.jgroups;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -64,7 +65,7 @@ public class JGroupsCluster extends AbstractCluster implements MembershipListene
     public static final String TEST_CLUSTER_NAME="org.codehaus.wadi.TEST-"+Math.random();
     public static final String TEST_CLUSTER_CONFIG="default.xml";
     //public static final String TEST_CLUSTER_CONFIG="default-minimalthreads.xml";
-    
+
     protected final boolean _excludeSelf=true;
     // should probably be initialised in start() and dumped in stop()
     protected final Latch _viewLatch=new Latch();
@@ -73,7 +74,7 @@ public class JGroupsCluster extends AbstractCluster implements MembershipListene
     // initialised in init()
     protected JGroupsDispatcher _dispatcher;
     protected org.jgroups.Address _localJGAddress;
-    
+
     public JGroupsCluster(String clusterName, String localPeerName, String config) throws ChannelException {
         super(clusterName, localPeerName);
         _clusterPeer=new JGroupsClusterPeer(this);
@@ -95,7 +96,7 @@ public class JGroupsCluster extends AbstractCluster implements MembershipListene
         return _localPeer;
     }
 
-    
+
     public Peer getPeerFromAddress(Address address) {
         return (JGroupsPeer)address;
     }
@@ -319,7 +320,12 @@ public class JGroupsCluster extends AbstractCluster implements MembershipListene
     public void onMessage(Message message, StateRequest request) throws Exception {
         // incorporate incoming state into our model
         JGroupsRemotePeer peer=(JGroupsRemotePeer)message.getReplyTo();
-        peer.setState(request.getState());
+	Map state=request.getState();
+	// take a snapshot
+	synchronized (state) {
+	  state=new HashMap(state);
+	}
+        peer.setState(state);
         // send our own state back in response
         _dispatcher.reply(message, new StateResponse(_localPeer.getState()));
     }
@@ -353,7 +359,7 @@ public class JGroupsCluster extends AbstractCluster implements MembershipListene
     }
 
 
-    
+
     protected Peer create(Object backend) {
         org.jgroups.Address jgAddress=(org.jgroups.Address)backend;
         JGroupsPeer peer;
@@ -368,5 +374,5 @@ public class JGroupsCluster extends AbstractCluster implements MembershipListene
         }
         return peer;
     }
-    
+
 }
