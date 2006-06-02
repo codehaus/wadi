@@ -77,7 +77,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 	protected final LockManager _pmSyncs;
 
     private final ServiceEndpointBuilder _endpointBuilder;
-    
+
 	public SimplePartitionManager(Dispatcher dispatcher, int numPartitions, Map distributedState, Callback callback, PartitionMapper mapper) {
 		_dispatcher=dispatcher;
         _cluster=_dispatcher.getCluster();
@@ -97,7 +97,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 		_inactiveTime=_cluster.getInactiveTime();
 		_callback=callback;
 		_mapper=mapper;
-        
+
         _endpointBuilder = new ServiceEndpointBuilder();
 	}
 
@@ -106,7 +106,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 	public void init(PartitionManagerConfig config) {
 		_config=config;
 		_log.trace("init");
-        
+
 		// attach relevant message handlers to dispatcher...
         _endpointBuilder.addSEI(_dispatcher, PartitionManagerMessageListener.class, this);
         _endpointBuilder.addCallback(_dispatcher, PartitionTransferAcknowledgement.class);
@@ -128,7 +128,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 			sync.release();
 		}
 	}
-	
+
 	public void evacuate() {
 	    _log.info("evacuating...");
 
@@ -142,18 +142,23 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 	    boolean success=false;
 	    while (!success && failures<5) {
 	        coordPeer=_config.getCoordinator(); // reinitialise in case coordinator has changed...
+		Message response=null;
 	        try {
-	            Message response=_dispatcher.exchangeSend(coordPeer.getAddress(), correlationId, request, _inactiveTime);
-	            if (response==null) {
-	                failures++;
-	                if (_log.isWarnEnabled()) _log.warn("could not contact Coordinator - backing off for "+ _inactiveTime+" millis...");
-	                Thread.sleep(_config.getInactiveTime());
-	            } else {
-	                success=true;
-	            }
+	            response=_dispatcher.exchangeSend(coordPeer.getAddress(), correlationId, request, _inactiveTime);
 	        } catch (Exception e) {
 	            _log.warn("problem evacuating partitions", e);
-	        } 
+	        }
+		if (response==null) {
+		  failures++;
+		  if (_log.isWarnEnabled()) _log.warn("could not contact Coordinator - backing off for "+ _inactiveTime+" millis...");
+		  try {
+		    Thread.sleep(_config.getInactiveTime());
+		  } catch (InterruptedException e) {
+		    // ignore;
+		  }
+		} else {
+		  success=true;
+		}
 	    }
 
 	    _log.info("...evacuated");
@@ -198,7 +203,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 			_log.warn("ERROR", t);
 		}
         try {
-            _dispatcher.reply(om, new PartitionRepopulateResponse(c));            
+            _dispatcher.reply(om, new PartitionRepopulateResponse(c));
         } catch (MessageExchangeException e) {
             _log.warn("unexpected problem responding to partition repopulation request", e);
         }
@@ -321,12 +326,12 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 	public void update(Peer node) {
 
         Map state=node.getState();
-        
+
         Long timeStampAsLong = (Long) state.get(_timeStampKey);
         if (null == timeStampAsLong) {
             return;
         }
-        
+
 		long timeStamp= timeStampAsLong.longValue();
 		PartitionKeys keys=(PartitionKeys)state.get(_partitionKeysKey);
 		Address location=node.getAddress();
@@ -392,9 +397,9 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 			String correlationId=_dispatcher.nextCorrelationId();
 			Quipu rv=_dispatcher.setRendezVous(correlationId, _dispatcher.getCluster().getPeerCount()-1);
             try {
-                _dispatcher.send(_localPeer.getAddress(), 
-                                _dispatcher.getCluster().getAddress(), 
-                                correlationId, 
+                _dispatcher.send(_localPeer.getAddress(),
+                                _dispatcher.getCluster().getAddress(),
+                                correlationId,
                                 new PartitionRepopulateRequest(missingKeys));
             } catch (MessageExchangeException e) {
                 _log.error("unexpected problem repopulating lost index");
