@@ -23,17 +23,19 @@ package org.codehaus.wadi;
 public interface Invocation {
 
     /**
-     * prepare this Invocation for recycling via a Pool
+     * Prepare this Invocation for recycling via a Pool
      */
     void clear();
     
     /**
-     * @return the key associating a Session with this Invocation
+     * Return the key carried by the Invocation associating it with server-side state - a Session
+     * 
+     * @return the key
      */
-    String getKey();
+    String getSessionKey();
     
     /**
-     * Attach the relevant session to this Invocation for its lifetime
+     * Attach the relevant Session to this Invocation for its lifetime
      * 
      * @param session The Session
      */
@@ -49,7 +51,9 @@ public interface Invocation {
     void sendError(int code, String message) throws InvocationException; // a little web specific ?
     
     /**
-     * @return whether or not this Invocation knows how to relocate itself to a given EndPoint
+     * Does this Invocation know how to 'relocate' itself to another EndPoint ?
+     * 
+     * @return whether the Invocation is capable of relocating itself.
      */
     boolean getRelocatable();
     
@@ -60,12 +64,20 @@ public interface Invocation {
      */
     public void relocate(EndPoint endPoint);
     
-    // old
     
-	void invoke(PoolableInvocationWrapper wrapper) throws InvocationException;
-	
+	/**
+     * Actually make the encapsulated Invocation. Called when required environment has been prepared -
+     * i.e. Session has been locked into memory and attached to the Invocation via setSession().
+     * 
+	 * @throws InvocationException
+	 */
 	void invoke() throws InvocationException;
-	
+    
+    
+	// these two methods are left overs from web-specific time - on their way out...
+    
+    void invoke(PoolableInvocationWrapper wrapper) throws InvocationException;
+    
 	boolean isProxiedInvocation();
 
 }

@@ -93,7 +93,7 @@ public class Axis2Manager implements SessionManager, ManagerConfig {
     public Session findSession(String key) {
         _log.debug("find("+key+")");
         Axis2Invocation invocation=Axis2Invocation.getThreadLocalInstance();
-        assert(key.equals(invocation.getKey()));
+        assert(key.equals(invocation.getSessionKey()));
         return invocation.getSession();
     }
     
