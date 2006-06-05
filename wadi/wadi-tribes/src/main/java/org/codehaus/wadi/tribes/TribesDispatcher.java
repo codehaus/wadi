@@ -37,7 +37,7 @@ public class TribesDispatcher extends AbstractDispatcher {
      * @todo Implement this org.codehaus.wadi.group.Dispatcher method
      */
     public Message createMessage() {
-        return null;
+        return new TribesMessage();
     }
 
     /**
@@ -80,8 +80,7 @@ public class TribesDispatcher extends AbstractDispatcher {
      * @throws MessageExchangeException
      * @todo Implement this org.codehaus.wadi.group.Dispatcher method
      */
-    public void send(Address target, Message message) throws
-        MessageExchangeException {
+    public void send(Address target, Message message) throws MessageExchangeException {
     }
 
     /**
