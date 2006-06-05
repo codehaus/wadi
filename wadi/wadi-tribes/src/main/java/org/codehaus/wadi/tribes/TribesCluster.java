@@ -9,6 +9,20 @@ import org.codehaus.wadi.group.ClusterListener;
 import org.codehaus.wadi.group.ElectionStrategy;
 import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.Peer;
+import org.apache.catalina.tribes.group.GroupChannel;
+import org.apache.catalina.tribes.group.interceptors.MessageDispatch15Interceptor;
+import org.apache.catalina.tribes.Channel;
+import org.apache.catalina.tribes.ChannelException;
+import java.util.ArrayList;
+import org.apache.catalina.tribes.membership.McastService;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Iterator;
+import org.apache.catalina.tribes.Member;
+import org.apache.catalina.tribes.MembershipListener;
+import org.codehaus.wadi.group.ClusterEvent;
+import java.util.HashSet;
 
 /**
  * <p>Title: </p>
@@ -23,7 +37,14 @@ import org.codehaus.wadi.group.Peer;
  * @version 1.0
  */
 public class TribesCluster implements Cluster {
+    protected GroupChannel channel = null;
+    protected ArrayList listeners = new ArrayList();
+    
     public TribesCluster() {
+        channel = new GroupChannel();
+        channel.addInterceptor(new WadiMemberInterceptor());
+        channel.addInterceptor(new MessageDispatch15Interceptor());
+        channel.addMembershipListener(new WadiListener(this));
     }
 
     /**
@@ -33,6 +54,7 @@ public class TribesCluster implements Cluster {
      * @todo Implement this org.codehaus.wadi.group.Cluster method
      */
     public void addClusterListener(ClusterListener listener) {
+        listeners.add(listener);
     }
 
     /**
@@ -42,7 +64,7 @@ public class TribesCluster implements Cluster {
      * @todo Implement this org.codehaus.wadi.group.Cluster method
      */
     public Address getAddress() {
-        return null;
+        return (Address)channel.getLocalMember(true);
     }
 
     /**
@@ -52,7 +74,7 @@ public class TribesCluster implements Cluster {
      * @todo Implement this org.codehaus.wadi.group.Cluster method
      */
     public long getInactiveTime() {
-        return 0L;
+        return ((McastService)channel.getMembershipService()).getMcastDropTime();
     }
 
     /**
@@ -62,7 +84,7 @@ public class TribesCluster implements Cluster {
      * @todo Implement this org.codehaus.wadi.group.Cluster method
      */
     public LocalPeer getLocalPeer() {
-        return null;
+        return (LocalPeer)channel.getLocalMember(true);
     }
 
     /**
@@ -72,7 +94,7 @@ public class TribesCluster implements Cluster {
      * @todo Implement this org.codehaus.wadi.group.Cluster method
      */
     public int getPeerCount() {
-        return 0;
+        return channel.getMembers().length;
     }
 
     /**
@@ -83,6 +105,7 @@ public class TribesCluster implements Cluster {
      * @todo Implement this org.codehaus.wadi.group.Cluster method
      */
     public Peer getPeerFromAddress(Address address) {
+        if ( address instanceof TribesPeer ) return (Peer)address;
         return null;
     }
 
@@ -93,7 +116,10 @@ public class TribesCluster implements Cluster {
      * @todo Implement this org.codehaus.wadi.group.Cluster method
      */
     public Map getRemotePeers() {
-        return null;
+        Member[] mbrs = channel.getMembers();
+        HashMap result = new HashMap();
+        for (int i=0; i<mbrs.length; i++) result.put(mbrs[i],mbrs[i]);
+        return result;
     }
 
     /**
@@ -121,6 +147,11 @@ public class TribesCluster implements Cluster {
      * @todo Implement this org.codehaus.wadi.group.Cluster method
      */
     public void start() throws ClusterException {
+        try {
+            channel.start(Channel.DEFAULT);
+        }catch ( ChannelException x ) {
+            throw new ClusterException(x);
+        }
     }
 
     /**
@@ -130,6 +161,12 @@ public class TribesCluster implements Cluster {
      * @todo Implement this org.codehaus.wadi.group.Cluster method
      */
     public void stop() throws ClusterException {
+        try {
+            channel.stop(Channel.DEFAULT);
+        }catch ( ChannelException x ) {
+            throw new ClusterException(x);
+        }
+
     }
 
     /**
@@ -143,5 +180,38 @@ public class TribesCluster implements Cluster {
     public boolean waitOnMembershipCount(int membershipCount, long timeout) throws
         InterruptedException {
         return false;
+    }
+    
+    protected static class WadiListener implements MembershipListener {
+        TribesCluster cluster;
+        public WadiListener(TribesCluster cluster) {
+            this.cluster = cluster;
+        }
+        
+        public void memberAdded(Member member) {
+            ClusterEvent event = new ClusterEvent(cluster,(Peer)member,ClusterEvent.PEER_ADDED);
+            Member[] mbrs = cluster.channel.getMembers();
+            Member coordinator = mbrs.length>0?mbrs[0]:null;
+            HashSet added = new HashSet();
+            HashSet removed = new HashSet();
+            added.add(member);
+            for (int i=0; i<cluster.listeners.size(); i++ ) {
+                ClusterListener listener = (ClusterListener)cluster.listeners.get(i);
+                listener.onMembershipChanged(cluster,added,removed,(Peer)coordinator);
+            }
+        }
+        
+        public void memberDisappeared(Member member) {
+            ClusterEvent event = new ClusterEvent(cluster,(Peer)member,ClusterEvent.PEER_ADDED);
+            Member[] mbrs = cluster.channel.getMembers();
+            Member coordinator = mbrs.length > 0 ? mbrs[0] : null;
+            HashSet added = new HashSet();
+            HashSet removed = new HashSet();
+            removed.add(member);
+            for (int i = 0; i < cluster.listeners.size(); i++) {
+                ClusterListener listener = (ClusterListener) cluster.listeners.get(i);
+                listener.onMembershipChanged(cluster, added, removed,(Peer) coordinator);
+            }
+        }
     }
 }
