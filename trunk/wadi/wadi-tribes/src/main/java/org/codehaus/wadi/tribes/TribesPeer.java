@@ -10,6 +10,9 @@ import java.io.ObjectInput;
 import java.io.IOException;
 import org.apache.catalina.tribes.membership.MemberImpl;
 import java.io.ObjectOutput;
+import org.codehaus.wadi.group.LocalPeer;
+import org.apache.catalina.tribes.io.XByteBuffer;
+import java.io.Serializable;
 
 /**
  * <p>Title: </p>
@@ -23,10 +26,10 @@ import java.io.ObjectOutput;
  * @author not attributable
  * @version 1.0
  */
-public class TribesPeer implements Member, Peer, Address, Externalizable {
+public class TribesPeer implements Member, LocalPeer, Address, Externalizable {
     
     protected Member member;
-    protected Map map = null;
+    protected Map state = null;
     
     public TribesPeer() {} //for serialization
     public TribesPeer(Member mbr) {
@@ -128,7 +131,24 @@ public class TribesPeer implements Member, Peer, Address, Externalizable {
     }
     
     public Map getState() {
-        return map;
+        byte[] load = this.getPayload();
+        if ( state == null && load!=null && load.length > 0){
+            try {
+                state = (Map) XByteBuffer.deserialize(load);
+            }catch ( Exception x ) {
+                throw new RuntimeException(x);
+            }
+        }
+        return state;
+    }
+    
+    public void setState(Map state) {
+        this.state = state;
+        try {
+            ( (MemberImpl) member).setPayload(XByteBuffer.serialize( (Serializable) state));
+        }catch ( Exception x ) {
+            throw new RuntimeException(x);
+        }
     }
     
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
