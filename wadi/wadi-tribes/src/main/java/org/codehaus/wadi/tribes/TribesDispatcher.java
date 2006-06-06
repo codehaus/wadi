@@ -8,6 +8,12 @@ import org.codehaus.wadi.group.Message;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.impl.AbstractDispatcher;
 import org.codehaus.wadi.group.impl.ThreadPool;
+import org.apache.catalina.tribes.Channel;
+import org.apache.catalina.tribes.Member;
+import org.apache.catalina.tribes.ChannelException;
+import org.apache.catalina.tribes.group.GroupChannel;
+import org.apache.catalina.tribes.io.XByteBuffer;
+import java.io.Serializable;
 
 /**
  * <p>Title: </p>
@@ -22,12 +28,16 @@ import org.codehaus.wadi.group.impl.ThreadPool;
  * @version 1.0
  */
 public class TribesDispatcher extends AbstractDispatcher {
+    protected TribesCluster cluster;
+    
     public TribesDispatcher(ThreadPool executor) {
         super(executor);
+        cluster = new TribesCluster();
     }
 
-    public TribesDispatcher(long inactiveTime) {
+    public TribesDispatcher(String localPeerName, String clusterName, long inactiveTime, String config) {
         super(inactiveTime);
+        cluster = new TribesCluster();
     }
 
     /**
@@ -48,7 +58,7 @@ public class TribesDispatcher extends AbstractDispatcher {
      * @todo Implement this org.codehaus.wadi.group.Dispatcher method
      */
     public Address getAddress(String name) {
-        return null;
+        return (Address)cluster.getLocalPeer();
     }
 
     /**
@@ -58,7 +68,7 @@ public class TribesDispatcher extends AbstractDispatcher {
      * @todo Implement this org.codehaus.wadi.group.Dispatcher method
      */
     public Cluster getCluster() {
-        return null;
+        return cluster;
     }
 
     /**
@@ -69,7 +79,7 @@ public class TribesDispatcher extends AbstractDispatcher {
      * @todo Implement this org.codehaus.wadi.group.Dispatcher method
      */
     public String getPeerName(Address address) {
-        return "";
+        return ((TribesPeer)address).getName();
     }
 
     /**
@@ -81,6 +91,11 @@ public class TribesDispatcher extends AbstractDispatcher {
      * @todo Implement this org.codehaus.wadi.group.Dispatcher method
      */
     public void send(Address target, Message message) throws MessageExchangeException {
+        try {
+            cluster.channel.send(new Member[] {(TribesPeer)target},(TribesMessage)message,Channel.SEND_OPTIONS_DEFAULT);
+        }catch ( ChannelException x ) {
+            throw new MessageExchangeException(x);
+        }
     }
 
     /**
@@ -91,6 +106,11 @@ public class TribesDispatcher extends AbstractDispatcher {
      * @todo Implement this org.codehaus.wadi.group.Dispatcher method
      */
     public void setDistributedState(Map state) throws MessageExchangeException {
+        try {
+            cluster.channel.getMembershipService().setPayload(XByteBuffer.serialize((Serializable)state));
+        } catch ( Exception x ) {
+            throw new MessageExchangeException(x);
+        }
     }
 
     /**
@@ -100,6 +120,11 @@ public class TribesDispatcher extends AbstractDispatcher {
      * @todo Implement this org.codehaus.wadi.group.Dispatcher method
      */
     public void start() throws MessageExchangeException {
+        try {
+            cluster.start();
+        }catch ( Exception x ) {
+            throw new MessageExchangeException(x);
+        }
     }
 
     /**
@@ -109,5 +134,10 @@ public class TribesDispatcher extends AbstractDispatcher {
      * @todo Implement this org.codehaus.wadi.group.Dispatcher method
      */
     public void stop() throws MessageExchangeException {
+        try {
+            cluster.stop();
+        }catch ( Exception x ) {
+            throw new MessageExchangeException(x);
+        }
     }
 }

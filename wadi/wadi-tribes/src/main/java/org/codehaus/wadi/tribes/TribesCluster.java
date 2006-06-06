@@ -202,7 +202,7 @@ public class TribesCluster implements Cluster {
         }
         
         public void memberDisappeared(Member member) {
-            ClusterEvent event = new ClusterEvent(cluster,(Peer)member,ClusterEvent.PEER_ADDED);
+            ClusterEvent event = new ClusterEvent(cluster,(Peer)member,ClusterEvent.PEER_REMOVED);
             Member[] mbrs = cluster.channel.getMembers();
             Member coordinator = mbrs.length > 0 ? mbrs[0] : null;
             HashSet added = new HashSet();
