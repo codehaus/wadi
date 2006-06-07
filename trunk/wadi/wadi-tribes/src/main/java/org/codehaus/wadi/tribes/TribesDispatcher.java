@@ -1,19 +1,20 @@
 package org.codehaus.wadi.tribes;
 
+import java.io.Serializable;
 import java.util.Map;
 
+import org.apache.catalina.tribes.Channel;
+import org.apache.catalina.tribes.ChannelException;
+import org.apache.catalina.tribes.Member;
+import org.apache.catalina.tribes.io.XByteBuffer;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Cluster;
+import org.codehaus.wadi.group.DispatcherConfig;
 import org.codehaus.wadi.group.Message;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.impl.AbstractDispatcher;
 import org.codehaus.wadi.group.impl.ThreadPool;
-import org.apache.catalina.tribes.Channel;
-import org.apache.catalina.tribes.Member;
-import org.apache.catalina.tribes.ChannelException;
-import org.apache.catalina.tribes.group.GroupChannel;
-import org.apache.catalina.tribes.io.XByteBuffer;
-import java.io.Serializable;
+import org.apache.catalina.tribes.ChannelListener;
 
 /**
  * <p>Title: </p>
@@ -27,7 +28,7 @@ import java.io.Serializable;
  * @author not attributable
  * @version 1.0
  */
-public class TribesDispatcher extends AbstractDispatcher {
+public class TribesDispatcher extends AbstractDispatcher implements ChannelListener {
     protected TribesCluster cluster;
     
     public TribesDispatcher(ThreadPool executor) {
@@ -112,6 +113,20 @@ public class TribesDispatcher extends AbstractDispatcher {
             throw new MessageExchangeException(x);
         }
     }
+    
+    public void init(DispatcherConfig config) throws Exception {
+        super.init(config);
+    }
+    
+    public void messageReceived(Serializable serializable, Member member) {
+        TribesMessage msg = (TribesMessage)serializable;
+        msg.setAddress((Address)member);
+        super.onMessage(msg);
+    }
+    public boolean accept(Serializable serializable, Member member) {
+        return true;
+    }
+    
 
     /**
      * start
@@ -121,6 +136,7 @@ public class TribesDispatcher extends AbstractDispatcher {
      */
     public void start() throws MessageExchangeException {
         try {
+            cluster.channel.addChannelListener(this);
             cluster.start();
         }catch ( Exception x ) {
             throw new MessageExchangeException(x);
