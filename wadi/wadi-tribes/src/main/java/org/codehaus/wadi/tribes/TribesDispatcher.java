@@ -120,8 +120,9 @@ public class TribesDispatcher extends AbstractDispatcher implements ChannelListe
     
     public void messageReceived(Serializable serializable, Member member) {
         TribesMessage msg = (TribesMessage)serializable;
-        msg.setAddress((Address)member);
-        super.onMessage(msg);
+        msg.setReplyTo((Address)member);//do we need this?
+        msg.setAddress((Address)cluster.channel.getLocalMember(false));
+        onMessage(msg);
     }
     public boolean accept(Serializable serializable, Member member) {
         return true;
