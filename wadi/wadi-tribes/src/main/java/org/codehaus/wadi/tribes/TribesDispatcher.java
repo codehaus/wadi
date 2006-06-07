@@ -125,7 +125,7 @@ public class TribesDispatcher extends AbstractDispatcher implements ChannelListe
         onMessage(msg);
     }
     public boolean accept(Serializable serializable, Member member) {
-        return true;
+        return (serializable instanceof TribesMessage);
     }
     
 
