@@ -38,6 +38,7 @@ public class TribesDispatcher extends AbstractDispatcher implements ChannelListe
 
     public TribesDispatcher(String localPeerName, String clusterName, long inactiveTime, String config) {
         super(inactiveTime);
+        //todo, create some sort of config file
         cluster = new TribesCluster();
     }
 

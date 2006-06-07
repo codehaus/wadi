@@ -20,6 +20,7 @@ import org.codehaus.wadi.group.ClusterListener;
 import org.codehaus.wadi.group.ElectionStrategy;
 import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.Peer;
+import org.apache.catalina.tribes.group.interceptors.TcpFailureDetector;
 
 /**
  * <p>Title: </p>
@@ -40,6 +41,7 @@ public class TribesCluster implements Cluster {
 
     public TribesCluster() {
         channel = new GroupChannel();
+        channel.addInterceptor(new TcpFailureDetector());
         channel.addInterceptor(new WadiMemberInterceptor());
         channel.addInterceptor(new MessageDispatch15Interceptor());
         channel.addMembershipListener(new WadiListener(this));
