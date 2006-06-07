@@ -1,28 +1,25 @@
 package org.codehaus.wadi.tribes;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
+import org.apache.catalina.tribes.Channel;
+import org.apache.catalina.tribes.ChannelException;
+import org.apache.catalina.tribes.Member;
+import org.apache.catalina.tribes.MembershipListener;
+import org.apache.catalina.tribes.group.GroupChannel;
+import org.apache.catalina.tribes.group.interceptors.MessageDispatch15Interceptor;
+import org.apache.catalina.tribes.membership.McastService;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Cluster;
+import org.codehaus.wadi.group.ClusterEvent;
 import org.codehaus.wadi.group.ClusterException;
 import org.codehaus.wadi.group.ClusterListener;
 import org.codehaus.wadi.group.ElectionStrategy;
 import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.Peer;
-import org.apache.catalina.tribes.group.GroupChannel;
-import org.apache.catalina.tribes.group.interceptors.MessageDispatch15Interceptor;
-import org.apache.catalina.tribes.Channel;
-import org.apache.catalina.tribes.ChannelException;
-import java.util.ArrayList;
-import org.apache.catalina.tribes.membership.McastService;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Iterator;
-import org.apache.catalina.tribes.Member;
-import org.apache.catalina.tribes.MembershipListener;
-import org.codehaus.wadi.group.ClusterEvent;
-import java.util.HashSet;
 
 /**
  * <p>Title: </p>
@@ -39,7 +36,8 @@ import java.util.HashSet;
 public class TribesCluster implements Cluster {
     protected GroupChannel channel = null;
     protected ArrayList listeners = new ArrayList();
-    
+    private ElectionStrategy strategy;
+
     public TribesCluster() {
         channel = new GroupChannel();
         channel.addInterceptor(new WadiMemberInterceptor());
@@ -129,15 +127,7 @@ public class TribesCluster implements Cluster {
      * @todo Implement this org.codehaus.wadi.group.Cluster method
      */
     public void removeClusterListener(ClusterListener listener) {
-    }
-
-    /**
-     * setElectionStrategy
-     *
-     * @param strategy ElectionStrategy
-     * @todo Implement this org.codehaus.wadi.group.Cluster method
-     */
-    public void setElectionStrategy(ElectionStrategy strategy) {
+        this.listeners.remove(listener);
     }
 
     /**
@@ -177,8 +167,16 @@ public class TribesCluster implements Cluster {
      * @throws InterruptedException
      * @todo Implement this org.codehaus.wadi.group.Cluster method
      */
-    public boolean waitOnMembershipCount(int membershipCount, long timeout) throws
-        InterruptedException {
+    public boolean waitOnMembershipCount(int membershipCount, long timeout) throws InterruptedException {
+        long start = System.currentTimeMillis();
+        long delta = System.currentTimeMillis()-start;
+        while ( delta < timeout ) {
+            if ( channel.getMembers().length >= membershipCount ) return true;
+            else {
+                try { Thread.sleep(100); } catch (InterruptedException x) {Thread.currentThread().interrupted();}
+            }
+            delta = System.currentTimeMillis()-start;
+        }//while
         return false;
     }
     
@@ -198,6 +196,7 @@ public class TribesCluster implements Cluster {
             for (int i=0; i<cluster.listeners.size(); i++ ) {
                 ClusterListener listener = (ClusterListener)cluster.listeners.get(i);
                 listener.onMembershipChanged(cluster,added,removed,(Peer)coordinator);
+                //listener.onPeerUpdated(event); //do we need this
             }
         }
         
@@ -211,7 +210,17 @@ public class TribesCluster implements Cluster {
             for (int i = 0; i < cluster.listeners.size(); i++) {
                 ClusterListener listener = (ClusterListener) cluster.listeners.get(i);
                 listener.onMembershipChanged(cluster, added, removed,(Peer) coordinator);
+                //listener.onPeerUpdated(event); //do we need this
             }
         }
+    }
+
+
+    public void setElectionStrategy(ElectionStrategy electionStrategy) {
+        this.strategy = electionStrategy;
+    }
+
+    public ElectionStrategy getElectionStrategy() {
+        return strategy;
     }
 }
