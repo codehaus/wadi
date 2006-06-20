@@ -14,7 +14,6 @@ import org.apache.catalina.tribes.group.interceptors.MessageDispatch15Intercepto
 import org.apache.catalina.tribes.membership.McastService;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Cluster;
-import org.codehaus.wadi.group.ClusterEvent;
 import org.codehaus.wadi.group.ClusterException;
 import org.codehaus.wadi.group.ClusterListener;
 import org.codehaus.wadi.group.ElectionStrategy;
@@ -175,7 +174,7 @@ public class TribesCluster implements Cluster {
         while ( delta < timeout ) {
             if ( channel.getMembers().length >= membershipCount ) return true;
             else {
-                try { Thread.sleep(100); } catch (InterruptedException x) {Thread.currentThread().interrupted();}
+                try { Thread.sleep(100); } catch (InterruptedException x) {Thread.interrupted();}
             }
             delta = System.currentTimeMillis()-start;
         }//while
@@ -189,7 +188,6 @@ public class TribesCluster implements Cluster {
         }
         
         public void memberAdded(Member member) {
-            ClusterEvent event = new ClusterEvent(cluster,(Peer)member,ClusterEvent.PEER_ADDED);
             Member[] mbrs = cluster.channel.getMembers();
             Member coordinator = mbrs.length>0?mbrs[0]:null;
             HashSet added = new HashSet();
@@ -203,7 +201,6 @@ public class TribesCluster implements Cluster {
         }
         
         public void memberDisappeared(Member member) {
-            ClusterEvent event = new ClusterEvent(cluster,(Peer)member,ClusterEvent.PEER_REMOVED);
             Member[] mbrs = cluster.channel.getMembers();
             Member coordinator = mbrs.length > 0 ? mbrs[0] : null;
             HashSet added = new HashSet();

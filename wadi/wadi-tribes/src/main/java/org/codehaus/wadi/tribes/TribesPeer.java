@@ -3,7 +3,6 @@ package org.codehaus.wadi.tribes;
 
 import org.codehaus.wadi.group.Address;
 import org.apache.catalina.tribes.Member;
-import org.codehaus.wadi.group.Peer;
 import java.io.Externalizable;
 import java.util.Map;
 import java.io.ObjectInput;
