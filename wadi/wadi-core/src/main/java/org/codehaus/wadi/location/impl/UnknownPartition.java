@@ -33,14 +33,20 @@ public class UnknownPartition extends AbstractPartition {
     super(key);
   }
 
+  // 'java.lang.Object' API
+  
+  public String toString() {
+      return "<unknown>";
+    }
+
+  // 'Partition' API
+  
   public boolean isLocal() {
     return false;
   }
 
-  public String toString() {
-    return "<unknown>";
-  }
-
+  // incoming ...
+  
   public void onMessage(Message message, InsertIMToPM request) {
     throw new UnsupportedOperationException();
   }
@@ -57,12 +63,10 @@ public class UnknownPartition extends AbstractPartition {
     throw new UnsupportedOperationException();
   }
 
+  // outgoing...
+  
   public Message exchange(DIndexRequest request, long timeout) throws Exception {
     throw new UnsupportedOperationException();
-  }
-
-  public boolean getUseable() {
-	  return false;
   }
 
 }

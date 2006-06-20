@@ -36,7 +36,7 @@ import EDU.oswego.cs.dl.util.concurrent.WriterPreferenceReadWriteLock;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
+ * @version $Revision:1815 $
  */
 public class PartitionFacade extends AbstractPartition {
 
@@ -66,6 +66,8 @@ public class PartitionFacade extends AbstractPartition {
         if (_log.isTraceEnabled()) _log.trace("initialising location to: "+_content);
     }
 
+    // 'Partition' API
+    
     public boolean isLocal() { // locking ?
     	if (_content instanceof UnknownPartition)
     		return false;
@@ -85,6 +87,91 @@ public class PartitionFacade extends AbstractPartition {
         throw new UnsupportedOperationException();
     }
 
+    // incoming...
+    
+    public void onMessage(Message message, InsertIMToPM request) {
+        if (_log.isTraceEnabled()) _log.trace("dispatching: "+request+" on "+_content);
+        Sync sync=_lock.readLock(); // SHARED
+        boolean acquired=false;
+        try {
+            sync.acquire();
+            acquired=true;
+            _content.onMessage(message, request);
+        } catch (InterruptedException e) {
+            _log.warn("unexpected problem", e);
+        } finally {
+            if (acquired)
+                sync.release();
+        }
+    }
+
+    public void onMessage(Message message, DeleteIMToPM request) {
+        Sync sync=_lock.readLock(); // SHARED
+        boolean acquired=false;
+        try {
+            sync.acquire();
+            acquired=true;
+            _content.onMessage(message, request);
+        } catch (InterruptedException e) {
+            _log.warn("unexpected problem", e);
+        } finally {
+            if (acquired)
+                sync.release();
+        }
+    }
+
+    public void onMessage(Message message, EvacuateIMToPM request) {
+        Sync sync=_lock.readLock(); // SHARED
+        boolean acquired=false;
+        try {
+            sync.acquire();
+            acquired=true;
+            _content.onMessage(message, request);
+        } catch (InterruptedException e) {
+            _log.warn("unexpected problem", e);
+        } finally {
+            if (acquired)
+                sync.release();
+        }
+    }
+
+    // should superceded above method
+    public void onMessage(Message message, MoveIMToPM request) {
+        Sync sync=_lock.readLock(); // SHARED
+        boolean acquired=false;
+        try {
+            sync.acquire();
+            acquired=true;
+            _content.onMessage(message, request);
+        } catch (InterruptedException e) {
+            _log.warn("unexpected problem", e);
+        } finally {
+            if (acquired)
+                sync.release();
+        }
+    }
+
+    // outgoing...
+    
+    public Message exchange(DIndexRequest request, long timeout) throws Exception {
+        if (_log.isTraceEnabled()) _log.trace("dispatching: "+request+" on "+_content);
+        Sync sync=_lock.readLock(); // SHARED
+        boolean acquired=false;
+        try {
+            sync.acquire();
+            acquired=true;
+            return _content.exchange(request, timeout);
+        } catch (InterruptedException e) {
+            _log.warn("unexpected problem", e);
+            return null;
+        } finally {
+            if (acquired)
+                sync.release();
+        }   
+    }
+
+    // 'PartitionFacade' API
+    
     public Partition getContent() {
         Sync sync=_lock.writeLock(); // EXCLUSIVE
         boolean acquired=false;
@@ -143,85 +230,6 @@ public class PartitionFacade extends AbstractPartition {
     		_log.warn("unexpected problem", e);
     	} finally {
     		if (acquired && !(_content instanceof UnknownPartition))
-    			sync.release();
-    	}
-    }
-
-    public Message exchange(DIndexRequest request, long timeout) throws Exception {
-    	if (_log.isTraceEnabled()) _log.trace("dispatching: "+request+" on "+_content);
-    	Sync sync=_lock.readLock(); // SHARED
-    	boolean acquired=false;
-    	try {
-    		sync.acquire();
-    		acquired=true;
-        	return _content.exchange(request, timeout);
-    	} catch (InterruptedException e) {
-    		_log.warn("unexpected problem", e);
-    		return null;
-    	} finally {
-    		if (acquired)
-    			sync.release();
-    	}	
-    }
-
-    public void onMessage(Message message, InsertIMToPM request) {
-    	if (_log.isTraceEnabled()) _log.trace("dispatching: "+request+" on "+_content);
-    	Sync sync=_lock.readLock(); // SHARED
-    	boolean acquired=false;
-    	try {
-    		sync.acquire();
-    		acquired=true;
-    		_content.onMessage(message, request);
-    	} catch (InterruptedException e) {
-    		_log.warn("unexpected problem", e);
-    	} finally {
-    		if (acquired)
-    			sync.release();
-    	}
-    }
-
-    public void onMessage(Message message, DeleteIMToPM request) {
-    	Sync sync=_lock.readLock(); // SHARED
-    	boolean acquired=false;
-    	try {
-    		sync.acquire();
-    		acquired=true;
-    		_content.onMessage(message, request);
-    	} catch (InterruptedException e) {
-    		_log.warn("unexpected problem", e);
-    	} finally {
-    		if (acquired)
-    			sync.release();
-    	}
-    }
-
-    public void onMessage(Message message, EvacuateIMToPM request) {
-    	Sync sync=_lock.readLock(); // SHARED
-    	boolean acquired=false;
-    	try {
-    		sync.acquire();
-    		acquired=true;
-    		_content.onMessage(message, request);
-    	} catch (InterruptedException e) {
-    		_log.warn("unexpected problem", e);
-    	} finally {
-    		if (acquired)
-    			sync.release();
-    	}
-    }
-
-    // should superceded above method
-    public void onMessage(Message message, MoveIMToPM request) {
-    	Sync sync=_lock.readLock(); // SHARED
-    	boolean acquired=false;
-    	try {
-    		sync.acquire();
-    		acquired=true;
-    		_content.onMessage(message, request);
-    	} catch (InterruptedException e) {
-    		_log.warn("unexpected problem", e);
-    	} finally {
-    		if (acquired)
     			sync.release();
     	}
     }

@@ -28,6 +28,18 @@ import org.codehaus.wadi.location.newmessages.MoveIMToPM;
  */
 public interface Partition {
     
+    /**
+     * @return whether or not this is a LocalPartition
+     */
+    boolean isLocal();
+    
+    /**
+     * @return the Partition 'key' - a number between '0' and 'numPartitions-1'
+     */
+    int getKey();
+
+    // incoming...
+    
 	/**
      * A Peer has created a Session...
      * 
@@ -60,16 +72,8 @@ public interface Partition {
      */
     void onMessage(Message message, MoveIMToPM request);
 
-    /**
-     * @return whether or not this is a LocalPartition
-     */
-    boolean isLocal();
+    // outgoing...
     
-    /**
-     * @return the Partition 'key' - a number between '0' and 'numPartitions-1'
-     */
-    int getKey();
-
     /**
      * Send a message/request to the Partition and wait for a message/response...
      * 
