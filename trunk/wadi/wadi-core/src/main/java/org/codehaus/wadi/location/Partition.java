@@ -16,7 +16,6 @@
  */
 package org.codehaus.wadi.location;
 
-import org.codehaus.wadi.PMPartition;
 import org.codehaus.wadi.group.Message;
 import org.codehaus.wadi.location.newmessages.DeleteIMToPM;
 import org.codehaus.wadi.location.newmessages.EvacuateIMToPM;
@@ -27,7 +26,7 @@ import org.codehaus.wadi.location.newmessages.MoveIMToPM;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public interface Partition extends PMPartition, SMPartition {
+public interface Partition {
     
 	/**
      * A Peer has created a Session...
@@ -39,6 +38,7 @@ public interface Partition extends PMPartition, SMPartition {
 
     /**
      * A Peer has destroyed a Session...
+     * 
      * @param message
      * @param request
      */
@@ -53,12 +53,31 @@ public interface Partition extends PMPartition, SMPartition {
     void onMessage(Message message, EvacuateIMToPM request);
 	
     /**
-     * A Peer has an Invocation for an unknown Session...
+     * A Peer has an Invocation for a Session of which it is not the owner...
      * 
      * @param message
      * @param request
      */
     void onMessage(Message message, MoveIMToPM request);
 
-	Message exchange(DIndexRequest request, long timeout) throws Exception;
+    /**
+     * @return whether or not this is a LocalPartition
+     */
+    boolean isLocal();
+    
+    /**
+     * @return the Partition 'key' - a number between '0' and 'numPartitions-1'
+     */
+    int getKey();
+
+    /**
+     * Send a message/request to the Partition and wait for a message/response...
+     * 
+     * @param request The request
+     * @param timeout The number of milliseconds to wait for a response
+     * @return the response
+     * @throws Exception
+     */
+    Message exchange(DIndexRequest request, long timeout) throws Exception;
+    
 }
