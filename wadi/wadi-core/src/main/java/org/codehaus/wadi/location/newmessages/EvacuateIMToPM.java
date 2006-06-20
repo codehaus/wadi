@@ -22,7 +22,7 @@ import org.codehaus.wadi.location.impl.AbstractDIndexRequest;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
+ * @version $Revision:1815 $
  */
 public class EvacuateIMToPM extends AbstractDIndexRequest implements Serializable {
   
@@ -31,7 +31,7 @@ public class EvacuateIMToPM extends AbstractDIndexRequest implements Serializabl
   }
   
   public String toString() {
-    return "<EvacuateIMToPM: "+_key+">";
+    return "<EvacuateIMToPM: "+_sessionKey+">";
   }
   
 }

@@ -18,14 +18,13 @@ package org.codehaus.wadi.location.newmessages;
 
 import java.io.Serializable;
 
-import org.codehaus.wadi.OldMessage;
 import org.codehaus.wadi.location.impl.AbstractDIndexRequest;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision:1815 $
  */
-public class MoveIMToPM extends AbstractDIndexRequest implements OldMessage, Serializable {
+public class MoveIMToPM extends AbstractDIndexRequest implements Serializable {
 
     protected String _peerName;
     protected boolean _shuttingDown;
@@ -51,7 +50,7 @@ public class MoveIMToPM extends AbstractDIndexRequest implements OldMessage, Ser
     }
     
     public String toString() {
-        return "<MoveIMToPM:"+_key+"->"+_peerName+">";
+        return "<MoveIMToPM:"+_sessionKey+"->"+_peerName+">";
     }
 
 }

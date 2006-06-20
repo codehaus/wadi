@@ -18,7 +18,6 @@ package org.codehaus.wadi.location.messages;
 
 import java.io.Serializable;
 
-import org.codehaus.wadi.OldMessage;
 import org.codehaus.wadi.location.impl.PartitionTransfer;
 
 /**
@@ -27,7 +26,7 @@ import org.codehaus.wadi.location.impl.PartitionTransfer;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision:1815 $
  */
-public class PartitionTransferCommand implements OldMessage, Serializable {
+public class PartitionTransferCommand implements Serializable {
 
   protected PartitionTransfer[] _transfers;
 
