@@ -19,18 +19,19 @@ package org.codehaus.wadi.location.newmessages;
 import java.io.Serializable;
 
 import org.codehaus.wadi.Motable;
-import org.codehaus.wadi.OldMessage;
+import org.codehaus.wadi.location.DIndexRequest;
 
 /**
  * A request for the emigration of the enclosed session - The response
  * should be a ReleaseEntryResponse object sent whence this request arrived.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
+ * @version $Revision:1815 $
  */
-public class ReleaseEntryRequest implements OldMessage, Serializable {
-	protected Motable _motable;
-	
+public class ReleaseEntryRequest implements DIndexRequest, Serializable {
+    
+	protected final Motable _motable;
+
 	/**
 	 *
 	 */
@@ -46,5 +47,14 @@ public class ReleaseEntryRequest implements OldMessage, Serializable {
 	public String toString() {
 		return "<ReleaseEntryRequest: "+_motable.getName()+">";
 	}
+
+    // abstract this out as a strategy - TODO
+    public int getPartitionKey(int numPartitions) {
+        return Math.abs(getSessionKey().hashCode()%numPartitions);
+    }
+
+    public String getSessionKey() {
+        return _motable.getName();
+    }
 
 }

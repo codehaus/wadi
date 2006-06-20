@@ -22,7 +22,7 @@ import org.codehaus.wadi.location.impl.AbstractDIndexRequest;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
+ * @version $Revision:1815 $
  */
 public class InsertIMToPM extends AbstractDIndexRequest implements Serializable {
 
@@ -31,7 +31,7 @@ public class InsertIMToPM extends AbstractDIndexRequest implements Serializable 
     }
 
     public String toString() {
-        return "<InsertIMToPM:"+_key+">";
+        return "<InsertIMToPM:"+_sessionKey+">";
     }
 
 }

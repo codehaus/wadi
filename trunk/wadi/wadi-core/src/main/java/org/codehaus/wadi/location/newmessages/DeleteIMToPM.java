@@ -24,7 +24,7 @@ import org.codehaus.wadi.location.impl.AbstractDIndexRequest;
  * Sent from InvocationMaster to PartitionMaster requesting that an entry be removed from the index.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
+ * @version $Revision:1815 $
  */
 public class DeleteIMToPM extends AbstractDIndexRequest implements Serializable {
 
@@ -33,7 +33,7 @@ public class DeleteIMToPM extends AbstractDIndexRequest implements Serializable 
     }
 
     public String toString() {
-    	return "<DeleteIMToPM:"+_key+">";
+    	return "<DeleteIMToPM:"+_sessionKey+">";
     }
     
 }

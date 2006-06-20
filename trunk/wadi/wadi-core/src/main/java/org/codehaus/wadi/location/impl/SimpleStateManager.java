@@ -32,6 +32,7 @@ import org.codehaus.wadi.impl.AbstractMotable;
 import org.codehaus.wadi.impl.RankedRWLock;
 import org.codehaus.wadi.impl.SimpleMotable;
 import org.codehaus.wadi.impl.Utils;
+import org.codehaus.wadi.location.Partition;
 import org.codehaus.wadi.location.StateManager;
 import org.codehaus.wadi.location.StateManagerConfig;
 import org.codehaus.wadi.location.newmessages.DeleteIMToPM;
@@ -294,44 +295,20 @@ public class SimpleStateManager implements StateManager, StateManagerMessageList
 	// evacuation protocol
 
 	public boolean offerEmigrant(String key, Motable emotable, long timeout) {
-		Address target=((RemotePartition)_config.getPartition(key).getContent()).getAddress(); // TODO - HACK - temporary
-    
-    // this code on the way in...
-//    {
-//      PutSMToIM put=new PutSMToIM(key);
-//      _dispatcher.send(from, to, null, put);
-//      try{Thread.sleep(1000L);} catch (InterruptedException e){};
-//      
-////      ReleaseEntryResponse ack=null;
-////      try {
-////        ack=message==null?null:(ReleaseEntryResponse)message.getObject();
-////      } catch (JMSException e) {
-////        _log.error("could not unpack response", e);
-////      }
-////
-////      if (ack==null) {
-////        if (_log.isWarnEnabled()) _log.warn("no acknowledgement within timeframe ("+timeout+" millis): "+key);
-////        return false;
-////      } else {
-////        if (_log.isTraceEnabled()) _log.trace("received acknowledgement within timeframe ("+timeout+" millis): "+key);
-////        return true;
-////      }
-//      return true;
-//    }
-    // this code on the way out...
-		{
-		  ReleaseEntryRequest pojo=new ReleaseEntryRequest(emotable);
-          try {
-            _dispatcher.exchangeSend(target, pojo, timeout);
-            if (_log.isTraceEnabled()) {
-                _log.trace("received acknowledgement within timeframe ("+timeout+" millis): "+key);
-            }
-            return true;
-          } catch (MessageExchangeException e) {
-            _log.error("no acknowledgement within timeframe ("+timeout+" millis): "+key, e);
-            return false;
-          }
-		}
+	    Partition partition=_config.getPartition(key);
+	    ReleaseEntryRequest pojo=new ReleaseEntryRequest(emotable);
+        Message response=null;
+	    try {
+	        response=partition.exchange(pojo, timeout);
+            boolean ok=key.equals(((ReleaseEntryResponse)response.getPayload()).getId());
+	        if (_log.isTraceEnabled()) {
+	            _log.trace("received acknowledgement ("+(ok?"good":"bad")+") within timeframe ("+timeout+" millis): "+key);
+	        }
+            return ok;
+	    } catch (Exception e) {
+	        _log.error("no acknowledgement within timeframe ("+timeout+" millis): "+key, e);
+	        return false;
+	    }
 	}
 
 	public void acceptImmigrant(Message message, String name, Motable motable) {

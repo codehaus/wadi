@@ -26,11 +26,11 @@ import org.codehaus.wadi.location.DIndexRequest;
  */
 public abstract class AbstractDIndexRequest implements DIndexRequest, Serializable {
 
-    protected String _key;
+    protected String _sessionKey;
 
     public AbstractDIndexRequest(String key) {
         super();
-        _key=key;
+        _sessionKey=key;
     }
 
     protected AbstractDIndexRequest() {
@@ -38,11 +38,12 @@ public abstract class AbstractDIndexRequest implements DIndexRequest, Serializab
     }
 
     public String getSessionKey() {
-        return _key;
+        return _sessionKey;
     }
 
+    // abstract this out as a strategy - TODO
     public int getPartitionKey(int numPartitions) {
-        return Math.abs(_key.hashCode()%numPartitions);
+        return Math.abs(_sessionKey.hashCode()%numPartitions);
     }
 
 }
