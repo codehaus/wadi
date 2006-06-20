@@ -43,82 +43,93 @@ public class RemotePartition extends AbstractPartition {
 
 	protected final PartitionConfig _config;
 
-	protected Address _location;
+	protected Address _address;
 
 	public RemotePartition(int key, PartitionConfig config, Address address) {
 		super(key);
 		_config=config;
-		_location=address;
+		_address=address;
 		_log=LogFactory.getLog(getClass().getName()+"#"+_key+"@"+_config.getLocalPeerName());
 	}
 
+    // 'java.lang.Object' API
+    
+    public String toString() {
+        return _prefix+_key+"@"+_config.getLocalPeerName()+"->"+_config.getPeerName(_address)+_suffix;
+    }
+
+    // 'Partition' API
+    
 	public boolean isLocal() {
 		return false;
 	}
 
-	public Address getAddress() {
-		return _location;
-	}
+    protected void forward(Message message) {
+        try {
+            _config.getDispatcher().forward(message, _address);
+        } catch (MessageExchangeException e) {
+            _log.warn("could not forward message", e);
+        }
+    }
 
-	public void setAddress(Address address) {
-		if (_location==null) {
-			if (address==null) {
-				// _location is already null
-			} else {
-				// they cannot be equal - update
-				if (_log.isTraceEnabled()) _log.trace("[" + _key + "] updating location from: " + _config.getPeerName(_location) + " to: " + _config.getPeerName(address));
-				_location=address;
-			}
-		} else {
-			if (_location.equals(address)) {
-				// no need to update
-			} else {
-				if (_log.isTraceEnabled()) _log.trace("[" + _key + "] updating location from: " + _config.getPeerName(_location) + " to: " + _config.getPeerName(address));
-				_location=address;
-			}
-		}
-	}
-
-	public String toString() {
-		return _prefix+_key+"@"+_config.getLocalPeerName()+"->"+_config.getPeerName(_location)+_suffix;
-	}
-
+    // incoming...
+    
 	public void onMessage(Message message, InsertIMToPM request) {
-		if (_log.isTraceEnabled()) _log.trace("#"+_key+" : forwarding: " + request + " from "+_config.getLocalPeerName()+" to " + _config.getPeerName(_location));
+		if (_log.isTraceEnabled()) _log.trace("#"+_key+" : forwarding: " + request + " from "+_config.getLocalPeerName()+" to " + _config.getPeerName(_address));
 
         forward(message);
 	}
 
 	public void onMessage(Message message, DeleteIMToPM request) {
-		if (_log.isTraceEnabled()) _log.trace("indirecting: " + request + " via " + _config.getPeerName(_location));
+		if (_log.isTraceEnabled()) _log.trace("indirecting: " + request + " via " + _config.getPeerName(_address));
 
         forward(message);
 	}
 
 	public void onMessage(Message message, EvacuateIMToPM request) {
-		if (_log.isTraceEnabled()) _log.trace("indirecting: " + request + " via " + _config.getPeerName(_location));
+		if (_log.isTraceEnabled()) _log.trace("indirecting: " + request + " via " + _config.getPeerName(_address));
 
         forward(message);
 	}
 
 	public void onMessage(Message message, MoveIMToPM request) {
-		if (_log.isWarnEnabled()) _log.warn(_config.getLocalPeerName()+": not Master of Partition["+_key+"] - forwarding message to "+_config.getPeerName(_location));
+		if (_log.isWarnEnabled()) _log.warn(_config.getLocalPeerName()+": not Master of Partition["+_key+"] - forwarding message to "+_config.getPeerName(_address));
         
         forward(message);
 	}
 
+    // outgoing...
+    
 	public Message exchange(DIndexRequest request, long timeout) throws Exception {
 		Dispatcher dispatcher=_config.getDispatcher();
-		Address target=_location;
+		Address target=_address;
 		if (_log.isTraceEnabled()) _log.trace("exchanging message ("+request+") with node: "+_config.getPeerName(target)+" on "+Thread.currentThread().getName());
 		return dispatcher.exchangeSend(target, request, timeout);
 	}
     
-    private void forward(Message message) {
-        try {
-            _config.getDispatcher().forward(message, _location);
-        } catch (MessageExchangeException e) {
-            _log.warn("could not forward message", e);
+    // 'RemotePartition' API
+
+    public Address getAddress() {
+        return _address;
+    }
+
+    public void setAddress(Address address) {
+        if (_address==null) {
+            if (address==null) {
+                // _address is already null
+            } else {
+                // they cannot be equal - update
+                if (_log.isTraceEnabled()) _log.trace("[" + _key + "] updating location from: " + _config.getPeerName(_address) + " to: " + _config.getPeerName(address));
+                _address=address;
+            }
+        } else {
+            if (_address.equals(address)) {
+                // no need to update
+            } else {
+                if (_log.isTraceEnabled()) _log.trace("[" + _key + "] updating location from: " + _config.getPeerName(_address) + " to: " + _config.getPeerName(address));
+                _address=address;
+            }
         }
     }
+
 }

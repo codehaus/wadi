@@ -37,7 +37,7 @@ public abstract class AbstractDIndexRequest implements DIndexRequest, Serializab
         // for deserialisation...
     }
 
-    public String getKey() {
+    public String getSessionKey() {
         return _key;
     }
 

@@ -22,16 +22,18 @@ import org.codehaus.wadi.location.Partition;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
+ * @version $Revision:1815 $
  */
 public abstract class AbstractPartition implements Partition, Serializable {
 
-    protected int _key;
+    protected final int _key;
 
     public AbstractPartition(int key) {
         _key=key;
     }
 
+    // 'Partition' API
+    
     public int getKey() {
         return _key;
     }

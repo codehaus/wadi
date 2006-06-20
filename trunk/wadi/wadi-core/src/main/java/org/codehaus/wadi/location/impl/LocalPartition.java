@@ -68,74 +68,22 @@ public class LocalPartition extends AbstractPartition implements Serializable {
         _log=LogFactory.getLog(getClass().getName()+"#"+_key+"@"+_config.getLocalPeerName());
     }
 
-    public boolean isLocal() {
-        return true;
-    }
-
+    // 'java.lang.Object' API
+    
     public String toString() {
         return "<LocalPartition:"+_key+"@"+(_config==null?"<unknown>":_config.getLocalPeerName())+">";
     }
 
-    public void put(String name, Address address) {
-        synchronized (_map) {
-            // TODO - check key was not already in use...
-            _map.put(name, new Location(name, address));
-        }
-    }
-
-    // a Location provides two things :
-    // - a sync point for the session destination which is not the destination itself
-    // - a container for the session destination, reducing access to id:destination table
-    static class Location implements Serializable {
-
-        protected String _key; // needed for logging :-(
-        protected Address _address;
-        protected transient Lease _sharedLease;
-        protected transient Sync _exclusiveLock;
-
-        public Location(String key, Address address) {
-            _key=key;
-            _address=address;
-            WriterPreferenceReadWriteLock rwLock=new WriterPreferenceReadWriteLock();
-            _sharedLease=new SimpleLease(key, rwLock.readLock());
-            _exclusiveLock=rwLock.writeLock();
-        }
-
-        private void writeObject(ObjectOutputStream stream) throws IOException {
-            stream.writeObject(_key);
-            stream.writeObject(_address);
-        }
-
-        private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
-            _key=(String)stream.readObject();
-            _address=(Address)stream.readObject();
-            WriterPreferenceReadWriteLock rwLock=new WriterPreferenceReadWriteLock();
-            _sharedLease=new SimpleLease(_key, rwLock.readLock());
-            _exclusiveLock=rwLock.writeLock();
-        }
-
-        public Address getAddress() {
-            return _address;
-        }
-
-        public void setAddress(Address address) {
-            _address=address;
-        }
-
-        public Lease getSharedLease() {
-            return _sharedLease;
-        }
-
-        public Sync getExclusiveLock() {
-            return _exclusiveLock;
-        }
-
+    // 'Partition' API
+    
+    public boolean isLocal() {
+        return true;
     }
 
     public void onMessage(Message message, InsertIMToPM request) {
         Address newAddress=message.getReplyTo();
         boolean success=false;
-        String key=request.getKey();
+        String key=request.getSessionKey();
 
         // optimised for expected case - id not already in use...
         Location newLocation=new Location(key, newAddress);
@@ -166,7 +114,7 @@ public class LocalPartition extends AbstractPartition implements Serializable {
     }
 
     public void onMessage(Message message, DeleteIMToPM request) {
-        String key=request.getKey();
+        String key=request.getSessionKey();
         Location location=null;
         boolean success=false;
 
@@ -190,14 +138,13 @@ public class LocalPartition extends AbstractPartition implements Serializable {
         }
     }
 
-    // called on Partition Master
     public void onMessage(Message message, MoveIMToPM request) {
 
         // TODO - whilst we are in here, we should have a SHARED lock on this Partition, so it cannot be moved
         // The Partitions lock should be held in the Facade, so that it can swap Partitions in and out whilst holding an exclusive lock
         // Partition may only be migrated when exclusive lock has been taken, this may only happen when all shared locks are released - this implies that no PM session locks will be in place...
 
-        String key=request.getKey();
+        String key=request.getSessionKey();
         Dispatcher dispatcher=_config.getDispatcher();
         try {
 
@@ -244,7 +191,7 @@ public class LocalPartition extends AbstractPartition implements Serializable {
         }
     }
 
-    public void relocateSession(Location location, String key, Address im, Address pm, String imCorrelationId) throws MessageExchangeException {
+    protected void relocateSession(Location location, String key, Address im, Address pm, String imCorrelationId) throws MessageExchangeException {
         // session does exist - we need to ask SM to move it to IM
         Sync lock=location.getExclusiveLock();
         try {
@@ -294,7 +241,7 @@ public class LocalPartition extends AbstractPartition implements Serializable {
         }
     }
 
-    public void relocateInvocation(Location location, String key, Address im, Address pm, String imCorrelationId) throws MessageExchangeException {
+    protected void relocateInvocation(Location location, String key, Address im, Address pm, String imCorrelationId) throws MessageExchangeException {
         long leasePeriod=5000;  // TODO - parameterise
         try {
             Lease.Handle handle=location.getSharedLease().acquire(leasePeriod);
@@ -318,7 +265,7 @@ public class LocalPartition extends AbstractPartition implements Serializable {
 
     public void onMessage(Message message, EvacuateIMToPM request) {
         Address newAddress=message.getReplyTo();
-        String key=request.getKey();
+        String key=request.getSessionKey();
         boolean success=false;
 
         Location location=null;
@@ -338,7 +285,7 @@ public class LocalPartition extends AbstractPartition implements Serializable {
                     if (_log.isWarnEnabled()) _log.warn("evacuate: "+key+" {"+_config.getPeerName(newAddress)+"} failed - evacuee is already there !");
                 } else {
                     location.setAddress(newAddress);
-                    if (_log.isDebugEnabled()) _log.debug("evacuate {"+request.getKey()+" : "+_config.getPeerName(oldAddress)+" -> "+_config.getPeerName(newAddress)+"}");
+                    if (_log.isDebugEnabled()) _log.debug("evacuate {"+request.getSessionKey()+" : "+_config.getPeerName(oldAddress)+" -> "+_config.getPeerName(newAddress)+"}");
                     success=true;
                 }
             } catch (InterruptedException e) {
@@ -361,6 +308,66 @@ public class LocalPartition extends AbstractPartition implements Serializable {
         Dispatcher dispatcher=_config.getDispatcher();
         Address target=dispatcher.getCluster().getLocalPeer().getAddress();
         return dispatcher.exchangeSend(target, request, timeout);
+    }
+
+    // 'LocalPartition' API
+    
+    // used by PartitionManager...
+    
+    public void put(String name, Address address) {
+        synchronized (_map) {
+            // TODO - check key was not already in use...
+            _map.put(name, new Location(name, address));
+        }
+    }
+
+    // a Location provides two things :
+    // - a sync point for the session Address which is not the Address itself
+    // - a container for the session Address, reducing access to id:address table
+    static class Location implements Serializable {
+
+        protected String _key; // needed for logging :-(
+        protected Address _address;
+        protected transient Lease _sharedLease;
+        protected transient Sync _exclusiveLock;
+
+        public Location(String key, Address address) {
+            _key=key;
+            _address=address;
+            WriterPreferenceReadWriteLock rwLock=new WriterPreferenceReadWriteLock();
+            _sharedLease=new SimpleLease(key, rwLock.readLock());
+            _exclusiveLock=rwLock.writeLock();
+        }
+
+        private void writeObject(ObjectOutputStream stream) throws IOException {
+            stream.writeObject(_key);
+            stream.writeObject(_address);
+        }
+
+        private void readObject(ObjectInputStream stream) throws IOException, ClassNotFoundException {
+            _key=(String)stream.readObject();
+            _address=(Address)stream.readObject();
+            WriterPreferenceReadWriteLock rwLock=new WriterPreferenceReadWriteLock();
+            _sharedLease=new SimpleLease(_key, rwLock.readLock());
+            _exclusiveLock=rwLock.writeLock();
+        }
+
+        public Address getAddress() {
+            return _address;
+        }
+
+        public void setAddress(Address address) {
+            _address=address;
+        }
+
+        public Lease getSharedLease() {
+            return _sharedLease;
+        }
+
+        public Sync getExclusiveLock() {
+            return _exclusiveLock;
+        }
+
     }
 
 }

@@ -23,6 +23,6 @@ package org.codehaus.wadi.location;
 public interface DIndexRequest extends DIndexMessage {
 
     int getPartitionKey(int numPartitions);
-    String getKey();
+    String getSessionKey();
 
 }

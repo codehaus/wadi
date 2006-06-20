@@ -104,19 +104,19 @@ public class SimpleStateManager implements StateManager, StateManagerMessageList
 	}
 
 	public void onDIndexInsertionRequest(Message om, InsertIMToPM request) {
-		_config.getPartition(request.getKey()).onMessage(om, request);
+		_config.getPartition(request.getSessionKey()).onMessage(om, request);
 	}
 
 	public void onDIndexDeletionRequest(Message om, DeleteIMToPM request) {
-		_config.getPartition(request.getKey()).onMessage(om, request);
+		_config.getPartition(request.getSessionKey()).onMessage(om, request);
 	}
 
 	public void onDIndexRelocationRequest(Message om, EvacuateIMToPM request) {
-		_config.getPartition(request.getKey()).onMessage(om, request);
+		_config.getPartition(request.getSessionKey()).onMessage(om, request);
 	}
 
 	public void onMessage(Message message, MoveIMToPM request) {
-		_config.getPartition(request.getKey()).onMessage(message, request);
+		_config.getPartition(request.getSessionKey()).onMessage(message, request);
 	}
 
 	//----------------------------------------------------------------------------------------------------
