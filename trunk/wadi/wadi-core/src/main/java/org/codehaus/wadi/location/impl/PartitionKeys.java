@@ -16,10 +16,14 @@
  */
 package org.codehaus.wadi.location.impl;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.util.ArrayList;
-
-import org.codehaus.wadi.location.Partition;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.TreeSet;
+import org.codehaus.wadi.impl.Utils;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -27,57 +31,46 @@ import org.codehaus.wadi.location.Partition;
  */
 public class PartitionKeys implements Serializable {
 
-    protected int[] _keys;
+    private transient Set _keys;
 
-    // should be constructed from localPartitionKeys Set, rather than like this... - TODO
-    public PartitionKeys(PartitionFacade[] partitions) {
-        ArrayList list=new ArrayList(partitions.length);
-        for (int i=0; i<partitions.length; i++) {
-            Partition partition=partitions[i];
-            if (partition.isLocal())
-                list.add(new Integer(partition.getKey()));
-        }
-        _keys=new int[list.size()];
-        for (int i=0; i<_keys.length; i++)
-            _keys[i]=((Integer)list.get(i)).intValue();
+    public PartitionKeys(Set keys) {
+        assert (keys!=null);
+        _keys=new TreeSet();
+        _keys.addAll(keys);
     }
 
+    // 'java.lang.Object' API
+    
     public boolean equals(Object obj) {
-        if (obj==this)
-            return true;
-
-        if (! (obj instanceof PartitionKeys))
-            return false;
-
-        PartitionKeys that=(PartitionKeys)obj;
-
-        if (this._keys.length!=that._keys.length)
-            return false;
-
-        for (int i=0; i<_keys.length; i++)
-            if (this._keys[i]!=that._keys[i])
-                return false;
-
-        return true;
+        return _keys.equals(((PartitionKeys)obj)._keys);
     }
 
     public String toString() {
-        StringBuffer buffer=new StringBuffer();
-        buffer.append("{");
-        for (int i=0;i<_keys.length; i++) {
-            if (i!=0)
-                buffer.append(",");
-            buffer.append(_keys[i]);
-        }
-        buffer.append("}");
-        return buffer.toString();
+        return "<"+Utils.basename(getClass())+":"+_keys+">";
     }
 
+    // 'java.io.Serializable' hooks
+    
+    private void writeObject(ObjectOutputStream os) throws IOException {
+        os.write(_keys.size());
+        for (Iterator i=_keys.iterator(); i.hasNext(); )
+            os.write(((Integer)i.next()).intValue());
+    }
+    
+    private void readObject(ObjectInputStream is) throws IOException, ClassNotFoundException {
+        _keys=new TreeSet();
+        int size=is.read();
+        for (int i=0; i<size; i++)
+            _keys.add(new Integer(is.read()));        
+    }
+
+    // 'PartitionKeys' API
+    
     public int size() {
-        return _keys.length;
+        return _keys.size();
     }
-
-    public int[] getKeys() {
+    
+    public Set getKeys() {
         return _keys;
     }
 

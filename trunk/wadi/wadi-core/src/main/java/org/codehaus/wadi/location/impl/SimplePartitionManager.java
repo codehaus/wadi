@@ -358,33 +358,32 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 		long timeStamp= timeStampAsLong.longValue();
 		PartitionKeys keys=(PartitionKeys)state.get(_partitionKeysKey);
 		Address location=node.getAddress();
-		int[] k=keys._keys;
-		for (int i=0; i<k.length; i++) {
-			int key=k[i];
-			PartitionFacade facade=_partitions[key];
-			facade.setContentRemote(timeStamp, location);
-		}
+        
+        for (Iterator i=keys.getKeys().iterator(); i.hasNext(); ) {
+            int index=((Integer)i.next()).intValue();
+            PartitionFacade facade=_partitions[index];
+            facade.setContentRemote(timeStamp, location);
+        }
 	}
 
 
 	public void markExistingPartitions(Peer[] nodes, boolean[] partitionIsPresent) {
-		for (int i=0; i<nodes.length; i++) {
-			Peer node=nodes[i];
-			if (node!=null) {
-				PartitionKeys keys=DIndex.getPartitionKeys(node);
-				if (keys!=null) {
-					int[] k=keys.getKeys();
-					for (int j=0; j<k.length; j++) {
-						int index=k[j];
-						if (partitionIsPresent[index]) {
-							if (_log.isErrorEnabled()) _log.error("partition " + index + " found on more than one node");
-						} else {
-							partitionIsPresent[index]=true;
-						}
-					}
-				}
-			}
-		}
+	    for (int i=0; i<nodes.length; i++) {
+	        Peer node=nodes[i];
+	        if (node!=null) {
+	            PartitionKeys keys=DIndex.getPartitionKeys(node);
+	            if (keys!=null) {
+	                for (Iterator j=keys.getKeys().iterator(); j.hasNext(); ) {
+	                    int index=((Integer)j.next()).intValue();
+	                    if (partitionIsPresent[index]) {
+	                        if (_log.isErrorEnabled()) _log.error("partition " + index + " found on more than one node");
+	                    } else {
+	                        partitionIsPresent[index]=true;
+	                    }
+	                }
+	            }
+	        }
+	    }
 	}
 
 	public void regenerateMissingPartitions(Peer[] living, Peer[] leaving) {
@@ -464,7 +463,8 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 	}
 
 	public PartitionKeys getPartitionKeys() {
-		return new PartitionKeys(_partitions);
+        _localPartitionKeys=getLocalPartitionKeys();
+		return new PartitionKeys(_localPartitionKeys);
 	}
 
 	public void repopulate(Address location, Collection[] keys) {

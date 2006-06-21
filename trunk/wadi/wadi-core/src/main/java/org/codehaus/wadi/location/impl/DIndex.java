@@ -170,12 +170,6 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 
 	// ClusterListener
 
-	public int getPartition() {
-		// TODO - think about synchronisation...
-		PartitionKeys keys=(PartitionKeys)_distributedState.get(_partitionKeysKey);
-		return keys.getKeys()[Math.abs((int)(Math.random()*keys.size()))];
-	}
-
 	public void onPeerUpdated(ClusterEvent event) {
 		Peer node=event.getPeer();
         Map state=node.getState();
