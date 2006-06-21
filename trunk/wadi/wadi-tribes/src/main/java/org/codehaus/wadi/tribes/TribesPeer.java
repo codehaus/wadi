@@ -25,7 +25,7 @@ import java.io.Serializable;
  * @author not attributable
  * @version 1.0
  */
-public class TribesPeer implements Member, LocalPeer, Address, Externalizable {
+public class TribesPeer extends MemberImpl implements Member, LocalPeer, Address, Externalizable {
     
     protected Member member;
     protected Map state = null;
@@ -158,4 +158,78 @@ public class TribesPeer implements Member, LocalPeer, Address, Externalizable {
     public void writeExternal(ObjectOutput out) throws IOException {
         ((MemberImpl)member).writeExternal(out);
     }
-}
+    
+    /*===============================
+     */
+    
+    public static MemberImpl cast(Member member) {
+        return (MemberImpl)member;
+    }
+    public MemberImpl cast() {
+        return cast(member);
+    }
+    public byte[] getData() { return cast().getData();}
+
+    public byte[] getData(boolean getalive) {
+        return cast().getData(getalive);
+    }
+
+    public int getDataLength() {
+        return cast().getDataLength();
+    }
+
+    public byte[] getData(boolean getalive, boolean reset) {
+        return cast().getData(getalive,reset);
+    }
+
+    public static MemberImpl getMember(byte[] data, MemberImpl member) {
+        return MemberImpl.getMember(data,member);
+    }
+
+    public static MemberImpl getMember(byte[] data) {
+        return MemberImpl.getMember(data);
+    }
+
+
+    public String getHostname() {
+        return cast().getHostname();
+    }
+
+    public long getServiceStartTime() {
+        return cast().getServiceStartTime();
+    }
+
+    public void setMemberAliveTime(long time) {}
+
+    public String toString() {
+        return null;
+    }
+
+    public static String bToS(byte[] data) {
+        return null;
+    }
+
+    public int hashCode() {
+        return 0;
+    }
+
+    public boolean equals(Object o) {
+        return false;
+    }
+
+    public void setHost(byte[] host) {}
+
+    public void setHostname(String host) throws IOException {}
+
+    public void setMsgCount(int msgCount) {}
+
+    public void setPort(int port) {}
+
+    public void setServiceStartTime(long serviceStartTime) {}
+
+    public void setUniqueId(byte[] uniqueId) {}
+
+    public void setPayload(byte[] payload) {}
+
+
+    }
