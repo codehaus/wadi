@@ -39,227 +39,227 @@ import EDU.oswego.cs.dl.util.concurrent.WriterPreferenceReadWriteLock;
  */
 public class PartitionFacade extends AbstractPartition {
 
-  protected final ReadWriteLock _lock=new WriterPreferenceReadWriteLock();
-  protected final LinkedQueue _queue=new LinkedQueue();
-  protected final PartitionConfig _config;
-  protected final Log _log;
+    protected final ReadWriteLock _lock=new WriterPreferenceReadWriteLock();
+    protected final LinkedQueue _queue=new LinkedQueue();
+    protected final PartitionConfig _config;
+    protected final Log _log;
 
-  protected long _timeStamp;
-  protected Partition _content;
+    protected long _timeStamp;
+    protected Partition _content;
 
-  public PartitionFacade(int key, long timeStamp, Partition content, boolean queueing, PartitionConfig config) {
-    super(key);
-    _config=config;
-    _timeStamp=timeStamp;
-    _log=LogFactory.getLog(getClass().getName()+"#"+_key+"@"+_config.getLocalPeerName());
-    if (content instanceof UnknownPartition) {
-      try {
-	_lock.writeLock().acquire();
-      } catch (InterruptedException e) {
-	_log.error("lock acquisition interrupted - NYI", e);
-	throw new UnsupportedOperationException(e.getMessage());
-      }
+    public PartitionFacade(int key, long timeStamp, Partition content, boolean queueing, PartitionConfig config) {
+        super(key);
+        _config=config;
+        _timeStamp=timeStamp;
+        _log=LogFactory.getLog(getClass().getName()+"#"+_key+"@"+_config.getLocalPeerName());
+        if (content instanceof UnknownPartition) {
+            try {
+                _lock.writeLock().acquire();
+            } catch (InterruptedException e) {
+                _log.error("lock acquisition interrupted - NYI", e);
+                throw new UnsupportedOperationException(e.getMessage());
+            }
+        }
+        _content=content;
+        if (_log.isTraceEnabled()) _log.trace("initialising location to: "+_content);
     }
-    _content=content;
-    if (_log.isTraceEnabled()) _log.trace("initialising location to: "+_content);
-  }
 
-  // 'Partition' API
+    // 'Partition' API
 
-  public boolean isLocal() { // locking ?
-      return _content.isLocal();
-  }
-
-  // incoming...
-
-  public void onMessage(Message message, InsertIMToPM request) {
-    if (_log.isTraceEnabled()) _log.trace("dispatching: "+request+" on "+_content);
-    Sync sync=_lock.readLock(); // SHARED
-    boolean acquired=false;
-    try {
-      sync.acquire();
-      acquired=true;
-      _content.onMessage(message, request);
-    } catch (InterruptedException e) {
-      _log.warn("unexpected problem", e);
-    } finally {
-      if (acquired)
-	sync.release();
+    public boolean isLocal() { // locking ?
+        return _content.isLocal();
     }
-  }
 
-  public void onMessage(Message message, DeleteIMToPM request) {
-    Sync sync=_lock.readLock(); // SHARED
-    boolean acquired=false;
-    try {
-      sync.acquire();
-      acquired=true;
-      _content.onMessage(message, request);
-    } catch (InterruptedException e) {
-      _log.warn("unexpected problem", e);
-    } finally {
-      if (acquired)
-	sync.release();
+    // incoming...
+
+    public void onMessage(Message message, InsertIMToPM request) {
+        if (_log.isTraceEnabled()) _log.trace("dispatching: "+request+" on "+_content);
+        Sync sync=_lock.readLock(); // SHARED
+        boolean acquired=false;
+        try {
+            sync.acquire();
+            acquired=true;
+            _content.onMessage(message, request);
+        } catch (InterruptedException e) {
+            _log.warn("unexpected problem", e);
+        } finally {
+            if (acquired)
+                sync.release();
+        }
     }
-  }
 
-  public void onMessage(Message message, EvacuateIMToPM request) {
-    Sync sync=_lock.readLock(); // SHARED
-    boolean acquired=false;
-    try {
-      sync.acquire();
-      acquired=true;
-      _content.onMessage(message, request);
-    } catch (InterruptedException e) {
-      _log.warn("unexpected problem", e);
-    } finally {
-      if (acquired)
-	sync.release();
+    public void onMessage(Message message, DeleteIMToPM request) {
+        Sync sync=_lock.readLock(); // SHARED
+        boolean acquired=false;
+        try {
+            sync.acquire();
+            acquired=true;
+            _content.onMessage(message, request);
+        } catch (InterruptedException e) {
+            _log.warn("unexpected problem", e);
+        } finally {
+            if (acquired)
+                sync.release();
+        }
     }
-  }
 
-  // should superceded above method
-  public void onMessage(Message message, MoveIMToPM request) {
-    Sync sync=_lock.readLock(); // SHARED
-    boolean acquired=false;
-    try {
-      sync.acquire();
-      acquired=true;
-      _content.onMessage(message, request);
-    } catch (InterruptedException e) {
-      _log.warn("unexpected problem", e);
-    } finally {
-      if (acquired)
-	sync.release();
+    public void onMessage(Message message, EvacuateIMToPM request) {
+        Sync sync=_lock.readLock(); // SHARED
+        boolean acquired=false;
+        try {
+            sync.acquire();
+            acquired=true;
+            _content.onMessage(message, request);
+        } catch (InterruptedException e) {
+            _log.warn("unexpected problem", e);
+        } finally {
+            if (acquired)
+                sync.release();
+        }
     }
-  }
 
-  // outgoing...
-
-  public Message exchange(DIndexRequest request, long timeout) throws Exception {
-    if (_log.isTraceEnabled()) _log.trace("dispatching: "+request+" on "+_content);
-    Sync sync=_lock.readLock(); // SHARED
-    boolean acquired=false;
-    try {
-      sync.acquire();
-      acquired=true;
-      return _content.exchange(request, timeout);
-    } catch (InterruptedException e) {
-      _log.warn("unexpected problem", e);
-      return null;
-    } finally {
-      if (acquired)
-	sync.release();
+    // should superceded above method
+    public void onMessage(Message message, MoveIMToPM request) {
+        Sync sync=_lock.readLock(); // SHARED
+        boolean acquired=false;
+        try {
+            sync.acquire();
+            acquired=true;
+            _content.onMessage(message, request);
+        } catch (InterruptedException e) {
+            _log.warn("unexpected problem", e);
+        } finally {
+            if (acquired)
+                sync.release();
+        }
     }
-  }
 
-  // 'PartitionFacade' API
+    // outgoing...
 
-  // TODO - lose this
-  public Partition getContent() {
-    Sync sync=_lock.writeLock(); // EXCLUSIVE
-    boolean acquired=false;
-    try {
-      sync.acquire();
-      acquired=true;
-      return _content;
-    } catch (InterruptedException e) {
-      _log.warn("unexpected problem", e);
-    } finally {
-      if (acquired)
-	sync.release();
+    public Message exchange(DIndexRequest request, long timeout) throws Exception {
+        if (_log.isTraceEnabled()) _log.trace("dispatching: "+request+" on "+_content);
+        Sync sync=_lock.readLock(); // SHARED
+        boolean acquired=false;
+        try {
+            sync.acquire();
+            acquired=true;
+            return _content.exchange(request, timeout);
+        } catch (InterruptedException e) {
+            _log.warn("unexpected problem", e);
+            return null;
+        } finally {
+            if (acquired)
+                sync.release();
+        }
     }
-    throw new UnsupportedOperationException();
-  }
 
-  public void setContent(long timeStamp, Partition content) {
-    // TODO - do something here
-    Sync sync=_lock.writeLock(); // EXCLUSIVE
-    boolean acquired=false;
-    try {
-      if (!(_content instanceof UnknownPartition))
-	sync.acquire();
-      acquired=true;
-      if (timeStamp>_timeStamp) {
-	if (_log.isTraceEnabled()) _log.trace("["+_key+"] changing location from: "+_content+" to: "+content);
-	_timeStamp=timeStamp;
-	_content=content;
-      }
+    // 'PartitionFacade' API
 
-    } catch (InterruptedException e) {
-      _log.warn("unexpected problem", e);
-    } finally {
-      if (acquired && !(_content instanceof UnknownPartition))
-	sync.release();
+    // TODO - lose this
+    public Partition getContent() {
+        Sync sync=_lock.writeLock(); // EXCLUSIVE
+        boolean acquired=false;
+        try {
+            sync.acquire();
+            acquired=true;
+            return _content;
+        } catch (InterruptedException e) {
+            _log.warn("unexpected problem", e);
+        } finally {
+            if (acquired)
+                sync.release();
+        }
+        throw new UnsupportedOperationException();
     }
-  }
 
-  // TODO - lose or rewrite this method...
-  public void setContentRemote(long timeStamp, Address location) {
-      Sync sync=_lock.writeLock(); // EXCLUSIVE
-      boolean acquired=false;
-      try {
-          if (!(_content instanceof UnknownPartition))
-              sync.acquire();
-          acquired=true;
-          if (timeStamp>_timeStamp) {
-              _timeStamp=timeStamp;
-              if (_content instanceof RemotePartition) {
-                  ((RemotePartition)_content).setAddress(location);
-              } else {
-                  if (_log.isTraceEnabled()) _log.trace("["+_key+"] changing location from: "+_content+" to: "+_config.getPeerName(location));
-                  _content=new RemotePartition(_key, _config, location);
-              }
-          }
-      } catch (InterruptedException e) {
-          _log.warn("unexpected problem", e);
-      } finally {
-          if (acquired && !(_content instanceof UnknownPartition))
-              sync.release();
-      }
-  }
+    public void setContent(long timeStamp, Partition content) {
+        // TODO - do something here
+        Sync sync=_lock.writeLock(); // EXCLUSIVE
+        boolean acquired=false;
+        try {
+            if (!(_content instanceof UnknownPartition))
+                sync.acquire();
+            acquired=true;
+            if (timeStamp>_timeStamp) {
+                if (_log.isTraceEnabled()) _log.trace("["+_key+"] changing location from: "+_content+" to: "+content);
+                _timeStamp=timeStamp;
+                _content=content;
+            }
 
-  /**
-   * Acquire an exclusive lock around the Partition which we encapsulate and return it.
-   *
-   * @return The encapsulated Partition
-   * @throws InterruptedException
-   */
-  public Partition acquire() throws InterruptedException {
-    //_lock.writeLock().acquire(); // EXCLUSIVE
-    return _content;
-  }
-
-  /**
-   * Release the exclusive lock around the Partition which we encapsulate.
-   */
-  public void release() {
-    //_lock.writeLock().release();
-  }
-
-  /**
-   * Set the address of Partition which we encasulate to that given and then release the exclusive lock held around it.
-   *
-   * @param address The new address of the Partition owner
-   */
-  public void release(Address address) {
-    if (_log.isTraceEnabled()) _log.trace("["+_key+"] changing location from: "+_content+" to: "+_config.getPeerName(address));
-    _content=new RemotePartition(_key, _config, address);
-    release();
-  }
-
-  /**
-   * Set the address of Partition which we encasulate to that given and then release the exclusive lock held around it.
-   *
-   * @param address The new address of the Partition owner
-   */
-  public void release(Address address, long timeStamp) {
-    if (timeStamp<_timeStamp) {
-      _log.warn("ignoring Partition location update - we have a more recent location");
-    } else {
-      _timeStamp=timeStamp;
-      release(address);
+        } catch (InterruptedException e) {
+            _log.warn("unexpected problem", e);
+        } finally {
+            if (acquired && !(_content instanceof UnknownPartition))
+                sync.release();
+        }
     }
-  }
+
+    // TODO - lose or rewrite this method...
+    public void setContentRemote(long timeStamp, Address location) {
+        Sync sync=_lock.writeLock(); // EXCLUSIVE
+        boolean acquired=false;
+        try {
+            if (!(_content instanceof UnknownPartition))
+                sync.acquire();
+            acquired=true;
+            if (timeStamp>_timeStamp) {
+                _timeStamp=timeStamp;
+                if (_content instanceof RemotePartition) {
+                    ((RemotePartition)_content).setAddress(location);
+                } else {
+                    if (_log.isTraceEnabled()) _log.trace("["+_key+"] changing location from: "+_content+" to: "+_config.getPeerName(location));
+                    _content=new RemotePartition(_key, _config, location);
+                }
+            }
+        } catch (InterruptedException e) {
+            _log.warn("unexpected problem", e);
+        } finally {
+            if (acquired && !(_content instanceof UnknownPartition))
+                sync.release();
+        }
+    }
+
+    /**
+     * Acquire an exclusive lock around the Partition which we encapsulate and return it.
+     *
+     * @return The encapsulated Partition
+     * @throws InterruptedException
+     */
+    public Partition acquire() throws InterruptedException {
+        //_lock.writeLock().acquire(); // EXCLUSIVE
+        return _content;
+    }
+
+    /**
+     * Release the exclusive lock around the Partition which we encapsulate.
+     */
+    public void release() {
+        //_lock.writeLock().release();
+    }
+
+    /**
+     * Set the address of Partition which we encasulate to that given and then release the exclusive lock held around it.
+     *
+     * @param address The new address of the Partition owner
+     */
+    public void release(Address address) {
+        if (_log.isTraceEnabled()) _log.trace("["+_key+"] changing location from: "+_content+" to: "+_config.getPeerName(address));
+        _content=new RemotePartition(_key, _config, address);
+        release();
+    }
+
+    /**
+     * Set the address of Partition which we encasulate to that given and then release the exclusive lock held around it.
+     *
+     * @param address The new address of the Partition owner
+     */
+    public void release(Address address, long timeStamp) {
+        if (timeStamp<_timeStamp) {
+            _log.warn("ignoring Partition location update - we have a more recent location");
+        } else {
+            _timeStamp=timeStamp;
+            release(address);
+        }
+    }
 
 }

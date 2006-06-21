@@ -27,26 +27,26 @@ import org.codehaus.wadi.location.newmessages.MoveIMToPM;
  * @version $Revision$
  */
 public interface Partition {
-    
+
     /**
      * @return whether or not this is a LocalPartition
      */
     boolean isLocal(); // TODO - get rid of this
-    
+
     /**
      * @return the Partition 'key' - a number between '0' and 'numPartitions-1'
      */
     int getKey();
 
     // incoming...
-    
-	/**
+
+    /**
      * A Peer has created a Session...
      * 
-	 * @param message
-	 * @param request
-	 */
-	void onMessage(Message message, InsertIMToPM request);
+     * @param message
+     * @param request
+     */
+    void onMessage(Message message, InsertIMToPM request);
 
     /**
      * A Peer has destroyed a Session...
@@ -55,7 +55,7 @@ public interface Partition {
      * @param request
      */
     void onMessage(Message message, DeleteIMToPM request);
-	
+
     /**
      * A Peer wishes to evacuate a Session...
      * 
@@ -63,7 +63,7 @@ public interface Partition {
      * @param request
      */
     void onMessage(Message message, EvacuateIMToPM request);
-	
+
     /**
      * A Peer has an Invocation for a Session of which it is not the owner...
      * 
@@ -73,7 +73,7 @@ public interface Partition {
     void onMessage(Message message, MoveIMToPM request);
 
     // outgoing...
-    
+
     /**
      * Send a message/request to the Partition and wait for a message/response...
      * 
@@ -83,5 +83,5 @@ public interface Partition {
      * @throws Exception
      */
     Message exchange(DIndexRequest request, long timeout) throws Exception;
-    
+
 }
