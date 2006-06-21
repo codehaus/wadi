@@ -42,7 +42,9 @@ public class TribesCluster implements Cluster {
         channel = new GroupChannel();
         channel.addInterceptor(new TcpFailureDetector());
         channel.addInterceptor(new WadiMemberInterceptor());
+        //uncomment for java1.5
         //channel.addInterceptor(new MessageDispatch15Interceptor());
+        //comment out for java 1.5
         channel.addInterceptor(new MessageDispatchInterceptor());
         channel.addMembershipListener(new WadiListener(this));
     }
