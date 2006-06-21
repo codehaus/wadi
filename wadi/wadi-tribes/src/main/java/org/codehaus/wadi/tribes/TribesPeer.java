@@ -199,37 +199,52 @@ public class TribesPeer extends MemberImpl implements Member, LocalPeer, Address
         return cast().getServiceStartTime();
     }
 
-    public void setMemberAliveTime(long time) {}
+    public void setMemberAliveTime(long time) {
+        cast().setMemberAliveTime(time);
+    }
 
     public String toString() {
-        return null;
+        return member.toString();
     }
 
-    public static String bToS(byte[] data) {
-        return null;
-    }
 
     public int hashCode() {
-        return 0;
+        return member.hashCode();
     }
 
     public boolean equals(Object o) {
-        return false;
+        if ( o instanceof MemberImpl ) return o.equals(member);
+        else if ( o instanceof TribesPeer ) return ((TribesPeer)o).member.equals(member);
+        else return false;
     }
 
-    public void setHost(byte[] host) {}
-
-    public void setHostname(String host) throws IOException {}
-
-    public void setMsgCount(int msgCount) {}
-
-    public void setPort(int port) {}
-
-    public void setServiceStartTime(long serviceStartTime) {}
-
-    public void setUniqueId(byte[] uniqueId) {}
-
-    public void setPayload(byte[] payload) {}
-
-
+    public void setHost(byte[] host) {
+        cast().setHost(host);
     }
+
+    public void setHostname(String host) throws IOException {
+        cast().setHostname(host);
+    }
+
+    public void setMsgCount(int msgCount) {
+        cast().setMsgCount(msgCount);
+    }
+
+    public void setPort(int port) {
+        cast().setPort(port);
+    }
+
+    public void setServiceStartTime(long serviceStartTime) {
+        cast().setServiceStartTime(serviceStartTime);
+    }
+
+    public void setUniqueId(byte[] uniqueId) {
+        cast().setUniqueId(uniqueId);
+    }
+
+    public void setPayload(byte[] payload) {
+        cast().setPayload(payload);
+    }
+
+
+}
