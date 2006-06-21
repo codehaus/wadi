@@ -18,11 +18,8 @@ package org.codehaus.wadi.tribes;
 
 import org.codehaus.wadi.group.AbstractTestGroup;
 import org.codehaus.wadi.group.Dispatcher;
-import junit.framework.TestCase;
-import org.codehaus.wadi.group.AbstractTestGroup.DispatcherFactory;
-
-//public class TestTribesGroup extends AbstractTestGroup {
-public class TestTribesGroup extends TestCase {
+ 
+public class TestTribesGroup extends AbstractTestGroup {
 
     public TestTribesGroup(String name) {
         super(name);
