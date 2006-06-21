@@ -10,7 +10,6 @@ import org.apache.catalina.tribes.ChannelException;
 import org.apache.catalina.tribes.Member;
 import org.apache.catalina.tribes.MembershipListener;
 import org.apache.catalina.tribes.group.GroupChannel;
-import org.apache.catalina.tribes.group.interceptors.MessageDispatch15Interceptor;
 import org.apache.catalina.tribes.membership.McastService;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Cluster;
@@ -20,6 +19,7 @@ import org.codehaus.wadi.group.ElectionStrategy;
 import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.Peer;
 import org.apache.catalina.tribes.group.interceptors.TcpFailureDetector;
+import org.apache.catalina.tribes.group.interceptors.MessageDispatchInterceptor;
 
 /**
  * <p>Title: </p>
@@ -42,7 +42,8 @@ public class TribesCluster implements Cluster {
         channel = new GroupChannel();
         channel.addInterceptor(new TcpFailureDetector());
         channel.addInterceptor(new WadiMemberInterceptor());
-        channel.addInterceptor(new MessageDispatch15Interceptor());
+        //channel.addInterceptor(new MessageDispatch15Interceptor());
+        channel.addInterceptor(new MessageDispatchInterceptor());
         channel.addMembershipListener(new WadiListener(this));
     }
 
