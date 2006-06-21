@@ -30,7 +30,7 @@ public class TestInVMReplication extends AbstractTestReplication {
     public void testReplication() throws Exception {
         VMBroker cluster = new VMBroker("TEST");
         cluster.setMessageRecorder(new SysOutMessageRecorder());
-        testReplication(new VMDispatcher(cluster, "test.1", 5000));
+        testReplication(new VMDispatcher(cluster, "red", 5000));
     }
 }
 
