@@ -1,11 +1,11 @@
 package org.codehaus.wadi.tribes;
 
-import org.apache.catalina.tribes.group.ChannelInterceptorBase;
-import org.apache.catalina.tribes.Member;
 import java.util.HashMap;
+
 import org.apache.catalina.tribes.ChannelException;
-import java.io.Serializable;
 import org.apache.catalina.tribes.ChannelMessage;
+import org.apache.catalina.tribes.Member;
+import org.apache.catalina.tribes.group.ChannelInterceptorBase;
 
 /**
  * <p>Title: </p>
