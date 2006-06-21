@@ -31,7 +31,7 @@ public interface Partition {
     /**
      * @return whether or not this is a LocalPartition
      */
-    boolean isLocal();
+    boolean isLocal(); // TODO - get rid of this
     
     /**
      * @return the Partition 'key' - a number between '0' and 'numPartitions-1'
