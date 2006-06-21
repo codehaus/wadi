@@ -20,6 +20,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.impl.Utils;
 import org.codehaus.wadi.location.DIndexRequest;
 import org.codehaus.wadi.location.Partition;
 import org.codehaus.wadi.location.PartitionConfig;
@@ -43,22 +44,19 @@ public class PartitionFacade extends AbstractPartition {
     protected final LinkedQueue _queue=new LinkedQueue();
     protected final PartitionConfig _config;
     protected final Log _log;
+    protected final String _keyString;
 
     protected long _timeStamp;
     protected Partition _content;
 
     public PartitionFacade(int key, long timeStamp, Partition content, boolean queueing, PartitionConfig config) {
         super(key);
+        _keyString=""+key; // saves creating a new String every time we print the key...
         _config=config;
         _timeStamp=timeStamp;
         _log=LogFactory.getLog(getClass().getName()+"#"+_key+"@"+_config.getLocalPeerName());
         if (content instanceof UnknownPartition) {
-            try {
-                _lock.writeLock().acquire();
-            } catch (InterruptedException e) {
-                _log.error("lock acquisition interrupted - NYI", e);
-                throw new UnsupportedOperationException(e.getMessage());
-            }
+            Utils.acquireWithoutTimeout("Partition [exclusive]", _keyString, _lock.writeLock());
         }
         _content=content;
         if (_log.isTraceEnabled()) _log.trace("initialising location to: "+_content);
@@ -73,83 +71,54 @@ public class PartitionFacade extends AbstractPartition {
     // incoming...
 
     public void onMessage(Message message, InsertIMToPM request) {
-        if (_log.isTraceEnabled()) _log.trace("dispatching: "+request+" on "+_content);
         Sync sync=_lock.readLock(); // SHARED
-        boolean acquired=false;
         try {
-            sync.acquire();
-            acquired=true;
+            Utils.acquireWithoutTimeout("Partition [shared]", _keyString, sync);
             _content.onMessage(message, request);
-        } catch (InterruptedException e) {
-            _log.warn("unexpected problem", e);
         } finally {
-            if (acquired)
-                sync.release();
+            Utils.release("Partition [shared]", _keyString, sync);
         }
     }
 
     public void onMessage(Message message, DeleteIMToPM request) {
         Sync sync=_lock.readLock(); // SHARED
-        boolean acquired=false;
         try {
-            sync.acquire();
-            acquired=true;
+            Utils.acquireWithoutTimeout("Partition [shared]", _keyString, sync);
             _content.onMessage(message, request);
-        } catch (InterruptedException e) {
-            _log.warn("unexpected problem", e);
         } finally {
-            if (acquired)
-                sync.release();
+            Utils.release("Partition [shared]", _keyString, sync);
         }
     }
 
     public void onMessage(Message message, EvacuateIMToPM request) {
         Sync sync=_lock.readLock(); // SHARED
-        boolean acquired=false;
         try {
-            sync.acquire();
-            acquired=true;
+            Utils.acquireWithoutTimeout("Partition [shared]", _keyString, sync);
             _content.onMessage(message, request);
-        } catch (InterruptedException e) {
-            _log.warn("unexpected problem", e);
         } finally {
-            if (acquired)
-                sync.release();
+            Utils.release("Partition [shared]", _keyString, sync);
         }
     }
 
-    // should superceded above method
     public void onMessage(Message message, MoveIMToPM request) {
         Sync sync=_lock.readLock(); // SHARED
-        boolean acquired=false;
         try {
-            sync.acquire();
-            acquired=true;
+            Utils.acquireWithoutTimeout("Partition [shared]", _keyString, sync);
             _content.onMessage(message, request);
-        } catch (InterruptedException e) {
-            _log.warn("unexpected problem", e);
         } finally {
-            if (acquired)
-                sync.release();
+            Utils.release("Partition [shared]", _keyString, sync);
         }
     }
 
     // outgoing...
 
     public Message exchange(DIndexRequest request, long timeout) throws Exception {
-        if (_log.isTraceEnabled()) _log.trace("dispatching: "+request+" on "+_content);
         Sync sync=_lock.readLock(); // SHARED
-        boolean acquired=false;
         try {
-            sync.acquire();
-            acquired=true;
+            Utils.acquireWithoutTimeout("Partition [shared]", _keyString, sync);
             return _content.exchange(request, timeout);
-        } catch (InterruptedException e) {
-            _log.warn("unexpected problem", e);
-            return null;
         } finally {
-            if (acquired)
-                sync.release();
+            Utils.release("Partition [shared]", _keyString, sync);
         }
     }
 
@@ -158,39 +127,29 @@ public class PartitionFacade extends AbstractPartition {
     // TODO - lose this
     public Partition getContent() {
         Sync sync=_lock.writeLock(); // EXCLUSIVE
-        boolean acquired=false;
         try {
-            sync.acquire();
-            acquired=true;
+            Utils.acquireWithoutTimeout("Partition [exclusive]", _keyString, sync);
             return _content;
-        } catch (InterruptedException e) {
-            _log.warn("unexpected problem", e);
         } finally {
-            if (acquired)
-                sync.release();
+            Utils.release("Partition [exclusive]", _keyString, sync);
         }
-        throw new UnsupportedOperationException();
     }
 
     public void setContent(long timeStamp, Partition content) {
         // TODO - do something here
         Sync sync=_lock.writeLock(); // EXCLUSIVE
-        boolean acquired=false;
         try {
             if (!(_content instanceof UnknownPartition))
-                sync.acquire();
-            acquired=true;
+                Utils.acquireWithoutTimeout("Partition [exclusive]", _keyString, sync);
             if (timeStamp>_timeStamp) {
                 if (_log.isTraceEnabled()) _log.trace("["+_key+"] changing location from: "+_content+" to: "+content);
                 _timeStamp=timeStamp;
                 _content=content;
             }
 
-        } catch (InterruptedException e) {
-            _log.warn("unexpected problem", e);
         } finally {
-            if (acquired && !(_content instanceof UnknownPartition))
-                sync.release();
+            if (!(_content instanceof UnknownPartition))
+                Utils.release("Partition [exclusive]", _keyString, sync);
         }
     }
 
@@ -200,7 +159,7 @@ public class PartitionFacade extends AbstractPartition {
         boolean acquired=false;
         try {
             if (!(_content instanceof UnknownPartition))
-                sync.acquire();
+                Utils.acquireWithoutTimeout("Partition [exclusive]", _keyString, sync);
             acquired=true;
             if (timeStamp>_timeStamp) {
                 _timeStamp=timeStamp;
@@ -211,11 +170,9 @@ public class PartitionFacade extends AbstractPartition {
                     _content=new RemotePartition(_key, _config, location);
                 }
             }
-        } catch (InterruptedException e) {
-            _log.warn("unexpected problem", e);
         } finally {
             if (acquired && !(_content instanceof UnknownPartition))
-                sync.release();
+                Utils.release("Partition [exclusive]", _keyString, sync);
         }
     }
 
@@ -225,8 +182,8 @@ public class PartitionFacade extends AbstractPartition {
      * @return The encapsulated Partition
      * @throws InterruptedException
      */
-    public Partition acquire() throws InterruptedException {
-        //_lock.writeLock().acquire(); // EXCLUSIVE
+    public Partition acquire() {
+        //Utils.acquireUninterrupted("Partition [exclusive]", ""+getKey(), _lock.writeLock()); // EXCLUSIVE
         return _content;
     }
 
@@ -234,7 +191,7 @@ public class PartitionFacade extends AbstractPartition {
      * Release the exclusive lock around the Partition which we encapsulate.
      */
     public void release() {
-        //_lock.writeLock().release();
+       //Utils.release("Partition [exclusive]", ""+getKey(), _lock.writeLock()); // TODO - String allocation
     }
 
     /**
