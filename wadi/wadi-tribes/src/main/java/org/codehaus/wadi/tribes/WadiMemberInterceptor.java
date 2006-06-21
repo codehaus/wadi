@@ -4,6 +4,8 @@ import org.apache.catalina.tribes.group.ChannelInterceptorBase;
 import org.apache.catalina.tribes.Member;
 import java.util.HashMap;
 import org.apache.catalina.tribes.ChannelException;
+import java.io.Serializable;
+import org.apache.catalina.tribes.ChannelMessage;
 
 /**
  * <p>Title: </p>
@@ -25,6 +27,13 @@ public class WadiMemberInterceptor extends ChannelInterceptorBase {
         TribesPeer peer = wrap(member);
         super.memberAdded(peer);
     }
+    
+    public void messageReceived(ChannelMessage msg) {
+        TribesPeer peer = wrap(msg.getAddress());
+        msg.setAddress(peer);
+        super.messageReceived(msg);
+    }
+    
     public void memberDisappeared(Member member) { 
         TribesPeer peer = wrap(member);
         super.memberDisappeared(peer);
@@ -55,6 +64,7 @@ public class WadiMemberInterceptor extends ChannelInterceptorBase {
         TribesPeer peer = (TribesPeer)map.get(mbr);
         if ( peer == null ) {
             synchronized (map) {
+                peer = (TribesPeer)map.get(mbr);
                 if ( peer == null ) {
                     peer = new TribesPeer(mbr);
                     map.put(mbr,peer);
@@ -66,6 +76,7 @@ public class WadiMemberInterceptor extends ChannelInterceptorBase {
     
     public void start(int svc) throws ChannelException {
         startLevel = startLevel | svc;
+        super.start(svc);
     }
     public void stop(int svc) throws ChannelException {
         startLevel = (startLevel & (~svc));
