@@ -29,44 +29,44 @@ import org.codehaus.wadi.location.newmessages.MoveIMToPM;
  */
 public class UnknownPartition extends AbstractPartition {
 
-  public UnknownPartition(int key) {
-    super(key);
-  }
-
-  // 'java.lang.Object' API
-  
-  public String toString() {
-      return "<unknown>";
+    public UnknownPartition(int key) {
+        super(key);
     }
 
-  // 'Partition' API
-  
-  public boolean isLocal() {
-    return false;
-  }
+    // 'java.lang.Object' API
 
-  // incoming ...
-  
-  public void onMessage(Message message, InsertIMToPM request) {
-    throw new UnsupportedOperationException();
-  }
+    public String toString() {
+        return "<unknown>";
+    }
 
-  public void onMessage(Message message, DeleteIMToPM request) {
-    throw new UnsupportedOperationException();
-  }
+    // 'Partition' API
 
-  public void onMessage(Message message, EvacuateIMToPM request) {
-    throw new UnsupportedOperationException();
-  }
+    public boolean isLocal() {
+        return false;
+    }
 
-  public void onMessage(Message message, MoveIMToPM request) {
-    throw new UnsupportedOperationException();
-  }
+    // incoming ...
 
-  // outgoing...
-  
-  public Message exchange(DIndexRequest request, long timeout) throws Exception {
-    throw new UnsupportedOperationException();
-  }
+    public void onMessage(Message message, InsertIMToPM request) {
+        throw new UnsupportedOperationException();
+    }
+
+    public void onMessage(Message message, DeleteIMToPM request) {
+        throw new UnsupportedOperationException();
+    }
+
+    public void onMessage(Message message, EvacuateIMToPM request) {
+        throw new UnsupportedOperationException();
+    }
+
+    public void onMessage(Message message, MoveIMToPM request) {
+        throw new UnsupportedOperationException();
+    }
+
+    // outgoing...
+
+    public Message exchange(DIndexRequest request, long timeout) throws Exception {
+        throw new UnsupportedOperationException();
+    }
 
 }

@@ -41,28 +41,28 @@ public class RemotePartition extends AbstractPartition {
 
     protected transient Log _log;
 
-	protected final PartitionConfig _config;
+    protected final PartitionConfig _config;
 
-	protected Address _address;
+    protected Address _address;
 
-	public RemotePartition(int key, PartitionConfig config, Address address) {
-		super(key);
-		_config=config;
-		_address=address;
-		_log=LogFactory.getLog(getClass().getName()+"#"+_key+"@"+_config.getLocalPeerName());
-	}
+    public RemotePartition(int key, PartitionConfig config, Address address) {
+        super(key);
+        _config=config;
+        _address=address;
+        _log=LogFactory.getLog(getClass().getName()+"#"+_key+"@"+_config.getLocalPeerName());
+    }
 
     // 'java.lang.Object' API
-    
+
     public String toString() {
         return _prefix+_key+"@"+_config.getLocalPeerName()+"->"+_config.getPeerName(_address)+_suffix;
     }
 
     // 'Partition' API
-    
-	public boolean isLocal() {
-		return false;
-	}
+
+    public boolean isLocal() {
+        return false;
+    }
 
     protected void forward(Message message) {
         try {
@@ -73,40 +73,40 @@ public class RemotePartition extends AbstractPartition {
     }
 
     // incoming...
-    
-	public void onMessage(Message message, InsertIMToPM request) {
-		if (_log.isTraceEnabled()) _log.trace("#"+_key+" : forwarding: " + request + " from "+_config.getLocalPeerName()+" to " + _config.getPeerName(_address));
+
+    public void onMessage(Message message, InsertIMToPM request) {
+        if (_log.isTraceEnabled()) _log.trace("#"+_key+" : forwarding: " + request + " from "+_config.getLocalPeerName()+" to " + _config.getPeerName(_address));
 
         forward(message);
-	}
+    }
 
-	public void onMessage(Message message, DeleteIMToPM request) {
-		if (_log.isTraceEnabled()) _log.trace("indirecting: " + request + " via " + _config.getPeerName(_address));
-
-        forward(message);
-	}
-
-	public void onMessage(Message message, EvacuateIMToPM request) {
-		if (_log.isTraceEnabled()) _log.trace("indirecting: " + request + " via " + _config.getPeerName(_address));
+    public void onMessage(Message message, DeleteIMToPM request) {
+        if (_log.isTraceEnabled()) _log.trace("indirecting: " + request + " via " + _config.getPeerName(_address));
 
         forward(message);
-	}
+    }
 
-	public void onMessage(Message message, MoveIMToPM request) {
-		if (_log.isWarnEnabled()) _log.warn(_config.getLocalPeerName()+": not Master of Partition["+_key+"] - forwarding message to "+_config.getPeerName(_address));
-        
+    public void onMessage(Message message, EvacuateIMToPM request) {
+        if (_log.isTraceEnabled()) _log.trace("indirecting: " + request + " via " + _config.getPeerName(_address));
+
         forward(message);
-	}
+    }
+
+    public void onMessage(Message message, MoveIMToPM request) {
+        if (_log.isWarnEnabled()) _log.warn(_config.getLocalPeerName()+": not Master of Partition["+_key+"] - forwarding message to "+_config.getPeerName(_address));
+
+        forward(message);
+    }
 
     // outgoing...
-    
-	public Message exchange(DIndexRequest request, long timeout) throws Exception {
-		Dispatcher dispatcher=_config.getDispatcher();
-		Address target=_address;
-		if (_log.isTraceEnabled()) _log.trace("exchanging message ("+request+") with node: "+_config.getPeerName(target)+" on "+Thread.currentThread().getName());
-		return dispatcher.exchangeSend(target, request, timeout);
-	}
-    
+
+    public Message exchange(DIndexRequest request, long timeout) throws Exception {
+        Dispatcher dispatcher=_config.getDispatcher();
+        Address target=_address;
+        if (_log.isTraceEnabled()) _log.trace("exchanging message ("+request+") with node: "+_config.getPeerName(target)+" on "+Thread.currentThread().getName());
+        return dispatcher.exchangeSend(target, request, timeout);
+    }
+
     // 'RemotePartition' API
 
     public Address getAddress() {

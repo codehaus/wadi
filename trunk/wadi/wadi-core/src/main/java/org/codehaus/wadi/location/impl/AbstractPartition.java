@@ -33,7 +33,7 @@ public abstract class AbstractPartition implements Partition, Serializable {
     }
 
     // 'Partition' API
-    
+
     public int getKey() {
         return _key;
     }
