@@ -23,12 +23,13 @@ import org.codehaus.wadi.location.Partition;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
+ * @version $Revision:1815 $
  */
 public class PartitionKeys implements Serializable {
 
     protected int[] _keys;
 
+    // should be constructed from localPartitionKeys Set, rather than like this... - TODO
     public PartitionKeys(PartitionFacade[] partitions) {
         ArrayList list=new ArrayList(partitions.length);
         for (int i=0; i<partitions.length; i++) {

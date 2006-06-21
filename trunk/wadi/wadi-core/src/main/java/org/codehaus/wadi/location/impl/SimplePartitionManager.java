@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.LockManager;
@@ -66,6 +68,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 	protected final Log _log;
 	protected final int _numPartitions;
 	protected final PartitionFacade[] _partitions;
+    protected Set _localPartitionKeys;
 	protected final Cluster _cluster;
     protected final Peer _localPeer;
 	protected final Dispatcher _dispatcher;
@@ -86,8 +89,8 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 		_pmSyncs=new StupidLockManager(_nodeName);
 		_log=LogFactory.getLog(getClass().getName()+"#"+_nodeName);
 		_numPartitions=numPartitions;
-
 		_partitions=new PartitionFacade[_numPartitions];
+        _localPartitionKeys=new TreeSet();
 		long timeStamp=System.currentTimeMillis();
 		boolean queueing=true;
 		for (int i=0; i<_numPartitions; i++)
@@ -209,58 +212,78 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
         }
 	}
 
+    // temporary hack - ultimately we will keep track of local keys as they are added and removed from Partition array...
+    private Set getLocalPartitionKeys() {
+        Set keys=new TreeSet();
+        for (int j=0; j<_numPartitions; j++) {
+            PartitionFacade facade=_partitions[j];
+            if (facade.isLocal()) {
+                keys.add(new Integer(j));
+            }
+        }
+        return keys;
+    }
+    
 	// receive a command to transfer IndexPartitions to other Peers
 	// send them in a request, waiting for response
 	// send an acknowledgement to Coordinator who sent original command
-	public void onPartitionTransferCommand(Message om, PartitionTransferCommand command) {
+    public synchronized void onPartitionTransferCommand(Message om, PartitionTransferCommand command) {
         if (_log.isTraceEnabled()) _log.trace("received: "+command);
-		PartitionTransfer[] transfers=command.getTransfers();
-		for (int i=0; i<transfers.length; i++) {
-			PartitionTransfer transfer=transfers[i];
+        PartitionTransfer[] transfers=command.getTransfers();
+        long timeStamp=System.currentTimeMillis();
+        for (int i=0; i<transfers.length; i++) {
+            PartitionTransfer transfer=transfers[i];
             if (_log.isTraceEnabled()) _log.trace("starting Partition transfer: "+transfer);
-			int amount=transfer.getAmount();
-			Address target=transfer.getAddress();
+            int amount=transfer.getAmount();
+            Address target=transfer.getAddress();
 
-			// acquire partitions for transfer...
-			LocalPartition[] acquired=null;
-			try {
-				Collection c=new ArrayList();
-				for (int j=0; j<_numPartitions && c.size()<amount; j++) {
-					PartitionFacade facade=_partitions[j];
-					if (facade.isLocal()) {
-						Partition partition=facade.getContent();
-						c.add(partition);
-					}
-				}
-				acquired=(LocalPartition[])c.toArray(new LocalPartition[c.size()]);
-				assert (amount==acquired.length);
+            // acquire partitions for transfer...
+            LocalPartition[] acquired=null;
+            Message m=null;
+            try {
+                Collection c=new ArrayList();
 
-				long timeStamp=System.currentTimeMillis();
+                _localPartitionKeys=getLocalPartitionKeys(); // TODO
 
-				// build request...
-				if (_log.isTraceEnabled()) _log.trace("local state (before giving): " + getPartitionKeys());
-				PartitionTransferRequest request=new PartitionTransferRequest(timeStamp, acquired);
-				// send it...
-				Message om3=_dispatcher.exchangeSend(target, request, _inactiveTime);
-				// process response...
-				if (om3!=null && ((PartitionTransferResponse)om3.getPayload()).getSuccess()) {
-					for (int j=0; j<acquired.length; j++) {
-						PartitionFacade facade=null;
-						facade=_partitions[acquired[j].getKey()];
-						facade.setContentRemote(timeStamp, _dispatcher, target); // TODO - should we use a more recent ts ?
-					}
-					if (_log.isDebugEnabled()) _log.debug("released "+acquired.length+" partition[s] to "+_dispatcher.getPeerName(target));
-				} else {
-					_log.warn("transfer unsuccessful");
-				}
-			} catch (Throwable t) {
-				_log.warn("unexpected problem", t);
-			}
-		}
+                for (Iterator ii=_localPartitionKeys.iterator(); ii.hasNext() && c.size()<amount; ) {
+                    int index=((Integer)ii.next()).intValue();
+                    PartitionFacade facade=_partitions[index];
+                    Partition partition=facade.acquire(); // acquire exclusive lock around partition
+                    c.add(partition);
+                }
+                acquired=(LocalPartition[])c.toArray(new LocalPartition[c.size()]);
+                assert (amount==acquired.length);
+
+
+                // build request...
+                if (_log.isTraceEnabled()) _log.trace("local state (before giving): " + getPartitionKeys());
+                PartitionTransferRequest request=new PartitionTransferRequest(timeStamp, acquired);
+                // send it...
+                m=_dispatcher.exchangeSend(target, request, _inactiveTime);
+            } catch (Throwable t) {
+                _log.warn("unexpected problem", t);
+            } finally {
+                // process response...
+                if (m!=null && ((PartitionTransferResponse)m.getPayload()).getSuccess()) {
+                    for (int j=0; j<acquired.length; j++) {
+                        PartitionFacade facade=_partitions[acquired[j].getKey()];
+                        facade.release(target, timeStamp); // release exclusive lock resetting timeStamp and updating location
+                    }
+                    if (_log.isDebugEnabled()) _log.debug("released "+acquired.length+" partition[s] to "+_dispatcher.getPeerName(target));
+                } else {
+                    for (int j=0; j<acquired.length; j++) {
+                        PartitionFacade facade=_partitions[acquired[j].getKey()];
+                        facade.release(); // release exclusive lock
+                    }
+                    _log.warn("transfer unsuccessful");
+                }
+            }
+        }
+        
 		try {
 			PartitionKeys keys=getPartitionKeys();
 			_distributedState.put(_partitionKeysKey, keys);
-			_distributedState.put(_timeStampKey, new Long(System.currentTimeMillis()));
+			_distributedState.put(_timeStampKey, new Long(timeStamp));
 			if (_log.isTraceEnabled()) _log.trace("local state (after giving): " + keys);
 			String correlationID=om.getSourceCorrelationId();
 			if (_log.isTraceEnabled()) _log.trace("CORRELATIONID: " + correlationID);
@@ -339,7 +362,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 		for (int i=0; i<k.length; i++) {
 			int key=k[i];
 			PartitionFacade facade=_partitions[key];
-			facade.setContentRemote(timeStamp, _dispatcher, location);
+			facade.setContentRemote(timeStamp, location);
 		}
 	}
 
