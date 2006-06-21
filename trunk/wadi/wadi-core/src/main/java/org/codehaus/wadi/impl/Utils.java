@@ -97,25 +97,42 @@ public class Utils {
 	    } while (Thread.interrupted());
 	}
 
-	public static void acquireUninterrupted(String lockType, String lockName, Sync sync) throws TimeoutException {
-		try {
-		do {
-			try {
-				if (_lockLog.isTraceEnabled()) _lockLog.trace(lockType+" - acquiring: "+lockName+" ["+Thread.currentThread().getName()+"]"+" : "+sync);
-				//sync.attempt(5000);
-				sync.acquire();
-				if (_lockLog.isTraceEnabled()) _lockLog.trace(lockType+" - acquired : "+lockName+" ["+Thread.currentThread().getName()+"]"+" : "+sync);
-			} catch (TimeoutException e) {
-				Thread.interrupted(); // TODO - not sure if we need to clear the interrupted flag ?
-				throw e; // a TimeoutException isa InterruptedException
-			} catch (InterruptedException e) {
-				_log.trace("unexpected interruption - ignoring", e);
-			}
-		} while (Thread.interrupted());
-		} catch (Exception e) {
-			if (_lockLog.isWarnEnabled()) _lockLog.warn(lockType+" - acquisition FAILED : "+lockName+" ["+Thread.currentThread().getName()+"]"+" : "+sync);
-		}
-	}
+    public static void acquireUninterrupted(String lockType, String lockName, Sync sync) throws TimeoutException {
+        try {
+        do {
+            try {
+                if (_lockLog.isTraceEnabled()) _lockLog.trace(lockType+" - acquiring: "+lockName+" ["+Thread.currentThread().getName()+"]"+" : "+sync);
+                //sync.attempt(5000);
+                sync.acquire();
+                if (_lockLog.isTraceEnabled()) _lockLog.trace(lockType+" - acquired : "+lockName+" ["+Thread.currentThread().getName()+"]"+" : "+sync);
+            } catch (TimeoutException e) {
+                Thread.interrupted(); // TODO - not sure if we need to clear the interrupted flag ?
+                throw e; // a TimeoutException isa InterruptedException
+            } catch (InterruptedException e) {
+                _log.trace("unexpected interruption - ignoring", e);
+            }
+        } while (Thread.interrupted());
+        } catch (Exception e) {
+            if (_lockLog.isWarnEnabled()) _lockLog.warn(lockType+" - acquisition FAILED : "+lockName+" ["+Thread.currentThread().getName()+"]"+" : "+sync);
+        }
+    }
+    
+    public static void acquireWithoutTimeout(String lockType, String lockName, Sync sync) {
+        try {
+        do {
+            try {
+                if (_lockLog.isTraceEnabled()) _lockLog.trace(lockType+" - acquiring: "+lockName+" ["+Thread.currentThread().getName()+"]"+" : "+sync);
+                //sync.attempt(5000);
+                sync.acquire();
+                if (_lockLog.isTraceEnabled()) _lockLog.trace(lockType+" - acquired : "+lockName+" ["+Thread.currentThread().getName()+"]"+" : "+sync);
+            } catch (InterruptedException e) {
+                _log.trace("unexpected interruption - ignoring", e);
+            }
+        } while (Thread.interrupted());
+        } catch (Exception e) {
+            if (_lockLog.isWarnEnabled()) _lockLog.warn(lockType+" - acquisition FAILED : "+lockName+" ["+Thread.currentThread().getName()+"]"+" : "+sync);
+        }
+    }
 
 	public static void release(String lockType, String lockName, Sync sync) {
 		if (_lockLog.isTraceEnabled()) _lockLog.trace(lockType+" - releasing: "+lockName+" ["+Thread.currentThread().getName()+"]"+" : "+sync);
