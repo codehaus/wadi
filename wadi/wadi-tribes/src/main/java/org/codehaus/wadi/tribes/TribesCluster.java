@@ -175,7 +175,7 @@ public class TribesCluster implements Cluster {
         long start = System.currentTimeMillis();
         long delta = System.currentTimeMillis()-start;
         while ( delta < timeout ) {
-            if ( channel.getMembers().length >= membershipCount ) return true;
+            if ( (channel.getMembers().length) >= membershipCount ) return true;
             else {
                 try { Thread.sleep(100); } catch (InterruptedException x) {Thread.interrupted();}
             }
@@ -192,7 +192,7 @@ public class TribesCluster implements Cluster {
         
         public void memberAdded(Member member) {
             Member[] mbrs = cluster.channel.getMembers();
-            Member coordinator = mbrs.length>0?mbrs[0]:null;
+            Member coordinator = mbrs.length>0?mbrs[0]:cluster.channel.getLocalMember(false);
             HashSet added = new HashSet();
             HashSet removed = new HashSet();
             added.add(member);
@@ -205,7 +205,7 @@ public class TribesCluster implements Cluster {
         
         public void memberDisappeared(Member member) {
             Member[] mbrs = cluster.channel.getMembers();
-            Member coordinator = mbrs.length > 0 ? mbrs[0] : null;
+            Member coordinator = mbrs.length>0?mbrs[0]:cluster.channel.getLocalMember(false);
             HashSet added = new HashSet();
             HashSet removed = new HashSet();
             removed.add(member);

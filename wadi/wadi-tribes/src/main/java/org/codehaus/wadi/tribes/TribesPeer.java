@@ -12,6 +12,7 @@ import java.io.ObjectOutput;
 import org.codehaus.wadi.group.LocalPeer;
 import org.apache.catalina.tribes.io.XByteBuffer;
 import java.io.Serializable;
+import java.io.ObjectStreamException;
 
 /**
  * <p>Title: </p>
@@ -148,6 +149,10 @@ public class TribesPeer extends MemberImpl implements Member, LocalPeer, Address
         }catch ( Exception x ) {
             throw new RuntimeException(x);
         }
+    }
+    
+    protected Object readResolve() throws ObjectStreamException {
+        return WadiMemberInterceptor.wrap(this);
     }
     
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
