@@ -70,6 +70,7 @@ public abstract class AbstractDispatcher implements Dispatcher {
     }
 
     public void onMessage(Message message) {
+        if (_messageLog.isTraceEnabled()) _messageLog.trace("incoming: "+message.getPayload()+" {"+message.getReplyTo()+"->"+message.getAddress()+"} - "+message.getTargetCorrelationId()+"/"+message.getSourceCorrelationId()+" on "+Thread.currentThread().getName());
         inboundMessageDispatcher.onMessage(message);
     }
 	
