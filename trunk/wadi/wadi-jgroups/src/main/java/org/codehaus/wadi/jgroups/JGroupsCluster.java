@@ -222,7 +222,7 @@ public class JGroupsCluster extends AbstractCluster implements MembershipListene
                     // fetch state - a quick round trip to fetch the distributed data for this node - yeugh !
                     try {
                         long timeout=100000; // TODO - parameterise...
-                        JGroupsMessage tmp=(JGroupsMessage)_dispatcher.exchangeSend(peer, new StateRequest(_localPeer.getState()), timeout);
+                        JGroupsMessage tmp=(JGroupsMessage)_dispatcher.exchangeSend(peer, new StateRequest(((JGroupsLocalPeer)_localPeer).copyState()), timeout);
                         Map state=((StateResponse)tmp.getPayload()).getState();
                         peer.setState(state);
 
