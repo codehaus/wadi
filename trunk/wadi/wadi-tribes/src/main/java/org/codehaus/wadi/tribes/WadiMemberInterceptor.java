@@ -52,6 +52,7 @@ public class WadiMemberInterceptor extends ChannelInterceptorBase {
             Member[] result = new Member[peers.length+1];
             result[0] = getLocalMember(false);
             System.arraycopy(peers,0,result,1,peers.length);
+            AbsoluteOrder.absoluteOrder(result);
             return result;
         }
         return mbrs;
