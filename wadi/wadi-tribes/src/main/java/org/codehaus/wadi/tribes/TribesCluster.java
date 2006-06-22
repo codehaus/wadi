@@ -20,6 +20,7 @@ import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.Peer;
 import org.apache.catalina.tribes.group.interceptors.TcpFailureDetector;
 import org.apache.catalina.tribes.group.interceptors.MessageDispatchInterceptor;
+import java.util.LinkedHashMap;
 
 /**
  * <p>Title: </p>
@@ -119,7 +120,7 @@ public class TribesCluster implements Cluster {
      */
     public Map getRemotePeers() {
         Member[] mbrs = channel.getMembers();
-        HashMap result = new HashMap();
+        LinkedHashMap result = new LinkedHashMap();
         for (int i=0; i<mbrs.length; i++) result.put(mbrs[i],mbrs[i]);
         return result;
     }
