@@ -43,13 +43,12 @@ df -h .
 echo
 
 ## cleanup
-rm -fr ./activemq-data ./testresults
+rm -fr ./testresults
 
-PROPS="--offline $PROPS"
+PROPS="-e --offline $PROPS"
 
 ## execute build, recording status
-mvn $PROPS clean:clean eclipse:eclipse && \
-mvn $PROPS -Dmaven.test.failure.ignore=true install site && \
+mvn $PROPS -DdownloadSources=true -Dmaven.test.failure.ignore=true clean:clean install eclipse:eclipse site && \
 mvn $PROPS -f pom.clover.xml clover:aggregate clover:clover
 status=$?
 
