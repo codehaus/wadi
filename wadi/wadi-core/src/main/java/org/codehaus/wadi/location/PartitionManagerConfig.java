@@ -30,6 +30,7 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * @version $Revision$
  */
 public interface PartitionManagerConfig {
+    
     void findRelevantSessionNames(int numPartitions, Collection[] resultSet);
 
     Peer getCoordinator();
@@ -45,4 +46,7 @@ public interface PartitionManagerConfig {
     Sync getInvocationLock(String name);
 
     long getBirthTime();
+    
+    boolean getAllowRegenerationOfMissingPartitions();
+    
 }

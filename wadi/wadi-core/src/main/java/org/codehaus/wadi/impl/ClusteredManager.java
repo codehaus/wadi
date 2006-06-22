@@ -64,6 +64,11 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
 	protected final Map _distributedState;
 	protected final Collapser _collapser;
 	protected final int _numPartitions;
+    protected final InvocationProxy _proxy;
+    protected final EndPoint _endPoint;
+
+    protected DIndex _dindex;
+    protected boolean _allowRegenerationOfMissingPartitions=true;
 
 	public ClusteredManager(WebSessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, WebSessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map sessionMap, Router router, boolean errorIfSessionNotAcquired, Streamer streamer, boolean accessOnLoad, ReplicaterFactory replicaterFactory, EndPoint endPoint, InvocationProxy proxy, Dispatcher dispatcher, int numPartitions, Collapser collapser) {
 		super(sessionPool, attributesFactory, valuePool, sessionWrapperFactory, sessionIdFactory, contextualiser, sessionMap, router, errorIfSessionNotAcquired, streamer, accessOnLoad, replicaterFactory);
@@ -78,10 +83,6 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
 	public String getContextPath() { // TODO - integrate with Jetty/Tomcat
 		return "/";
 	}
-
-	protected DIndex _dindex;
-	protected final InvocationProxy _proxy;
-	protected final EndPoint _endPoint;
 
 	public void init(ManagerConfig config) {
 		// must be done before super.init() so that ContextualiserConfig contains a Cluster
@@ -247,7 +248,8 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
 		return _dindex.getCoordinator();
 	}
 
-	// PartitionManagerConfig API
+	// 'PartitionManagerConfig' API
+    
 	public boolean contextualise(Invocation invocation, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws InvocationException {
 		return _contextualiser.contextualise(invocation, id, immoter, motionLock, exclusiveOnly);
 	}
@@ -267,5 +269,15 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
     public Peer getCoordinator() {
         return _dindex.getCoordinator();
     }
+    
+    // perhaps this shoulod be passed down in a ClusteredManagerConfig ?
+    public void setAllowRegenerationOfMissingPartitions(boolean allowRegenerationOfMissingPartitions) {
+        _allowRegenerationOfMissingPartitions=allowRegenerationOfMissingPartitions;
+    }
+    
+    public boolean getAllowRegenerationOfMissingPartitions() {
+        return _allowRegenerationOfMissingPartitions;
+    }
+    
 }
 

@@ -135,6 +135,11 @@ public abstract class AbstractTestPartitionManager extends TestCase {
 			public long getBirthTime() {
 				return _birthTime;
 			}
+            
+            
+            public boolean getAllowRegenerationOfMissingPartitions() {
+                return false;
+            }
 			
 		};
 
