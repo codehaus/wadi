@@ -119,20 +119,12 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 
 		_partitionManager.start();
 
-		if (_cluster.getPeerCount()==1) {
-            // we are the first node...
-			_partitionManager.localise();
-			PartitionKeys k=_partitionManager.getPartitionKeys();
-			_distributedState.put(_partitionKeysKey, k);
-			_distributedState.put(_timeStampKey, new Long(System.currentTimeMillis()));
-			if (_log.isInfoEnabled()) _log.info("local state: " + k);
-			_dispatcher.setDistributedState(_distributedState);
-			if (_log.isTraceEnabled()) _log.trace("distributed state updated: " + _localPeer.getState());
-			onCoordinatorChanged(new ClusterEvent(_cluster, _localPeer, ClusterEvent.COORDINATOR_ELECTED));
-			_coordinator.queueRebalancing();
-		}
-
-		// whether we are the coordinator or not...
+		PartitionKeys k=_partitionManager.getPartitionKeys();
+		_distributedState.put(_partitionKeysKey, k);
+		_distributedState.put(_timeStampKey, new Long(System.currentTimeMillis()));
+		if (_log.isInfoEnabled()) _log.info("local state: " + k);
+		_dispatcher.setDistributedState(_distributedState);
+		if (_log.isTraceEnabled()) _log.trace("distributed state updated: " + _localPeer.getState());
 
 		_partitionManager.waitUntilUseable();
 		
@@ -196,7 +188,13 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 		}
 	}
 
+    protected boolean _firstTime=true;
+    
 	public void onMembershipChanged(Cluster cluster, Set joiners, Set leavers, Peer coordinator) {
+
+        if (_log.isDebugEnabled()) _log.debug("membership changed - joiners:"+joiners+" leavers:"+leavers+" coordinator:"+coordinator+" firstTime:"+_firstTime);
+
+        // start-stop coordinator thread
         synchronized (_coordinatorLock) {
             if (false == coordinator.equals(_coordinatorPeer)) {
                 if (null != _coordinatorPeer && _coordinatorPeer.equals(_localPeer)) {
@@ -209,12 +207,21 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
             }
         }
         
-        if (_log.isDebugEnabled()) _log.debug("membership changed - joiners:"+joiners+" leavers:"+leavers+" coordinator:"+coordinator);
+        boolean queueRebalancing=true;
 
-	    if (_localPeer.equals(_coordinatorPeer)) {
-	        _coordinator.queueRebalancing();
-	    }
+        if (_firstTime) {
+            if (joiners.isEmpty() && leavers.isEmpty()) {
+                // we are the first node...
+                _partitionManager.localise(); // assert our ownership of ALL Partitions
+                queueRebalancing=false;
+            } 
+            _firstTime=false;
+        }
 
+        if (queueRebalancing && _localPeer.equals(_coordinatorPeer)) {
+            _coordinator.queueRebalancing();
+        }
+        
 	    // joiners...
 	    for (Iterator i=joiners.iterator(); i.hasNext();)
 	        _partitionManager.update((Peer)i.next());
@@ -257,10 +264,6 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 		return _coordinatorPeer.getAddress().equals(_localPeer.getAddress());
 	}
 
-	public void onCoordinatorChanged(ClusterEvent event) {
-
-	}
-
 	public Collection[] createResultSet(int numPartitions, int[] keys) {
 		Collection[] c=new Collection[numPartitions];
 		for (int i=0; i<keys.length; i++)
@@ -272,7 +275,6 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 		_log.info("accepting coordinatorship");
 		try {
 			(_coordinator=new Coordinator(this)).start();
-			_coordinator.queueRebalancing();
 		} catch (Exception e) {
 			_log.error("problem starting Coordinator");
 		}
@@ -284,7 +286,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 			_coordinator.stop();
 			_coordinator=null;
 		} catch (Exception e) {
-			_log.error("problem starting Balancer");
+			_log.error("problem stopping Coordinator");
 		}
 	}
 
