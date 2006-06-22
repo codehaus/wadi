@@ -74,7 +74,6 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 	protected final Dispatcher _dispatcher;
 	protected final Map _distributedState;
 	protected final long _inactiveTime;
-	protected final boolean _allowRegenerationOfMissingPartitions = true;
 	protected final Callback _callback;
 	protected final PartitionMapper _mapper;
 	protected final LockManager _pmSyncs;
@@ -105,9 +104,11 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 	}
 
 	protected PartitionManagerConfig _config;
+    protected boolean _allowRegenerationOfMissingPartitions;
 
 	public void init(PartitionManagerConfig config) {
 		_config=config;
+        _allowRegenerationOfMissingPartitions=_config.getAllowRegenerationOfMissingPartitions();
 		_log.trace("init");
 
 		// attach relevant message handlers to dispatcher...

@@ -195,4 +195,9 @@ public class DIndexNode implements DispatcherConfig, PartitionManagerConfig {
     public Peer getCoordinator() {
         throw new UnsupportedOperationException();
     }
+    
+    public boolean getAllowRegenerationOfMissingPartitions() {
+        return false;
+    }
+    
 }
