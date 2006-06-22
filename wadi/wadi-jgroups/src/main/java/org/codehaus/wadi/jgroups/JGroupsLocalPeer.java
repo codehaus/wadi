@@ -16,6 +16,7 @@
  */
 package org.codehaus.wadi.jgroups;
 
+import java.util.HashMap;
 import java.util.Map;
 import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.Message;
@@ -55,6 +56,10 @@ public class JGroupsLocalPeer extends JGroupsPeer implements LocalPeer {
             message.setPayload(new StateUpdate(state));
             _cluster.send(_cluster.getAddress(), message);
         }
+    }
+    
+    public Map copyState() {
+        synchronized (_state) {return new HashMap(_state);}
     }
 
 }
