@@ -15,6 +15,8 @@ import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.impl.AbstractDispatcher;
 import org.codehaus.wadi.group.impl.ThreadPool;
 import org.apache.catalina.tribes.ChannelListener;
+import java.util.ArrayList;
+import org.codehaus.wadi.group.ClusterListener;
 
 /**
  * <p>Title: </p>
