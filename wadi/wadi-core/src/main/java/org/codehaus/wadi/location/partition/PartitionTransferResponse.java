@@ -18,7 +18,7 @@ package org.codehaus.wadi.location.partition;
 
 import java.io.Serializable;
 
-import org.codehaus.wadi.PartitionChainMessage;
+import org.codehaus.wadi.PartitionResponseMessage;
 
 /**
  * Sent from one peer to another, confirming successful acceptance of ownership of a number of Partitions.
@@ -26,7 +26,7 @@ import org.codehaus.wadi.PartitionChainMessage;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision:1952 $
  */
-public class PartitionTransferResponse implements PartitionChainMessage, Serializable {
+public class PartitionTransferResponse implements PartitionResponseMessage, Serializable {
 
     protected boolean _success;
 
