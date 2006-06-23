@@ -26,8 +26,20 @@ import org.apache.catalina.tribes.membership.MemberImpl;
 public class WadiMemberInterceptor extends ChannelInterceptorBase {
     
     protected static HashMap map = new HashMap();
+    protected static int instanceCounters = 0;
     protected int startLevel = 0;
     protected MemberComparator comp = new MemberComparator();
+
+    public WadiMemberInterceptor() {
+        addAndGetInstanceCounter(1);
+    }
+    
+    public synchronized int addAndGetInstanceCounter(int val) {
+        instanceCounters += val;
+        if ( instanceCounters < 0 ) instanceCounters = 0;
+        return instanceCounters;
+    }
+    
 
     public void memberAdded(Member member) { 
         TribesPeer peer = wrap(member);
@@ -79,7 +91,7 @@ public class WadiMemberInterceptor extends ChannelInterceptorBase {
                 peer = (TribesPeer)map.get(mbr);
                 if ( peer == null ) {
                     peer = new TribesPeer(mbr);
-                    map.put(mbr,peer);
+                    map.put(((MemberImpl)mbr),peer);
                 }
             }
         }
@@ -88,13 +100,15 @@ public class WadiMemberInterceptor extends ChannelInterceptorBase {
     
     public void start(int svc) throws ChannelException {
         super.start(svc);
-        if ( (svc&Channel.SND_RX_SEQ)==Channel.SND_RX_SEQ ) memberAdded(getLocalMember(true));
+        memberAdded(getLocalMember(true));
         startLevel = startLevel | svc;
     }
     public void stop(int svc) throws ChannelException {
         startLevel = (startLevel & (~svc));
         super.stop(svc);
-        if ( startLevel == 0 ) map.clear();
+        if ( this.addAndGetInstanceCounter(-1) == 0 ) {
+            map.clear(); //this will kill two tribes in the same vm
+        }
     }
     
     public static class MemberComparator implements java.util.Comparator {
