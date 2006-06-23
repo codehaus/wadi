@@ -24,16 +24,16 @@ import org.codehaus.wadi.location.SessionRequest;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision: 1924 $
  */
-public class SessionMessageImpl implements SessionRequest, Serializable {
+public class SessionRequestImpl implements SessionRequest, Serializable {
 
     protected String _key;
 
-    public SessionMessageImpl(String key) {
+    public SessionRequestImpl(String key) {
         super();
         _key=key;
     }
 
-    protected SessionMessageImpl() {
+    protected SessionRequestImpl() {
         // for deserialisation...
     }
 
