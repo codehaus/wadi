@@ -17,7 +17,6 @@
 package org.codehaus.wadi.jgroups;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -311,20 +310,16 @@ public class JGroupsCluster extends AbstractCluster implements MembershipListene
         // incorporate incoming state into our model
         JGroupsRemotePeer peer=(JGroupsRemotePeer)message.getReplyTo();
         peer.setState(update.getState());
+        // notify listeners
         notifyPeerUpdated(peer);
     }
 
     public void onMessage(Message message, StateRequest request) throws Exception {
         // incorporate incoming state into our model
         JGroupsRemotePeer peer=(JGroupsRemotePeer)message.getReplyTo();
-        Map state=request.getState();
-        // take a snapshot
-        synchronized (state) {
-            state=new HashMap(state);
-        }
-        peer.setState(state);
+        peer.setState(request.getState());
         // send our own state back in response
-        _dispatcher.reply(message, new StateResponse(_localPeer.getState()));
+        _dispatcher.reply(message, new StateResponse(((JGroupsLocalPeer)_localPeer).copyState()));
     }
 
     // 'JGroupsCluster' API

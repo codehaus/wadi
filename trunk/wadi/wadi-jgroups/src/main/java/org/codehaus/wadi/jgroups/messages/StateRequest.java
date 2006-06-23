@@ -19,29 +19,19 @@ package org.codehaus.wadi.jgroups.messages;
 import java.io.Serializable;
 import java.util.Map;
 
-import org.codehaus.wadi.Message;
 import org.codehaus.wadi.jgroups.Utils;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class StateRequest implements Message, Serializable {
+public class StateRequest extends StateUpdate implements Serializable {
 
     protected static final String _prefix="<"+Utils.basename(StateRequest.class)+":";
     protected static final String _suffix=">";
 
-    protected final Map _state;
-
     public StateRequest(Map state) {
-        super();
-        _state=state;
-    }
-
-    // 'org.codehaus.wadi.jgroups.messages.StateResponse' API
-
-    public Map getState() {
-        return _state;
+        super(state);
     }
 
     // 'java.lang.Object' API

@@ -38,16 +38,16 @@ public class StateResponse implements Message, Serializable {
         _state=state;
     }
 
-    // 'org.codehaus.wadi.jgroups.messages.StateResponse' API
-
-    public Map getState() {
-        return _state;
-    }
-
     // 'java.lang.Object' API
 
     public String toString() {
         return _prefix+_state+_suffix;
     }
     
+    // 'org.codehaus.wadi.jgroups.messages.StateResponse' API
+
+    public Map getState() {
+        return _state;
+    }
+
 }

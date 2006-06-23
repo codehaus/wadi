@@ -37,14 +37,16 @@ public class StateUpdate implements Message, Serializable {
         _state=state;
     }
 
-    public Map getState() {
-        return _state;
-    }
-
-    // TODO - custom serialiser
+    // 'java.lang.Object' API
 
     public String toString() {
         return _prefix+_state+_suffix; 
+    }
+
+    // 'org.codehaus.wadi.jgroups.messages.StateUpdate' API
+
+    public Map getState() {
+        return _state;
     }
 
 }
