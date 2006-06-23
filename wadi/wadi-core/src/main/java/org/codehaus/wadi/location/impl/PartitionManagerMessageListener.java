@@ -16,10 +16,10 @@
 package org.codehaus.wadi.location.impl;
 
 import org.codehaus.wadi.group.Message;
-import org.codehaus.wadi.location.messages.PartitionEvacuationRequest;
-import org.codehaus.wadi.location.messages.PartitionRepopulateRequest;
-import org.codehaus.wadi.location.messages.PartitionTransferCommand;
-import org.codehaus.wadi.location.messages.PartitionTransferRequest;
+import org.codehaus.wadi.location.partition.PartitionEvacuationRequest;
+import org.codehaus.wadi.location.partition.PartitionRepopulateRequest;
+import org.codehaus.wadi.location.partition.PartitionTransferCommand;
+import org.codehaus.wadi.location.partition.PartitionTransferRequest;
 
 /**
  * 

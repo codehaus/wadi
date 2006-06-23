@@ -17,10 +17,10 @@
 package org.codehaus.wadi.location;
 
 import org.codehaus.wadi.group.Message;
-import org.codehaus.wadi.location.newmessages.DeleteIMToPM;
-import org.codehaus.wadi.location.newmessages.EvacuateIMToPM;
-import org.codehaus.wadi.location.newmessages.InsertIMToPM;
-import org.codehaus.wadi.location.newmessages.MoveIMToPM;
+import org.codehaus.wadi.location.session.DeleteIMToPM;
+import org.codehaus.wadi.location.session.EvacuateIMToPM;
+import org.codehaus.wadi.location.session.InsertIMToPM;
+import org.codehaus.wadi.location.session.MoveIMToPM;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -82,6 +82,6 @@ public interface Partition {
      * @return the response
      * @throws Exception
      */
-    Message exchange(DIndexRequest request, long timeout) throws Exception;
+    Message exchange(SessionRequest request, long timeout) throws Exception;
 
 }

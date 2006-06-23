@@ -35,22 +35,22 @@ import org.codehaus.wadi.impl.Utils;
 import org.codehaus.wadi.location.Partition;
 import org.codehaus.wadi.location.StateManager;
 import org.codehaus.wadi.location.StateManagerConfig;
-import org.codehaus.wadi.location.newmessages.DeleteIMToPM;
-import org.codehaus.wadi.location.newmessages.DeletePMToIM;
-import org.codehaus.wadi.location.newmessages.EvacuateIMToPM;
-import org.codehaus.wadi.location.newmessages.EvacuatePMToIM;
-import org.codehaus.wadi.location.newmessages.InsertIMToPM;
-import org.codehaus.wadi.location.newmessages.InsertPMToIM;
-import org.codehaus.wadi.location.newmessages.MoveIMToPM;
-import org.codehaus.wadi.location.newmessages.MoveIMToSM;
-import org.codehaus.wadi.location.newmessages.MovePMToIM;
-import org.codehaus.wadi.location.newmessages.MovePMToIMInvocation;
-import org.codehaus.wadi.location.newmessages.MovePMToSM;
-import org.codehaus.wadi.location.newmessages.MoveSMToIM;
-import org.codehaus.wadi.location.newmessages.MoveSMToPM;
-import org.codehaus.wadi.location.newmessages.PutSMToIM;
-import org.codehaus.wadi.location.newmessages.ReleaseEntryRequest;
-import org.codehaus.wadi.location.newmessages.ReleaseEntryResponse;
+import org.codehaus.wadi.location.session.DeleteIMToPM;
+import org.codehaus.wadi.location.session.DeletePMToIM;
+import org.codehaus.wadi.location.session.EvacuateIMToPM;
+import org.codehaus.wadi.location.session.EvacuatePMToIM;
+import org.codehaus.wadi.location.session.InsertIMToPM;
+import org.codehaus.wadi.location.session.InsertPMToIM;
+import org.codehaus.wadi.location.session.MoveIMToPM;
+import org.codehaus.wadi.location.session.MoveIMToSM;
+import org.codehaus.wadi.location.session.MovePMToIM;
+import org.codehaus.wadi.location.session.MovePMToIMInvocation;
+import org.codehaus.wadi.location.session.MovePMToSM;
+import org.codehaus.wadi.location.session.MoveSMToIM;
+import org.codehaus.wadi.location.session.MoveSMToPM;
+import org.codehaus.wadi.location.session.PutSMToIM;
+import org.codehaus.wadi.location.session.ReleaseEntryRequest;
+import org.codehaus.wadi.location.session.ReleaseEntryResponse;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 
@@ -105,19 +105,19 @@ public class SimpleStateManager implements StateManager, StateManagerMessageList
 	}
 
 	public void onDIndexInsertionRequest(Message om, InsertIMToPM request) {
-		_config.getPartition(request.getSessionKey()).onMessage(om, request);
+		_config.getPartition(request.getKey()).onMessage(om, request);
 	}
 
 	public void onDIndexDeletionRequest(Message om, DeleteIMToPM request) {
-		_config.getPartition(request.getSessionKey()).onMessage(om, request);
+		_config.getPartition(request.getKey()).onMessage(om, request);
 	}
 
 	public void onDIndexRelocationRequest(Message om, EvacuateIMToPM request) {
-		_config.getPartition(request.getSessionKey()).onMessage(om, request);
+		_config.getPartition(request.getKey()).onMessage(om, request);
 	}
 
 	public void onMessage(Message message, MoveIMToPM request) {
-		_config.getPartition(request.getSessionKey()).onMessage(message, request);
+		_config.getPartition(request.getKey()).onMessage(message, request);
 	}
 
 	//----------------------------------------------------------------------------------------------------
