@@ -18,6 +18,7 @@ package org.codehaus.wadi.location.partition;
 
 import java.io.Serializable;
 
+import org.codehaus.wadi.PartitionRequestMessage;
 import org.codehaus.wadi.location.impl.PartitionTransfer;
 
 /**
@@ -26,7 +27,7 @@ import org.codehaus.wadi.location.impl.PartitionTransfer;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision:1815 $
  */
-public class PartitionTransferCommand implements Serializable {
+public class PartitionTransferCommand implements PartitionRequestMessage, Serializable {
 
   protected PartitionTransfer[] _transfers;
 
