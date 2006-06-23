@@ -52,10 +52,10 @@ import EDU.oswego.cs.dl.util.concurrent.Slot;
  * @version $Revision$
  */
 
-// TODO
-// pass testsuite
-// more work on Cluster & Dispatcher
-// lose getRemotePeers()
+//TODO
+//pass testsuite
+//more work on Cluster & Dispatcher
+//lose getRemotePeers()
 
 public class JGroupsCluster extends AbstractCluster implements MembershipListener, MessageListener, JGroupsClusterMessageListener {
 
@@ -275,23 +275,20 @@ public class JGroupsCluster extends AbstractCluster implements MembershipListene
     // JGroups 'MessageListener' API
 
     public void receive(org.jgroups.Message msg) {
-        // TODO: this may be a little contentious - think of a better way...
-        if (_log.isTraceEnabled()) _log.trace(_localPeerName+" - "+_localPeer+" - RECEIVED SOMETHING: "+msg);
-        synchronized (_channel) {
-            org.jgroups.Address src=msg.getSrc();
-            org.jgroups.Address dest=msg.getDest();
-            if (_excludeSelf && (dest==null || dest.isMulticastAddress()) && src==_localJGAddress) {
-                if (_log.isTraceEnabled()) _log.trace(_localPeerName+" - "+"ignoring message from self: "+msg);
-            } else {
-                _cluster.set(this); // setup a ThreadLocal to be read during deserialisation...
-                Object o=msg.getObject();
+        if (_log.isTraceEnabled()) _log.trace(_localPeerName+" - message arrived: "+msg);
+        org.jgroups.Address src=msg.getSrc();
+        org.jgroups.Address dest=msg.getDest();
+        if (_excludeSelf && (dest==null || dest.isMulticastAddress()) && src==_localJGAddress) {
+            if (_log.isTraceEnabled()) _log.trace(_localPeerName+" - "+"ignoring message from self: "+msg);
+        } else {
+            _cluster.set(this); // setup a ThreadLocal to be read during deserialisation...
+            Object o=msg.getObject();
 
-                JGroupsMessage message=(JGroupsMessage)o;
-                message.setCluster(this);
-                message.setReplyTo((JGroupsPeer)getPeer(src));
-                message.setAddress((JGroupsPeer)getPeer(dest));
-                _dispatcher.onMessage(message);
-            }
+            JGroupsMessage message=(JGroupsMessage)o;
+            message.setCluster(this);
+            message.setReplyTo((JGroupsPeer)getPeer(src));
+            message.setAddress((JGroupsPeer)getPeer(dest));
+            _dispatcher.onMessage(message);
         }
     }
 
@@ -304,7 +301,7 @@ public class JGroupsCluster extends AbstractCluster implements MembershipListene
     }
 
     // we should be able to pull this up into AbstractCluster...
-        public Address getAddress() {
+    public Address getAddress() {
         return (JGroupsPeer)_clusterPeer;
     }
 
@@ -320,11 +317,11 @@ public class JGroupsCluster extends AbstractCluster implements MembershipListene
     public void onMessage(Message message, StateRequest request) throws Exception {
         // incorporate incoming state into our model
         JGroupsRemotePeer peer=(JGroupsRemotePeer)message.getReplyTo();
-	Map state=request.getState();
-	// take a snapshot
-	synchronized (state) {
-	  state=new HashMap(state);
-	}
+        Map state=request.getState();
+        // take a snapshot
+        synchronized (state) {
+            state=new HashMap(state);
+        }
         peer.setState(state);
         // send our own state back in response
         _dispatcher.reply(message, new StateResponse(_localPeer.getState()));
@@ -357,8 +354,6 @@ public class JGroupsCluster extends AbstractCluster implements MembershipListene
     public Channel getChannel() {
         return _channel;
     }
-
-
 
     protected Peer create(Object backend) {
         org.jgroups.Address jgAddress=(org.jgroups.Address)backend;
