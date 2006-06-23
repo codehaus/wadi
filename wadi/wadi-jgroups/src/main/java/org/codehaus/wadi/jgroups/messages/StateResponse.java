@@ -19,13 +19,14 @@ package org.codehaus.wadi.jgroups.messages;
 import java.io.Serializable;
 import java.util.Map;
 
+import org.codehaus.wadi.Message;
 import org.codehaus.wadi.jgroups.Utils;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class StateResponse implements Serializable {
+public class StateResponse implements Message, Serializable {
 
     protected static final String _prefix="<"+Utils.basename(StateResponse.class)+": ";
     protected static final String _suffix=">";
