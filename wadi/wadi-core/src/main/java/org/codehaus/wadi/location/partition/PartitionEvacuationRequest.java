@@ -18,15 +18,15 @@ package org.codehaus.wadi.location.partition;
 
 import java.io.Serializable;
 
-import org.codehaus.wadi.PartitionMessage;
+import org.codehaus.wadi.PartitionRequestMessage;
 
 /**
  * Sent to the Coordinator, requesting that it rearrange Partition ownership, excluding the Requestor.
  * 
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
+ * @version $Revision:1952 $
  */
-public class PartitionEvacuationRequest implements PartitionMessage, Serializable {
+public class PartitionEvacuationRequest implements PartitionRequestMessage, Serializable {
 
     public PartitionEvacuationRequest() {
         super();

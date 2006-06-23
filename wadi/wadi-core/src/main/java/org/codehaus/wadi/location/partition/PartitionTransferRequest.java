@@ -18,7 +18,7 @@ package org.codehaus.wadi.location.partition;
 
 import java.io.Serializable;
 
-import org.codehaus.wadi.PartitionMessage;
+import org.codehaus.wadi.PartitionRequestMessage;
 import org.codehaus.wadi.location.impl.LocalPartition;
 
 /**
@@ -27,7 +27,7 @@ import org.codehaus.wadi.location.impl.LocalPartition;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision:1815 $
  */
-public class PartitionTransferRequest implements PartitionMessage, Serializable {
+public class PartitionTransferRequest implements PartitionRequestMessage, Serializable {
 
 	protected long _timeStamp;
 	protected LocalPartition[] _partitions;

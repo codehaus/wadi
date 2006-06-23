@@ -18,15 +18,15 @@ package org.codehaus.wadi.location.partition;
 
 import java.io.Serializable;
 
-import org.codehaus.wadi.PartitionMessage;
+import org.codehaus.wadi.PartitionResponseMessage;
 
 /**
  * Response from Coordinator to source of a PartitionEvacuationRequest, indicating that evacuation is complete.
  * 
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
+ * @version $Revision:1952 $
  */
-public class PartitionEvacuationResponse implements PartitionMessage, Serializable {
+public class PartitionEvacuationResponse implements PartitionResponseMessage, Serializable {
 
     public PartitionEvacuationResponse() {
         super();
