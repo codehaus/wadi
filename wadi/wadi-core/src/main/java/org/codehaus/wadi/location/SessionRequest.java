@@ -22,6 +22,6 @@ package org.codehaus.wadi.location;
  */
 public interface SessionRequest extends SessionMessage {
 
-    String getKey();
+    Object getKey();
 
 }

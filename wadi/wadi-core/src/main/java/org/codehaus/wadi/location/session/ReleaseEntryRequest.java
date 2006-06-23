@@ -53,7 +53,7 @@ public class ReleaseEntryRequest implements SessionRequest, Serializable {
         return Math.abs(getKey().hashCode()%numPartitions);
     }
 
-    public String getKey() {
+    public Object getKey() {
         return _motable.getName();
     }
 
