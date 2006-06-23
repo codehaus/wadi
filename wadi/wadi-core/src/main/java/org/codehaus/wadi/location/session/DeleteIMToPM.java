@@ -18,7 +18,7 @@ package org.codehaus.wadi.location.session;
 
 import java.io.Serializable;
 
-import org.codehaus.wadi.location.impl.SessionMessageImpl;
+import org.codehaus.wadi.location.impl.SessionRequestImpl;
 
 /**
  * Sent from InvocationMaster to PartitionMaster requesting that an entry be removed from the index.
@@ -26,7 +26,7 @@ import org.codehaus.wadi.location.impl.SessionMessageImpl;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision:1815 $
  */
-public class DeleteIMToPM extends SessionMessageImpl implements Serializable {
+public class DeleteIMToPM extends SessionRequestImpl implements Serializable {
 
     public DeleteIMToPM(String name) {
         super(name);

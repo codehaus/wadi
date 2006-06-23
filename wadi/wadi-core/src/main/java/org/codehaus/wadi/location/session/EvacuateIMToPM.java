@@ -18,13 +18,13 @@ package org.codehaus.wadi.location.session;
 
 import java.io.Serializable;
 
-import org.codehaus.wadi.location.impl.SessionMessageImpl;
+import org.codehaus.wadi.location.impl.SessionRequestImpl;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision:1815 $
  */
-public class EvacuateIMToPM extends SessionMessageImpl implements Serializable {
+public class EvacuateIMToPM extends SessionRequestImpl implements Serializable {
   
   public EvacuateIMToPM(String name) {
     super(name);
