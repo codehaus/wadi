@@ -17,6 +17,7 @@
 package org.codehaus.wadi.location.session;
 
 import java.io.Serializable;
+import org.codehaus.wadi.location.SessionResponse;
 
 /**
  * Response from PartitionMaster to InvocationMaster, indicating that required State does not exist.
@@ -24,7 +25,7 @@ import java.io.Serializable;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision:1815 $
  */
-public class MovePMToIM implements Serializable {
+public class MovePMToIM implements SessionResponse, Serializable {
 
 	public MovePMToIM() {
 	}
