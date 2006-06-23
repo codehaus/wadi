@@ -54,7 +54,7 @@ public abstract class AbstractTestGroup extends TestCase {
 
     class MyClusterListener implements ClusterListener {
 
-        public int _numPeers=0;
+        public int _numRemotePeers=0;
         public int _numUpdates=0;
         public WaitableInt _numCoordinators=new WaitableInt(0);
         public Peer _lastCoordinator=null;
@@ -66,8 +66,8 @@ public abstract class AbstractTestGroup extends TestCase {
         public void onMembershipChanged(Cluster cluster, Set joiners, Set leavers, Peer coordinator) {
             _lastCoordinator=coordinator;
             _numCoordinators.increment();
-            _numPeers+=joiners.size();
-            _numPeers-=leavers.size();
+            _numRemotePeers+=joiners.size();
+            _numRemotePeers-=leavers.size();
             _log.info(cluster.getLocalPeer().getName()+" - onMembershipChanged - joiners:"+joiners+", leavers:"+leavers+", coordinator:"+coordinator);
         }
 
@@ -110,9 +110,9 @@ public abstract class AbstractTestGroup extends TestCase {
         _log.info(cluster1);
         _log.info(dispatcher1);
 
-        assertEquals(1, listener0._numPeers);
+        assertEquals(1, listener0._numRemotePeers);
         assertEquals(1, cluster0.getRemotePeers().size());
-        assertEquals(1, listener1._numPeers);
+        assertEquals(1, listener1._numRemotePeers);
         assertEquals(1, cluster1.getRemotePeers().size());
         
         Map peers0=cluster0.getRemotePeers();
@@ -128,7 +128,7 @@ public abstract class AbstractTestGroup extends TestCase {
         //assertTrue(listener0._numChanges.get()>=3); - how do we ensure that this has been called ?
         assertTrue(listener0._lastCoordinator.equals(cluster0.getLocalPeer()));
 
-        assertEquals(0, listener0._numPeers);
+        assertEquals(0, listener0._numRemotePeers);
         assertEquals(0, cluster0.getRemotePeers().size());
 
         dispatcher0.stop();
