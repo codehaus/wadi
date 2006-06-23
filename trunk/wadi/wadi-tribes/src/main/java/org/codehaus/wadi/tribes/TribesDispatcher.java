@@ -96,6 +96,7 @@ public class TribesDispatcher extends AbstractDispatcher implements ChannelListe
      */
     public void send(Address target, Message message) throws MessageExchangeException {
         try {
+            System.out.println("Sending message to["+target+"] from ["+this.toString()+"]");
             cluster.channel.send(new Member[] {(TribesPeer)target},(TribesMessage)message,Channel.SEND_OPTIONS_DEFAULT);
         }catch ( ChannelException x ) {
             throw new MessageExchangeException(x);
@@ -122,6 +123,7 @@ public class TribesDispatcher extends AbstractDispatcher implements ChannelListe
     }
     
     public void messageReceived(Serializable serializable, Member member) {
+        System.out.println("Received message from["+member+"] into ["+this.toString()+"]");
         TribesMessage msg = (TribesMessage)serializable;
         msg.setReplyTo((Address)member);//do we need this?
         msg.setAddress((Address)cluster.channel.getLocalMember(false));

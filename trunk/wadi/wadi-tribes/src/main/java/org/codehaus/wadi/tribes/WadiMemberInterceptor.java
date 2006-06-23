@@ -27,6 +27,7 @@ public class WadiMemberInterceptor extends ChannelInterceptorBase {
     
     protected static HashMap map = new HashMap();
     protected int startLevel = 0;
+    protected MemberComparator comp = new MemberComparator();
 
     public void memberAdded(Member member) { 
         TribesPeer peer = wrap(member);
@@ -49,10 +50,11 @@ public class WadiMemberInterceptor extends ChannelInterceptorBase {
             Member[] peers = new Member[mbrs.length];
             for (int i=0; i<peers.length;i++) peers[i] = wrap(mbrs[i]);
             //add local member to it
-            Member[] result = new Member[peers.length+1];
-            result[0] = getLocalMember(false);
-            System.arraycopy(peers,0,result,1,peers.length);
-            AbsoluteOrder.absoluteOrder(result);
+//            Member[] result = new Member[peers.length+1];
+//            result[0] = getLocalMember(false);
+//            System.arraycopy(peers,0,result,1,peers.length);
+            Member[] result = peers;
+            java.util.Arrays.sort(result,comp);
             return result;
         }
         return mbrs;
@@ -94,5 +96,28 @@ public class WadiMemberInterceptor extends ChannelInterceptorBase {
         super.stop(svc);
         if ( startLevel == 0 ) map.clear();
     }
+    
+    public static class MemberComparator implements java.util.Comparator {
+
+        public int compare(Object o1, Object o2) {
+            try {
+                return compare((MemberImpl) o1, (MemberImpl) o2);
+            } catch (ClassCastException x) {
+                return 0;
+            }
+        }
+
+        public int compare(MemberImpl m1, MemberImpl m2) {
+            //longer alive time, means sort first
+            long result = m2.getMemberAliveTime() - m1.getMemberAliveTime();
+            if (result < 0)
+                return -1;
+            else if (result == 0)
+                return 0;
+            else
+                return 1;
+        }
+    }
+
 
 }
