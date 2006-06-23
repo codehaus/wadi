@@ -28,6 +28,7 @@ import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.Quipu;
+import org.codehaus.wadi.group.impl.AbstractCluster;
 import org.codehaus.wadi.location.CoordinatorConfig;
 import org.codehaus.wadi.location.messages.PartitionEvacuationResponse;
 import org.codehaus.wadi.location.messages.PartitionTransferCommand;
@@ -95,6 +96,7 @@ public class Coordinator implements Runnable {
 	}
 
 	public void run() {
+        AbstractCluster._cluster.set(_cluster);
 		try {
 			while (_flag.take()==Boolean.TRUE) {
 				rebalanceClusterState();
