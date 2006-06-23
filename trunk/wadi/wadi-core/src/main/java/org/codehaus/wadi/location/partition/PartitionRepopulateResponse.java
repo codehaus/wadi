@@ -19,13 +19,13 @@ package org.codehaus.wadi.location.partition;
 import java.io.Serializable;
 import java.util.Collection;
 
-import org.codehaus.wadi.PartitionMessage;
+import org.codehaus.wadi.PartitionResponseMessage;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision:1815 $
  */
-public class PartitionRepopulateResponse implements PartitionMessage, Serializable {
+public class PartitionRepopulateResponse implements PartitionResponseMessage, Serializable {
 
     protected Collection[] _keys;
 

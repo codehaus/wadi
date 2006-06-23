@@ -18,15 +18,15 @@ package org.codehaus.wadi.location.partition;
 
 import java.io.Serializable;
 
-import org.codehaus.wadi.PartitionMessage;
+import org.codehaus.wadi.PartitionResponseMessage;
 
 /**
  * Sent from a cluster member to the Coordinator acknowledging receipt and confirming successful carrying out of a PartitionTransferCommand.
  * 
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
+ * @version $Revision:1952 $
  */
-public class PartitionTransferAcknowledgement implements PartitionMessage, Serializable {
+public class PartitionTransferAcknowledgement implements PartitionResponseMessage, Serializable {
 
     protected boolean _success;
 

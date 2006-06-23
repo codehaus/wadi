@@ -18,13 +18,13 @@ package org.codehaus.wadi.location.partition;
 
 import java.io.Serializable;
 
-import org.codehaus.wadi.PartitionMessage;
+import org.codehaus.wadi.PartitionRequestMessage;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision:1815 $
  */
-public class PartitionRepopulateRequest implements PartitionMessage, Serializable {
+public class PartitionRepopulateRequest implements PartitionRequestMessage, Serializable {
 
     protected int[] _keys;
 
