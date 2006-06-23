@@ -40,14 +40,14 @@ import org.codehaus.wadi.location.Partition;
 import org.codehaus.wadi.location.PartitionConfig;
 import org.codehaus.wadi.location.PartitionManager;
 import org.codehaus.wadi.location.PartitionManagerConfig;
-import org.codehaus.wadi.location.messages.PartitionEvacuationRequest;
-import org.codehaus.wadi.location.messages.PartitionEvacuationResponse;
-import org.codehaus.wadi.location.messages.PartitionRepopulateRequest;
-import org.codehaus.wadi.location.messages.PartitionRepopulateResponse;
-import org.codehaus.wadi.location.messages.PartitionTransferAcknowledgement;
-import org.codehaus.wadi.location.messages.PartitionTransferCommand;
-import org.codehaus.wadi.location.messages.PartitionTransferRequest;
-import org.codehaus.wadi.location.messages.PartitionTransferResponse;
+import org.codehaus.wadi.location.partition.PartitionEvacuationRequest;
+import org.codehaus.wadi.location.partition.PartitionEvacuationResponse;
+import org.codehaus.wadi.location.partition.PartitionRepopulateRequest;
+import org.codehaus.wadi.location.partition.PartitionRepopulateResponse;
+import org.codehaus.wadi.location.partition.PartitionTransferAcknowledgement;
+import org.codehaus.wadi.location.partition.PartitionTransferCommand;
+import org.codehaus.wadi.location.partition.PartitionTransferRequest;
+import org.codehaus.wadi.location.partition.PartitionTransferResponse;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**

@@ -49,15 +49,15 @@ import org.codehaus.wadi.location.PartitionManager;
 import org.codehaus.wadi.location.PartitionManagerConfig;
 import org.codehaus.wadi.location.StateManager;
 import org.codehaus.wadi.location.StateManagerConfig;
-import org.codehaus.wadi.location.newmessages.DeleteIMToPM;
-import org.codehaus.wadi.location.newmessages.EvacuateIMToPM;
-import org.codehaus.wadi.location.newmessages.InsertIMToPM;
-import org.codehaus.wadi.location.newmessages.InsertPMToIM;
-import org.codehaus.wadi.location.newmessages.MoveIMToPM;
-import org.codehaus.wadi.location.newmessages.MoveIMToSM;
-import org.codehaus.wadi.location.newmessages.MovePMToIM;
-import org.codehaus.wadi.location.newmessages.MovePMToIMInvocation;
-import org.codehaus.wadi.location.newmessages.MoveSMToIM;
+import org.codehaus.wadi.location.session.DeleteIMToPM;
+import org.codehaus.wadi.location.session.EvacuateIMToPM;
+import org.codehaus.wadi.location.session.InsertIMToPM;
+import org.codehaus.wadi.location.session.InsertPMToIM;
+import org.codehaus.wadi.location.session.MoveIMToPM;
+import org.codehaus.wadi.location.session.MoveIMToSM;
+import org.codehaus.wadi.location.session.MovePMToIM;
+import org.codehaus.wadi.location.session.MovePMToIMInvocation;
+import org.codehaus.wadi.location.session.MoveSMToIM;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**

@@ -30,8 +30,8 @@ import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.Quipu;
 import org.codehaus.wadi.group.impl.AbstractCluster;
 import org.codehaus.wadi.location.CoordinatorConfig;
-import org.codehaus.wadi.location.messages.PartitionEvacuationResponse;
-import org.codehaus.wadi.location.messages.PartitionTransferCommand;
+import org.codehaus.wadi.location.partition.PartitionEvacuationResponse;
+import org.codehaus.wadi.location.partition.PartitionTransferCommand;
 import EDU.oswego.cs.dl.util.concurrent.Slot;
 import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 

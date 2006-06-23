@@ -31,20 +31,20 @@ import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Message;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.impl.SimpleLease;
-import org.codehaus.wadi.location.DIndexRequest;
-import org.codehaus.wadi.location.DIndexResponse;
+import org.codehaus.wadi.location.SessionRequest;
+import org.codehaus.wadi.location.SessionResponse;
 import org.codehaus.wadi.location.PartitionConfig;
-import org.codehaus.wadi.location.newmessages.DeleteIMToPM;
-import org.codehaus.wadi.location.newmessages.DeletePMToIM;
-import org.codehaus.wadi.location.newmessages.EvacuateIMToPM;
-import org.codehaus.wadi.location.newmessages.EvacuatePMToIM;
-import org.codehaus.wadi.location.newmessages.InsertIMToPM;
-import org.codehaus.wadi.location.newmessages.InsertPMToIM;
-import org.codehaus.wadi.location.newmessages.MoveIMToPM;
-import org.codehaus.wadi.location.newmessages.MovePMToIM;
-import org.codehaus.wadi.location.newmessages.MovePMToIMInvocation;
-import org.codehaus.wadi.location.newmessages.MovePMToSM;
-import org.codehaus.wadi.location.newmessages.MoveSMToPM;
+import org.codehaus.wadi.location.session.DeleteIMToPM;
+import org.codehaus.wadi.location.session.DeletePMToIM;
+import org.codehaus.wadi.location.session.EvacuateIMToPM;
+import org.codehaus.wadi.location.session.EvacuatePMToIM;
+import org.codehaus.wadi.location.session.InsertIMToPM;
+import org.codehaus.wadi.location.session.InsertPMToIM;
+import org.codehaus.wadi.location.session.MoveIMToPM;
+import org.codehaus.wadi.location.session.MovePMToIM;
+import org.codehaus.wadi.location.session.MovePMToIMInvocation;
+import org.codehaus.wadi.location.session.MovePMToSM;
+import org.codehaus.wadi.location.session.MoveSMToPM;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 import EDU.oswego.cs.dl.util.concurrent.WriterPreferenceReadWriteLock;
 
@@ -83,7 +83,7 @@ public class LocalPartition extends AbstractPartition implements Serializable {
     public void onMessage(Message message, InsertIMToPM request) {
         Address newAddress=message.getReplyTo();
         boolean success=false;
-        String key=request.getSessionKey();
+        String key=request.getKey();
 
         // optimised for expected case - id not already in use...
         Location newLocation=new Location(key, newAddress);
@@ -105,7 +105,7 @@ public class LocalPartition extends AbstractPartition implements Serializable {
             if (_log.isWarnEnabled()) _log.warn("insert: "+key+" {"+_config.getPeerName(newAddress)+"} failed - key already in use");
         }
 
-        DIndexResponse response=new InsertPMToIM(success);
+        SessionResponse response=new InsertPMToIM(success);
         try {
             _config.getDispatcher().reply(message, response);
         } catch (MessageExchangeException e) {
@@ -114,7 +114,7 @@ public class LocalPartition extends AbstractPartition implements Serializable {
     }
 
     public void onMessage(Message message, DeleteIMToPM request) {
-        String key=request.getSessionKey();
+        String key=request.getKey();
         Location location=null;
         boolean success=false;
 
@@ -130,7 +130,7 @@ public class LocalPartition extends AbstractPartition implements Serializable {
             if (_log.isWarnEnabled()) _log.warn("delete: "+key+" failed - key not present");
         }
 
-        DIndexResponse response=new DeletePMToIM(success);
+        SessionResponse response=new DeletePMToIM(success);
         try {
             _config.getDispatcher().reply(message, response);
         } catch (MessageExchangeException e) {
@@ -144,7 +144,7 @@ public class LocalPartition extends AbstractPartition implements Serializable {
         // The Partitions lock should be held in the Facade, so that it can swap Partitions in and out whilst holding an exclusive lock
         // Partition may only be migrated when exclusive lock has been taken, this may only happen when all shared locks are released - this implies that no PM session locks will be in place...
 
-        String key=request.getSessionKey();
+        String key=request.getKey();
         Dispatcher dispatcher=_config.getDispatcher();
         try {
 
@@ -265,7 +265,7 @@ public class LocalPartition extends AbstractPartition implements Serializable {
 
     public void onMessage(Message message, EvacuateIMToPM request) {
         Address newAddress=message.getReplyTo();
-        String key=request.getSessionKey();
+        String key=request.getKey();
         boolean success=false;
 
         Location location=null;
@@ -285,7 +285,7 @@ public class LocalPartition extends AbstractPartition implements Serializable {
                     if (_log.isWarnEnabled()) _log.warn("evacuate: "+key+" {"+_config.getPeerName(newAddress)+"} failed - evacuee is already there !");
                 } else {
                     location.setAddress(newAddress);
-                    if (_log.isDebugEnabled()) _log.debug("evacuate {"+request.getSessionKey()+" : "+_config.getPeerName(oldAddress)+" -> "+_config.getPeerName(newAddress)+"}");
+                    if (_log.isDebugEnabled()) _log.debug("evacuate {"+request.getKey()+" : "+_config.getPeerName(oldAddress)+" -> "+_config.getPeerName(newAddress)+"}");
                     success=true;
                 }
             } catch (InterruptedException e) {
@@ -295,7 +295,7 @@ public class LocalPartition extends AbstractPartition implements Serializable {
             }
         }
 
-        DIndexResponse response=new EvacuatePMToIM(success);
+        SessionResponse response=new EvacuatePMToIM(success);
         try {
             _config.getDispatcher().reply(message, response);
         } catch (MessageExchangeException e) {
@@ -303,7 +303,7 @@ public class LocalPartition extends AbstractPartition implements Serializable {
         }
     }
 
-    public Message exchange(DIndexRequest request, long timeout) throws Exception {
+    public Message exchange(SessionRequest request, long timeout) throws Exception {
         if (_log.isTraceEnabled()) _log.trace("local dispatch - needs optimisation");
         Dispatcher dispatcher=_config.getDispatcher();
         Address target=dispatcher.getCluster().getLocalPeer().getAddress();
