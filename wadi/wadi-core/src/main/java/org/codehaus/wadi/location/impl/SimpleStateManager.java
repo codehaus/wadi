@@ -48,7 +48,6 @@ import org.codehaus.wadi.location.session.MovePMToIMInvocation;
 import org.codehaus.wadi.location.session.MovePMToSM;
 import org.codehaus.wadi.location.session.MoveSMToIM;
 import org.codehaus.wadi.location.session.MoveSMToPM;
-import org.codehaus.wadi.location.session.PutSMToIM;
 import org.codehaus.wadi.location.session.ReleaseEntryRequest;
 import org.codehaus.wadi.location.session.ReleaseEntryResponse;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
@@ -339,9 +338,4 @@ public class SimpleStateManager implements StateManager, StateManagerMessageList
 		_listener.onImmigration(message, request.getMotable());
 	}
 
-    public void onPutSMToIM(Message message, PutSMToIM request) {
-	  throw new UnsupportedOperationException("NYI");
-        //_config.fetchSession(request.getKey());
-    }
-  
 }
