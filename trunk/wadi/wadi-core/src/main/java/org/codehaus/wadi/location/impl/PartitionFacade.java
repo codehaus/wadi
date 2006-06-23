@@ -183,7 +183,7 @@ public class PartitionFacade extends AbstractPartition {
      * @throws InterruptedException
      */
     public Partition acquire() {
-        //Utils.acquireUninterrupted("Partition [exclusive]", ""+getKey(), _lock.writeLock()); // EXCLUSIVE
+        //Utils.acquireWithoutTimeout("Partition [exclusive]", _keyString, _lock.writeLock()); // EXCLUSIVE
         return _content;
     }
 
@@ -191,7 +191,7 @@ public class PartitionFacade extends AbstractPartition {
      * Release the exclusive lock around the Partition which we encapsulate.
      */
     public void release() {
-       //Utils.release("Partition [exclusive]", ""+getKey(), _lock.writeLock()); // TODO - String allocation
+       //Utils.release("Partition [exclusive]", _keyString, _lock.writeLock());
     }
 
     /**
