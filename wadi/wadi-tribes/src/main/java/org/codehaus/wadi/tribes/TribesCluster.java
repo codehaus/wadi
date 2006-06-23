@@ -59,6 +59,10 @@ public class TribesCluster implements Cluster {
     public void addClusterListener(ClusterListener listener) {
         listeners.add(listener);
     }
+    
+    public ArrayList getClusterListeners() {
+        return listeners;
+    }
 
     /**
      * getAddress
