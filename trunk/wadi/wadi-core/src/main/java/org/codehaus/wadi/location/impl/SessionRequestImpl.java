@@ -37,7 +37,7 @@ public class SessionRequestImpl implements SessionRequest, Serializable {
         // for deserialisation...
     }
 
-    public String getKey() {
+    public Object getKey() {
         return _key;
     }
 
