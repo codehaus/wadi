@@ -61,10 +61,6 @@ public class WadiMemberInterceptor extends ChannelInterceptorBase {
         if ( mbrs != null ) {
             Member[] peers = new Member[mbrs.length];
             for (int i=0; i<peers.length;i++) peers[i] = wrap(mbrs[i]);
-            //add local member to it
-//            Member[] result = new Member[peers.length+1];
-//            result[0] = getLocalMember(false);
-//            System.arraycopy(peers,0,result,1,peers.length);
             Member[] result = peers;
             java.util.Arrays.sort(result,comp);
             return result;
