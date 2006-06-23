@@ -22,7 +22,6 @@ import org.codehaus.wadi.location.session.EvacuateIMToPM;
 import org.codehaus.wadi.location.session.InsertIMToPM;
 import org.codehaus.wadi.location.session.MoveIMToPM;
 import org.codehaus.wadi.location.session.MovePMToSM;
-import org.codehaus.wadi.location.session.PutSMToIM;
 import org.codehaus.wadi.location.session.ReleaseEntryRequest;
 
 /**
@@ -43,5 +42,4 @@ public interface StateManagerMessageListener {
 
     void onEmigrationRequest(Message message, ReleaseEntryRequest request);
 
-    void onPutSMToIM(Message message, PutSMToIM request);
 }
