@@ -23,7 +23,7 @@ import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Message;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.impl.Utils;
-import org.codehaus.wadi.location.SessionRequest;
+import org.codehaus.wadi.location.SessionRequestMessage;
 import org.codehaus.wadi.location.PartitionConfig;
 import org.codehaus.wadi.location.session.DeleteIMToPM;
 import org.codehaus.wadi.location.session.EvacuateIMToPM;
@@ -100,7 +100,7 @@ public class RemotePartition extends AbstractPartition {
 
     // outgoing...
 
-    public Message exchange(SessionRequest request, long timeout) throws Exception {
+    public Message exchange(SessionRequestMessage request, long timeout) throws Exception {
         Dispatcher dispatcher=_config.getDispatcher();
         Address target=_address;
         if (_log.isTraceEnabled()) _log.trace("exchanging message ("+request+") with node: "+_config.getPeerName(target)+" on "+Thread.currentThread().getName());

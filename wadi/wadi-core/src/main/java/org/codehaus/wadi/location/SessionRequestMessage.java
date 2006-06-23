@@ -20,7 +20,7 @@ package org.codehaus.wadi.location;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public interface SessionRequest extends SessionMessage {
+public interface SessionRequestMessage extends SessionMessage {
 
     Object getKey();
 

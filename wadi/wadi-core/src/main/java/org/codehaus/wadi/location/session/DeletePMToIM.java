@@ -18,7 +18,7 @@ package org.codehaus.wadi.location.session;
 
 import java.io.Serializable;
 
-import org.codehaus.wadi.location.SessionResponse;
+import org.codehaus.wadi.location.SessionResponseMessage;
 
 /**
  * Sent, from PartitionMaster to InvocationMaster, confirming removal of an item from the Partition's index.
@@ -26,7 +26,7 @@ import org.codehaus.wadi.location.SessionResponse;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision:1815 $
  */
-public class DeletePMToIM implements SessionResponse, Serializable {
+public class DeletePMToIM implements SessionResponseMessage, Serializable {
   
   boolean _success;
   

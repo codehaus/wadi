@@ -19,27 +19,23 @@ package org.codehaus.wadi.location.session;
 import java.io.Serializable;
 
 import org.codehaus.wadi.group.Address;
+import org.codehaus.wadi.location.impl.SessionRequestImpl;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision:1815 $
  */
-public class MovePMToSM implements Serializable {
+public class MovePMToSM extends SessionRequestImpl implements Serializable {
 
-	protected Object _key;
 	protected Address _im;
 	protected Address _pm;
 	protected String _imCorrelationId;
 
 	public MovePMToSM(Object key, Address im, Address pm, String imCorrelationId) {
-		_key=key;
+	    super(key);
 		_im=im;
 		_pm=im;
 		_imCorrelationId=imCorrelationId;
-	}
-
-	public Object getKey() {
-		return _key;
 	}
 
 	public Address getIM() {

@@ -18,13 +18,13 @@ package org.codehaus.wadi.location.session;
 
 import java.io.Serializable;
 
-import org.codehaus.wadi.location.SessionResponse;
+import org.codehaus.wadi.location.SessionResponseMessage;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision:1815 $
  */
-public class EvacuatePMToIM implements SessionResponse, Serializable {
+public class EvacuatePMToIM implements SessionResponseMessage, Serializable {
   
   protected boolean _success;
   

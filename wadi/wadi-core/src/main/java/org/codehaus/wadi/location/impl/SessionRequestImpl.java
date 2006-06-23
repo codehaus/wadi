@@ -18,17 +18,17 @@ package org.codehaus.wadi.location.impl;
 
 import java.io.Serializable;
 
-import org.codehaus.wadi.location.SessionRequest;
+import org.codehaus.wadi.location.SessionRequestMessage;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision: 1924 $
  */
-public class SessionRequestImpl implements SessionRequest, Serializable {
+public class SessionRequestImpl implements SessionRequestMessage, Serializable {
 
-    protected String _key;
+    protected Object _key;
 
-    public SessionRequestImpl(String key) {
+    public SessionRequestImpl(Object key) {
         super();
         _key=key;
     }

@@ -17,7 +17,7 @@
 package org.codehaus.wadi.location.impl;
 
 import org.codehaus.wadi.group.Message;
-import org.codehaus.wadi.location.SessionRequest;
+import org.codehaus.wadi.location.SessionRequestMessage;
 import org.codehaus.wadi.location.session.DeleteIMToPM;
 import org.codehaus.wadi.location.session.EvacuateIMToPM;
 import org.codehaus.wadi.location.session.InsertIMToPM;
@@ -65,7 +65,7 @@ public class UnknownPartition extends AbstractPartition {
 
     // outgoing...
 
-    public Message exchange(SessionRequest request, long timeout) throws Exception {
+    public Message exchange(SessionRequestMessage request, long timeout) throws Exception {
         throw new UnsupportedOperationException();
     }
 
