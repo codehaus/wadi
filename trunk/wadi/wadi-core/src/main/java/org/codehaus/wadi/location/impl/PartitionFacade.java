@@ -21,7 +21,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Message;
 import org.codehaus.wadi.impl.Utils;
-import org.codehaus.wadi.location.SessionRequest;
+import org.codehaus.wadi.location.SessionRequestMessage;
 import org.codehaus.wadi.location.Partition;
 import org.codehaus.wadi.location.PartitionConfig;
 import org.codehaus.wadi.location.session.DeleteIMToPM;
@@ -112,7 +112,7 @@ public class PartitionFacade extends AbstractPartition {
 
     // outgoing...
 
-    public Message exchange(SessionRequest request, long timeout) throws Exception {
+    public Message exchange(SessionRequestMessage request, long timeout) throws Exception {
         Sync sync=_lock.readLock(); // SHARED
         try {
             Utils.acquireWithoutTimeout("Partition [shared]", _keyString, sync);

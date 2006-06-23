@@ -18,7 +18,7 @@ package org.codehaus.wadi.location.session;
 
 import java.io.Serializable;
 
-import org.codehaus.wadi.location.SessionResponse;
+import org.codehaus.wadi.location.SessionResponseMessage;
 
 /**
  * A query for the location of the session with the enclosed ID - The response
@@ -27,7 +27,7 @@ import org.codehaus.wadi.location.SessionResponse;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision:1815 $
  */
-public class ReleaseEntryResponse implements SessionResponse, Serializable {
+public class ReleaseEntryResponse implements SessionResponseMessage, Serializable {
 
 	protected String _name;
 

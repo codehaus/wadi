@@ -82,6 +82,6 @@ public interface Partition {
      * @return the response
      * @throws Exception
      */
-    Message exchange(SessionRequest request, long timeout) throws Exception;
+    Message exchange(SessionRequestMessage request, long timeout) throws Exception;
 
 }

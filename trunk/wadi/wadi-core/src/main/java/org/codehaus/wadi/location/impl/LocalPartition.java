@@ -31,8 +31,8 @@ import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Message;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.impl.SimpleLease;
-import org.codehaus.wadi.location.SessionRequest;
-import org.codehaus.wadi.location.SessionResponse;
+import org.codehaus.wadi.location.SessionRequestMessage;
+import org.codehaus.wadi.location.SessionResponseMessage;
 import org.codehaus.wadi.location.PartitionConfig;
 import org.codehaus.wadi.location.session.DeleteIMToPM;
 import org.codehaus.wadi.location.session.DeletePMToIM;
@@ -105,7 +105,7 @@ public class LocalPartition extends AbstractPartition implements Serializable {
             if (_log.isWarnEnabled()) _log.warn("insert: "+key+" {"+_config.getPeerName(newAddress)+"} failed - key already in use");
         }
 
-        SessionResponse response=new InsertPMToIM(success);
+        SessionResponseMessage response=new InsertPMToIM(success);
         try {
             _config.getDispatcher().reply(message, response);
         } catch (MessageExchangeException e) {
@@ -130,7 +130,7 @@ public class LocalPartition extends AbstractPartition implements Serializable {
             if (_log.isWarnEnabled()) _log.warn("delete: "+key+" failed - key not present");
         }
 
-        SessionResponse response=new DeletePMToIM(success);
+        SessionResponseMessage response=new DeletePMToIM(success);
         try {
             _config.getDispatcher().reply(message, response);
         } catch (MessageExchangeException e) {
@@ -295,7 +295,7 @@ public class LocalPartition extends AbstractPartition implements Serializable {
             }
         }
 
-        SessionResponse response=new EvacuatePMToIM(success);
+        SessionResponseMessage response=new EvacuatePMToIM(success);
         try {
             _config.getDispatcher().reply(message, response);
         } catch (MessageExchangeException e) {
@@ -303,7 +303,7 @@ public class LocalPartition extends AbstractPartition implements Serializable {
         }
     }
 
-    public Message exchange(SessionRequest request, long timeout) throws Exception {
+    public Message exchange(SessionRequestMessage request, long timeout) throws Exception {
         if (_log.isTraceEnabled()) _log.trace("local dispatch - needs optimisation");
         Dispatcher dispatcher=_config.getDispatcher();
         Address target=dispatcher.getCluster().getLocalPeer().getAddress();

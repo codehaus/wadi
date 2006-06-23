@@ -19,12 +19,13 @@ package org.codehaus.wadi.location.session;
 import java.io.Serializable;
 
 import org.codehaus.wadi.Motable;
+import org.codehaus.wadi.location.SessionChainMessage;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision:1815 $
  */
-public class MoveSMToIM implements Serializable {
+public class MoveSMToIM implements SessionChainMessage, Serializable {
 
 	protected Motable _motable;
 

@@ -17,12 +17,13 @@
 package org.codehaus.wadi.location.session;
 
 import java.io.Serializable;
+import org.codehaus.wadi.location.SessionResponseMessage;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision:1815 $
  */
-public class MoveSMToPM implements Serializable {
+public class MoveSMToPM implements SessionResponseMessage, Serializable {
 
 	boolean _success;
 

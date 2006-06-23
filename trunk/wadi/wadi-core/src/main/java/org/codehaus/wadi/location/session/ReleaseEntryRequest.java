@@ -19,7 +19,7 @@ package org.codehaus.wadi.location.session;
 import java.io.Serializable;
 
 import org.codehaus.wadi.Motable;
-import org.codehaus.wadi.location.SessionRequest;
+import org.codehaus.wadi.location.SessionRequestMessage;
 
 /**
  * A request for the emigration of the enclosed session - The response
@@ -28,7 +28,7 @@ import org.codehaus.wadi.location.SessionRequest;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision:1815 $
  */
-public class ReleaseEntryRequest implements SessionRequest, Serializable {
+public class ReleaseEntryRequest implements SessionRequestMessage, Serializable {
     
 	protected final Motable _motable;
 
