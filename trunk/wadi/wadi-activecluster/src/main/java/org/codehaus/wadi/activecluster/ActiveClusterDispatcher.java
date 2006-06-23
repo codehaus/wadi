@@ -22,6 +22,7 @@ import java.util.Map;
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
+import javax.jms.ObjectMessage;
 import org.apache.activecluster.LocalNode;
 import org.apache.activecluster.Node;
 import org.apache.commons.logging.LogFactory;
@@ -43,7 +44,7 @@ import org.codehaus.wadi.group.impl.AbstractDispatcher;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision: 1788 $
  */
-public class ActiveClusterDispatcher extends AbstractDispatcher {
+public class ActiveClusterDispatcher extends AbstractDispatcher implements javax.jms.MessageListener {
     
     protected static final String _prefix="<"+Utils.basename(ActiveClusterDispatcher.class)+": ";
     protected static final String _suffix=">";
@@ -57,7 +58,6 @@ public class ActiveClusterDispatcher extends AbstractDispatcher {
 	protected final String _clusterUri;
     protected final String _localPeerName;
     protected final long _inactiveTime;
-    private final WADIMessageListener _messageListener;
 
     private ActiveClusterCluster _cluster;
     protected LocalPeer _localPeer;
@@ -70,7 +70,6 @@ public class ActiveClusterDispatcher extends AbstractDispatcher {
 		_log=LogFactory.getLog(getClass()+"#"+localPeerName);
         _inactiveTime=inactiveTime;
         _cluster = new ActiveClusterCluster(_clusterName, _localPeerName, _clusterUri);
-        _messageListener = new WADIMessageListener(_cluster, this);
         _localPeer = _cluster.getLocalPeer();
 	}
 
@@ -107,10 +106,10 @@ public class ActiveClusterDispatcher extends AbstractDispatcher {
 	        excludeSelf=false;
 	        _acCluster =_cluster.getACCluster();
 	        _clusterConsumer=_acCluster.createConsumer(_acCluster.getDestination(), null, excludeSelf);
-	        _clusterConsumer.setMessageListener(_messageListener);
+	        _clusterConsumer.setMessageListener(this);
 	        excludeSelf=false;
 	        _nodeConsumer=_acCluster.createConsumer(_acCluster.getLocalNode().getDestination(), null, excludeSelf);
-	        _nodeConsumer.setMessageListener(_messageListener);
+	        _nodeConsumer.setMessageListener(this);
 	    } catch (JMSException e) {
 	        _log.warn("unexpected ActiveCluster problem", e);
 	    }
@@ -222,4 +221,18 @@ public class ActiveClusterDispatcher extends AbstractDispatcher {
     private String getNodeName(Node node) {
         return node==null?"<unknown>":(String)node.getState().get(Peer._peerNameKey);
     }
+
+    // 'javax.jms.MessageListener
+    
+    public void onMessage(javax.jms.Message message) {
+        if (_log.isTraceEnabled()) _log.trace(_localPeerName+" - message arrived: "+message);
+        ActiveClusterCluster._cluster.set(_cluster); // attach cluster to a ThreadLocal for future use...
+        try {
+            // why are we creating another object here ? - TODO
+            onMessage(new ActiveClusterMessage(_cluster, (ObjectMessage)message));
+        } catch (JMSException e) {
+            _log.error("ActiveCluster issue: could not demarshall incoming message", e);
+        }
+    }
+    
 }
