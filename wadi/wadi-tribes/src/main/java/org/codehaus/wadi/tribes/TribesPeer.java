@@ -13,6 +13,7 @@ import org.codehaus.wadi.group.LocalPeer;
 import org.apache.catalina.tribes.io.XByteBuffer;
 import java.io.Serializable;
 import java.io.ObjectStreamException;
+import java.util.HashMap;
 
 /**
  * <p>Title: </p>
@@ -139,7 +140,7 @@ public class TribesPeer extends MemberImpl implements Member, LocalPeer, Address
                 throw new RuntimeException(x);
             }
         }
-        return state;
+        return (state == null)?new HashMap():state;
     }
     
     public void setState(Map state) {
