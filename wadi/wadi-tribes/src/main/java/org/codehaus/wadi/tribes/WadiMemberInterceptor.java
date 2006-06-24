@@ -10,6 +10,7 @@ import org.apache.catalina.tribes.Channel;
 import org.apache.catalina.tribes.membership.Membership;
 import org.apache.catalina.tribes.group.AbsoluteOrder;
 import org.apache.catalina.tribes.membership.MemberImpl;
+import org.apache.catalina.tribes.group.InterceptorPayload;
 
 /**
  * <p>Title: </p>
@@ -49,8 +50,17 @@ public class WadiMemberInterceptor extends ChannelInterceptorBase {
     public void messageReceived(ChannelMessage msg) {
         TribesPeer peer = wrap(msg.getAddress());
         msg.setAddress(peer);
+        log.debug("Message received at ["+getLocalMember(false).getName()+"] from ["+peer.getName()+"]");
         super.messageReceived(msg);
     }
+    
+    public void sendMessage(Member[] destination, ChannelMessage msg, InterceptorPayload payload) throws  ChannelException {
+        for ( int i=0; i<destination.length; i++ ) {
+            log.debug("Message sent from [" + getLocalMember(false).getName() +"] to [" + destination[i].getName() + "]");
+        }//for
+        super.sendMessage(destination,msg,payload);
+    }
+
     
     public void memberDisappeared(Member member) { 
         TribesPeer peer = wrap(member);
