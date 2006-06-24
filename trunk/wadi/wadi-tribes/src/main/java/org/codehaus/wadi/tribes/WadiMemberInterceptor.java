@@ -94,19 +94,19 @@ public class WadiMemberInterceptor extends ChannelInterceptorBase {
         return peer;
     }
     
-    protected boolean notified = false;
     public void start(int svc) throws ChannelException {
         super.start(svc);
-        if ( !notified ) memberAdded(getLocalMember(true));
-        notified = true;
+        if ( (svc&Channel.MBR_RX_SEQ) == Channel.MBR_RX_SEQ ) memberAdded(getLocalMember(true));
         startLevel = startLevel | svc;
     }
     public void stop(int svc) throws ChannelException {
         startLevel = (startLevel & (~svc));
         super.stop(svc);
+        if ( startLevel == 0 ) memberDisappeared(getLocalMember(true));
         if ( this.addAndGetInstanceCounter(-1) == 0 ) {
             map.clear(); //this will kill two tribes in the same vm
         }
+        
     }
     
     public static class MemberComparator implements java.util.Comparator {
