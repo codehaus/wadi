@@ -119,6 +119,7 @@ public class TribesDispatcher extends AbstractDispatcher implements ChannelListe
     
     public void init(DispatcherConfig config) throws Exception {
         super.init(config);
+        cluster.init();
     }
     
     public void messageReceived(Serializable serializable, Member member) {

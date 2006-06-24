@@ -94,9 +94,11 @@ public class WadiMemberInterceptor extends ChannelInterceptorBase {
         return peer;
     }
     
+    protected boolean notified = false;
     public void start(int svc) throws ChannelException {
         super.start(svc);
-        memberAdded(getLocalMember(true));
+        if ( !notified ) memberAdded(getLocalMember(true));
+        notified = true;
         startLevel = startLevel | svc;
     }
     public void stop(int svc) throws ChannelException {
