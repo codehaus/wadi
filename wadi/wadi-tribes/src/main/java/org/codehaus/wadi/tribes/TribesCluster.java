@@ -138,6 +138,16 @@ public class TribesCluster implements Cluster {
     public void removeClusterListener(ClusterListener listener) {
         this.listeners.remove(listener);
     }
+    
+    protected boolean initialized = false;
+    public void init() throws ClusterException {
+        try {
+            channel.start(Channel.SND_RX_SEQ);
+            initialized = true;
+        }catch ( ChannelException x ) {
+            throw new ClusterException(x);
+        }
+    }
 
     /**
      * start
@@ -147,7 +157,8 @@ public class TribesCluster implements Cluster {
      */
     public void start() throws ClusterException {
         try {
-            channel.start(Channel.DEFAULT);
+            if (!initialized) init();
+            channel.start(Channel.MBR_RX_SEQ | Channel.MBR_TX_SEQ | Channel.SND_TX_SEQ);
         }catch ( ChannelException x ) {
             throw new ClusterException(x);
         }
@@ -162,6 +173,7 @@ public class TribesCluster implements Cluster {
     public void stop() throws ClusterException {
         try {
             channel.stop(Channel.DEFAULT);
+            initialized = false;
         }catch ( ChannelException x ) {
             throw new ClusterException(x);
         }
