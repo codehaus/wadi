@@ -30,6 +30,7 @@ public class WadiMemberInterceptor extends ChannelInterceptorBase {
     protected static int instanceCounters = 0;
     protected int startLevel = 0;
     protected MemberComparator comp = new MemberComparator();
+    protected boolean memberNotification = true;
 
     public WadiMemberInterceptor() {
         addAndGetInstanceCounter(1);
@@ -43,6 +44,7 @@ public class WadiMemberInterceptor extends ChannelInterceptorBase {
     
 
     public void memberAdded(Member member) { 
+        memberNotification = false;
         TribesPeer peer = wrap(member);
         super.memberAdded(peer);
     }
@@ -106,16 +108,16 @@ public class WadiMemberInterceptor extends ChannelInterceptorBase {
     
     public void start(int svc) throws ChannelException {
         super.start(svc);
-        if ( (svc&Channel.MBR_RX_SEQ) == Channel.MBR_RX_SEQ ) memberAdded(getLocalMember(true));
+        if ( (svc&Channel.MBR_RX_SEQ) == Channel.MBR_RX_SEQ && memberNotification) memberAdded(getLocalMember(true));
         startLevel = startLevel | svc;
     }
     public void stop(int svc) throws ChannelException {
         startLevel = (startLevel & (~svc));
         super.stop(svc);
-        if ( startLevel == 0 ) memberDisappeared(getLocalMember(true));
         if ( this.addAndGetInstanceCounter(-1) == 0 ) {
             map.clear(); //this will kill two tribes in the same vm
         }
+        memberNotification = true;
         
     }
     
