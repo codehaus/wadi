@@ -101,7 +101,7 @@ public class TribesCluster implements Cluster {
      * @todo Implement this org.codehaus.wadi.group.Cluster method
      */
     public int getPeerCount() {
-        return channel.getMembers().length;
+        return channel.getMembers().length+1;
     }
 
     /**
