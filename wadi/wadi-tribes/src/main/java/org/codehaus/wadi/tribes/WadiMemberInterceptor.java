@@ -31,6 +31,7 @@ public class WadiMemberInterceptor extends ChannelInterceptorBase {
     protected int startLevel = 0;
     protected MemberComparator comp = new MemberComparator();
     protected boolean memberNotification = true;
+    protected Object memberMutex = new Object();
 
     public WadiMemberInterceptor() {
         addAndGetInstanceCounter(1);
@@ -44,7 +45,12 @@ public class WadiMemberInterceptor extends ChannelInterceptorBase {
     
 
     public void memberAdded(Member member) { 
-        memberNotification = false;
+        boolean notify = memberNotification;
+        //memberNotification = false;
+        //if (notify) super.memberAdded(wrap(getLocalMember(true)));
+        if (notify) {
+            synchronized ( this.memberMutex ) { try { this.memberMutex.wait(5000);}catch (InterruptedException x){}}
+        }
         TribesPeer peer = wrap(member);
         super.memberAdded(peer);
     }
@@ -108,7 +114,10 @@ public class WadiMemberInterceptor extends ChannelInterceptorBase {
     
     public void start(int svc) throws ChannelException {
         super.start(svc);
-        if ( (svc&Channel.MBR_RX_SEQ) == Channel.MBR_RX_SEQ && memberNotification) memberAdded(getLocalMember(true));
+        boolean notify = memberNotification && (svc&Channel.MBR_RX_SEQ) == Channel.MBR_RX_SEQ;
+        if ( notify) memberAdded(getLocalMember(true));
+        if ( notify ) memberNotification = false;
+        synchronized ( this.memberMutex ) { this.memberMutex.notifyAll();}
         startLevel = startLevel | svc;
     }
     public void stop(int svc) throws ChannelException {
