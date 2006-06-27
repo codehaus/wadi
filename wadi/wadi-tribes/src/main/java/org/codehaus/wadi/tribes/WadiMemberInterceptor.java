@@ -113,10 +113,15 @@ public class WadiMemberInterceptor extends ChannelInterceptorBase {
     }
     
     public void start(int svc) throws ChannelException {
-        super.start(svc);
+        if ( (svc&Channel.SND_RX_SEQ) == Channel.SND_RX_SEQ ) super.start(Channel.SND_RX_SEQ);
+        if ( (svc&Channel.SND_TX_SEQ) == Channel.SND_TX_SEQ ) super.start(Channel.SND_TX_SEQ);
         boolean notify = memberNotification && (svc&Channel.MBR_RX_SEQ) == Channel.MBR_RX_SEQ;
         if ( notify) memberAdded(getLocalMember(true));
         if ( notify ) memberNotification = false;
+        if ( (svc&Channel.MBR_RX_SEQ) == Channel.MBR_RX_SEQ ) super.start(Channel.MBR_RX_SEQ);
+        if ( (svc&Channel.MBR_TX_SEQ) == Channel.MBR_TX_SEQ ) super.start(Channel.MBR_TX_SEQ);
+
+        //super.start(svc);
         synchronized ( this.memberMutex ) { this.memberMutex.notifyAll();}
         startLevel = startLevel | svc;
     }
