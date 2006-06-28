@@ -192,7 +192,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
     
 	public void onMembershipChanged(Cluster cluster, Set joiners, Set leavers, Peer coordinator) {
 
-        if (_log.isDebugEnabled()) _log.debug("membership changed - joiners:"+joiners+" leavers:"+leavers+" coordinator:"+coordinator+" firstTime:"+_firstTime);
+        if (_log.isInfoEnabled()) _log.info("membership changed - local:"+getLocalNode()+" joiners:"+joiners+" leavers:"+leavers+" coordinator:"+coordinator+" firstTime:"+_firstTime);
 
         // start-stop coordinator thread
         synchronized (_coordinatorLock) {

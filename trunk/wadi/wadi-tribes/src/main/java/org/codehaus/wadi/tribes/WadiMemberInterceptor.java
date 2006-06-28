@@ -45,12 +45,7 @@ public class WadiMemberInterceptor extends ChannelInterceptorBase {
     
 
     public void memberAdded(Member member) { 
-        boolean notify = memberNotification;
-        //memberNotification = false;
-        //if (notify) super.memberAdded(wrap(getLocalMember(true)));
-        if (notify) {
-            synchronized ( this.memberMutex ) { try { this.memberMutex.wait(5000);}catch (InterruptedException x){}}
-        }
+        memberNotification = false;
         TribesPeer peer = wrap(member);
         super.memberAdded(peer);
     }
@@ -115,14 +110,11 @@ public class WadiMemberInterceptor extends ChannelInterceptorBase {
     public void start(int svc) throws ChannelException {
         if ( (svc&Channel.SND_RX_SEQ) == Channel.SND_RX_SEQ ) super.start(Channel.SND_RX_SEQ);
         if ( (svc&Channel.SND_TX_SEQ) == Channel.SND_TX_SEQ ) super.start(Channel.SND_TX_SEQ);
-        boolean notify = memberNotification && (svc&Channel.MBR_RX_SEQ) == Channel.MBR_RX_SEQ;
-        if ( notify) memberAdded(getLocalMember(true));
-        if ( notify ) memberNotification = false;
         if ( (svc&Channel.MBR_RX_SEQ) == Channel.MBR_RX_SEQ ) super.start(Channel.MBR_RX_SEQ);
         if ( (svc&Channel.MBR_TX_SEQ) == Channel.MBR_TX_SEQ ) super.start(Channel.MBR_TX_SEQ);
-
-        //super.start(svc);
-        synchronized ( this.memberMutex ) { this.memberMutex.notifyAll();}
+        boolean notify = memberNotification && ((svc&Channel.MBR_RX_SEQ) == Channel.MBR_RX_SEQ);
+        if ( notify ) memberNotification = false;
+        if ( notify) memberAdded(getLocalMember(true));
         startLevel = startLevel | svc;
     }
     public void stop(int svc) throws ChannelException {

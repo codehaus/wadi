@@ -48,6 +48,7 @@ public class TribesCluster implements Cluster {
         //comment out for java 1.5
         channel.addInterceptor(new MessageDispatchInterceptor());
         channel.addMembershipListener(new WadiListener(this));
+        ((McastService)channel.getMembershipService()).setMcastAddr("224.0.0.4");
     }
 
     /**
