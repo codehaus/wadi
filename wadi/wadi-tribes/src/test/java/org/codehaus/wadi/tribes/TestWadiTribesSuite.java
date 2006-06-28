@@ -26,8 +26,8 @@ public class TestWadiTribesSuite extends TestCase {
     public static Test suite() {
         TestSuite suite = new TestSuite();
         suite.addTestSuite(org.codehaus.wadi.tribes.TestTribesEvacuation.class);
-        suite.addTestSuite(org.codehaus.wadi.tribes.TestTribesRelocation.class);
-        suite.addTestSuite(org.codehaus.wadi.tribes.TestTribesGroup.class);
+//        suite.addTestSuite(org.codehaus.wadi.tribes.TestTribesRelocation.class);
+//        suite.addTestSuite(org.codehaus.wadi.tribes.TestTribesGroup.class);
         return suite;
     }
 }
