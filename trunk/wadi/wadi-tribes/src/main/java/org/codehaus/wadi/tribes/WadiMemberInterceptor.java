@@ -46,6 +46,7 @@ public class WadiMemberInterceptor extends ChannelInterceptorBase {
 
     public void memberAdded(Member member) { 
         memberNotification = false;
+        log.info("memberAdded local:"+getLocalMember(false).getName()+" added:"+member.getName());
         TribesPeer peer = wrap(member);
         super.memberAdded(peer);
     }
@@ -66,6 +67,7 @@ public class WadiMemberInterceptor extends ChannelInterceptorBase {
 
     
     public void memberDisappeared(Member member) { 
+        log.info("memberDisappeared local:"+getLocalMember(false).getName()+" added:"+member.getName());
         TribesPeer peer = wrap(member);
         super.memberDisappeared(peer);
     }
@@ -114,6 +116,7 @@ public class WadiMemberInterceptor extends ChannelInterceptorBase {
         if ( (svc&Channel.MBR_TX_SEQ) == Channel.MBR_TX_SEQ ) super.start(Channel.MBR_TX_SEQ);
         boolean notify = memberNotification && ((svc&Channel.MBR_RX_SEQ) == Channel.MBR_RX_SEQ);
         if ( notify ) memberNotification = false;
+        log.info("memberStart local:"+getLocalMember(false).getName()+" notify:"+notify);
         if ( notify) memberAdded(getLocalMember(true));
         startLevel = startLevel | svc;
     }

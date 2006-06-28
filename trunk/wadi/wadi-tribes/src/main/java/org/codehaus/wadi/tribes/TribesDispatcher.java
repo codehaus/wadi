@@ -17,6 +17,7 @@ import org.codehaus.wadi.group.impl.ThreadPool;
 import org.apache.catalina.tribes.ChannelListener;
 import java.util.ArrayList;
 import org.codehaus.wadi.group.ClusterListener;
+import org.apache.catalina.tribes.membership.MemberImpl;
 
 /**
  * <p>Title: </p>
@@ -111,7 +112,7 @@ public class TribesDispatcher extends AbstractDispatcher implements ChannelListe
      */
     public void setDistributedState(Map state) throws MessageExchangeException {
         try {
-            cluster.channel.getMembershipService().setPayload(XByteBuffer.serialize((Serializable)state));
+            ((MemberImpl)cluster.channel.getLocalMember(false)).setPayload(XByteBuffer.serialize((Serializable)state));
         } catch ( Exception x ) {
             throw new MessageExchangeException(x);
         }
