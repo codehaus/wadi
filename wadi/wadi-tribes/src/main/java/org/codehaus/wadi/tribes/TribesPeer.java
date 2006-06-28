@@ -14,6 +14,8 @@ import org.apache.catalina.tribes.io.XByteBuffer;
 import java.io.Serializable;
 import java.io.ObjectStreamException;
 import java.util.HashMap;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * <p>Title: </p>
@@ -31,6 +33,8 @@ public class TribesPeer extends MemberImpl implements Member, LocalPeer, Address
     
     protected Member member;
     protected Map state = null;
+    protected final Log log = LogFactory.getLog(TribesPeer.class);
+    protected boolean stateModified = true;
     
     public TribesPeer() {} //for serialization
     public TribesPeer(Member mbr) {
@@ -131,25 +135,29 @@ public class TribesPeer extends MemberImpl implements Member, LocalPeer, Address
         return this;
     }
     
-    public Map getState() {
+    public synchronized Map getState() {
         byte[] load = this.getPayload();
-        if ( state == null && load!=null && load.length > 0){
+//        if ( stateModified && load!=null && load.length > 0){
             try {
                 state = (Map) XByteBuffer.deserialize(load);
+                stateModified = false;
             }catch ( Exception x ) {
                 throw new RuntimeException(x);
             }
-        }
+//        }
+        log.info("Returning state from["+getName()+"] state:"+state);
         return (state == null)?new HashMap():state;
     }
     
-    public void setState(Map state) {
+    public synchronized void setState(Map state) {
         this.state = state;
+        stateModified = true;
         try {
             ( (MemberImpl) member).setPayload(XByteBuffer.serialize( (Serializable) state));
         }catch ( Exception x ) {
             throw new RuntimeException(x);
         }
+        log.info("Setting state to["+getName()+"] state:"+state);
     }
     
     protected Object readResolve() throws ObjectStreamException {
