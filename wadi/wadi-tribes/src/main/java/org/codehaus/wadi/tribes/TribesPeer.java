@@ -145,7 +145,6 @@ public class TribesPeer extends MemberImpl implements Member, LocalPeer, Address
                 throw new RuntimeException(x);
             }
 //        }
-        log.info("Returning state from["+getName()+"] state:"+state);
         return (state == null)?new HashMap():state;
     }
     
@@ -157,7 +156,7 @@ public class TribesPeer extends MemberImpl implements Member, LocalPeer, Address
         }catch ( Exception x ) {
             throw new RuntimeException(x);
         }
-        log.info("Setting state to["+getName()+"] state:"+state);
+        if ( log.isDebugEnabled() ) log.debug("Setting state to["+getName()+"] state:"+state);
     }
     
     protected Object readResolve() throws ObjectStreamException {
@@ -259,6 +258,20 @@ public class TribesPeer extends MemberImpl implements Member, LocalPeer, Address
     public void setPayload(byte[] payload) {
         cast().setPayload(payload);
     }
-
-
+    
+    public void setDomain(byte[] domain) {
+        cast().setDomain(domain);
+    }
+    
+    public byte[] getDomain() {
+        return cast().getDomain();
+    }
+    
+    public void setCommand(byte[] command) {
+        cast().setCommand(command);
+    }
+    
+    public byte[] getCommand() {
+        return cast().getCommand();
+    }
 }

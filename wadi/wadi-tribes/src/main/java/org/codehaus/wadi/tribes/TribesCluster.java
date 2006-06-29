@@ -21,6 +21,7 @@ import org.codehaus.wadi.group.Peer;
 import org.apache.catalina.tribes.group.interceptors.TcpFailureDetector;
 import org.apache.catalina.tribes.group.interceptors.MessageDispatchInterceptor;
 import java.util.LinkedHashMap;
+import org.apache.catalina.tribes.group.interceptors.DomainFilterInterceptor;
 
 /**
  * <p>Title: </p>
@@ -35,11 +36,12 @@ import java.util.LinkedHashMap;
  * @version 1.0
  */
 public class TribesCluster implements Cluster {
+    
     protected GroupChannel channel = null;
     protected ArrayList listeners = new ArrayList();
     private ElectionStrategy strategy;
 
-    public TribesCluster() {
+    public TribesCluster(byte[] clusterDomain) {
         channel = new GroupChannel();
         channel.addInterceptor(new WadiMemberInterceptor());
         channel.addInterceptor(new TcpFailureDetector());
@@ -49,6 +51,11 @@ public class TribesCluster implements Cluster {
         channel.addInterceptor(new MessageDispatchInterceptor());
         channel.addMembershipListener(new WadiListener(this));
         ((McastService)channel.getMembershipService()).setMcastAddr("224.0.0.4");
+        ((McastService)channel.getMembershipService()).setDomain(clusterDomain);
+        DomainFilterInterceptor filter = new DomainFilterInterceptor();
+        filter.setDomain(clusterDomain);
+        channel.addInterceptor(filter);
+        
     }
 
     /**
@@ -246,5 +253,8 @@ public class TribesCluster implements Cluster {
 
     public ElectionStrategy getElectionStrategy() {
         return strategy;
+    }
+
+    private void jbInit() throws Exception {
     }
 }
