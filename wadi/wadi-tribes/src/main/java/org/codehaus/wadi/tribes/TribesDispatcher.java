@@ -1,26 +1,25 @@
 package org.codehaus.wadi.tribes;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Map;
 
 import org.apache.catalina.tribes.Channel;
 import org.apache.catalina.tribes.ChannelException;
+import org.apache.catalina.tribes.ChannelListener;
 import org.apache.catalina.tribes.Member;
 import org.apache.catalina.tribes.io.XByteBuffer;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Cluster;
+import org.codehaus.wadi.group.ClusterEvent;
+import org.codehaus.wadi.group.ClusterListener;
 import org.codehaus.wadi.group.DispatcherConfig;
 import org.codehaus.wadi.group.Message;
 import org.codehaus.wadi.group.MessageExchangeException;
+import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.impl.AbstractDispatcher;
 import org.codehaus.wadi.group.impl.ThreadPool;
-import org.apache.catalina.tribes.ChannelListener;
-import java.util.ArrayList;
-import org.codehaus.wadi.group.ClusterListener;
-import org.apache.catalina.tribes.membership.MemberImpl;
-import org.codehaus.wadi.group.ClusterEvent;
-import org.codehaus.wadi.group.Peer;
-import java.util.Arrays;
 
 /**
  * <p>Title: </p>
