@@ -103,7 +103,7 @@
 	  <ul>
 	    <li>export CLASSPATH=</li>
 	    <li>. "$DERBY_INSTALL"/frameworks/embedded/bin/setEmbeddedCP.ksh</li>
-	    <li>export CLASSPATH=/home/jules/db-derby-10.1.1.0-bin/lib/derbyclient.jar:$CLASSPATH</li>
+	    <li>export CLASSPATH="$DERBY_INSTALL"/lib/derbyclient.jar:$CLASSPATH</li>
 	    <li>sh "$DERBY_INSTALL"/frameworks/embedded/bin/ij.ksh</li>
 	  </ul>
 	  <li>Type this at the CLI to create a WADI database in the cwd of the server process: </li>
