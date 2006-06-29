@@ -18,6 +18,9 @@ import org.apache.catalina.tribes.ChannelListener;
 import java.util.ArrayList;
 import org.codehaus.wadi.group.ClusterListener;
 import org.apache.catalina.tribes.membership.MemberImpl;
+import org.codehaus.wadi.group.ClusterEvent;
+import org.codehaus.wadi.group.Peer;
+import java.util.Arrays;
 
 /**
  * <p>Title: </p>
@@ -36,13 +39,22 @@ public class TribesDispatcher extends AbstractDispatcher implements ChannelListe
     
     public TribesDispatcher(ThreadPool executor) {
         super(executor);
-        cluster = new TribesCluster();
+        cluster = new TribesCluster("WADI".getBytes());
     }
 
-    public TribesDispatcher(String localPeerName, String clusterName, long inactiveTime, String config) {
+    public TribesDispatcher(String clusterName, String localPeerName, long inactiveTime, String config) {
         super(inactiveTime);
         //todo, create some sort of config file
-        cluster = new TribesCluster();
+        byte[] domain = getBytes(clusterName);
+        cluster = new TribesCluster(domain);
+    }
+    
+    public byte[] getBytes(String s) {
+        try {
+            return s.getBytes("UTF-8");
+        } catch ( Exception x ) {
+            return s.getBytes();
+        }
     }
 
     /**
@@ -112,7 +124,12 @@ public class TribesDispatcher extends AbstractDispatcher implements ChannelListe
      */
     public void setDistributedState(Map state) throws MessageExchangeException {
         try {
-            ((MemberImpl)cluster.channel.getLocalMember(false)).setPayload(XByteBuffer.serialize((Serializable)state));
+            byte[] data = XByteBuffer.serialize((Serializable)state);
+            cluster.channel.getMembershipService().setPayload(data);
+            PeerUpdateMsg msg = new PeerUpdateMsg((TribesPeer)getCluster().getLocalPeer(),data);
+            Member[] destination = cluster.channel.getMembers();
+            if ( destination != null && destination.length > 0 )
+                cluster.channel.send(destination,msg,Channel.SEND_OPTIONS_ASYNCHRONOUS);
         } catch ( Exception x ) {
             throw new MessageExchangeException(x);
         }
@@ -124,13 +141,28 @@ public class TribesDispatcher extends AbstractDispatcher implements ChannelListe
     }
     
     public void messageReceived(Serializable serializable, Member member) {
-        TribesMessage msg = (TribesMessage)serializable;
-        msg.setReplyTo((Address)member);//do we need this?
-        msg.setAddress((Address)cluster.channel.getLocalMember(false));
-        onMessage(msg);
+        if (serializable instanceof TribesMessage) {
+            TribesMessage msg = (TribesMessage) serializable;
+            msg.setReplyTo((Address) member); //do we need this?
+            msg.setAddress((Address) cluster.channel.getLocalMember(false));
+            onMessage(msg);
+        } else if (serializable instanceof PeerUpdateMsg) {
+            PeerUpdateMsg msg = (PeerUpdateMsg)serializable;
+            ArrayList list = cluster.getClusterListeners();
+            ClusterEvent event = new ClusterEvent(cluster,(Peer)member,ClusterEvent.PEER_UPDATED);
+            TribesPeer peer = (TribesPeer)member;
+            if ( !Arrays.equals(msg.getState(),peer.getPayload()) ) {
+                peer.setPayload(msg.getState());
+            }
+            for (int i=0; i<list.size(); i++ ) {
+                ClusterListener listener = (ClusterListener)list.get(i);
+                listener.onPeerUpdated(event);
+            }
+        }
     }
     public boolean accept(Serializable serializable, Member member) {
-        return (serializable instanceof TribesMessage);
+        return (serializable instanceof TribesMessage ||
+                serializable instanceof PeerUpdateMsg);
     }
     
 
@@ -162,4 +194,17 @@ public class TribesDispatcher extends AbstractDispatcher implements ChannelListe
             throw new MessageExchangeException(x);
         }
     }
+    
+    public static class PeerUpdateMsg implements Serializable {
+        protected TribesPeer peer;
+        protected byte[] state;
+        
+        public PeerUpdateMsg(TribesPeer peer, byte[] state) {
+            this.peer = peer;
+            this.state = state;
+        }
+        
+        public TribesPeer getPeer() { return peer; }
+        public byte[] getState() { return state;}
+    } 
 }
