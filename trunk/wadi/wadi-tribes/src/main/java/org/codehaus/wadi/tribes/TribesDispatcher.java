@@ -108,7 +108,7 @@ public class TribesDispatcher extends AbstractDispatcher implements ChannelListe
      */
     public void send(Address target, Message message) throws MessageExchangeException {
         try {
-            cluster.channel.send(new Member[] {(TribesPeer)target},(TribesMessage)message,Channel.SEND_OPTIONS_DEFAULT|Channel.SEND_OPTIONS_ASYNCHRONOUS);
+            cluster.channel.send(new Member[] {(TribesPeer)target},(TribesMessage)message,Channel.SEND_OPTIONS_ASYNCHRONOUS);
         }catch ( ChannelException x ) {
             throw new MessageExchangeException(x);
         }
