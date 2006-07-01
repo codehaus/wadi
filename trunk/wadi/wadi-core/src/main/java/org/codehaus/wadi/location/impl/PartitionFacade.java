@@ -212,7 +212,7 @@ public class PartitionFacade extends AbstractPartition {
      */
     public void release(Address address, long timeStamp) {
         if (timeStamp<_timeStamp) {
-            _log.warn("ignoring Partition location update - we have a more recent location");
+	  if (_log.isTraceEnabled()) _log.trace("ignoring Partition location update - we have a more recent location");
         } else {
             _timeStamp=timeStamp;
             release(address);
