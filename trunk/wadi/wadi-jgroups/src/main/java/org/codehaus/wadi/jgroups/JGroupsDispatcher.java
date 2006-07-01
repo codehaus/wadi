@@ -47,7 +47,7 @@ public class JGroupsDispatcher extends AbstractDispatcher {
     protected final org.jgroups.Address _localJGAddress;
     protected MessageDispatcher _dispatcher;
 
-    public JGroupsDispatcher(String localPeerName, String clusterName, long inactiveTime, String config) throws ChannelException {
+    public JGroupsDispatcher(String clusterName, String localPeerName, long inactiveTime, String config) throws ChannelException {
         super(inactiveTime);
         _cluster=new JGroupsCluster(clusterName, localPeerName, config);
         _localJGAddress=((JGroupsPeer)_cluster.getLocalPeer()).getJGAddress();
