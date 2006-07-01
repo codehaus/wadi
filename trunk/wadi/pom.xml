@@ -434,12 +434,11 @@
 	    <exclude implementation="java.lang.String">**/AbstractReplicationManagerTest.java</exclude>
 	    <exclude implementation="java.lang.String">**/TestACInVMRelocation.java</exclude><!-- looks like a bug in AC/InVM : any takers? -->
 	    <exclude implementation="java.lang.String">**/TestACInVM*.java</exclude><!-- if it is buggy we don't really need it -->
-	    <!--<exclude implementation="java.lang.String">**/tribes/**</exclude>--><!-- Not yet functional -->
 	  </excludes>
 	  <!--
 	  <childDelegation>false</childDelegation>
 	  -->
-	  <!--<forkMode>pertest</forkMode>--> <!-- we have to fork in order to pass an argLine -->
+	  <forkMode>pertest</forkMode> <!-- we have to fork in order to pass an argLine -->
 	  <argLine>-enableassertions -Xmx1024m</argLine>
 	  <systemProperties>
 	    <property>
