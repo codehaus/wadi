@@ -349,22 +349,23 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 
 	public void update(Peer node) {
 
-        Map state=node.getState();
+	    Map state=node.getState();
 
-        Long timeStampAsLong = (Long) state.get(_timeStampKey);
-        if (null == timeStampAsLong) {
-            return;
-        }
+	    Long timeStampAsLong = (Long) state.get(_timeStampKey);
+	    if (null == timeStampAsLong) {
+	        return;
+	    }
 
-		long timeStamp= timeStampAsLong.longValue();
-		PartitionKeys keys=(PartitionKeys)state.get(_partitionKeysKey);
-		Address location=node.getAddress();
-        
-        for (Iterator i=keys.getKeys().iterator(); i.hasNext(); ) {
-            int index=((Integer)i.next()).intValue();
-            PartitionFacade facade=_partitions[index];
-            facade.setContentRemote(timeStamp, location);
-        }
+	    long timeStamp= timeStampAsLong.longValue();
+	    PartitionKeys keys=(PartitionKeys)state.get(_partitionKeysKey);
+	    Address location=node.getAddress();
+
+	    for (int index=0; index<keys.size(); index++) {
+	        if (keys.get(index)) {
+	            PartitionFacade facade=_partitions[index];
+	            facade.setContentRemote(timeStamp, location);
+	        }
+	    }
 	}
 
 
@@ -374,12 +375,13 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 	        if (node!=null) {
 	            PartitionKeys keys=DIndex.getPartitionKeys(node);
 	            if (keys!=null) {
-	                for (Iterator j=keys.getKeys().iterator(); j.hasNext(); ) {
-	                    int index=((Integer)j.next()).intValue();
-	                    if (partitionIsPresent[index]) {
-	                        if (_log.isErrorEnabled()) _log.error("partition " + index + " found on more than one node");
-	                    } else {
-	                        partitionIsPresent[index]=true;
+	                for (int index=0; index<keys.size(); index++) {
+	                    if (keys.get(index)) {
+	                        if (partitionIsPresent[index]) {
+	                            if (_log.isErrorEnabled()) _log.error("partition " + index + " found on more than one node");
+	                        } else {
+	                            partitionIsPresent[index]=true;
+	                        }
 	                    }
 	                }
 	            }

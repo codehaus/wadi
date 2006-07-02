@@ -111,7 +111,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 
 	public Immoter getDemoter(String name, Motable motable) {
 	    // how many partitions are we responsible for ?
-	    if (_dindex.getPartitionManager().getPartitionKeys().size()==0) { // TODO - involves an unecessary allocation
+	    if (_dindex.getPartitionManager().getPartitionKeys().cardinality()==0) { // TODO - involves an unecessary allocation
 	        // evacuate sessions to their respective partition masters...
 	        return getImmoter();
 	    } else {
@@ -121,7 +121,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 	
 	public Immoter getSharedDemoter() {
 	    // how many partitions are we responsible for ?
-	    if (_dindex.getPartitionManager().getPartitionKeys().size()==0) { // TODO - involves an unecessary allocation
+	    if (_dindex.getPartitionManager().getPartitionKeys().cardinality()==0) { // TODO - involves an unecessary allocation
 	        // evacuate sessions to their respective partition masters...
 	        return getImmoter();
 	    } else {
