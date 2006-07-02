@@ -342,7 +342,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 			return 0;
 		} else {
 			PartitionKeys keys=DIndex.getPartitionKeys(node);
-			int amount=keys.size();
+			int amount=keys.cardinality();
 			if (_log.isInfoEnabled()) _log.info(DIndex.getPeerName(node) + " : " + amount + " - " + keys);
 			return amount;
 		}

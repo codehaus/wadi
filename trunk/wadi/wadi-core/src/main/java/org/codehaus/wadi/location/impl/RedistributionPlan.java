@@ -28,7 +28,7 @@ import org.codehaus.wadi.group.Peer;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
+ * @version $Revision:1815 $
  */
 public class RedistributionPlan {
 
@@ -41,7 +41,7 @@ public class RedistributionPlan {
 
         for (int i=0; i<leaving.length; i++) {
             Peer node=leaving[i];
-            int numPartitions=DIndex.getPartitionKeys(node).size();
+            int numPartitions=DIndex.getPartitionKeys(node).cardinality();
 //            _log.info("LEAVING: "+numPartitions);
             if (numPartitions>0)
                 _producers.add(new PartitionOwner(node, numPartitions, true));
@@ -49,7 +49,7 @@ public class RedistributionPlan {
 
         for (int i=0; i<living.length; i++) {
             Peer node=living[i];
-            int numPartitions=DIndex.getPartitionKeys(node).size();
+            int numPartitions=DIndex.getPartitionKeys(node).cardinality();
 //            _log.info("LIVING: "+numPartitions);
             decide(node, numPartitions, numPartitionsPerNode, _producers, _consumers);
         }

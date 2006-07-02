@@ -288,7 +288,7 @@ public class Coordinator implements Runnable {
 			return 0;
 		} else {
 			PartitionKeys keys=DIndex.getPartitionKeys(peer);
-			int amount=keys.size();
+			int amount=keys.cardinality();
 			if (_log.isTraceEnabled()) _log.trace(DIndex.getPeerName(peer) + " : " + amount + " - " + keys);
 			return amount;
 		}
