@@ -35,7 +35,7 @@ import org.codehaus.wadi.group.impl.ThreadPool;
  */
 public class TribesDispatcher extends AbstractDispatcher implements ChannelListener {
     protected TribesCluster cluster;
-    
+    protected String localPeerName = null;
     public TribesDispatcher(ThreadPool executor) {
         super(executor);
         cluster = new TribesCluster("WADI".getBytes());
@@ -46,6 +46,7 @@ public class TribesDispatcher extends AbstractDispatcher implements ChannelListe
         //todo, create some sort of config file
         byte[] domain = getBytes(clusterName);
         cluster = new TribesCluster(domain);
+        this.localPeerName = localPeerName;
     }
     
     public byte[] getBytes(String s) {
@@ -137,6 +138,7 @@ public class TribesDispatcher extends AbstractDispatcher implements ChannelListe
     public void init(DispatcherConfig config) throws Exception {
         super.init(config);
         cluster.init();
+        ((TribesPeer)cluster.getLocalPeer()).setName(localPeerName);
     }
     
     public void messageReceived(Serializable serializable, Member member) {

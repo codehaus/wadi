@@ -35,6 +35,7 @@ public class TribesPeer extends MemberImpl implements Member, LocalPeer, Address
     protected Map state = null;
     protected final Log log = LogFactory.getLog(TribesPeer.class);
     protected boolean stateModified = true;
+    protected String name = null;
     
     public TribesPeer() {} //for serialization
     public TribesPeer(Member mbr) {
@@ -68,7 +69,11 @@ public class TribesPeer extends MemberImpl implements Member, LocalPeer, Address
      * @todo Implement this org.apache.catalina.tribes.Member method
      */
     public String getName() {
-        return member.getName();
+        return name==null?member.getName():name;
+    }
+    
+    public void setName(String name) {
+        this.name = name;
     }
 
     /**
@@ -137,14 +142,11 @@ public class TribesPeer extends MemberImpl implements Member, LocalPeer, Address
     
     public synchronized Map getState() {
         byte[] load = this.getPayload();
-//        if ( stateModified && load!=null && load.length > 0){
-            try {
-                state = (Map) XByteBuffer.deserialize(load);
-                stateModified = false;
-            }catch ( Exception x ) {
-                throw new RuntimeException(x);
-            }
-//        }
+        try {
+            if ( load != null && load.length > 0 ) state = (Map) XByteBuffer.deserialize(load);
+        }catch ( Exception x ) {
+            throw new RuntimeException(x);
+        }
         return (state == null)?new HashMap():state;
     }
     
