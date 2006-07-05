@@ -256,6 +256,4 @@ public class TribesCluster implements Cluster {
         return strategy;
     }
 
-    private void jbInit() throws Exception {
-    }
 }
