@@ -17,6 +17,7 @@
 package org.codehaus.wadi.location.impl;
 
 import java.nio.ByteBuffer;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Immoter;
@@ -50,6 +51,7 @@ import org.codehaus.wadi.location.session.MoveSMToIM;
 import org.codehaus.wadi.location.session.MoveSMToPM;
 import org.codehaus.wadi.location.session.ReleaseEntryRequest;
 import org.codehaus.wadi.location.session.ReleaseEntryResponse;
+
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 
@@ -253,7 +255,7 @@ public class SimpleStateManager implements StateManager, StateManagerMessageList
 			RankedRWLock.setPriority(RankedRWLock.EMIGRATION_PRIORITY);
 
 			// Tricky - we need to call a Moter at this point and start removal of State to other node...
-
+            Sync invocationLock = null;
 			try {
 				Address im=request.getIM();
 				String imName=_config.getPeerName(im);
@@ -261,7 +263,7 @@ public class SimpleStateManager implements StateManager, StateManagerMessageList
 				//boolean found=
 
 				// acquire invocation lock here... - we need it - not sure why...
-				Sync invocationLock=_config.getInvocationLock((String)key);
+				invocationLock=_config.getInvocationLock((String)key);
 				try {
 					Utils.acquireUninterrupted("Invocation", (String)key, invocationLock);
 				} catch (TimeoutException e) {
@@ -286,6 +288,9 @@ public class SimpleStateManager implements StateManager, StateManagerMessageList
 				if (_log.isWarnEnabled()) _log.warn("problem handling relocation request: "+key, e);
 			} finally {
 				RankedRWLock.setPriority(RankedRWLock.NO_PRIORITY);
+                if (null != invocationLock) {
+                    invocationLock.release();
+                }
 			}
 		} finally {
 		}
