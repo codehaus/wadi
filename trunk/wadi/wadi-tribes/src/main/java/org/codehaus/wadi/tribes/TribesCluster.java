@@ -44,7 +44,6 @@ public class TribesCluster implements Cluster {
     public TribesCluster(byte[] clusterDomain) {
         channel = new GroupChannel();
         channel.addInterceptor(new WadiMemberInterceptor());
-        channel.addInterceptor(new TcpFailureDetector());
         //uncomment for java1.5
         //channel.addInterceptor(new MessageDispatch15Interceptor());
         //comment out for java 1.5
@@ -55,6 +54,8 @@ public class TribesCluster implements Cluster {
         DomainFilterInterceptor filter = new DomainFilterInterceptor();
         filter.setDomain(clusterDomain);
         channel.addInterceptor(filter);
+        //channel.addInterceptor(new MessageTrackInterceptor());//for debug only
+        channel.addInterceptor(new TcpFailureDetector());//this one should always be at the bottom
         
     }
 
