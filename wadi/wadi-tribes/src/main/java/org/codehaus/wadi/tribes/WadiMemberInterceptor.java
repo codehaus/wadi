@@ -2,15 +2,13 @@ package org.codehaus.wadi.tribes;
 
 import java.util.HashMap;
 
+import org.apache.catalina.tribes.Channel;
 import org.apache.catalina.tribes.ChannelException;
 import org.apache.catalina.tribes.ChannelMessage;
 import org.apache.catalina.tribes.Member;
 import org.apache.catalina.tribes.group.ChannelInterceptorBase;
-import org.apache.catalina.tribes.Channel;
-import org.apache.catalina.tribes.membership.Membership;
-import org.apache.catalina.tribes.group.AbsoluteOrder;
-import org.apache.catalina.tribes.membership.MemberImpl;
 import org.apache.catalina.tribes.group.InterceptorPayload;
+import org.apache.catalina.tribes.membership.MemberImpl;
 
 /**
  * <p>Title: </p>

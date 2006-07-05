@@ -109,7 +109,7 @@ public class TribesDispatcher extends AbstractDispatcher implements ChannelListe
      */
     public void send(Address target, Message message) throws MessageExchangeException {
         try {
-            cluster.channel.send(new Member[] {(TribesPeer)target},(TribesMessage)message,Channel.SEND_OPTIONS_ASYNCHRONOUS);
+            cluster.channel.send(new Member[] {(TribesPeer)target},(TribesMessage)message,/*Channel.SEND_OPTIONS_ASYNCHRONOUS|*/Channel.SEND_OPTIONS_USE_ACK);
         }catch ( ChannelException x ) {
             throw new MessageExchangeException(x);
         }
@@ -129,7 +129,7 @@ public class TribesDispatcher extends AbstractDispatcher implements ChannelListe
             PeerUpdateMsg msg = new PeerUpdateMsg((TribesPeer)getCluster().getLocalPeer(),data);
             Member[] destination = cluster.channel.getMembers();
             if ( destination != null && destination.length > 0 )
-                cluster.channel.send(destination,msg,Channel.SEND_OPTIONS_ASYNCHRONOUS);
+                cluster.channel.send(destination,msg,/*Channel.SEND_OPTIONS_ASYNCHRONOUS|*/Channel.SEND_OPTIONS_USE_ACK);
         } catch ( Exception x ) {
             throw new MessageExchangeException(x);
         }
