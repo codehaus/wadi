@@ -16,6 +16,7 @@ import java.io.ObjectStreamException;
 import java.util.HashMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.group.Peer;
 
 /**
  * <p>Title: </p>
@@ -69,7 +70,11 @@ public class TribesPeer extends MemberImpl implements Member, LocalPeer, Address
      * @todo Implement this org.apache.catalina.tribes.Member method
      */
     public String getName() {
-        return name==null?member.getName():name;
+        if ( name != null ) return name;
+        else if ( getState().get(Peer._peerNameKey) != null ) {
+            name = (String)getState().get(Peer._peerNameKey);
+            return name;
+        } else return member.getName();
     }
     
     public void setName(String name) {
