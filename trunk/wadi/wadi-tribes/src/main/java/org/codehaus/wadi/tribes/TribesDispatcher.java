@@ -143,22 +143,42 @@ public class TribesDispatcher extends AbstractDispatcher implements ChannelListe
     
     public void messageReceived(Serializable serializable, Member member) {
         if (serializable instanceof TribesMessage) {
-            TribesMessage msg = (TribesMessage) serializable;
+            final TribesMessage msg = (TribesMessage) serializable;
             msg.setReplyTo((Address) member); //do we need this?
             msg.setAddress((Address) cluster.channel.getLocalMember(false));
-            onMessage(msg);
+            Runnable r = new Runnable() {
+                public void run() {
+                    onMessage(msg);
+                }
+            };
+            try {
+                _executor.execute(r);
+            } catch ( InterruptedException x ) {
+                this._log.error("Interrupted when a TribesMessage received, unable to hand it off to the thread pool.",x);
+            }
         } else if (serializable instanceof PeerUpdateMsg) {
-            PeerUpdateMsg msg = (PeerUpdateMsg)serializable;
-            ArrayList list = cluster.getClusterListeners();
-            ClusterEvent event = new ClusterEvent(cluster,(Peer)member,ClusterEvent.PEER_UPDATED);
+            final PeerUpdateMsg msg = (PeerUpdateMsg)serializable;
+            final ArrayList list = cluster.getClusterListeners();
+            final ClusterEvent event = new ClusterEvent(cluster,(Peer)member,ClusterEvent.PEER_UPDATED);
             TribesPeer peer = (TribesPeer)member;
             if ( !Arrays.equals(msg.getState(),peer.getPayload()) ) {
                 peer.setPayload(msg.getState());
             }
-            for (int i=0; i<list.size(); i++ ) {
-                ClusterListener listener = (ClusterListener)list.get(i);
-                listener.onPeerUpdated(event);
+            Runnable r = new Runnable() {
+                public void run() {
+                    for (int i=0; i<list.size(); i++ ) {
+                        ClusterListener listener = (ClusterListener)list.get(i);
+                        listener.onPeerUpdated(event);
+                    }
+
+                }
+            };
+            try {
+                _executor.execute(r);
+            } catch (InterruptedException x) {
+                this._log.error("Interrupted when a TribesMessage received, unable to hand it off to the thread pool.",x);
             }
+            
         }
     }
     public boolean accept(Serializable serializable, Member member) {
