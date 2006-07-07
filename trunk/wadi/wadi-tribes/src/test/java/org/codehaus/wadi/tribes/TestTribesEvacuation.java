@@ -26,7 +26,7 @@ public class TestTribesEvacuation extends AbstractTestEvacuation {
   }
 
   public void testEvacuation() throws Exception {
-      String clusterName="dummy";
+      String clusterName="dummy"+System.currentTimeMillis();
 	  long timeout=5000;
       testEvacuation(new TribesDispatcher(clusterName, "red", timeout, ""), new TribesDispatcher(clusterName, "green", timeout, ""));
   }
