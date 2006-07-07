@@ -100,6 +100,7 @@ public class TribesCluster implements Cluster {
      * @todo Implement this org.codehaus.wadi.group.Cluster method
      */
     public LocalPeer getLocalPeer() {
+        //System.out.println("\n\n\n\n\n\n\nMEGA DEBUG Local peer="+channel.getLocalMember(true)+"\n\n\n\n");
         return (LocalPeer)channel.getLocalMember(true);
     }
 

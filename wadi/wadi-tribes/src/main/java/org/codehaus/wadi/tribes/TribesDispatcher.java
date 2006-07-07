@@ -109,7 +109,7 @@ public class TribesDispatcher extends AbstractDispatcher implements ChannelListe
      */
     public void send(Address target, Message message) throws MessageExchangeException {
         try {
-            cluster.channel.send(new Member[] {(TribesPeer)target},(TribesMessage)message,/*Channel.SEND_OPTIONS_ASYNCHRONOUS|*/Channel.SEND_OPTIONS_USE_ACK);
+            cluster.channel.send(new Member[] {(TribesPeer)target},(TribesMessage)message,Channel.SEND_OPTIONS_ASYNCHRONOUS);
         }catch ( ChannelException x ) {
             throw new MessageExchangeException(x);
         }
@@ -129,7 +129,7 @@ public class TribesDispatcher extends AbstractDispatcher implements ChannelListe
             PeerUpdateMsg msg = new PeerUpdateMsg((TribesPeer)getCluster().getLocalPeer(),data);
             Member[] destination = cluster.channel.getMembers();
             if ( destination != null && destination.length > 0 )
-                cluster.channel.send(destination,msg,/*Channel.SEND_OPTIONS_ASYNCHRONOUS|*/Channel.SEND_OPTIONS_USE_ACK);
+                cluster.channel.send(destination,msg,Channel.SEND_OPTIONS_ASYNCHRONOUS);
         } catch ( Exception x ) {
             throw new MessageExchangeException(x);
         }
@@ -182,8 +182,11 @@ public class TribesDispatcher extends AbstractDispatcher implements ChannelListe
         }
     }
     public boolean accept(Serializable serializable, Member member) {
-        return (serializable instanceof TribesMessage ||
-                serializable instanceof PeerUpdateMsg);
+
+        boolean result = (serializable instanceof TribesMessage ||
+                          serializable instanceof PeerUpdateMsg);
+        //System.out.println("\n\n\nMEGA DEBUG\nAccept called on:"+this+" with "+serializable+ " result:"+result);
+        return result;
     }
     
 
