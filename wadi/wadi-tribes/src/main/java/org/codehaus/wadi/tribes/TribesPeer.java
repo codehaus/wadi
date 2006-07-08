@@ -225,6 +225,10 @@ public class TribesPeer implements Member, LocalPeer, Address, Serializable {
         out.writeBoolean(name!=null);
         if ( name != null ) out.writeUTF(name);
     }
+    
+    public String toString() {
+        return "TribesPeer[id:"+uniqueId+"; member:"+member+"]";
+    }
 
 //    /*===============================
 //     */
