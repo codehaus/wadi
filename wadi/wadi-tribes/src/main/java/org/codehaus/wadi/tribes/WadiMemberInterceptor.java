@@ -8,6 +8,7 @@ import org.apache.catalina.tribes.ChannelMessage;
 import org.apache.catalina.tribes.Member;
 import org.apache.catalina.tribes.group.ChannelInterceptorBase;
 import org.apache.catalina.tribes.group.InterceptorPayload;
+import org.apache.catalina.tribes.io.ChannelData;
 import org.apache.catalina.tribes.membership.MemberImpl;
 
 /**
@@ -25,6 +26,7 @@ import org.apache.catalina.tribes.membership.MemberImpl;
 public class WadiMemberInterceptor extends ChannelInterceptorBase {
     
     protected static HashMap map = new HashMap();
+    protected static HashMap reversemap = new HashMap();
     protected static int instanceCounters = 0;
     protected int startLevel = 0;
     protected MemberComparator comp = new MemberComparator();
@@ -60,7 +62,15 @@ public class WadiMemberInterceptor extends ChannelInterceptorBase {
         for ( int i=0; i<destination.length; i++ ) {
             log.debug("Message sent from [" + getLocalMember(false).getName() +"] to [" + destination[i].getName() + "]");
         }//for
-        super.sendMessage(destination,msg,payload);
+        ChannelData data = (ChannelData)msg;
+        data.setAddress((Member)reversemap.get(data.getAddress()));
+        super.sendMessage(reverse(destination),msg,payload);
+    }
+    
+    protected Member[] reverse(Member[] mbrs) {
+        Member[] result = new Member[mbrs.length];
+        for (int i=0; i<mbrs.length; i++) result[i] = (Member)reversemap.get(mbrs[i]);
+        return result;
     }
 
     
@@ -93,19 +103,26 @@ public class WadiMemberInterceptor extends ChannelInterceptorBase {
     }
 
     public static TribesPeer wrap(Member mbr) { 
+        if ( mbr instanceof TribesPeer ) mbr = reverseWrap((TribesPeer)mbr);
         if ( mbr == null ) return null;
         TribesPeer peer = (TribesPeer)map.get(mbr);
         if ( peer == null ) {
             synchronized (map) {
                 peer = (TribesPeer)map.get(mbr);
                 if ( peer == null ) {
-                    peer = new TribesPeer(mbr);
+                    peer = new TribesPeer((MemberImpl)mbr);
                     map.put(((MemberImpl)mbr),peer);
+                    reversemap.put(peer,mbr);
                 }
             }
         }
         return peer;
     }
+    
+    protected static Member reverseWrap(TribesPeer peer) {
+        return (Member)reversemap.get(peer);
+    }
+
     
     public void start(int svc) throws ChannelException {
         if ( (svc&Channel.SND_RX_SEQ) == Channel.SND_RX_SEQ ) super.start(Channel.SND_RX_SEQ);
@@ -115,14 +132,15 @@ public class WadiMemberInterceptor extends ChannelInterceptorBase {
         boolean notify = memberNotification && ((svc&Channel.MBR_RX_SEQ) == Channel.MBR_RX_SEQ);
         if ( notify ) memberNotification = false;
         log.info("memberStart local:"+getLocalMember(false).getName()+" notify:"+notify);
-        if ( notify) memberAdded(getLocalMember(true));
+        if ( notify) memberAdded(super.getLocalMember(true));
         startLevel = startLevel | svc;
     }
     public void stop(int svc) throws ChannelException {
         startLevel = (startLevel & (~svc));
         super.stop(svc);
         if ( this.addAndGetInstanceCounter(-1) == 0 ) {
-            map.clear(); //this will kill two tribes in the same vm
+            map.clear(); 
+            reversemap.clear();
         }
         memberNotification = true;
         

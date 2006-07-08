@@ -1,21 +1,23 @@
 package org.codehaus.wadi.tribes;
 
 
-import org.codehaus.wadi.group.Address;
-import org.apache.catalina.tribes.Member;
 import java.io.Externalizable;
-import java.util.Map;
-import java.io.ObjectInput;
 import java.io.IOException;
-import org.apache.catalina.tribes.membership.MemberImpl;
+import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import org.codehaus.wadi.group.LocalPeer;
-import org.apache.catalina.tribes.io.XByteBuffer;
-import java.io.Serializable;
 import java.io.ObjectStreamException;
+import java.io.Serializable;
 import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.catalina.tribes.Member;
+import org.apache.catalina.tribes.UniqueId;
+import org.apache.catalina.tribes.io.XByteBuffer;
+import org.apache.catalina.tribes.membership.MemberImpl;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.group.Address;
+import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.Peer;
 
 /**
@@ -30,17 +32,19 @@ import org.codehaus.wadi.group.Peer;
  * @author not attributable
  * @version 1.0
  */
-public class TribesPeer extends MemberImpl implements Member, LocalPeer, Address, Externalizable {
+public class TribesPeer implements Member, LocalPeer, Address, Serializable {
     
-    protected Member member;
-    protected Map state = null;
-    protected final Log log = LogFactory.getLog(TribesPeer.class);
-    protected boolean stateModified = true;
+    protected transient MemberImpl member;
+    protected transient Map state = null;
+    protected transient final Log log = LogFactory.getLog(TribesPeer.class);
+    protected transient boolean stateModified = true;
     protected String name = null;
+    protected UniqueId uniqueId = null;
     
     public TribesPeer() {} //for serialization
-    public TribesPeer(Member mbr) {
+    public TribesPeer(MemberImpl mbr) {
         this.member = mbr;
+        this.uniqueId = new UniqueId(mbr.getUniqueId());
     }
 
     /**
@@ -108,7 +112,7 @@ public class TribesPeer extends MemberImpl implements Member, LocalPeer, Address
      * @todo Implement this org.apache.catalina.tribes.Member method
      */
     public byte[] getUniqueId() {
-        return member.getUniqueId();
+        return uniqueId.getBytes();
     }
 
     /**
@@ -145,6 +149,16 @@ public class TribesPeer extends MemberImpl implements Member, LocalPeer, Address
         return this;
     }
     
+    public byte[] getDomain() {
+        return member.getDomain();
+    }
+    
+    public byte[] getCommand() {
+        return member.getCommand();
+    }
+    
+
+    
     public synchronized Map getState() {
         byte[] load = this.getPayload();
         try {
@@ -166,119 +180,141 @@ public class TribesPeer extends MemberImpl implements Member, LocalPeer, Address
         if ( log.isDebugEnabled() ) log.debug("Setting state to["+getName()+"] state:"+state);
     }
     
+    public void setPayload(byte[] payload) {
+        cast(member).setPayload(payload);
+    }    
+
+    public static MemberImpl cast(Member member) {
+        return (MemberImpl)member;
+    }    
+    
+    /**
+     * @see java.lang.Object#hashCode()
+     * @return The hash code
+     */
+    public int hashCode() {
+        return uniqueId.hashCode();
+    }
+    
+    /**
+     * Returns true if the param o is a McastMember with the same name
+     * @param o
+     */
+    public boolean equals(Object o) {
+        if ( o instanceof TribesPeer )    {
+            return uniqueId.equals(((TribesPeer)o).uniqueId);
+        } else return false;
+    }    
+    
     protected Object readResolve() throws ObjectStreamException {
-        return WadiMemberInterceptor.wrap(this);
+        Member mbr = WadiMemberInterceptor.reverseWrap(this);
+        TribesPeer peer = WadiMemberInterceptor.wrap(mbr);
+        return peer;
     }
     
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-        member = new MemberImpl();
-        ((MemberImpl)member).readExternal(in);
+        byte[] uid = new byte[in.readInt()];
+        in.read(uid);
+        uniqueId = new UniqueId(uid);
+        if ( in.readBoolean() ) name = in.readUTF();
     }
     
     public void writeExternal(ObjectOutput out) throws IOException {
-        ((MemberImpl)member).writeExternal(out);
-    }
-    
-    /*===============================
-     */
-    
-    public static MemberImpl cast(Member member) {
-        return (MemberImpl)member;
-    }
-    public MemberImpl cast() {
-        return cast(member);
-    }
-    public byte[] getData() { return cast().getData();}
-
-    public byte[] getData(boolean getalive) {
-        return cast().getData(getalive);
+        out.writeInt(uniqueId.getBytes().length);
+        out.write(uniqueId.getBytes(),0,uniqueId.getBytes().length);
+        out.writeBoolean(name!=null);
+        if ( name != null ) out.writeUTF(name);
     }
 
-    public int getDataLength() {
-        return cast().getDataLength();
-    }
+//    /*===============================
+//     */
+//    
 
-    public byte[] getData(boolean getalive, boolean reset) {
-        return cast().getData(getalive,reset);
-    }
-
-    public static MemberImpl getMember(byte[] data, MemberImpl member) {
-        return MemberImpl.getMember(data,member);
-    }
-
-    public static MemberImpl getMember(byte[] data) {
-        return MemberImpl.getMember(data);
-    }
-
-
-    public String getHostname() {
-        return cast().getHostname();
-    }
-
-    public long getServiceStartTime() {
-        return cast().getServiceStartTime();
-    }
-
-    public void setMemberAliveTime(long time) {
-        cast().setMemberAliveTime(time);
-    }
-
-    public String toString() {
-        return member.toString();
-    }
-
-
-    public int hashCode() {
-        return member.hashCode();
-    }
-
-    public boolean equals(Object o) {
-        if ( o instanceof MemberImpl ) return o.equals(member);
-        else if ( o instanceof TribesPeer ) return ((TribesPeer)o).member.equals(member);
-        else return false;
-    }
-
-    public void setHost(byte[] host) {
-        cast().setHost(host);
-    }
-
-    public void setHostname(String host) throws IOException {
-        cast().setHostname(host);
-    }
-
-    public void setMsgCount(int msgCount) {
-        cast().setMsgCount(msgCount);
-    }
-
-    public void setPort(int port) {
-        cast().setPort(port);
-    }
-
-    public void setServiceStartTime(long serviceStartTime) {
-        cast().setServiceStartTime(serviceStartTime);
-    }
-
-    public void setUniqueId(byte[] uniqueId) {
-        cast().setUniqueId(uniqueId);
-    }
-
-    public void setPayload(byte[] payload) {
-        cast().setPayload(payload);
-    }
-    
-    public void setDomain(byte[] domain) {
-        cast().setDomain(domain);
-    }
-    
-    public byte[] getDomain() {
-        return cast().getDomain();
-    }
-    
-    public void setCommand(byte[] command) {
-        cast().setCommand(command);
-    }
-    
-    public byte[] getCommand() {
-        return cast().getCommand();
-    }
+//    public MemberImpl cast() {
+//        return cast(member);
+//    }
+//    public byte[] getData() { return cast().getData();}
+//
+//    public byte[] getData(boolean getalive) {
+//        return cast().getData(getalive);
+//    }
+//
+//    public int getDataLength() {
+//        return cast().getDataLength();
+//    }
+//
+//    public byte[] getData(boolean getalive, boolean reset) {
+//        return cast().getData(getalive,reset);
+//    }
+//
+//    public static MemberImpl getMember(byte[] data, MemberImpl member) {
+//        return MemberImpl.getMember(data,member);
+//    }
+//
+//    public static MemberImpl getMember(byte[] data) {
+//        return MemberImpl.getMember(data);
+//    }
+//
+//
+//    public String getHostname() {
+//        return cast().getHostname();
+//    }
+//
+//    public long getServiceStartTime() {
+//        return cast().getServiceStartTime();
+//    }
+//
+//    public void setMemberAliveTime(long time) {
+//        cast().setMemberAliveTime(time);
+//    }
+//
+//    public String toString() {
+//        return member.toString();
+//    }
+//
+//
+//    public int hashCode() {
+//        return member.hashCode();
+//    }
+//
+//    public boolean equals(Object o) {
+//        if ( o instanceof MemberImpl ) return o.equals(member);
+//        else if ( o instanceof TribesPeer ) return ((TribesPeer)o).member.equals(member);
+//        else return false;
+//    }
+//
+//    public void setHost(byte[] host) {
+//        cast().setHost(host);
+//    }
+//
+//    public void setHostname(String host) throws IOException {
+//        cast().setHostname(host);
+//    }
+//
+//    public void setMsgCount(int msgCount) {
+//        cast().setMsgCount(msgCount);
+//    }
+//
+//    public void setPort(int port) {
+//        cast().setPort(port);
+//    }
+//
+//    public void setServiceStartTime(long serviceStartTime) {
+//        cast().setServiceStartTime(serviceStartTime);
+//    }
+//
+//    public void setUniqueId(byte[] uniqueId) {
+//        cast().setUniqueId(uniqueId);
+//    }
+//
+//    
+//    public void setDomain(byte[] domain) {
+//        cast().setDomain(domain);
+//    }
+//    
+//    
+//    public void setCommand(byte[] command) {
+//        cast().setCommand(command);
+//    }
+//    
 }
