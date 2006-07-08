@@ -137,7 +137,7 @@ public class WadiMemberInterceptor extends ChannelInterceptorBase {
         if ( (svc&Channel.MBR_TX_SEQ) == Channel.MBR_TX_SEQ ) super.start(Channel.MBR_TX_SEQ);
         boolean notify = memberNotification && ((svc&Channel.MBR_RX_SEQ) == Channel.MBR_RX_SEQ);
         if ( notify ) memberNotification = false;
-        log.info("memberStart local:"+getLocalMember(false).getName()+" notify:"+notify);
+        log.info("memberStart local:"+super.getLocalMember(false)+" notify:"+notify+" peer:"+this.getLocalMember(false).getName());
         if ( notify) memberAdded(super.getLocalMember(true));
         startLevel = startLevel | svc;
     }
