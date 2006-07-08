@@ -10,6 +10,7 @@ import org.apache.catalina.tribes.group.ChannelInterceptorBase;
 import org.apache.catalina.tribes.group.InterceptorPayload;
 import org.apache.catalina.tribes.io.ChannelData;
 import org.apache.catalina.tribes.membership.MemberImpl;
+import java.util.ArrayList;
 
 /**
  * <p>Title: </p>
@@ -54,23 +55,28 @@ public class WadiMemberInterceptor extends ChannelInterceptorBase {
     public void messageReceived(ChannelMessage msg) {
         TribesPeer peer = wrap(msg.getAddress());
         msg.setAddress(peer);
-        log.debug("Message received at ["+getLocalMember(false).getName()+"] from ["+peer.getName()+"]");
         super.messageReceived(msg);
     }
     
     public void sendMessage(Member[] destination, ChannelMessage msg, InterceptorPayload payload) throws  ChannelException {
-        for ( int i=0; i<destination.length; i++ ) {
-            log.debug("Message sent from [" + getLocalMember(false).getName() +"] to [" + destination[i].getName() + "]");
-        }//for
         ChannelData data = (ChannelData)msg;
         data.setAddress((Member)reversemap.get(data.getAddress()));
         super.sendMessage(reverse(destination),msg,payload);
     }
     
     protected Member[] reverse(Member[] mbrs) {
-        Member[] result = new Member[mbrs.length];
-        for (int i=0; i<mbrs.length; i++) result[i] = (Member)reversemap.get(mbrs[i]);
-        return result;
+        ArrayList result = new ArrayList(mbrs.length);
+        for (int i=0; i<mbrs.length; i++) {
+            Member mbr = (Member) reversemap.get(mbrs[i]);
+            if ( mbr != null ) {
+                result.add(mbr);
+            } else if ( (mbrs[i] instanceof TribesPeer) && ((TribesPeer)mbrs[i]).member!=null) {
+                result.add(((TribesPeer)mbrs[i]).member);
+            } else {
+                log.error("Unable to find the corresponding tribes member to peer:"+mbrs[i]);
+            }
+        }
+        return (Member[])result.toArray(new Member[result.size()]);
     }
 
     
