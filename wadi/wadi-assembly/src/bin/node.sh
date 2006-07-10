@@ -59,6 +59,9 @@ $properties \
 -Dorg.apache.commons.logging.Log=org.apache.commons.logging.impl.SimpleLog \
 -Dorg.apache.commons.logging.simplelog.showdatetime=true \
 -Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi=debug \
+-Dorg.apache.commons.logging.simplelog.log.org.apache.catalina.tribes=warn \
+-Dorg.apache.commons.logging.simplelog.log.org.apache.activecluster=warn \
+-Dorg.apache.commons.logging.simplelog.log.org.apache.activemq=warn \
 -Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi.impl.AbsoluteEvicter=info \
 -Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi.impl.NeverEvicter=info \
 -Djava.io.tmpdir=$INSTANCE \
