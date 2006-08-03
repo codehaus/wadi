@@ -117,7 +117,7 @@ public class WadiMemberInterceptor extends ChannelInterceptorBase {
                 peer = (TribesPeer)map.get(mbr);
                 if ( peer == null ) {
                     peer = new TribesPeer((MemberImpl)mbr);
-                    map.put(((MemberImpl)mbr),peer);
+                    map.put(mbr,peer);
                     reversemap.put(peer,mbr);
                 }
             }

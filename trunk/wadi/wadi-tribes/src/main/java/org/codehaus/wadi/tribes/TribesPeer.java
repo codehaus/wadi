@@ -1,7 +1,6 @@
 package org.codehaus.wadi.tribes;
 
 
-import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
@@ -173,7 +172,7 @@ public class TribesPeer implements Member, LocalPeer, Address, Serializable {
         this.state = state;
         stateModified = true;
         try {
-            ( (MemberImpl) member).setPayload(XByteBuffer.serialize( (Serializable) state));
+            member.setPayload(XByteBuffer.serialize( (Serializable) state));
         }catch ( Exception x ) {
             throw new RuntimeException(x);
         }
