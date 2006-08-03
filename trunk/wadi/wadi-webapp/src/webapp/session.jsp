@@ -70,7 +70,7 @@ int rows=1;
 int cols=1;
 
 if (hsize>1) {
-  rows=(int)Math.sqrt((double)hsize);
+  rows=(int)Math.sqrt(hsize);
   cols=hsize/rows;
   if (cols*rows<hsize)
     rows++;
