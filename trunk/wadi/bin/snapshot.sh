@@ -4,9 +4,10 @@
 ## deploy artefacts to remote snapshot repository
 ## copy assemblies to remote dist directory
 
-snapshots=codehaus.org:/home/projects/wadi/repository-snapshot
+snapshots=https://dav.codehaus.org/snapshots.repository
+#snapshots=codehaus.org:/home/projects/wadi/repository-snapshot
 #snapshots=codehaus.org:/home/projects/wadi/repository-snapshot/test
-distributions=/home/projects/wadi/dist/distributions
+distributions=https://dav.codehaus.org/snapshots.dist/wadi/
 #distributions=/home/projects/wadi/dist/distributions/test
 suffixes="tar.gz tar.bz2 zip"
 

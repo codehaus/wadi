@@ -8,10 +8,10 @@
   </parent>
 
   <modelVersion>4.0.0</modelVersion>
-  <artifactId>wadi-dispatcher</artifactId>
+  <artifactId>wadi-group</artifactId>
   <packaging>jar</packaging>
-  <name>WADI :: Dispatcher</name>
-  <description>WADI Dispatcher</description>
+  <name>WADI :: Group</name>
+  <description>WADI Group API and Dispatcher implementations</description>
 
   <dependencies>
     <dependency>
