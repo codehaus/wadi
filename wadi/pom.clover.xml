@@ -21,7 +21,7 @@
   </pluginRepositories>
 
   <modules>
-    <module>wadi-dispatcher</module>
+    <module>wadi-group</module>
     <module>wadi-core</module>
     <module>wadi-activecluster</module>
     <module>wadi-jgroups</module>

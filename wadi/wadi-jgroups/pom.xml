@@ -20,12 +20,12 @@
     </dependency>
     <dependency>
       <groupId>org.codehaus.wadi</groupId>
-      <artifactId>wadi-dispatcher</artifactId>
+      <artifactId>wadi-group</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.codehaus.wadi</groupId>
-      <artifactId>wadi-dispatcher</artifactId>
+      <artifactId>wadi-group</artifactId>
       <version>${project.version}</version>
       <type>test-jar</type>
       <scope>test</scope>

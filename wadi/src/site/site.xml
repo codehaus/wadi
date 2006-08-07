@@ -34,9 +34,11 @@
       <item name="List" href="mailto:user@wadi.codehaus.org"/>
       <item name="#WADI" href="irc://irc.codehaus.org/wadi"/>
       <item name="How To Help" href="./help.html"/>
-      <item name="Distributions" href="http://dist.codehaus.org/wadi/distributions/"/>
-      <item name="Release Repo" href="http://repository.codehaus.org/org/codehaus/wadi"/>
-      <item name="SnapShot Repo" href="http://dist.codehaus.org/wadi/org/codehaus/wadi/"/>
+      <item name="Release Repository" href="http://repository.codehaus.org/org/codehaus/wadi/"/>
+      <item name="Release Distributions" href="http://dist.codehaus.org/wadi/"/>
+      <item name="Snapshot Repository" href="http://snapshots.repository.codehaus.org/org/codehaus/wadi/"/>
+      <!-- <item name="Snapshot Distributions" href="http://snapshots.codehaus.org/"/> --> <!-- TODO -->
+      <item name="Dependency Repository" href="http://dist.codehaus.org/wadi/dependencies/maven2/"/>
     </menu>
 
     <menu name="Developers">
@@ -51,20 +53,19 @@
       <item name="Jira" href="http://jira.codehaus.org/browse/WADI"/>
       <item name="Beetlejuice" href="http://ci.codehaus.org/beetlejuice/viewProjectSummary.action?projectName=WADI"/>
       <item name="FishEye" href="http://svn.wadi.codehaus.org/viewrep/wadi/trunk/wadi"/>
-<!--
-      <item name="SRC snapshot (zip)" href="http://svn.wadi.codehaus.org/viewrep/~tarball=zip/wadi/wadi.zip"/>
-      <item name="SRC snapshot (tgz)" href="http://svn.wadi.codehaus.org/viewrep/~tarball=tgz/wadi/wadi.tgz"/>
-      <item name="SRC snapshot (tbz2)" href="http://svn.wadi.codehaus.org/viewrep/~tarball=tbz2/wadi/wadi.tbz2"/>
--->
-      <item name="Dependency Repo" href="http://dist.codehaus.org/wadi/dependencies/"/>
+      <item name="Release Repository" href="https://dav.codehaus.org/repository/wadi/org/codehaus/wadi/"/>
+      <item name="Release Distributions" href="https://dav.codehaus.org/dist/wadi/"/>
+      <item name="Snapshot Repository" href="https://dav.codehaus.org/snapshots.repository/wadi/org/codehaus/wadi/"/>
+      <item name="Snapshot Distributions" href="https://dav.codehaus.org/snapshots.dist/wadi/"/>
+      <item name="Dependency Repository" href="https://dav.codehaus.org/dist/wadi/dependencies/maven2/"/>
     </menu>
 
     <menu name="Modules">
-      <item name="Dispatcher" href="wadi-dispatcher/index.html"/>
+      <item name="Group" href="wadi-group/index.html"/>
       <item name="Core" href="wadi-core/index.html"/>
       <item name="ActiveCluster 4.0M4+" href="wadi-activecluster/index.html"/>
       <item name="JGroups 2.8+" href="wadi-jgroups/index.html"/>
-      <item name="Tribes" href="wadi-tribes/index.html"/>
+      <item name="Tribes 0.9.5.2+" href="wadi-tribes/index.html"/>
       <item name="Jetty 5.x" href="wadi-jetty5/index.html"/>
       <item name="Jetty 6.x" href="wadi-jetty6/index.html"/>
       <item name="Tomcat 5.0.x" href="wadi-tomcat50/index.html"/>
