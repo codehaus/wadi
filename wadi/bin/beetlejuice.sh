@@ -1,6 +1,7 @@
 #!/bin/sh
 
-## an integration script for the BeetleJuice ci system.
+## an integration script for various ci systems.
+
 
 if [ "$SHELL" = /sbin/nologin ]
 then
@@ -13,10 +14,15 @@ then
     export PATH=$JAVA_HOME/bin:$M2_HOME/bin:$PATH
     export PROPS="-Duser.home=."
     export HOME=/home/nobody
+elif [ "$USER" = continuum ]
+then
+    ## we are being run by continuum
+    ## most vars should be set up
+    export PROPS="-Duser.home=."
 else
     ## we are being run by hand...
     ## JAVA_HOME and PATH should already be correctly initialised...
-    PROPS=
+    export PROPS=
 fi
 
 ls -ld .
@@ -31,6 +37,7 @@ fi
 echo "***** Starting BeetleJuice build *****"
 echo
 echo "system is `uname -a`"
+echo "time is `date`"
 echo "shell is $SHELL"
 echo "user is `id`"
 type java
@@ -45,7 +52,7 @@ echo
 ## cleanup
 rm -fr ./testresults
 
-PROPS="-e --offline $PROPS"
+PROPS="-e $PROPS"
 
 ## execute build, recording status
 mvn $PROPS -DdownloadSources=true -Dmaven.test.failure.ignore=true clean:clean install eclipse:eclipse site && \
