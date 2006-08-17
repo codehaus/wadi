@@ -435,7 +435,9 @@
 	  <!--
 	  <childDelegation>false</childDelegation>
 	  -->
-	  <forkMode>pertest</forkMode> <!-- we have to fork in order to pass an argLine -->
+<!--
+	  <forkMode>pertest</forkMode>  we have to fork in order to pass an argLine
+-->
 	  <argLine>-enableassertions -Xmx1024m</argLine>
 	  <systemProperties>
 	    <property>
