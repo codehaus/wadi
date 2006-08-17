@@ -18,7 +18,8 @@ elif [ "$USER" = continuum ]
 then
     ## we are being run by continuum
     ## most vars should be set up
-    export PROPS="-Duser.home=."
+    ## use a shared m2 repo
+    export PROPS=
 else
     ## we are being run by hand...
     ## JAVA_HOME and PATH should already be correctly initialised...
