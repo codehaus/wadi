@@ -32,14 +32,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.axiondb.jdbc.AxionDataSource;
 import org.codehaus.wadi.Collapser;
-import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.Contextualiser;
+import org.codehaus.wadi.EndPoint;
 import org.codehaus.wadi.Evicter;
 import org.codehaus.wadi.InvocationProxy;
 import org.codehaus.wadi.PoolableInvocationWrapperPool;
-import org.codehaus.wadi.EndPoint;
 import org.codehaus.wadi.ReplicaterFactory;
 import org.codehaus.wadi.SessionIdFactory;
+import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.group.Dispatcher;
@@ -99,6 +99,7 @@ public abstract class AbstractTestReplication extends TestCase {
 	}
 
 	public void testReplication(Dispatcher dispatcher) throws Exception {
+        dispatcher.start();
 
 		int sweepInterval=1000*60*60*24; // 1 eviction/day
 		boolean strictOrdering=true;
@@ -202,6 +203,7 @@ public abstract class AbstractTestReplication extends TestCase {
 
 		manager.stop();
 
+        dispatcher.stop();
 		dir.delete();
 	}
 

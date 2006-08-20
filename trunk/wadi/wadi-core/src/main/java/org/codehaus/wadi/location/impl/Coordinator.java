@@ -108,42 +108,29 @@ public class Coordinator implements Runnable {
 	}
 
 	public void rebalanceClusterState() {
-		int failures=0;
+        Collection stayingNodes = new ArrayList();
+        Collection leavingNodes=new ArrayList();
+        deriveClusterUpdates(stayingNodes, leavingNodes);
+        
+        if (!isPartitionKeysInitialized(stayingNodes)) {
+            scheduleRebalancing();
+            return;
+        }
+        
+        _log.trace("--------");
+        _log.trace("STAYING:");
+        printNodes(stayingNodes);
+        _log.trace("LEAVING:");
+        printNodes(leavingNodes);
+        _log.trace("--------");
+
+        int failures=0;
 		try {
-
-			Map nodeMap=_cluster.getRemotePeers();
-
-			Collection stayingNodes=nodeMap.values();
-			synchronized (stayingNodes) {stayingNodes=new ArrayList(stayingNodes);} // snapshot
-			stayingNodes.add(_localPeer);
-
-			Collection l=_config.getLeavers();
-			synchronized (l) {l=new ArrayList(l);} // snapshot
-
-			Collection leavingNodes=new ArrayList();
-			for (Iterator i=l.iterator(); i.hasNext(); ) {
-				Address d=(Address)i.next();
-				Peer leaver=getPeer(d);
-				if (leaver!=null) {
-					leavingNodes.add(leaver);
-					stayingNodes.remove(leaver);
-				}
-			}
-
-			_log.trace("--------");
-			_log.trace("STAYING:");
-
-			printNodes(stayingNodes);
-			_log.trace("LEAVING:");
-			printNodes(leavingNodes);
-			_log.trace("--------");
-
 			Peer [] leaving=(Peer[])leavingNodes.toArray(new Peer[leavingNodes.size()]);
 
 			if (stayingNodes.size()==0) {
-				_log.warn("we are the last node - no need to rebalance cluster");
+				_log.info("we are the last node - no need to rebalance cluster");
 			} else {
-
 				Peer [] living=(Peer[])stayingNodes.toArray(new Peer[stayingNodes.size()]);
 
 				_config.regenerateMissingPartitions(living, leaving);
@@ -214,13 +201,52 @@ public class Coordinator implements Runnable {
 			failures++;
 		}
 
-		if (failures>0) {
-			if (_log.isWarnEnabled()) _log.warn("rebalance failed - backing off for "+_inactiveTime+" millis...");
-			queueRebalancing();
+		if (failures > 0) {
+            scheduleRebalancing();
 		}
 	}
 
-	protected void execute(RedistributionPlan plan, String correlationId, Quipu quipu) {
+    private void scheduleRebalancing() {
+        long retryDelay = 500;
+        if (_log.isWarnEnabled()) {
+            _log.warn("Will retry rebalancing in " + retryDelay + " millis...");
+        }
+        try {
+            Thread.sleep(retryDelay);
+        } catch (InterruptedException e) {
+        }
+        queueRebalancing();
+    }
+    
+    private void deriveClusterUpdates(Collection stayingNodes, Collection leavingNodes) {
+        stayingNodes.add(_localPeer);
+        Map nodeMap = _cluster.getRemotePeers();
+        stayingNodes.addAll(nodeMap.values());
+
+        Collection l = new ArrayList(_config.getLeavers());
+        for (Iterator i=l.iterator(); i.hasNext(); ) {
+            Address d = (Address) i.next();
+            Peer leaver = getPeer(d);
+            if (leaver != null) {
+                leavingNodes.add(leaver);
+                stayingNodes.remove(leaver);
+            }
+        }
+    }
+
+    private boolean isPartitionKeysInitialized(Collection nodes) {
+        for (Iterator iter = nodes.iterator(); iter.hasNext();) {
+            Peer peer = (Peer) iter.next();
+            PartitionKeys keys = DIndex.getPartitionKeys(peer);
+            if (null == keys) {
+                _log.info("Peer " + peer + " does not yet define its partition keys");
+                return false;
+            }
+        }
+        return true;
+    }
+
+    protected void execute(RedistributionPlan plan, String correlationId, Quipu quipu) {
 		quipu.increment(); // add a safety margin of '1', so if we are caught up by acks, waiting thread does not finish until we have
 		Iterator p=plan.getProducers().iterator();
 		Iterator c=plan.getConsumers().iterator();

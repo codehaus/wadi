@@ -108,7 +108,8 @@ public class TestLease extends TestCase {
             lease.attempt(0, leasePeriod); // attempt a 1 second lease
             lease.acquire(); // in order for us to acquire it, it must have released itself...
             long elapsed=System.currentTimeMillis()-started;
-            assertTrue(elapsed>leasePeriod);
+            // Implementation note: add 100 to take into account non exact timing accuracy. 
+            assertTrue(elapsed + 100 >leasePeriod);
             lease.release();
             assertTrue(sync.getCount()==0);
         }

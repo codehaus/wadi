@@ -1,6 +1,14 @@
-<web-app xmlns="http://geronimo.apache.org/xml/ns/j2ee/web-1.0" configId="wadi">
+<?xml version="1.0" encoding="UTF-8"?>
 
-  <context-root>/wadi</context-root>
-  <context-priority-classloader>true</context-priority-classloader>
+<web-app xmlns="http://geronimo.apache.org/xml/ns/j2ee/web-1.2">
+
+    <environment>
+        <moduleId>
+            <groupId>org.codehaus.wadi</groupId>
+            <artifactId>wadi-webapp</artifactId>
+            <version>2.0M2-SNAPSHOT</version>
+            <type>war</type>
+        </moduleId>
+    </environment>
 
 </web-app>

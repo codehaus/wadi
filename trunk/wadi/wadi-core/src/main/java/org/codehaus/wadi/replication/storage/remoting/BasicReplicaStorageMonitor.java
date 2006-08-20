@@ -119,6 +119,9 @@ public class BasicReplicaStorageMonitor implements ReplicaStorageMonitor, Cluste
     public void onPeerUpdated(ClusterEvent event) {
     }
 
+    public void onListenerRegistration(Cluster cluster, Set existing, Peer coordinator) {
+    }
+    
     public void onMembershipChanged(Cluster cluster, Set joiners, Set leavers, Peer coordinator) {
         for (Iterator i=leavers.iterator(); i.hasNext(); )
             fireLeaveEvent(new ClusterEvent(cluster, (Peer)i.next(), ClusterEvent.PEER_FAILED));

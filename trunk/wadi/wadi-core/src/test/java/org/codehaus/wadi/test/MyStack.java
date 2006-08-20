@@ -33,6 +33,7 @@ import org.codehaus.wadi.SessionIdFactory;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.group.Dispatcher;
+import org.codehaus.wadi.group.DispatcherConfig;
 import org.codehaus.wadi.impl.AbstractExclusiveContextualiser;
 import org.codehaus.wadi.impl.AlwaysEvicter;
 import org.codehaus.wadi.impl.ClusterContextualiser;
@@ -68,10 +69,19 @@ import org.codehaus.wadi.web.impl.WebSessionToSessionPoolAdapter;
 
 public class MyStack {
 
+	protected Dispatcher _dispatcher;
     protected ClusteredManager _manager;
     protected AbstractExclusiveContextualiser _memory;
 
     public MyStack(String url, DataSource dataSource, Dispatcher dispatcher) throws Exception {
+      _dispatcher = dispatcher;
+      _dispatcher.init(new DispatcherConfig() {
+        public String getContextPath() {
+            return null;
+        }
+      });
+      _dispatcher.start();
+    	
       int sweepInterval=1000*60*60*24; // 1 eviction/day
       boolean strictOrdering=true;
       Streamer streamer=new SimpleStreamer();
@@ -130,6 +140,7 @@ public class MyStack {
 
     public void stop() throws Exception {
       _manager.stop();
+      _dispatcher.stop();
     }
 
     public AbstractExclusiveContextualiser getTop() {

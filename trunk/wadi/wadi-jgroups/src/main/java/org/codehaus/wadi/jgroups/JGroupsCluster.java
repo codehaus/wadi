@@ -100,7 +100,7 @@ public class JGroupsCluster extends AbstractCluster implements MembershipListene
         return (JGroupsPeer)address;
     }
 
-    public void start() throws ClusterException {
+    protected void doStart() throws ClusterException {
         try {
             //_channel.setOpt(Channel.LOCAL, Boolean.FALSE); // exclude ourselves from our own broadcasts... - BUT also from Unicasts :-(
             _channel.connect(_clusterName);
@@ -129,7 +129,7 @@ public class JGroupsCluster extends AbstractCluster implements MembershipListene
         if (_log.isTraceEnabled()) _log.trace(_localPeerName+" - "+"...acquired viewLatch");
     }
 
-    public void stop() throws ClusterException {
+    protected void doStop() throws ClusterException {
         _viewThread.stop();
         _channel.disconnect();
         _channel.close();
@@ -243,11 +243,8 @@ public class JGroupsCluster extends AbstractCluster implements MembershipListene
         joiners=Collections.unmodifiableSet(joiners);
         leavers=Collections.unmodifiableSet(leavers);
 
-        // elect coordinator - should be run before onMembershipChanged called, since the coordinator might have to take specific action...
-        Peer coordinator=findCoordinator();
-
         // notify listeners of changed membership
-        notifyMembershipChanged(joiners, leavers, coordinator);
+        notifyMembershipChanged(joiners, leavers);
 
         // release latch so that start() can complete
         if (_log.isTraceEnabled()) _log.trace(_localPeerName+" - "+"releasing viewLatch (viewAccepted)...");

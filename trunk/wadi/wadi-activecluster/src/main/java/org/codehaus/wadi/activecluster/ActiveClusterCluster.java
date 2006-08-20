@@ -16,7 +16,6 @@
 package org.codehaus.wadi.activecluster;
 
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -28,11 +27,11 @@ import org.apache.activecluster.impl.DefaultClusterFactory;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.ClusterException;
-import org.codehaus.wadi.group.ClusterListener;
 import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.impl.AbstractCluster;
+
 import EDU.oswego.cs.dl.util.concurrent.Latch;
 
 /**
@@ -94,6 +93,7 @@ class ActiveClusterCluster extends AbstractCluster {
     class ACListener implements org.apache.activecluster.ClusterListener {
 
         public void onNodeAdd(org.apache.activecluster.ClusterEvent event) {
+            _startLatch.release();
             _cluster.set(ActiveClusterCluster.this);
             Node node=event.getNode();
             Peer peer=get(node.getDestination());
@@ -106,9 +106,7 @@ class ActiveClusterCluster extends AbstractCluster {
             _addressToPeer.put(peer,  peer);
             Set joiners=Collections.unmodifiableSet(Collections.singleton(peer));
             Set leavers=Collections.EMPTY_SET;
-            _coordinator=findCoordinator();
-            notifyMembershipChanged(joiners, leavers, _coordinator); 
-            _startLatch.release();
+            notifyMembershipChanged(joiners, leavers); 
         }
 
         public void onNodeUpdate(org.apache.activecluster.ClusterEvent event) {
@@ -146,8 +144,7 @@ class ActiveClusterCluster extends AbstractCluster {
             Set joiners=Collections.EMPTY_SET;
             Set leavers=Collections.unmodifiableSet(Collections.singleton(peer));
             
-            _coordinator=findCoordinator();
-            notifyMembershipChanged(joiners, leavers, _coordinator);
+            notifyMembershipChanged(joiners, leavers);
         }
 
         public void onCoordinatorChanged(org.apache.activecluster.ClusterEvent event) {
@@ -157,7 +154,7 @@ class ActiveClusterCluster extends AbstractCluster {
 
     };
 
-    public void start() throws ClusterException {
+    protected void doStart() throws ClusterException {
         _startLatch=new Latch();
         try {
             _acCluster=_clusterFactory.createCluster(_clusterName); // StateServiceImpl and state race started...
@@ -180,22 +177,18 @@ class ActiveClusterCluster extends AbstractCluster {
         localState.put(Peer._birthTimeKey, new Long(joinTime));
         _backendToPeer.put(_localACDestination, _localPeer);
         
-        boolean needsNotification=false;
+        boolean isFirstPeer;
         try {
-            needsNotification=!_startLatch.attempt(_inactiveTime);
+            isFirstPeer = !_startLatch.attempt(_inactiveTime);
         } catch (InterruptedException e) {
-            _log.warn("unexpected interruption", e);
+            throw (IllegalStateException) new IllegalStateException().initCause(e);
         }
-        if (needsNotification) {
-            // we must be the only member of the Cluster...
-            for (Iterator i=_clusterListeners.iterator(); i.hasNext(); ) {
-                ClusterListener listener=(ClusterListener)i.next();
-                listener.onMembershipChanged(this, Collections.EMPTY_SET, Collections.EMPTY_SET, _localPeer);
-            }
+        if (isFirstPeer) {
+            setFirstPeer();
         }
     }
 
-    public void stop() throws ClusterException {
+    protected void doStop() throws ClusterException {
         try {
             _acCluster.stop();
         } catch (JMSException e) {

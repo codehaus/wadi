@@ -83,6 +83,9 @@ public class VMLocalClusterListener implements ClusterListener {
         delegate.onMembershipChanged(localCluster, Collections.EMPTY_SET, Collections.singleton(leaving), coordinator);
     }
 
+    public void onListenerRegistration(Cluster cluster, Set existing, Peer coordinator) {
+    }
+    
     public void onMembershipChanged(Cluster cluster, Set joiners, Set leavers, Peer coordinator) {
         if (false == localCluster.isRunning()) {
             return;

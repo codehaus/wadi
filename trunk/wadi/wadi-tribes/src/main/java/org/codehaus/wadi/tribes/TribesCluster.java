@@ -1,14 +1,21 @@
 package org.codehaus.wadi.tribes;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.catalina.tribes.Channel;
 import org.apache.catalina.tribes.ChannelException;
 import org.apache.catalina.tribes.Member;
 import org.apache.catalina.tribes.MembershipListener;
 import org.apache.catalina.tribes.group.GroupChannel;
+import org.apache.catalina.tribes.group.interceptors.DomainFilterInterceptor;
+import org.apache.catalina.tribes.group.interceptors.MessageDispatchInterceptor;
+import org.apache.catalina.tribes.group.interceptors.TcpFailureDetector;
 import org.apache.catalina.tribes.membership.McastService;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Cluster;
@@ -17,10 +24,6 @@ import org.codehaus.wadi.group.ClusterListener;
 import org.codehaus.wadi.group.ElectionStrategy;
 import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.Peer;
-import org.apache.catalina.tribes.group.interceptors.TcpFailureDetector;
-import org.apache.catalina.tribes.group.interceptors.MessageDispatchInterceptor;
-import java.util.LinkedHashMap;
-import org.apache.catalina.tribes.group.interceptors.DomainFilterInterceptor;
 
 /**
  * <p>Title: </p>
@@ -39,6 +42,8 @@ public class TribesCluster implements Cluster {
     protected GroupChannel channel = null;
     protected ArrayList listeners = new ArrayList();
     private ElectionStrategy strategy;
+    protected boolean initialized = false;
+    private Member coordinator;
 
     public TribesCluster(byte[] clusterDomain) {
         channel = new GroupChannel();
@@ -65,11 +70,15 @@ public class TribesCluster implements Cluster {
      * @todo Implement this org.codehaus.wadi.group.Cluster method
      */
     public void addClusterListener(ClusterListener listener) {
-        listeners.add(listener);
+        synchronized (listeners) {
+            listeners.add(listener);
+        }
+        Set existing = new HashSet(getRemotePeers().values());
+        listener.onListenerRegistration(this, existing, (Peer) coordinator);
     }
     
-    public ArrayList getClusterListeners() {
-        return listeners;
+    public List getClusterListeners() {
+        return Collections.unmodifiableList(listeners);
     }
 
     /**
@@ -148,7 +157,6 @@ public class TribesCluster implements Cluster {
         this.listeners.remove(listener);
     }
     
-    protected boolean initialized = false;
     public void init() throws ClusterException {
         try {
             channel.start(Channel.SND_RX_SEQ);
@@ -210,17 +218,14 @@ public class TribesCluster implements Cluster {
         return false;
     }
     
-    protected static class WadiListener implements MembershipListener {
+    protected class WadiListener implements MembershipListener {
         TribesCluster cluster;
         public WadiListener(TribesCluster cluster) {
             this.cluster = cluster;
         }
         
-        public void memberAdded(Member member) {
-            Member[] mbrs = cluster.channel.getMembers();
-            Member local = cluster.channel.getLocalMember(true);
-            Member coordinator = mbrs.length>0?mbrs[0]:local;
-            if ( local.getMemberAliveTime() >= coordinator.getMemberAliveTime() ) coordinator = local;
+        public synchronized void memberAdded(Member member) {
+            coordinator = electCoordinator();
             HashSet added = new HashSet();
             HashSet removed = new HashSet();
             if ( !member.equals(cluster.channel.getLocalMember(false)) ) added.add(member);
@@ -230,12 +235,10 @@ public class TribesCluster implements Cluster {
                 //listener.onPeerUpdated(event); //do we need this
             }
         }
+
         
-        public void memberDisappeared(Member member) {
-            Member[] mbrs = cluster.channel.getMembers();
-            Member local = cluster.channel.getLocalMember(true);
-            Member coordinator = mbrs.length>0?mbrs[0]:local;
-            if ( local.getMemberAliveTime() >= coordinator.getMemberAliveTime() ) coordinator = local;
+        public synchronized void memberDisappeared(Member member) {
+            coordinator = electCoordinator();
             HashSet added = new HashSet();
             HashSet removed = new HashSet();
             removed.add(member);
@@ -245,8 +248,15 @@ public class TribesCluster implements Cluster {
                 //listener.onPeerUpdated(event); //do we need this
             }
         }
-    }
 
+        private Member electCoordinator() {
+            Member[] mbrs = channel.getMembers();
+            Member local = channel.getLocalMember(true);
+            Member newCoordinator = mbrs.length>0?mbrs[0]:local;
+            if ( local.getMemberAliveTime() >= newCoordinator.getMemberAliveTime() ) newCoordinator = local;
+            return newCoordinator;
+        }
+    }
 
     public void setElectionStrategy(ElectionStrategy electionStrategy) {
         this.strategy = electionStrategy;
