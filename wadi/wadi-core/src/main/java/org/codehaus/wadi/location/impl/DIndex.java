@@ -176,6 +176,9 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 
 	protected void correlateStateUpdate(Map state) {
 		Map correlationIDMap=(Map)state.get(_correlationIDMapKey);
+        if (null == correlationIDMap) {
+            return;
+        }
 		Address local=_localPeer.getAddress();
 		String correlationID=(String)correlationIDMap.get(local);
 		if (correlationID!=null) {
@@ -191,6 +194,10 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 
     protected boolean _firstTime=true;
 
+    public void onListenerRegistration(Cluster cluster, Set existing, Peer coordinator) {
+        onMembershipChanged(cluster, existing, Collections.EMPTY_SET, coordinator);
+    }
+    
 	public void onMembershipChanged(Cluster cluster, Set joiners, Set leavers, Peer coordinator) {
 
         if (_log.isTraceEnabled()) _log.trace("membership changed - local:"+getLocalNode()+" joiners:"+joiners+" leavers:"+leavers+" coordinator:"+coordinator+" firstTime:"+_firstTime);

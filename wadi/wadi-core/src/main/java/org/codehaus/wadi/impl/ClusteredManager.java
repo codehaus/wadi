@@ -87,7 +87,6 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
 	public void init(ManagerConfig config) {
 		// must be done before super.init() so that ContextualiserConfig contains a Cluster
 		try {
-			_dispatcher.init(this);
 			String peerName=_dispatcher.getCluster().getLocalPeer().getName();
 			_distributedState.put(Peer._peerNameKey, peerName);
 			_distributedState.put("endPoint", _endPoint); // TODO - needs to be a public final String somewhere
@@ -103,7 +102,6 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
 	public void start() throws Exception {
 		_dispatcher.setDistributedState(_distributedState);
 		if (_log.isTraceEnabled()) _log.trace("distributed state updated: " + _distributedState);
-		_dispatcher.start();
 		_dindex.start();
 		super.start();
 	}
@@ -117,7 +115,6 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
 		_shuttingDown.set(true);
 		super.stop();
 		_dindex.stop();
-		_dispatcher.stop();
 	}
 
 	static class HelperPair {
@@ -199,7 +196,7 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
 	}
 
 	public int getNumPartitions() {
-		return 72; // TODO - parameterise...
+		return _numPartitions;
 	}
 
 	public Dispatcher getDispatcher() {
@@ -280,4 +277,3 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
     }
     
 }
-

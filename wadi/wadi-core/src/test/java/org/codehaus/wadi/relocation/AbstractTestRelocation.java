@@ -24,6 +24,7 @@ import org.codehaus.wadi.test.MockInvocation;
 import org.codehaus.wadi.test.MyHttpServletRequest;
 import org.codehaus.wadi.test.MyHttpServletResponse;
 import org.codehaus.wadi.test.MyStack;
+import org.codehaus.wadi.test.TestUtil;
 import org.codehaus.wadi.web.WebSession;
 
 public class AbstractTestRelocation extends TestCase {
@@ -105,19 +106,7 @@ public class AbstractTestRelocation extends TestCase {
 		green.start();
 		_log.info("...GREEN STARTED");
 
-		_log.info("WAITING FOR RED TO SEE GREEN...");
-		while (redD.getCluster().getPeerCount()<2) {
-			Thread.sleep(500);
-			_log.info("waiting: "+redD.getCluster().getPeerCount());
-		}
-		_log.info("...DONE");
-
-		_log.info("WAITING FOR GREEN TO SEE RED...");
-		while (greenD.getCluster().getPeerCount()<2) {
-			Thread.sleep(500);
-			_log.info("waiting: "+greenD.getCluster().getPeerCount());
-		}
-		_log.info("...DONE");
+        TestUtil.waitForDispatcherSeeOthers(new Dispatcher[] {redD, greenD}, 5000);
 
 		_log.info("CREATING SESSION...");
 		String id=red.getManager().create(null).getId();
@@ -141,12 +130,7 @@ public class AbstractTestRelocation extends TestCase {
 		red.stop(); // causes exception
 		_log.info("...RED STOPPED");
 
-		_log.info("WAITING FOR GREEN TO UNSEE RED...");
-		while (greenD.getCluster().getPeerCount()>1) {
-			Thread.sleep(500);
-			_log.info("waiting: "+greenD.getCluster().getPeerCount());
-		}
-		_log.info("...DONE");
+        TestUtil.waitForDispatcherSeeOthers(new Dispatcher[] {greenD}, 5000);
 
 		_log.info("GREEN STOPPING...");
 		green.stop();

@@ -41,6 +41,7 @@ import org.codehaus.wadi.ManagerConfig;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.PoolableInvocationWrapper;
 import org.codehaus.wadi.PoolableInvocationWrapperPool;
+import org.codehaus.wadi.SessionAlreadyExistException;
 import org.codehaus.wadi.SessionIdFactory;
 import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.web.AttributesFactory;
@@ -175,12 +176,23 @@ public class StandardManager implements Lifecycle, WebSessionConfig, Contextuali
 		return true;
 	}
 
+	public WebSession createWithName(String name) throws SessionAlreadyExistException {
+		if (!validateSessionName(name)) {
+			throw new SessionAlreadyExistException(name);
+		}
+		return createSession(name);
+	}
+
 	public WebSession create(Invocation invocation) {
 		String name=null;
 		do {
 			name=_sessionIdFactory.create(); // TODO - API on this class is wrong...
 		} while (!validateSessionName(name));
 
+		return createSession(name);
+	}
+
+	protected WebSession createSession(String name) {
 		WebSession session=_sessionPool.take();
 		long time=System.currentTimeMillis();
 		session.init(time, time, _maxInactiveInterval, name);
@@ -189,7 +201,9 @@ public class StandardManager implements Lifecycle, WebSessionConfig, Contextuali
 		notifySessionCreation(session);
 		// TODO - somehow notify Evicter
 		// _contextualiser.getEvicter().insert(session);
-		if (_log.isDebugEnabled()) _log.debug("creation: "+name);
+		if (_log.isDebugEnabled()) {
+			_log.debug("creation: "+name);
+		}
 		return session;
 	}
 

@@ -1,8 +1,8 @@
 package org.codehaus.wadi.tribes;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.catalina.tribes.Channel;
@@ -158,7 +158,7 @@ public class TribesDispatcher extends AbstractDispatcher implements ChannelListe
             }
         } else if (serializable instanceof PeerUpdateMsg) {
             final PeerUpdateMsg msg = (PeerUpdateMsg)serializable;
-            final ArrayList list = cluster.getClusterListeners();
+            final List list = cluster.getClusterListeners();
             final ClusterEvent event = new ClusterEvent(cluster,(Peer)member,ClusterEvent.PEER_UPDATED);
             TribesPeer peer = (TribesPeer)member;
             if ( !Arrays.equals(msg.getState(),peer.getPayload()) ) {

@@ -49,7 +49,6 @@ public abstract class AbstractMotable extends SimpleEvictable implements Motable
     }
     
     public void destroy() throws Exception {
-        _name=null;
         super.destroy();
     }
 

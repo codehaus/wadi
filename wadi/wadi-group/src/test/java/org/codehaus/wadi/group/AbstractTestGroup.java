@@ -63,6 +63,12 @@ public abstract class AbstractTestGroup extends TestCase {
             _numUpdates++;
         }
 
+        public void onListenerRegistration(Cluster cluster, Set existing, Peer coordinator) {
+            _lastCoordinator = coordinator;
+            _numCoordinators.increment();
+            _numRemotePeers += existing.size();
+        }
+        
         public void onMembershipChanged(Cluster cluster, Set joiners, Set leavers, Peer coordinator) {
             _lastCoordinator=coordinator;
             _numCoordinators.increment();
@@ -80,13 +86,13 @@ public abstract class AbstractTestGroup extends TestCase {
         
         Dispatcher dispatcher0=_dispatcherFactory.create(clusterName, "red", 5000);
         dispatcher0.init(config);
+        dispatcher0.start();
         
         MyClusterListener listener0=new MyClusterListener();
         Cluster cluster0=dispatcher0.getCluster();
         cluster0.setElectionStrategy(new SeniorityElectionStrategy());
         cluster0.addClusterListener(listener0);
-        
-        dispatcher0.start();
+
         assertTrue(listener0._numCoordinators.get()>=1); // we have received at least one MembershipChanged notification by the time start has finished
         assertTrue(listener0._lastCoordinator.equals(cluster0.getLocalPeer()));
         assertTrue(cluster0.waitOnMembershipCount(1, 10000));
@@ -95,12 +101,13 @@ public abstract class AbstractTestGroup extends TestCase {
         
         Dispatcher dispatcher1=_dispatcherFactory.create(clusterName, "green", 5000);
         dispatcher1.init(config);
+        dispatcher1.start();
+
         Cluster cluster1=dispatcher1.getCluster();
         cluster1.setElectionStrategy(new SeniorityElectionStrategy());
         MyClusterListener listener1=new MyClusterListener();
         cluster1.addClusterListener(listener1);
 
-        dispatcher1.start();
         assertTrue(listener1._lastCoordinator.equals(cluster1.getRemotePeers().values().iterator().next())); // green knows red is coord
         assertTrue(listener1._numCoordinators.get()>=1);
         assertTrue(cluster0.waitOnMembershipCount(2, 10000));

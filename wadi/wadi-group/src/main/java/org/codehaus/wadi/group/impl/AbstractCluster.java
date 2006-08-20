@@ -19,17 +19,22 @@ package org.codehaus.wadi.group.impl;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.ClusterEvent;
+import org.codehaus.wadi.group.ClusterException;
 import org.codehaus.wadi.group.ClusterListener;
 import org.codehaus.wadi.group.ElectionStrategy;
 import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.Peer;
+
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 
 public abstract class AbstractCluster implements Cluster {
@@ -40,7 +45,6 @@ public abstract class AbstractCluster implements Cluster {
     protected final Log _log = LogFactory.getLog(getClass());
     protected final Map _addressToPeer = new HashMap();
     protected final long _inactiveTime = 5000;
-    protected final List _clusterListeners = new ArrayList();
     protected final Map _backendToPeer=new ConcurrentHashMap();
 
     protected final String _clusterName;
@@ -48,15 +52,28 @@ public abstract class AbstractCluster implements Cluster {
     protected Peer _clusterPeer;
     protected LocalPeer _localPeer;
     protected ElectionStrategy _electionStrategy=new SeniorityElectionStrategy();
-    protected Peer _coordinator;
 
+    private final List _clusterListeners = new ArrayList();
+    private final Object membershipChangeLock = new Object();
+    private Peer _coordinator;
+    private boolean running;
+    
     public AbstractCluster(String clusterName, String localPeerName) {
-        super();
         _clusterName=clusterName;
         _localPeerName=localPeerName;
     }
     
     // 'Cluster' API
+    public final void start() throws ClusterException {
+    	running = true;
+
+    	doStart();
+    }
+
+	public final void stop() throws ClusterException {
+    	running = false;
+    	doStop();
+    }
 
     public Map getRemotePeers() {
         return Collections.unmodifiableMap(_addressToPeer); // could we cache this ? - TODO
@@ -91,29 +108,39 @@ public abstract class AbstractCluster implements Cluster {
         synchronized (_clusterListeners) {
             _clusterListeners.add(listener);
         }
+        Set existing = new HashSet(_addressToPeer.values());
+        listener.onListenerRegistration(this, existing, _coordinator);
     }
 
     public void removeClusterListener(ClusterListener listener) {
+        boolean removed = false;
         synchronized (_clusterListeners) {
-            _clusterListeners.remove(listener);
+            removed = _clusterListeners.remove(listener);
+        }
+        if (!removed) {
+            throw new IllegalArgumentException("[" + listener + "] was not registered.");
         }
     }
     
-    protected void notifyMembershipChanged(Set joiners, Set leavers, Peer coordinator) {
-        int n=_clusterListeners.size();
-        for (int i=0; i<n; i++) {
-            ((ClusterListener)_clusterListeners.get(i)).onMembershipChanged(this, joiners, leavers, coordinator);
-        }
+    protected void notifyMembershipChanged(Set joiners, Set leavers) {
+    	synchronized (membershipChangeLock) {
+        	electCoordinator();
+        	
+        	List snapshotListeners = snapshotListeners();
+        	for (Iterator iter = snapshotListeners.iterator(); iter.hasNext();) {
+    			ClusterListener listener = (ClusterListener) iter.next();
+                listener.onMembershipChanged(this, joiners, leavers, _coordinator);
+    		}
+		}
     }
 
     public void notifyPeerUpdated(Peer peer) {
-        int n=_clusterListeners.size();
-        if (n>0) {
-            ClusterEvent event=new ClusterEvent(this, peer, ClusterEvent.PEER_UPDATED);
-            for (int i=0; i<n; i++) {
-                ((ClusterListener)_clusterListeners.get(i)).onPeerUpdated(event);
-            }
-        }
+    	List snapshotListeners = snapshotListeners();
+        ClusterEvent event=new ClusterEvent(this, peer, ClusterEvent.PEER_UPDATED);
+    	for (Iterator iter = snapshotListeners.iterator(); iter.hasNext();) {
+			ClusterListener listener = (ClusterListener) iter.next();
+            listener.onPeerUpdated(event);
+		}
     }
     
     /**
@@ -154,15 +181,27 @@ public abstract class AbstractCluster implements Cluster {
         _electionStrategy=strategy;
     }
 
-    protected Peer findCoordinator() {
-        Peer coordinator=null;
-        if (_clusterListeners.size()>0 && _electionStrategy!=null) {
-            coordinator=getLocalPeer();
-            if (_addressToPeer.size()>0) {
-                coordinator=_electionStrategy.doElection(this);
-            }
-        }
-        return coordinator;
-    }
+    protected abstract void doStart() throws ClusterException;
 
+    protected abstract void doStop() throws ClusterException;
+
+    protected void setFirstPeer() {
+    	_coordinator = getLocalPeer();
+    }
+    
+	private List snapshotListeners() {
+		List snapshotListeners;
+    	synchronized (_clusterListeners) {
+			snapshotListeners = new ArrayList(_clusterListeners);
+		}
+		return snapshotListeners;
+	}
+	
+    private void electCoordinator() {
+        Peer coordinator = getLocalPeer();
+        if (null != _electionStrategy && 0 < _addressToPeer.size()) {
+            coordinator = _electionStrategy.doElection(this);
+        }
+        _coordinator = coordinator;
+    }
 }

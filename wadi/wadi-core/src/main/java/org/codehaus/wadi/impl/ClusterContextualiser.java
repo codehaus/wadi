@@ -241,7 +241,9 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 	// AbstractMotingContextualiser
 
 	// ClusterListener
-
+    public void onListenerRegistration(Cluster cluster, Set existing, Peer coordinator) {
+    }
+	
     public void onMembershipChanged(Cluster cluster, Set joiners, Set leavers, Peer coordinator) {
         for (Iterator i=joiners.iterator(); i.hasNext() ;) {
             Peer peer=(Peer)i.next();

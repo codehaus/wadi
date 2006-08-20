@@ -111,6 +111,9 @@ public class TestVMCluster extends TestCase {
         public void clearEvents() {
             events.clear();
         }
+
+        public void onListenerRegistration(Cluster cluster, Set existing, Peer coordinator) {
+        }
         
         public void onMembershipChanged(Cluster cluster, Set joiners, Set leavers, Peer coordinator) {
             for (Iterator iter = joiners.iterator(); iter.hasNext();) {
