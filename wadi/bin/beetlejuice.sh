@@ -2,6 +2,8 @@
 
 ## an integration script for various ci systems.
 
+DOWNLOAD_SOURCES=false
+
 
 if [ "$SHELL" = /sbin/nologin ]
 then
@@ -56,7 +58,7 @@ rm -fr ./testresults
 PROPS="-e $PROPS"
 
 ## execute build, recording status
-mvn $PROPS -DdownloadSources=true -Dmaven.test.failure.ignore=true clean:clean install eclipse:eclipse site && \
+mvn $PROPS -DdownloadSources=$DOWNLOAD_SOURCES -Dmaven.test.failure.ignore=true clean:clean install eclipse:eclipse site && \
 mvn $PROPS -f pom.clover.xml clover:aggregate clover:clover
 status=$?
 
