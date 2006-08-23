@@ -4,6 +4,9 @@
 
 downloadSources=false
 help=false
+site=false
+target=compile
+JAVA_HOME=/usr/local/java/sun-j2sdk1.4.2_08
 
 while [ -n "$1" ]
 do
@@ -23,6 +26,20 @@ do
 	  echo "jdk 1.4, 5 and 5.0 supported"
 	  ;;
       esac
+      ;;
+      -target)
+      shift
+      echo "selecting jdk $1"
+      case $1 in
+	  compile|test|site)
+	  target=$1
+	  ;;
+	  *)
+	  echo "target not recognised: $1"
+	  echo "compile|test|site supported"
+	  ;;
+      esac
+      site=true
       ;;
       -sources)
       echo "enabling source jar download (slow)"
@@ -79,9 +96,20 @@ rm -fr ./testresults
 PROPS="-e $PROPS"
 
 ## execute build, recording status
-mvn $PROPS -DdownloadSources=$downloadSources -Dmaven.test.failure.ignore=true clean:clean install eclipse:eclipse site && \
-mvn $PROPS -f pom.clover.xml clover:aggregate clover:clover
-status=$?
+case $target in
+    compile)
+    mvn $PROPS clean:clean compiler:compile
+    ;;
+    test)
+    mvn $PROPS clean:clean install
+    ;;
+    site)
+    mvn $PROPS -Dmaven.test.failure.ignore=true clean:clean install site && mvn $PROPS -f pom.clover.xml clover:aggregate clover:clover
+    ;;
+    eclipse)
+    mvn $PROPS -DdownloadSources=$downloadSources -Dmaven.test.failure.ignore=true clean:clean install eclipse:eclipse
+    ;;
+esac
 
 ## gather all test results together for BJ
 mkdir ./testresults
