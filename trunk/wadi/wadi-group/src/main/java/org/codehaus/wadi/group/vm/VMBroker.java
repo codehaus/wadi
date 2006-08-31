@@ -75,7 +75,7 @@ public class VMBroker {
             nodeNameToDispatcher.put(nodeName, dispatcher);
         }
 
-        electCoordinator(dispatcher);
+        electOnEachNode();
 
         // notify new peer of existing members...
         listenerSupport.notifyMembershipChanged(localPeer, true, coordinator);
@@ -92,7 +92,7 @@ public class VMBroker {
             throw new IllegalArgumentException("unknown dispatcher");
         }
 
-        electCoordinator(dispatcher);
+        electOnEachNode();
 
         listenerSupport.notifyMembershipChanged(localPeer, false, coordinator);
     }
@@ -217,6 +217,15 @@ public class VMBroker {
             Map.Entry entry = (Map.Entry) iter.next();
             Dispatcher dispatcher = (Dispatcher) entry.getValue();
             dispatcher.onMessage(message);
+        }
+    }
+
+    private void electOnEachNode() {
+        synchronized (nodeNameToDispatcher) {
+            for (Iterator iter = nodeNameToDispatcher.values().iterator(); iter.hasNext();) {
+                VMDispatcher remainingDispatcher = (VMDispatcher) iter.next();
+                electCoordinator(remainingDispatcher);
+            }
         }
     }
 
