@@ -104,7 +104,6 @@ public interface Contextualiser extends Lifecycle {
 	 */
 	void promoteToExclusive(Immoter immoter);
     
-    
 	void load(Emoter emoter, Immoter immoter);
 	
 	void findRelevantSessionNames(int numPartitions, Collection[] resultSet);
@@ -112,11 +111,7 @@ public interface Contextualiser extends Lifecycle {
 	int getLocalSessionCount();
 
     // lose these
-    
 	void setLastAccessedTime(Evictable evictable, long oldTime, long newTime);
     
     void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval);
-
-    
-
 }

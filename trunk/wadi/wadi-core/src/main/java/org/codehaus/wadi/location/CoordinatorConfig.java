@@ -28,20 +28,17 @@ import org.codehaus.wadi.group.Peer;
  * @version $Revision$
  */
 public interface CoordinatorConfig {
-
     int getNumPartitions();
 
     Peer getLocalNode();
+    
     Collection getRemoteNodes();
+    
     Cluster getCluster();
+    
     Dispatcher getDispatcher();
 
     Map getRendezVousMap();
 
-    Collection getLeavers();
-    Collection getLeft();
-
     long getInactiveTime();
-    void regenerateMissingPartitions(Peer[] living, Peer[] leaving);
-
 }

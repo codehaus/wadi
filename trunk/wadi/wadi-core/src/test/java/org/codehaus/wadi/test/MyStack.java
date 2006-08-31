@@ -128,7 +128,6 @@ public class MyStack {
       EndPoint location = new WebEndPoint(new InetSocketAddress("localhost", 8080));
       InvocationProxy proxy=new StandardHttpProxy("jsessionid");
       _manager=new ClusteredManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, _memory, _memory.getMap(), new DummyRouter(), true, streamer, true, replicaterfactory, location, proxy, dispatcher, 24, collapser);
-      _manager.setAllowRegenerationOfMissingPartitions(false); // we don't want to allow this in tests - it indicates that something has gone wrong...
 //    manager.setSessionListeners(new HttpSessionListener[]{});
       //manager.setAttributelisteners(new HttpSessionAttributeListener[]{});
       _manager.init(new DummyManagerConfig());

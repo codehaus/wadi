@@ -28,39 +28,42 @@ import org.codehaus.wadi.Evictable;
  */
 public abstract class AbstractChainedContextualiser extends AbstractContextualiser {
 
-  protected final Contextualiser _next;
+    protected final Contextualiser _next;
 
-  public AbstractChainedContextualiser(Contextualiser next) {
-    _next=next;
-  }
+    public AbstractChainedContextualiser(Contextualiser next) {
+        _next = next;
+    }
 
-  public void init(ContextualiserConfig config) {
-    super.init(config);
-    _next.init(config);
-  }
+    public void init(ContextualiserConfig config) {
+        super.init(config);
+        _next.init(config);
+    }
 
-  public void start() throws Exception {
-    super.start();
-    _next.start();
-  }
+    public void start() throws Exception {
+        super.start();
+        _next.start();
+    }
 
-  public void stop() throws Exception {
-    _next.stop();
-    super.stop();
-  }
+    public void stop() throws Exception {
+        _next.stop();
+        super.stop();
+    }
 
-  public void destroy() {
-    _next.destroy();
-    super.destroy();
-  }
+    public void destroy() {
+        _next.destroy();
+        super.destroy();
+    }
 
-  public void setLastAccessedTime(Evictable evictable, long oldTime, long newTime) {/* do nothing */}
-  public void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newTime) {/* do nothing */}
+    public void setLastAccessedTime(Evictable evictable, long oldTime, long newTime) {
+    }
 
-  public void findRelevantSessionNames(int numPartitions, Collection[] resultSet) {
-      super.findRelevantSessionNames(numPartitions, resultSet);
-      if (_next.isExclusive())
-          _next.findRelevantSessionNames(numPartitions, resultSet);
-  }
+    public void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newTime) {
+    }
 
+    public void findRelevantSessionNames(int numPartitions, Collection[] resultSet) {
+        super.findRelevantSessionNames(numPartitions, resultSet);
+        if (_next.isExclusive()) {
+            _next.findRelevantSessionNames(numPartitions, resultSet);
+        }
+    }
 }

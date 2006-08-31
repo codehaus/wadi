@@ -17,9 +17,9 @@
 package org.codehaus.wadi.test;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+
 import junit.framework.TestCase;
+
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
@@ -32,8 +32,10 @@ import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.impl.SimplePartitionMapper;
 import org.codehaus.wadi.location.PartitionManager;
 import org.codehaus.wadi.location.PartitionManagerConfig;
+import org.codehaus.wadi.location.impl.PartitionManagerJoiningEvent;
 import org.codehaus.wadi.location.impl.SimplePartitionManager;
 import org.codehaus.wadi.location.impl.SimplePartitionManager.Callback;
+
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 //Put this off until later - no current need to disentangle DIndex and PartitionManager, althought it will have to be done eventually...
@@ -75,17 +77,16 @@ public abstract class AbstractTestPartitionManager extends TestCase {
 		dispatcher.init(dc);
 		dispatcher.start();
 
-		Map distributedState=new HashMap();
-		Callback callback=new Callback() {
+		Callback callback = new Callback() {
+			public void onPartitionEvacuationRequest(ClusterEvent event) {
+			}
 
-			public void onPeerRemoved(ClusterEvent event) {
-				// TODO Auto-generated method stub
-
+			public void onPartitionManagerJoiningEvent(PartitionManagerJoiningEvent joiningEvent) {
 			}
 		};
 
 		int numPartitions=2;
-		return new SimplePartitionManager(dispatcher, numPartitions, distributedState, callback, new SimplePartitionMapper(numPartitions));
+		return new SimplePartitionManager(dispatcher, numPartitions, callback, new SimplePartitionMapper(numPartitions));
 	}
 
 	public void testPartitionManager() throws Exception {
@@ -98,48 +99,35 @@ public abstract class AbstractTestPartitionManager extends TestCase {
 			protected long _birthTime=System.currentTimeMillis();
 			
 			public void findRelevantSessionNames(int numPartitions, Collection[] resultSet) {
-				// TODO Auto-generated method stub
-
 			}
 
             public Peer getCoordinator() {
-                // TODO Auto-generated method stub
                 return null;
             }
 
 			public long getInactiveTime() {
-				// TODO Auto-generated method stub
 				return 0;
 			}
 
 			public boolean contextualise(Invocation invocation, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws InvocationException {
-				// TODO Auto-generated method stub
 				return false;
 			}
 
 			public String getPeerName(Address address) {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
 			public Immoter getImmoter(String name, Motable immotable) {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
 			public Sync getInvocationLock(String name) {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
 			public long getBirthTime() {
 				return _birthTime;
 			}
-            
-            
-            public boolean getAllowRegenerationOfMissingPartitions() {
-                return false;
-            }
 			
 		};
 

@@ -18,8 +18,9 @@ package org.codehaus.wadi.location.impl;
 import org.codehaus.wadi.group.Message;
 import org.codehaus.wadi.location.partition.PartitionEvacuationRequest;
 import org.codehaus.wadi.location.partition.PartitionRepopulateRequest;
-import org.codehaus.wadi.location.partition.PartitionTransferCommand;
 import org.codehaus.wadi.location.partition.PartitionTransferRequest;
+import org.codehaus.wadi.partition.PartitionBalancingInfoUpdate;
+import org.codehaus.wadi.partition.RetrieveBalancingInfoEvent;
 
 /**
  * 
@@ -32,11 +33,12 @@ public interface PartitionManagerMessageListener {
     // a node wants to rebuild a lost partition
     void onPartitionRepopulateRequest(Message om, PartitionRepopulateRequest request);
 
-    // receive a command to transfer IndexPartitions to another node
-    // send them in a request, waiting for response
-    // send an acknowledgement to Coordinator who sent original command
-    void onPartitionTransferCommand(Message om, PartitionTransferCommand command);
-
     // receive a transfer of partitions
     void onPartitionTransferRequest(Message om, PartitionTransferRequest request);
+    
+    void onPartitionManagerJoiningEvent(Message om, PartitionManagerJoiningEvent joiningEvent);
+    
+    void onRetrieveBalancingInfoEvent(Message om, RetrieveBalancingInfoEvent infoEvent);
+    
+    void onPartitionBalancingInfoUpdate(Message om, PartitionBalancingInfoUpdate infoUpdate);
 }

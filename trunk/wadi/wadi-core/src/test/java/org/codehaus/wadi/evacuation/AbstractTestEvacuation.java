@@ -59,7 +59,7 @@ public class AbstractTestEvacuation extends TestCase {
 		
 		assertTrue(id!=null);
 		
-		Thread.sleep(5000);// FIXME: prevents us stopping whilst a Partition transfer is ongoing....
+		Thread.sleep(1000);// FIXME: prevents us stopping whilst a Partition transfer is ongoing....
 		
 		_log.info("RED STOPPING...");
 		red.stop();

@@ -16,6 +16,7 @@
 package org.codehaus.wadi.replication.storage.remoting;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Map;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Cluster;
@@ -41,6 +42,10 @@ public class BaseMockDispatcher implements Dispatcher {
         throw new UnsupportedOperationException();
     }
 
+    public void send(Address target, String sourceCorrelationId, Serializable pojo) throws MessageExchangeException {
+        throw new UnsupportedOperationException();
+    }
+    
     public Message exchangeSend(Address to, Serializable body, long timeout) {
         throw new UnsupportedOperationException();
     }
@@ -85,6 +90,10 @@ public class BaseMockDispatcher implements Dispatcher {
         throw new UnsupportedOperationException();
     }
 
+    public Collection attemptMultiRendezVous(String correlationId, Quipu rv, long timeout) throws MessageExchangeException {
+        throw new UnsupportedOperationException();
+    }
+    
     public Cluster getCluster() {
         throw new UnsupportedOperationException();
     }

@@ -187,8 +187,9 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
 				matches++;
 			}
 		}
-		if (matches>0)
-			if (_log.isDebugEnabled()) _log.debug("matches found: "+matches);
+		if (matches>0) {
+		    if (_log.isDebugEnabled()) _log.debug("matches found: "+matches);
+        }
 	}
 	
 }

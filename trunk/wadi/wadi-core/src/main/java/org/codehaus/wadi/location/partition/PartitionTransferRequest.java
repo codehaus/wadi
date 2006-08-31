@@ -28,17 +28,10 @@ import org.codehaus.wadi.location.impl.LocalPartition;
  * @version $Revision:1815 $
  */
 public class PartitionTransferRequest implements PartitionRequestMessage, Serializable {
-
-	protected long _timeStamp;
 	protected LocalPartition[] _partitions;
 
-	public PartitionTransferRequest(long timeStamp, LocalPartition[] partitions) {
-		_timeStamp=timeStamp;
+	public PartitionTransferRequest(LocalPartition[] partitions) {
 		_partitions=partitions;
-	}
-
-	public long getTimeStamp() {
-		return _timeStamp;
 	}
 
 	public LocalPartition[] getPartitions() {
@@ -47,10 +40,10 @@ public class PartitionTransferRequest implements PartitionRequestMessage, Serial
 
     public String toString() {
     	StringBuffer buffer=new StringBuffer("<PartitionTransferRequest: ");
-    	for (int i=0; i<_partitions.length; i++)
-    		buffer.append((i==0?"":",")+_partitions[i]);
+    	for (int i=0; i<_partitions.length; i++) {
+    	    buffer.append((i==0?"":",")+_partitions[i]);
+        }
     	buffer.append(">");
         return buffer.toString();
     }
-
 }
