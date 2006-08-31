@@ -17,7 +17,6 @@
 package org.codehaus.wadi.group.impl;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -76,7 +75,9 @@ public abstract class AbstractCluster implements Cluster {
     }
 
     public Map getRemotePeers() {
-        return Collections.unmodifiableMap(_addressToPeer); // could we cache this ? - TODO
+        synchronized (_addressToPeer) {
+            return new HashMap(_addressToPeer);
+        }
     }
 
     public int getPeerCount() {
