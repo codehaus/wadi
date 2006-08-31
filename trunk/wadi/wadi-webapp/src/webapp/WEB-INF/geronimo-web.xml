@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<web-app xmlns="http://geronimo.apache.org/xml/ns/j2ee/web-1.2">
+<web-app xmlns="http://geronimo.apache.org/xml/ns/j2ee/web/jetty-1.2">
 
     <environment>
         <moduleId>
@@ -10,5 +10,7 @@
             <type>war</type>
         </moduleId>
     </environment>
+
+   <clustering-wadi/>
 
 </web-app>
