@@ -17,6 +17,8 @@
 package org.codehaus.wadi.location.partition;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
 
 import org.codehaus.wadi.PartitionRequestMessage;
 
@@ -25,20 +27,28 @@ import org.codehaus.wadi.PartitionRequestMessage;
  * @version $Revision:1815 $
  */
 public class PartitionRepopulateRequest implements PartitionRequestMessage, Serializable {
-
-    protected int[] _keys;
+    private final int[] keys;
 
     public PartitionRepopulateRequest(int[] keys) {
-        super();
-        _keys=keys;
+        if (null == keys || keys.length == 0) {
+            throw new IllegalArgumentException("keys is required");
+        }
+        this.keys = keys;
     }
 
     public int[] getKeys() {
-        return _keys;
+        return keys;
     }
 
+    public Collection[] createPartitionIndexToSessionNames(int numPartitions) {
+        Collection[] partitionIndexToSessionNames = new Collection[numPartitions];
+        for (int i = 0; i < keys.length; i++) {
+            partitionIndexToSessionNames[keys[i]] = new ArrayList();
+        }
+        return partitionIndexToSessionNames;
+    }
 
     public String toString() {
-        return "<PartitionRepopulateRequest"+_keys+">";
+        return "<PartitionRepopulateRequest" + keys + ">";
     }
 }

@@ -16,24 +16,17 @@
  */
 package org.codehaus.wadi.location.impl;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.MessageExchangeException;
-import org.codehaus.wadi.group.Peer;
-import org.codehaus.wadi.group.Quipu;
 import org.codehaus.wadi.group.impl.AbstractCluster;
 import org.codehaus.wadi.location.CoordinatorConfig;
-import org.codehaus.wadi.location.partition.PartitionEvacuationResponse;
-import org.codehaus.wadi.location.partition.PartitionTransferCommand;
+import org.codehaus.wadi.partition.BasicPartitionBalancer;
+import org.codehaus.wadi.partition.PartitionBalancer;
+
 import EDU.oswego.cs.dl.util.concurrent.Slot;
-import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 
 //it's important that the Plan is constructed from snapshotted resources (i.e. the ground doesn't
 //shift under its feet), and that it is made and executed as quickly as possible - as a node could
@@ -44,289 +37,82 @@ import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
  * @version $Revision:1815 $
  */
 public class Coordinator implements Runnable {
+	protected static final Log _log = LogFactory.getLog(Coordinator.class);
 
-	protected final Log _log=LogFactory.getLog(getClass());
+    private final Slot _flag = new Slot();
+    private final CoordinatorConfig _config;
+    private final Cluster _cluster;
+    private final Dispatcher _dispatcher;
+    private final int _numPartitions;
+    private final PartitionBalancer partitionBalancer;
 
-	protected final Slot _flag=new Slot();
+    protected Thread _thread;
 
-	protected final CoordinatorConfig _config;
-	protected final Cluster _cluster;
-	protected final Dispatcher _dispatcher;
-	protected final Peer _localPeer;
-	protected final int _numItems;
-	protected final long _inactiveTime;
+    public Coordinator(CoordinatorConfig config) {
+        _config = config;
+        _cluster = _config.getCluster();
+        _dispatcher = _config.getDispatcher();
+        _numPartitions = _config.getNumPartitions();
+        partitionBalancer = newPartitionBalancer();
+    }
 
-	public Coordinator(CoordinatorConfig config) {
-		_config=config;
-		_cluster=_config.getCluster();
-        _localPeer=_cluster.getLocalPeer();
-		_dispatcher=_config.getDispatcher();
-		_numItems=_config.getNumPartitions();
-		_inactiveTime=_config.getInactiveTime();
-	}
+    public synchronized void start() throws Exception {
+        partitionBalancer.start();
+        startCoordinatorThread();
+    }
 
-	protected Thread _thread;
-	protected Peer[] _remoteNodes;
+    public synchronized void stop() throws Exception {
+        _flag.put(Boolean.FALSE);
+        _thread.join();
+        partitionBalancer.stop();
+    }
 
+    public synchronized void queueRebalancing() {
+        _log.info("Queueing partition rebalancing");
+        try {
+            _flag.offer(Boolean.TRUE, 0);
+        } catch (InterruptedException e) {
+            throw (IllegalStateException) new IllegalStateException().initCause(e);
+        }
+    }
 
-	public synchronized void start() throws Exception {
-		_log.info("starting...");
-		_thread=new Thread(this, "WADI Coordinator");
-		_thread.start();
-		_log.info("...started");
-	}
-
-	public synchronized void stop() throws Exception {
-		// somehow wake up thread
-		_log.info("stopping...");
-		_flag.put(Boolean.FALSE);
-		_thread.join();
-		_thread=null;
-		_log.info("...stopped");
-	}
-
-	public synchronized void queueRebalancing() {
-		_log.trace("queueing rebalancing...");
-		try {
-			_flag.offer(Boolean.TRUE, 0);
-		} catch (InterruptedException e) {
-			_log.warn("unexpected interruption");
-		}
-		_log.trace("...rebalancing queued");
-	}
-
-	public void run() {
+    public void run() {
         AbstractCluster._cluster.set(_cluster);
-		try {
-			while (_flag.take()==Boolean.TRUE) {
-				rebalanceClusterState();
-			}
-		} catch (InterruptedException e) {
-			Thread.interrupted();
-			_log.warn("interrupted"); // hmmm.... - TODO
-		}
-	}
-
-	public void rebalanceClusterState() {
-        Collection stayingNodes = new ArrayList();
-        Collection leavingNodes=new ArrayList();
-        deriveClusterUpdates(stayingNodes, leavingNodes);
-        
-        if (!isPartitionKeysInitialized(stayingNodes)) {
-            scheduleRebalancing();
-            return;
+        try {
+            while (_flag.take() == Boolean.TRUE) {
+                rebalanceClusterState();
+            }
+        } catch (InterruptedException e) {
+            Thread.interrupted();
+            _log.warn("Coordinator thread interrupted - Restarting Coordinator thread");
+            startCoordinatorThread();
         }
-        
-        _log.trace("--------");
-        _log.trace("STAYING:");
-        printNodes(stayingNodes);
-        _log.trace("LEAVING:");
-        printNodes(leavingNodes);
-        _log.trace("--------");
+    }
 
-        int failures=0;
-		try {
-			Peer [] leaving=(Peer[])leavingNodes.toArray(new Peer[leavingNodes.size()]);
+    protected PartitionBalancer newPartitionBalancer() {
+        return new BasicPartitionBalancer(_dispatcher, _numPartitions);
+    }
 
-			if (stayingNodes.size()==0) {
-				_log.info("we are the last node - no need to rebalance cluster");
-			} else {
-				Peer [] living=(Peer[])stayingNodes.toArray(new Peer[stayingNodes.size()]);
-
-				_config.regenerateMissingPartitions(living, leaving);
-
-				RedistributionPlan plan=new RedistributionPlan(living, leaving, _numItems);
-
-				_log.trace("--------");
-				_log.trace("BEFORE:");
-				printNodes(living, leaving);
-				_log.trace("--------");
-
-				Map rvMap=_config.getRendezVousMap();
-				Quipu rv=new Quipu(0);
-				String correlationId=_dispatcher.nextCorrelationId();
-				rvMap.put(correlationId, rv);
-				execute(plan, correlationId, rv); // quipu will be incremented as participants are invited
-
-				try {
-					_log.trace("WAITING ON RENDEZVOUS");
-					if (rv.waitFor(_inactiveTime)) {
-						_log.trace("RENDEZVOUS SUCCESSFUL");
-						//Collection results=rv.getResults();
-					} else {
-						_log.warn("RENDEZVOUS FAILED");
-						failures++;
-					}
-				} catch (TimeoutException e) {
-					_log.warn("timed out waiting for response", e);
-					failures++;
-				} catch (InterruptedException e) {
-					_log.warn("unexpected interruption", e);
-					failures++;
-				} finally {
-					rvMap.remove(correlationId);
-					// somehow check all returned success.. - TODO
-				}
-
-				_log.trace("--------");
-				_log.trace("AFTER:");
-				printNodes(living, leaving);
-				_log.trace("--------");
-			}
-
-			// send EvacuationResponses to each leaving node... - hmmm....
-			Collection left=_config.getLeft();
-			for (int i=0; i<leaving.length; i++) {
-				Peer node=leaving[i];
-				if (_log.isTraceEnabled()) _log.trace("sending evacuation response to: "+_dispatcher.getPeerName(node.getAddress()));
-				if (!left.contains(node.getAddress())) {
-					PartitionEvacuationResponse response=new PartitionEvacuationResponse();
-                    try {
-                        _dispatcher.reply(_localPeer.getAddress(), 
-                                        node.getAddress(), 
-                                        node.getName(), 
-                                        response);
-                    } catch (MessageExchangeException e) {
-                        if (_log.isErrorEnabled()) {
-                            _log.error("problem sending EvacuationResponse to "+DIndex.getPeerName(node));
-                        }
-                        failures++;
-                    }
-					left.add(node.getAddress());
-				}
-			}
-
-		} catch (Throwable t) {
-			_log.warn("problem rebalancing indeces", t);
-			failures++;
-		}
-
-		if (failures > 0) {
+    public void rebalanceClusterState() {
+        try {
+            partitionBalancer.balancePartitions();
+        } catch (MessageExchangeException e) {
             scheduleRebalancing();
-		}
-	}
+        }
+    }
 
-    private void scheduleRebalancing() {
+    protected void scheduleRebalancing() {
         long retryDelay = 500;
-        if (_log.isWarnEnabled()) {
-            _log.warn("Will retry rebalancing in " + retryDelay + " millis...");
-        }
+        _log.warn("Will retry rebalancing in " + retryDelay + " millis...");
         try {
             Thread.sleep(retryDelay);
         } catch (InterruptedException e) {
         }
         queueRebalancing();
     }
-    
-    private void deriveClusterUpdates(Collection stayingNodes, Collection leavingNodes) {
-        stayingNodes.add(_localPeer);
-        Map nodeMap = _cluster.getRemotePeers();
-        stayingNodes.addAll(nodeMap.values());
 
-        Collection l = new ArrayList(_config.getLeavers());
-        for (Iterator i=l.iterator(); i.hasNext(); ) {
-            Address d = (Address) i.next();
-            Peer leaver = getPeer(d);
-            if (leaver != null) {
-                leavingNodes.add(leaver);
-                stayingNodes.remove(leaver);
-            }
-        }
+    protected void startCoordinatorThread() {
+        _thread = new Thread(this, "WADI Coordinator");
+        _thread.start();
     }
-
-    private boolean isPartitionKeysInitialized(Collection nodes) {
-        for (Iterator iter = nodes.iterator(); iter.hasNext();) {
-            Peer peer = (Peer) iter.next();
-            PartitionKeys keys = DIndex.getPartitionKeys(peer);
-            if (null == keys) {
-                _log.info("Peer " + peer + " does not yet define its partition keys");
-                return false;
-            }
-        }
-        return true;
-    }
-
-    protected void execute(RedistributionPlan plan, String correlationId, Quipu quipu) {
-		quipu.increment(); // add a safety margin of '1', so if we are caught up by acks, waiting thread does not finish until we have
-		Iterator p=plan.getProducers().iterator();
-		Iterator c=plan.getConsumers().iterator();
-
-		PartitionOwner consumer=null;
-		while (p.hasNext()) {
-			PartitionOwner producer=(PartitionOwner)p.next();
-			Collection transfers=new ArrayList();
-			while (producer._deviation>0) {
-				if (consumer==null)
-					consumer=c.hasNext()?(PartitionOwner)c.next():null;
-					if (null == consumer) {
-						break;
-					}
-					if (producer._deviation>=consumer._deviation) {
-						transfers.add(new PartitionTransfer(consumer._node.getAddress(), DIndex.getPeerName(consumer._node), consumer._deviation));
-						producer._deviation-=consumer._deviation;
-						consumer._deviation=0;
-						consumer=null;
-					} else {
-						transfers.add(new PartitionTransfer(consumer._node.getAddress(), DIndex.getPeerName(consumer._node), producer._deviation));
-						consumer._deviation-=producer._deviation;
-						producer._deviation=0;
-					}
-			}
-
-            if (0 < transfers.size()) {
-                PartitionTransferCommand command = new PartitionTransferCommand((PartitionTransfer[])transfers.toArray(new PartitionTransfer[transfers.size()]));
-                quipu.increment();
-                if (_log.isTraceEnabled()) {
-                    _log.trace("sending plan to: "+_dispatcher.getPeerName(producer._node.getAddress()));
-                }
-                try {
-                    _dispatcher.send(_localPeer.getAddress(), producer._node.getAddress(), correlationId, command);
-                } catch (MessageExchangeException e) {
-                    _log.error("problem sending transfer command", e);
-                }
-            }
-            
-		}
-		quipu.decrement(); // remove safety margin
-	}
-
-	protected int printNodes(Collection nodes) {
-		int total=0;
-		for (Iterator i=nodes.iterator(); i.hasNext(); )
-			total+=printNode((Peer)i.next());
-		return total;
-	}
-
-	protected void printNodes(Peer[] living, Peer[] leaving) {
-		int total=0;
-		for (int i=0; i<living.length; i++)
-			total+=printNode(living[i]);
-		for (int i=0; i<leaving.length; i++)
-			total+=printNode(leaving[i]);
-		if (_log.isTraceEnabled()) _log.trace("TOTAL: " + total);
-	}
-
-	protected int printNode(Peer peer) {
-		if (peer!=_localPeer)
-			peer=(Peer)_cluster.getRemotePeers().get(peer.getAddress());
-		if (peer==null) {
-			if (_log.isTraceEnabled()) _log.trace(DIndex.getPeerName(peer) + " : <unknown>");
-			return 0;
-		} else {
-			PartitionKeys keys=DIndex.getPartitionKeys(peer);
-			int amount=keys.cardinality();
-			if (_log.isTraceEnabled()) _log.trace(DIndex.getPeerName(peer) + " : " + amount + " - " + keys);
-			return amount;
-		}
-	}
-
-	protected Peer getPeer(Address address) {
-		Peer localPeer=_localPeer;
-		Address localAddress=localPeer.getAddress();
-		if (address.equals(localAddress))
-			return localPeer;
-		else
-			return (Peer)_cluster.getRemotePeers().get(address);
-	}
-
 }

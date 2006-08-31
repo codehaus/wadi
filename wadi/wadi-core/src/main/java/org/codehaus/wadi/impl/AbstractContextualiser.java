@@ -28,34 +28,28 @@ import org.codehaus.wadi.ContextualiserConfig;
  * @version $Revision$
  */
 public abstract class AbstractContextualiser implements Contextualiser {
-  protected final Log _log = LogFactory.getLog(getClass());
+    protected final Log _log = LogFactory.getLog(getClass());
 
-  public void init(ContextualiserConfig config) {
-    _log.info("initialising");
-  }
+    public void init(ContextualiserConfig config) {
+    }
 
-  public void start() throws Exception {
-      if (_log.isInfoEnabled()) _log.info("starting: " + getStartInfo());
-  }
+    public void start() throws Exception {
+    }
 
-  public String getStartInfo() {
-      return "";
-  }
+    public String getStartInfo() {
+        return "";
+    }
 
-  public void stop() throws Exception {
-      if (_log.isInfoEnabled()) _log.info("stopped: " + getStopInfo());
-  }
+    public void stop() throws Exception {
+    }
 
-  public String getStopInfo() {
-      return "";
-  }
+    public String getStopInfo() {
+        return "";
+    }
 
-  public void destroy() {
-    _log.info("destroyed");
-  }
+    public void destroy() {
+    }
 
-  public void findRelevantSessionNames(int numPartitions, Collection[] resultSet) {
-    _log.trace("finding relevant session names");
-  }
-
+    public void findRelevantSessionNames(int numPartitions, Collection[] resultSet) {
+    }
 }

@@ -16,9 +16,8 @@
  */
 package org.codehaus.wadi.location;
 
-import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.location.impl.PartitionFacade;
-import org.codehaus.wadi.location.impl.PartitionKeys;
+import org.codehaus.wadi.partition.PartitionBalancingInfo;
 
 /**
  * A PartitionManager is responsible for unambiguously renegotiating Partition ownership every time
@@ -31,21 +30,19 @@ import org.codehaus.wadi.location.impl.PartitionKeys;
  *
  */
 public interface PartitionManager {
-
 	PartitionFacade getPartition(int partition);
+
 	PartitionFacade getPartition(Object key);
-	PartitionKeys getPartitionKeys();
+	
+    PartitionBalancingInfo getBalancingInfo();
+	
 	int getNumPartitions();
 
 	void init(PartitionManagerConfig config);
-	void start() throws Exception;
-	void evacuate() throws Exception;
-	void stop() throws Exception;
-
-	void update(Peer node);
-	void regenerateMissingPartitions(Peer[] living, Peer[] leaving);
-	void localise();
 	
-	void waitUntilUseable() throws InterruptedException;
-
+	void start() throws Exception;
+	
+	void evacuate() throws Exception;
+	
+	void stop() throws Exception;
 }
