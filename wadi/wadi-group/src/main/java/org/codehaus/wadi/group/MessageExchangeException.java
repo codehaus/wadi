@@ -22,6 +22,10 @@ package org.codehaus.wadi.group;
  */
 public class MessageExchangeException extends Exception {
 
+    public MessageExchangeException(String description) {
+        super(description);
+    }
+
     public MessageExchangeException(Throwable cause) {
         super(cause);
     }
