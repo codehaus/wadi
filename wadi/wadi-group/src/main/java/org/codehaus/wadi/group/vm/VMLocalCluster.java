@@ -144,4 +144,8 @@ public class VMLocalCluster implements Cluster {
     public long getInactiveTime() {
         return delegate.getInactiveTime();
     }
+    
+    public String toString() {
+        return "VMLocalCluster for node " + node;
+    }
 }

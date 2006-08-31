@@ -81,4 +81,8 @@ public class VMDispatcher extends AbstractDispatcher {
     public Address getAddress(String name) {
         return cluster.getAddress(name);
     }
+    
+    public String toString() {
+        return "VMDispatcher for node " + localNode;
+    }
 }
