@@ -17,6 +17,7 @@
 package org.codehaus.wadi.group;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Map;
 
 /**
@@ -53,6 +54,24 @@ public interface Dispatcher extends MessageListener {
      */
     void send(Address target, Serializable pojo) throws MessageExchangeException;
 
+    /**
+     * send a Serializable 'pojo' to a 'target' Address, with the Message's
+     * replyTo field containing the local cluster Address - async - although we are
+     * expecting a reply, which will be matched with the sourceCorrelationId.
+     * The code that calls this method assumes responsibility for coordinating
+     * this thread with the expected reply.
+     * 
+     * @param target
+     *            The Address of the Peer to which this message is to be sent
+     * @param sourceCorrelationId
+     *            The correlationId which will be used to match a response on
+     *            the source Peer
+     * @param pojo
+     *            The object to be sent in the Message
+     * @throws MessageExchangeException
+     */
+    void send(Address target, String sourceCorrelationId, Serializable pojo) throws MessageExchangeException;
+    
     /**
      * send a Serializable 'pojo' to a 'target' Address, with the Message's
      * replyTo field containing the 'source' Address - async - although we are
@@ -146,8 +165,10 @@ public interface Dispatcher extends MessageListener {
 
     Quipu setRendezVous(String correlationId, int numLlamas);
 
-    Message attemptRendezVous(String correlationId, Quipu rv, long timeout);
+    Message attemptRendezVous(String correlationId, Quipu rv, long timeout) throws MessageExchangeException;
 
+    Collection attemptMultiRendezVous(String correlationId, Quipu rv, long timeout) throws MessageExchangeException;
+    
     void start() throws MessageExchangeException;
 
     void stop() throws MessageExchangeException;

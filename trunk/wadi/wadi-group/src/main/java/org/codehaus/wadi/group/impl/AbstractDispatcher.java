@@ -17,7 +17,9 @@
 package org.codehaus.wadi.group.impl;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Map;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.group.Address;
@@ -27,6 +29,7 @@ import org.codehaus.wadi.group.Message;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.Quipu;
 import org.codehaus.wadi.group.ServiceEndpoint;
+
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
 import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
@@ -101,35 +104,55 @@ public abstract class AbstractDispatcher implements Dispatcher {
 		return rv;
 	}
 	
-	public Message attemptRendezVous(String correlationId, Quipu rv, long timeout) {
-		// rendez-vous with response/timeout...
-		Message response=null;
-		try {
-			do {
-				try {
-					long startTime=System.currentTimeMillis();
-					if (rv.waitFor(timeout)) {
-						response=(Message)rv.getResults().toArray()[0]; // TODO - Aargh!
-						long elapsedTime=System.currentTimeMillis()-startTime;
-						if (_log.isTraceEnabled()) _log.trace("successful message exchange within timeframe ("+elapsedTime+"<"+timeout+" millis) {"+correlationId+"}"); // session does not exist
-					} else {
-						response=null;
-						if (_log.isWarnEnabled()) _log.warn("unsuccessful message exchange within timeframe ("+timeout+" millis) {"+correlationId+"}", new Exception());
-					}
-				} catch (TimeoutException e) {
-					if (_log.isWarnEnabled()) _log.warn("no response to request within timeout ("+timeout+" millis)"); // session does not exist
-				} catch (InterruptedException e) {
-					if (_log.isWarnEnabled()) _log.warn("waiting for response - interruption ignored");
-				}
-			} while (Thread.interrupted());
-		} finally {
-			// tidy up rendez-vous
-			if (correlationId!=null)
-				_rvMap.remove(correlationId);
-		}
-		return response;
+	public Message attemptRendezVous(String correlationId, Quipu rv, long timeout) throws MessageExchangeException {
+        Collection messages = attemptMultiRendezVous(correlationId, rv, timeout);
+        if (messages.size() > 1) {
+            throw new MessageExchangeException("[" + messages.size() + "] result messages. Expected only one.");
+        }
+        return (Message) messages.iterator().next();
 	}
 	
+    public Collection attemptMultiRendezVous(String correlationId, Quipu rv, long timeout) throws MessageExchangeException {
+        Collection response = null;
+        try {
+            do {
+                try {
+                    long startTime = System.currentTimeMillis();
+                    if (rv.waitFor(timeout)) {
+                        response = rv.getResults();
+                        long elapsedTime = System.currentTimeMillis()-startTime;
+                        if (_log.isTraceEnabled()) {
+                            _log.trace("successful message exchange within timeframe (" + elapsedTime + 
+                                    "<" + timeout + " millis) {" + correlationId + "}");
+                        }
+                    } else {
+                        if (_log.isWarnEnabled()) {
+                            _log.warn("unsuccessful message exchange within timeframe (" + timeout + 
+                                    " millis) {" + correlationId + "}", new Exception());
+                        }
+                    }
+                } catch (TimeoutException e) {
+                    if (_log.isWarnEnabled()) {
+                        _log.warn("no response to request within timeout ("+timeout+" millis)");
+                    }
+                } catch (InterruptedException e) {
+                    if (_log.isWarnEnabled()) {
+                        _log.warn("waiting for response - interruption ignored");
+                    }
+                }
+            } while (Thread.interrupted());
+        } finally {
+            // tidy up rendez-vous
+            if (null != correlationId) {
+                _rvMap.remove(correlationId);
+            }
+        }
+        if (null == response) {
+            throw new MessageExchangeException("No correlated messages received within [" + timeout + "]ms");
+        }
+        return response;
+    }
+    
     public Message exchangeSend(Address target, Object pojo, long timeout) throws MessageExchangeException {
         return exchangeSend(target, (Serializable)pojo, timeout);
     }
@@ -163,7 +186,20 @@ public abstract class AbstractDispatcher implements Dispatcher {
         }
     }
 	
-	public void send(Address source, Address target, String sourceCorrelationId, Serializable pojo) throws MessageExchangeException {
+    public void send(Address target, String sourceCorrelationId, Serializable pojo) throws MessageExchangeException {
+        try {
+            Message om = createMessage();
+            om.setReplyTo(getCluster().getLocalPeer().getAddress());
+            om.setAddress(target);
+            om.setPayload(pojo);
+            om.setSourceCorrelationId(sourceCorrelationId);
+            send(target, om);
+        } catch (Exception e) {
+            if (_log.isErrorEnabled()) _log.error("problem sending " + pojo, e);
+        }
+    }
+
+    public void send(Address source, Address target, String sourceCorrelationId, Serializable pojo) throws MessageExchangeException {
         Message om=createMessage();
         om.setReplyTo(source);
         om.setAddress(target);
