@@ -14,20 +14,20 @@
       <subscribe>dev-subscribe@wadi.codehaus.org</subscribe>
       <unsubscribe>dev-unsubscribe@wadi.codehaus.org</unsubscribe>
       <post>dev@wadi.codehaus.org</post>
-      <archive>http://archive.wadi.codehaus.org/dev/</archive>
+      <archive>http://news.gmane.org/gmane.comp.java.wadi.devel</archive>
     </mailingList>
     <mailingList>
       <name>User List</name>
       <subscribe>user-subscribe@wadi.codehaus.org</subscribe>
       <unsubscribe>user-unsubscribe@wadi.codehaus.org</unsubscribe>
       <post>user@wadi.codehaus.org</post>
-      <archive>http://archive.wadi.codehaus.org/user/</archive>
+      <archive>http://news.gmane.org/gmane.comp.java.wadi.general</archive>
     </mailingList>
     <mailingList>
       <name>Commits List</name>
       <subscribe>scm-subscribe@wadi.codehaus.org</subscribe>
       <unsubscribe>scm-unsubscribe@wadi.codehaus.org</unsubscribe>
-      <archive>http://archive.wadi.codehaus.org/scm/</archive>
+      <archive>http://news.gmane.org/gmane.comp.java.wadi.cvs</archive>
     </mailingList>
   </mailingLists>
 
@@ -190,8 +190,8 @@
   </licenses>
 
   <scm>
-    <connection>scm:svn://svn.wadi.codehaus.org/wadi/scm/trunk/wadi</connection>
-    <developerConnection>scm:svn+ssh://svn.wadi.codehaus.org/home/projects/wadi/scm/trunk/wadi</developerConnection>
+    <connection>scm:http://svn.codehaus.org/wadi/trunk/wadi/</connection>
+    <developerConnection>scm:svn://svn.wadi.codehaus.org/wadi/trunk/wadi/</developerConnection>
     <url>http://svn.wadi.codehaus.org/wadi/trunk/wadi</url>
   </scm>
 
@@ -202,8 +202,8 @@
 
   <!-- not yet read by Beetlejuice... -->
   <ciManagement>
-    <system>Beetlejuice</system>
-    <url>http://ci.codehaus.org/beetlejuice/viewProjectSummary.action?projectName=WADI</url>
+    <system>Continuum</system>
+    <url>http://ouroboros.dnsalias.net:8080/continuum</url>
     <notifiers>
       <notifier>
         <type>mail</type>
