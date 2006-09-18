@@ -460,6 +460,13 @@
   </bean>
 -->
 
+  <bean
+    id="DispatcherWrapper"
+    class="org.codehaus.wadi.group.impl.DispatcherWrapper"
+    >
+    <constructor-arg><ref bean="Dispatcher"/></constructor-arg>
+  </bean>
+
   <!-- and finally - the SessionManager itself -->
 
   <bean
