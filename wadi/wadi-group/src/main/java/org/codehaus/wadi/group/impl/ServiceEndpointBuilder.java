@@ -56,7 +56,8 @@ public class ServiceEndpointBuilder {
         for (Iterator iter = builtDispatchers.iterator(); iter.hasNext();) {
             ServiceEndpoint msgDispatcher = (ServiceEndpoint) iter.next();
             msgDispatcher.dispose(nbAttemp, delayMillis);
-        }        
+            iter.remove();
+        }
     }
     
     private void buildRPC(Dispatcher dispatcher, Method method, Object target) {

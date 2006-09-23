@@ -22,6 +22,8 @@ import java.util.Map;
  * @version $Revision: 1603 $
  */
 public interface Cluster {
+    String getClusterName();
+    
     void setElectionStrategy(ElectionStrategy strategy);
 
     Map getRemotePeers();
@@ -36,6 +38,8 @@ public interface Cluster {
 
     void removeClusterListener(ClusterListener listener);
 
+    Dispatcher getDispatcher();
+    
     void start() throws ClusterException;
 
     void stop() throws ClusterException;

@@ -22,7 +22,7 @@ import org.codehaus.wadi.group.MessageListener;
  * 
  * @version $Revision: 1603 $
  */
-interface MessageDispatcherManager extends MessageListener {
+public interface MessageDispatcherManager extends MessageListener {
     void register(ServiceEndpoint msgDispatcher);
 
     void unregister(ServiceEndpoint msgDispatcher, int nbAttemp, long delayMillis);

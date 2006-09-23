@@ -17,89 +17,75 @@
 package org.codehaus.wadi.jgroups;
 
 import java.io.ObjectStreamException;
-import java.util.HashMap;
-import java.util.Map;
+
 import org.codehaus.wadi.group.Address;
-import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.Peer;
+import org.codehaus.wadi.group.PeerInfo;
 
 public class JGroupsPeer implements Peer, Address, Comparable {
 
     protected final transient JGroupsCluster _cluster;
-    protected final transient Map _state;
+    protected final String name;
+    private final PeerInfo peerInfo;
+    protected org.jgroups.Address _jgAddress;
 
-    protected org.jgroups.Address _jgAddress; // set at init()-time
+    public JGroupsPeer(JGroupsCluster cluster, String name) {
+        if (null == cluster) {
+            throw new IllegalArgumentException("cluster is required");
+        } else if (null == name) {
+            throw new IllegalArgumentException("name is required");
+        }
+        _cluster = cluster;
+        this.name = name;
 
-    public JGroupsPeer(JGroupsCluster cluster) {
-        super();
-        _cluster=cluster;
-        _state=new HashMap();
+        peerInfo = new PeerInfo();
     }
 
-    // 'java.lang.Object' API
+    public JGroupsPeer(JGroupsCluster cluster, JGroupsPeer prototype) {
+        if (null == cluster) {
+            throw new IllegalArgumentException("cluster is required");
+        } else if (null == prototype) {
+            throw new IllegalArgumentException("prototype is required");
+        }
+        _cluster = cluster;
+        this.name = prototype.name;
+        this.peerInfo = prototype.peerInfo;
+    }
 
     protected Object readResolve() throws ObjectStreamException {
-        // somehow always return same instance...
-        return JGroupsCluster.get(_jgAddress);
+        return JGroupsCluster.get(this);
     }
 
     public int hashCode() {
-        return _jgAddress==null?0:_jgAddress.hashCode();
+        return _jgAddress == null ? 0 : _jgAddress.hashCode();
     }
 
     public boolean equals(Object object) {
-        return this==object;
+        return this == object;
     }
-
-    // 'java.lang.Comparable' API
 
     public int compareTo(Object object) {
-        return _jgAddress.compareTo(((JGroupsPeer)object).getJGAddress());
+        return _jgAddress.compareTo(((JGroupsPeer) object).getJGAddress());
     }
-
-    // 'org.codehaus.wadi.group.Peer' API
 
     public Address getAddress() {
         return this;
     }
 
     public String getName() {
-        return (String)getAttribute(_peerNameKey);
+        return name;
     }
-
-    public Map getState() {
-        return _state;
-    }
-
-    // 'org.codehaus.wadi.group.LocalPeer' API
 
     public void init(org.jgroups.Address jgAddress) {
-        _jgAddress=jgAddress;
-    }
-
-    public Object getAttribute(Object key) {
-        synchronized (_state) {return _state.get(key);}
-    }
-
-    public Object setAttribute(Object key, Object value) {
-        synchronized (_state) {return _state.put(key, value);}
-    }
-
-    public Object removeAttribute(Object key) {
-        synchronized (_state) {return _state.remove(key);}
-    }
-
-    // 'org.codehaus.wadi.jgroups.JGroupsPeer' API
-
-    public void setState(Map state) throws MessageExchangeException {
-        synchronized (_state) {
-            _state.clear();
-            _state.putAll(state);
-        }
+        _jgAddress = jgAddress;
     }
 
     public org.jgroups.Address getJGAddress() {
         return _jgAddress;
+    }
+
+    public PeerInfo getPeerInfo() {
+        return peerInfo; 
     }
 
 }

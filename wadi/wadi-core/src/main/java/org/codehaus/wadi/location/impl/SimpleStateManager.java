@@ -68,7 +68,6 @@ public class SimpleStateManager implements StateManager, StateManagerMessageList
     protected ImmigrationListener _listener;
 
 	public SimpleStateManager(Dispatcher dispatcher, long inactiveTime) {
-		super();
 		_dispatcher=dispatcher;
 		_inactiveTime=inactiveTime;
         
@@ -76,29 +75,26 @@ public class SimpleStateManager implements StateManager, StateManagerMessageList
 	}
 
 	public void init(StateManagerConfig config) {
-		_config=config;
-		_log=LogFactory.getLog(getClass().getName()+"#"+_config.getLocalPeerName());
-
-        _endpointBuilder.addSEI(_dispatcher, StateManagerMessageListener.class, this);
-        _endpointBuilder.addCallback(_dispatcher, InsertPMToIM.class);
-        _endpointBuilder.addCallback(_dispatcher, DeletePMToIM.class);
-        _endpointBuilder.addCallback(_dispatcher, EvacuatePMToIM.class);
-
-        // GridState - Relocate - 5 messages - IM->PM->SM->IM->SM->PM
-        _endpointBuilder.addCallback(_dispatcher, MoveSMToIM.class);
-        _endpointBuilder.addCallback(_dispatcher, MoveIMToSM.class);
-        _endpointBuilder.addCallback(_dispatcher, MoveSMToPM.class);
-        // or possibly - IM->PM->IM (failure)
-        _endpointBuilder.addCallback(_dispatcher, MovePMToIM.class);
-        // or possibly - IM->PM->IM (Invocation relocation)
-        _endpointBuilder.addCallback(_dispatcher, MovePMToIMInvocation.class);
-        
-        _endpointBuilder.addCallback(_dispatcher, ReleaseEntryResponse.class);
+		_config = config;
+        _log = LogFactory.getLog(getClass().getName() + "#" + _config.getLocalPeerName());
 	}
 
 	public void start() throws Exception {
-		// TODO Auto-generated method stub
-
+	    _endpointBuilder.addSEI(_dispatcher, StateManagerMessageListener.class, this);
+	    _endpointBuilder.addCallback(_dispatcher, InsertPMToIM.class);
+	    _endpointBuilder.addCallback(_dispatcher, DeletePMToIM.class);
+	    _endpointBuilder.addCallback(_dispatcher, EvacuatePMToIM.class);
+	    
+	    // GridState - Relocate - 5 messages - IM->PM->SM->IM->SM->PM
+	    _endpointBuilder.addCallback(_dispatcher, MoveSMToIM.class);
+	    _endpointBuilder.addCallback(_dispatcher, MoveIMToSM.class);
+	    _endpointBuilder.addCallback(_dispatcher, MoveSMToPM.class);
+	    // or possibly - IM->PM->IM (failure)
+	    _endpointBuilder.addCallback(_dispatcher, MovePMToIM.class);
+	    // or possibly - IM->PM->IM (Invocation relocation)
+	    _endpointBuilder.addCallback(_dispatcher, MovePMToIMInvocation.class);
+	    
+	    _endpointBuilder.addCallback(_dispatcher, ReleaseEntryResponse.class);
 	}
 
 	public void stop() throws Exception {

@@ -355,6 +355,12 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>com.agical.rmock</groupId>
+      <artifactId>rmock</artifactId>
+      <version>2.0.0-rc-6</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>commons-logging</groupId>
       <artifactId>commons-logging-api</artifactId>
       <version>${commons-logging.version}</version>
@@ -423,22 +429,19 @@
 	<configuration>
 	  <excludes>
 	    <exclude implementation="java.lang.String">**/*$*.java</exclude><!-- stop surefire from trying to run nested classes... -->
+	    <exclude implementation="java.lang.String">**/Abstract*.java</exclude>
 	    <exclude implementation="java.lang.String">**/TestACPeer*.java</exclude> <!-- Peer group tests fail when executed with maven. TestACPeerGroup: when the two testMETHOD are executed one after the other one, the second one fails. However, each testMETHOD when executed alone is OK. -->
-	    <exclude implementation="java.lang.String">**/TestInVMEvacuation.java</exclude><!-- outstanding issues -->
-	    <exclude implementation="java.lang.String">**/TestInVMRelocation.java</exclude><!-- outstanding issues -->
 	    <exclude implementation="java.lang.String">**/Test*ReplicationManager.java</exclude>
 	    <exclude implementation="java.lang.String">**/Test*ReplicationContextualiser.java</exclude>
-	    <exclude implementation="java.lang.String">**/AbstractReplicationContextualiserTest.java</exclude>
-	    <exclude implementation="java.lang.String">**/AbstractReplicationManagerTest.java</exclude>
 	    <exclude implementation="java.lang.String">**/TestACInVMRelocation.java</exclude><!-- looks like a bug in AC/InVM : any takers? -->
 	    <exclude implementation="java.lang.String">**/TestACInVM*.java</exclude><!-- if it is buggy we don't really need it -->
 	  </excludes>
 	  <!--
 	  <childDelegation>false</childDelegation>
 	  -->
-<!--
-	  <forkMode>pertest</forkMode>  we have to fork in order to pass an argLine
--->
+	  <!--
+	  <forkMode>pertest</forkMode>
+	  -->
 	  <argLine>-enableassertions -Xmx1024m</argLine>
 	  <systemProperties>
 	    <property>

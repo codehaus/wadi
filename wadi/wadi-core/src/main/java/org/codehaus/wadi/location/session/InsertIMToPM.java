@@ -18,6 +18,7 @@ package org.codehaus.wadi.location.session;
 
 import java.io.Serializable;
 
+import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.location.impl.SessionRequestImpl;
 
 /**
@@ -25,13 +26,19 @@ import org.codehaus.wadi.location.impl.SessionRequestImpl;
  * @version $Revision:1815 $
  */
 public class InsertIMToPM extends SessionRequestImpl implements Serializable {
-
-    public InsertIMToPM(String name) {
+    private final Peer peer;
+    
+    public InsertIMToPM(String name, Peer peer) {
         super(name);
+        this.peer = peer;
+    }
+
+    public Peer getPeer() {
+        return peer;
     }
 
     public String toString() {
         return "<InsertIMToPM:"+_key+">";
     }
-
+    
 }

@@ -16,7 +16,6 @@
 */
 package org.codehaus.wadi.replication;
 
-import org.codehaus.wadi.group.vm.SysOutMessageRecorder;
 import org.codehaus.wadi.group.vm.VMBroker;
 import org.codehaus.wadi.group.vm.VMDispatcher;
 
@@ -29,7 +28,6 @@ public class TestInVMReplication extends AbstractTestReplication {
 
     public void testReplication() throws Exception {
         VMBroker cluster = new VMBroker("TEST");
-        cluster.setMessageRecorder(new SysOutMessageRecorder());
         testReplication(new VMDispatcher(cluster, "red", 5000));
     }
 }

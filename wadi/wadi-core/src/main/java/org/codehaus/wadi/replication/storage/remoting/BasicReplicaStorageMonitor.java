@@ -116,9 +116,6 @@ public class BasicReplicaStorageMonitor implements ReplicaStorageMonitor, Cluste
         }
     }
 
-    public void onPeerUpdated(ClusterEvent event) {
-    }
-
     public void onListenerRegistration(Cluster cluster, Set existing, Peer coordinator) {
     }
     

@@ -75,33 +75,29 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
 	public Emoter getEvictionEmoter(){return getEmoter();}
 	
 	protected void unload() {
-		Emoter emoter=getEmoter();
-		
-		// emote all our Motables using it
-		RankedRWLock.setPriority(RankedRWLock.EVICTION_PRIORITY);
-		
-		int i=0;
-		while (_map.size()>0) {
-			try {
-				Motable emotable=(Motable)_map.values().iterator().next();
-				
-				if (emotable!=null) {
-					String name=emotable.getName();
-					if (name!=null) {
-						Immoter immoter=_next.getSharedDemoter();
-						Utils.mote(emoter, immoter, emotable, name);
-						i++;
-					}
-				}
-			} catch (Exception e) {
-				_log.warn("unexpected problem", e);
-			}
-		}
-		
-		RankedRWLock.setPriority(RankedRWLock.NO_PRIORITY);
-		if (_log.isInfoEnabled()) _log.info("unloaded sessions: "+i);
-		assert(_map.size()==0);
-	}
+        Emoter emoter = getEmoter();
+
+        // emote all our Motables using it
+        RankedRWLock.setPriority(RankedRWLock.EVICTION_PRIORITY);
+
+        int i = 0;
+        for (Iterator iter = _map.values().iterator(); iter.hasNext();) {
+            Motable emotable = (Motable) iter.next();
+            try {
+                String name = emotable.getName();
+                if (name != null) {
+                    Immoter immoter = _next.getSharedDemoter();
+                    Utils.mote(emoter, immoter, emotable, name);
+                    i++;
+                }
+            } catch (Exception e) {
+                _log.warn("unexpected problem while unloading session", e);
+            }
+        }
+
+        RankedRWLock.setPriority(RankedRWLock.NO_PRIORITY);
+        _log.info("unloaded sessions: " + i);
+    }
 	
 	public void init(ContextualiserConfig config) {
 		super.init(config);

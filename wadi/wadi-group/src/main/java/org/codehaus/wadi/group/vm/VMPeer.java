@@ -18,8 +18,10 @@ package org.codehaus.wadi.group.vm;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Peer;
+import org.codehaus.wadi.group.PeerInfo;
 
 
 /**
@@ -30,16 +32,18 @@ public class VMPeer implements Peer, Serializable {
     protected final Map state = new HashMap();
     protected final String name;
     protected final Address address;
-
+    private final PeerInfo peerInfo;
+    
     public VMPeer(String name) {
         this.name = name;
         address = new VMAddress(this);
+        peerInfo = new PeerInfo();
     }
     
-    public Map getState() {
-        return state;
+    public PeerInfo getPeerInfo() {
+        return peerInfo;
     }
-
+    
     public Address getAddress() {
         return address;
     }
@@ -55,6 +59,10 @@ public class VMPeer implements Peer, Serializable {
         
         VMPeer other = (VMPeer) obj;
         return name.equals(other.name);
+    }
+    
+    public int hashCode() {
+        return name.hashCode();
     }
     
     public String toString() {

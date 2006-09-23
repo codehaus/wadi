@@ -16,8 +16,6 @@
  */
 package org.codehaus.wadi;
 
-import java.util.Map;
-
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.location.impl.DIndex;
 
@@ -26,22 +24,11 @@ import org.codehaus.wadi.location.impl.DIndex;
  * @version $Revision$
  */
 public interface ClusteredContextualiserConfig extends DistributableContextualiserConfig {
-
 	String getNodeName();
 
 	InvocationProxy getInvocationProxy();
 
 	EndPoint getEndPoint();
-
-	Object getDistributedState(Object key);
-
-	Object putDistributedState(Object key, Object value);
-
-	Object removeDistributedState(Object key);
-
-	void distributeState() throws Exception;
-
-	Map getDistributedState();
 
 	long getInactiveTime();
 
@@ -50,5 +37,4 @@ public interface ClusteredContextualiserConfig extends DistributableContextualis
 	Dispatcher getDispatcher();
 
 	DIndex getDIndex();
-
 }

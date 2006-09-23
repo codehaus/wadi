@@ -111,15 +111,13 @@ public class WadiMemberInterceptor extends ChannelInterceptorBase {
     public static TribesPeer wrap(Member mbr) { 
         if ( mbr instanceof TribesPeer ) mbr = reverseWrap((TribesPeer)mbr);
         if ( mbr == null ) return null;
-        TribesPeer peer = (TribesPeer)map.get(mbr);
-        if ( peer == null ) {
-            synchronized (map) {
-                peer = (TribesPeer)map.get(mbr);
-                if ( peer == null ) {
-                    peer = new TribesPeer((MemberImpl)mbr);
-                    map.put(mbr,peer);
-                    reversemap.put(peer,mbr);
-                }
+        TribesPeer peer;
+        synchronized (map) {
+            peer = (TribesPeer)map.get(mbr);
+            if ( peer == null ) {
+                peer = new TribesPeer((MemberImpl)mbr);
+                map.put(mbr,peer);
+                reversemap.put(peer,mbr);
             }
         }
         return peer;

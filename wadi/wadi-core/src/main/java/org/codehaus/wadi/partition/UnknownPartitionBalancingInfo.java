@@ -20,6 +20,7 @@ import java.util.Map;
 
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Peer;
+import org.codehaus.wadi.group.PeerInfo;
 
 /**
  * 
@@ -49,8 +50,9 @@ public class UnknownPartitionBalancingInfo extends PartitionBalancingInfo {
             throw new UnsupportedOperationException();
         }
 
-        public Map getState() {
+        public PeerInfo getPeerInfo() {
             throw new UnsupportedOperationException();
         }
+        
     }
 }

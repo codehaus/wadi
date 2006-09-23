@@ -15,29 +15,20 @@
  */
 package org.codehaus.wadi.activecluster;
 
+
+
 /**
  * 
  * @version $Revision: 1603 $
  */
-class ActiveClusterRemotePeer extends ActiveClusterPeer {
+public class ActiveClusterRemotePeer extends ActiveClusterPeer {
     
-    protected static final String _prefix="<"+Utils.basename(ActiveClusterRemotePeer.class)+": ";
-    protected static final String _suffix=">";
-    
-    public ActiveClusterRemotePeer(ActiveClusterCluster cluster, javax.jms.Destination acDestination) {
-        super(cluster);
-        init(acDestination);
+    public ActiveClusterRemotePeer(ActiveClusterCluster cluster, ActiveClusterPeer peer) {
+        super(cluster, peer);
     }
-
-    // 'java.lang.Object' API
-
+    
     public String toString() {
-        return _prefix+getName()+_suffix;
+        return "ActiveClusterRemotePeer [" + name + "]";
     }
 
-    public String getName() {
-        String name=super.getName();
-        return (name==null)?"<unknown>":name;
-    }
-    
 }

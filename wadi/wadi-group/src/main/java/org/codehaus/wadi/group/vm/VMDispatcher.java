@@ -15,7 +15,6 @@
  */
 package org.codehaus.wadi.group.vm;
 
-import java.util.Map;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.Message;
@@ -34,15 +33,11 @@ public class VMDispatcher extends AbstractDispatcher {
         super(inactiveTime);
         
         localNode = new VMLocalPeer(nodeName);
-        this.cluster = new VMLocalCluster(cluster, localNode);
+        this.cluster = new VMLocalCluster(cluster, localNode, this);
     }
     
     public Cluster getCluster() {
         return cluster;
-    }
-
-    public void setDistributedState(Map state) throws MessageExchangeException {
-        cluster.setDistributedState(localNode, state);
     }
 
     public void start() throws MessageExchangeException {

@@ -113,20 +113,22 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 
     public void init(PartitionManagerConfig config) {
         _config = config;
-        _log.trace("init");
+    }
 
-        // attach relevant message handlers to dispatcher...
+    public synchronized void start() throws Exception {
         _endpointBuilder.addSEI(_dispatcher, PartitionManagerMessageListener.class, this);
         _endpointBuilder.addCallback(_dispatcher, PartitionTransferAcknowledgement.class);
         _endpointBuilder.addCallback(_dispatcher, PartitionTransferResponse.class);
         _endpointBuilder.addCallback(_dispatcher, PartitionEvacuationResponse.class);
         _endpointBuilder.addCallback(_dispatcher, PartitionRepopulateResponse.class);
-    }
-
-    public void start() throws Exception {
+        
         evacuationCompletionLatch = new Latch();
         notifyPartitionManagerJoining();
         waitUntilUseable(WAIT_DEFINED_PARTITION_MANAGER);
+    }
+    
+    public synchronized void stop() throws Exception {
+        _endpointBuilder.dispose(10, 500);
     }
 
     protected void notifyPartitionManagerJoining() throws MessageExchangeException {
@@ -155,7 +157,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
         Peer coordPeer = _config.getCoordinator();
         if (_log.isTraceEnabled()) {
             _log.trace("evacuating partitions...: " + _dispatcher.getPeerName(localPeer.getAddress()) + " -> "
-                    + coordPeer.getState().get(Peer._peerNameKey));
+                    + coordPeer.getName());
         }
 
         int failures = 0;
@@ -184,10 +186,6 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
         }
 
         _log.info("...evacuated");
-    }
-
-    public void stop() throws Exception {
-        _endpointBuilder.dispose(10, 500);
     }
 
     public PartitionFacade getPartition(int partition) {
@@ -386,7 +384,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
         return peerToFacadeToTransfer;
     }
 
-    public synchronized void onPartitionTransferRequest(Message om, PartitionTransferRequest request) {
+    public void onPartitionTransferRequest(Message om, PartitionTransferRequest request) {
         LocalPartition[] partitions = request.getPartitions();
         for (int i = 0; i < partitions.length; i++) {
             LocalPartition partition = partitions[i];

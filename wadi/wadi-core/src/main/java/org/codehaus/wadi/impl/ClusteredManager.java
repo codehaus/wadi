@@ -18,14 +18,13 @@ package org.codehaus.wadi.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-
 
 import org.codehaus.wadi.ClusteredContextualiserConfig;
 import org.codehaus.wadi.Collapser;
 import org.codehaus.wadi.Contextualiser;
+import org.codehaus.wadi.EndPoint;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
@@ -33,7 +32,6 @@ import org.codehaus.wadi.InvocationProxy;
 import org.codehaus.wadi.ManagerConfig;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.PartitionMapper;
-import org.codehaus.wadi.EndPoint;
 import org.codehaus.wadi.ReplicaterFactory;
 import org.codehaus.wadi.SessionIdFactory;
 import org.codehaus.wadi.Streamer;
@@ -61,7 +59,6 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
 public class ClusteredManager extends DistributableManager implements ClusteredContextualiserConfig, DispatcherConfig, PartitionManagerConfig {
 
 	protected final Dispatcher _dispatcher;
-	protected final Map _distributedState;
 	protected final Collapser _collapser;
 	protected final int _numPartitions;
     protected final InvocationProxy _proxy;
@@ -75,22 +72,19 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
 		_proxy=proxy;
 		_dispatcher=dispatcher;
         _numPartitions=numPartitions;
-		_distributedState=new HashMap(); // TODO - make this a SynchronisedMap
 		_collapser=collapser;
 	}
 
-	public String getContextPath() { // TODO - integrate with Jetty/Tomcat
+	public String getContextPath() {
 		return "/";
 	}
 
 	public void init(ManagerConfig config) {
 		// must be done before super.init() so that ContextualiserConfig contains a Cluster
 		try {
-			String peerName=_dispatcher.getCluster().getLocalPeer().getName();
-			_distributedState.put(Peer._peerNameKey, peerName);
-			_distributedState.put("endPoint", _endPoint); // TODO - needs to be a public final String somewhere
-			PartitionMapper mapper=new SimplePartitionMapper(_numPartitions); // integrate with Session ID generator
-			_dindex=new DIndex(_numPartitions, _dispatcher, _distributedState, mapper);
+		    // integrate with Session ID generator
+			PartitionMapper mapper=new SimplePartitionMapper(_numPartitions); 
+			_dindex=new DIndex(_numPartitions, _dispatcher, mapper);
 			_dindex.init(this);
 		} catch (Exception e) {
 			_log.error("problem starting Cluster", e);
@@ -99,14 +93,11 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
 	}
 
 	public void start() throws Exception {
-		_dispatcher.setDistributedState(_distributedState);
-		if (_log.isTraceEnabled()) _log.trace("distributed state updated: " + _distributedState);
 		_dindex.start();
 		super.start();
 	}
 
 	public void aboutToStop() throws Exception {
-		//_partitionManager.evacuate();
 		_dindex.getPartitionManager().evacuate();
 	}
 
@@ -155,39 +146,8 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
 		if (_log.isDebugEnabled()) _log.debug("destroyed: "+name);
 	}
 
-	// Lazy
-
-	// DistributableContextualiserConfig
-
 	public String getNodeName() {
 		return _dispatcher.getCluster().getLocalPeer().getName();
-	}
-
-	public Object getDistributedState(Object key) {
-		synchronized (_distributedState) {
-			return _distributedState.get(key);
-		}
-	}
-
-	public Object putDistributedState(Object key, Object newValue) {
-		synchronized (_distributedState) {
-			return _distributedState.put(key, newValue);
-		}
-	}
-
-	public Object removeDistributedState(Object key) {
-		synchronized (_distributedState) {
-			return _distributedState.remove(key);
-		}
-	}
-
-	public void distributeState() throws Exception {
-		_dispatcher.setDistributedState(_distributedState);
-		if (_log.isTraceEnabled()) _log.trace("distributed state updated: " + _distributedState);
-	}
-
-	public Map getDistributedState() {
-		return _distributedState;
 	}
 
 	public long getInactiveTime() {
@@ -238,10 +198,6 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
 		return _endPoint;
 	}
 
-	public Peer getCoordinatorNode() {
-		return _dindex.getCoordinator();
-	}
-
 	// 'PartitionManagerConfig' API
 	public boolean contextualise(Invocation invocation, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws InvocationException {
 		return _contextualiser.contextualise(invocation, id, immoter, motionLock, exclusiveOnly);
@@ -262,4 +218,5 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
     public Peer getCoordinator() {
         return _dindex.getCoordinator();
     }
+
 }

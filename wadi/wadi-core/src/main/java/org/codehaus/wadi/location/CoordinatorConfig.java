@@ -16,12 +16,8 @@
  */
 package org.codehaus.wadi.location;
 
-import java.util.Collection;
-import java.util.Map;
-
 import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.group.Peer;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -30,15 +26,9 @@ import org.codehaus.wadi.group.Peer;
 public interface CoordinatorConfig {
     int getNumPartitions();
 
-    Peer getLocalNode();
-    
-    Collection getRemoteNodes();
-    
     Cluster getCluster();
     
     Dispatcher getDispatcher();
-
-    Map getRendezVousMap();
 
     long getInactiveTime();
 }

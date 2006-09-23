@@ -27,10 +27,10 @@ public class TestACPeerReplication extends AbstractTestReplication {
     }
 
     public void testReplication() throws Exception {
-        String clusterUri=ActiveClusterCluster.TEST_PEER_CLUSTER_URI;
-        String clusterName=ActiveClusterCluster.TEST_CLUSTER_NAME;
-        long timeout=ActiveClusterCluster.TEST_CLUSTER_INACTIVE_TIME;
-        String nodeName="red";
+        String clusterUri = ACTestUtil.CLUSTER_URI_PEER;
+        String clusterName = ACTestUtil.CLUSTER_NAME;
+        long timeout = ACTestUtil.CLUSTER_INACTIVE_TIME;
+        String nodeName = "red";
         testReplication(new ActiveClusterDispatcher(clusterName, nodeName, clusterUri, timeout));
     }
 

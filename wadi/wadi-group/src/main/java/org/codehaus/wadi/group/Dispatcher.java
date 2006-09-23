@@ -25,7 +25,6 @@ import java.util.Map;
  * @version $Revision: 1563 $
  */
 public interface Dispatcher extends MessageListener {
-    
     void init(DispatcherConfig config) throws Exception;
 
     void register(ServiceEndpoint internalDispatcher);
@@ -182,9 +181,6 @@ public interface Dispatcher extends MessageListener {
     // should be implemented as getPeer(Address address).getName() - but then we
     // will need to introduce a ClusterPeer ?
     String getPeerName(Address address);
-
-    // needed by VM impl - should be equiv to calling _localPeer.setState(map)
-    void setDistributedState(Map state) throws MessageExchangeException;
 
     // needed by BasicReplicaStorage stuff - can we lose it ?
     Address getAddress(String name);

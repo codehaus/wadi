@@ -16,6 +16,7 @@
  */
 package org.codehaus.wadi.jgroups;
 
+
 /**
  * A WADI Peer mapped onto JGroups
  *
@@ -24,23 +25,13 @@ package org.codehaus.wadi.jgroups;
  */
 public class JGroupsRemotePeer extends JGroupsPeer {
 
-    protected static final String _prefix="<"+Utils.basename(JGroupsRemotePeer.class)+": ";
-    protected static final String _suffix=">";
-
-    public JGroupsRemotePeer(JGroupsCluster cluster, org.jgroups.Address jgaddress) {
-        super(cluster);
-        init(jgaddress);
+    public JGroupsRemotePeer(JGroupsCluster cluster, JGroupsPeer remotePeer) {
+        super(cluster, remotePeer);
+        init(remotePeer.getJGAddress());
     }
-
-    // 'java.lang.Object' API
 
     public String toString() {
-        return _prefix+getName()+_suffix;
-    }
-
-    public String getName() {
-        String name=super.getName();
-        return (name==null)?"<unknown>":name;
+        return "JGroupsRemotePeer [" + name + "]";
     }
 
 }

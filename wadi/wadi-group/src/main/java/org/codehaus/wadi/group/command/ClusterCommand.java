@@ -1,6 +1,5 @@
 /**
- *
- * Copyright ...
+ * Copyright 2006 The Apache Software Foundation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,22 +13,18 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.jgroups;
+package org.codehaus.wadi.group.command;
 
+import java.io.Serializable;
+
+import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.Message;
-import org.codehaus.wadi.jgroups.messages.StateRequest;
-import org.codehaus.wadi.jgroups.messages.StateUpdate;
+
 
 /**
- * When a Peer becomes aware of the existance of another Peer, this protocol
- * is used to exchange data between them, so that each is informed of the other's
- * public state.
- *
- * @version $Revision: 1757 $
+ * 
+ * @version $Revision: 1538 $
  */
-public interface JGroupsClusterMessageListener {
-
-    void onMessage(Message message, StateUpdate update) throws Exception;
-    void onMessage(Message message, StateRequest request) throws Exception;
-
+public interface ClusterCommand extends Serializable {
+    void execute(Message msg, Cluster cluster);
 }

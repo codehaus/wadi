@@ -20,10 +20,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Invocation;
@@ -31,6 +29,7 @@ import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.PartitionMapper;
 import org.codehaus.wadi.PoolableInvocationWrapperPool;
+import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.StreamerConfig;
 import org.codehaus.wadi.group.Address;
@@ -48,7 +47,6 @@ import org.codehaus.wadi.web.WebSessionPool;
 import org.codehaus.wadi.web.impl.DistributableSessionFactory;
 import org.codehaus.wadi.web.impl.WebSessionToSessionPoolAdapter;
 
-import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 import EDU.oswego.cs.dl.util.concurrent.Latch;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
@@ -61,7 +59,6 @@ public class DIndexNode implements DispatcherConfig, PartitionManagerConfig {
 	protected final Log _log=LogFactory.getLog(getClass());
 
 	protected final Dispatcher _dispatcher;
-	protected final Map _distributedState=new ConcurrentHashMap();
 	protected final Contextualiser _contextualiser;
 	protected final String _nodeName;
 	protected final PartitionMapper _mapper;
@@ -94,10 +91,9 @@ public class DIndexNode implements DispatcherConfig, PartitionManagerConfig {
 
 	public void start() throws Exception {
 		_dispatcher.init(this);
-		_dindex=new DIndex(_numPartitions, _dispatcher, _distributedState, _mapper);
+		_dindex=new DIndex(_numPartitions, _dispatcher, _mapper);
 		_dindex.init(this);
 		_log.info("starting Cluster...");
-		_dispatcher.setDistributedState(_distributedState);
 		_dispatcher.start();
 		_log.info("...Cluster started");
 		_dindex.start();

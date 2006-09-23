@@ -1,6 +1,5 @@
 /**
- *
- * Copyright 2003-2006 Core Developers Network Ltd.
+ * Copyright 2006 The Apache Software Foundation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,18 +13,22 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.activecluster;
+package org.codehaus.wadi.servicespace;
+
+import java.util.Set;
+
+import org.codehaus.wadi.Lifecycle;
 
 /**
- * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision: 1647 $
+ * 
+ * @version $Revision: 1538 $
  */
-public class Utils {
-
-    public static String basename(Class clazz) {
-        String name=clazz.getName();
-        int i=name.lastIndexOf('.');
-        return name.substring(i+1);
-    }
+public interface ServiceMonitor extends Lifecycle {
+    Set getHostingPeers();
     
+    void addServiceLifecycleListener(ServiceListener listener);
+
+    void removeServiceLifecycleListener(ServiceListener listener);
+
+    boolean isStarted();
 }

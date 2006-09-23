@@ -18,6 +18,7 @@ package org.codehaus.wadi.group.impl;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
@@ -77,7 +78,6 @@ public abstract class AbstractDispatcher implements Dispatcher {
         inboundMessageDispatcher.onMessage(message);
     }
 	
-	//-----------------------------------------------------------------------------------------------
 	class SimpleCorrelationIDFactory {
 		
 		protected final SynchronizedInt _count=new SynchronizedInt(0);
@@ -91,7 +91,7 @@ public abstract class AbstractDispatcher implements Dispatcher {
 	protected final SimpleCorrelationIDFactory _factory=new SimpleCorrelationIDFactory();
 
 	public Map getRendezVousMap() {
-		return _rvMap;
+		return Collections.unmodifiableMap(_rvMap);
 	}
 	
 	public String nextCorrelationId() {
@@ -224,7 +224,7 @@ public abstract class AbstractDispatcher implements Dispatcher {
         send(target, om);
         return attemptRendezVous(sourceCorrelationId, rv, timeout);
 	}
-	
+    
 	public Message exchangeSend(Address target, String sourceCorrelationId, Serializable pojo, long timeout) {
 		Quipu rv=null;
 		// set up a rendez-vous...
@@ -259,4 +259,9 @@ public abstract class AbstractDispatcher implements Dispatcher {
 	protected void hook() {
         AbstractCluster._cluster.set(getCluster());
 	}
+
+    public ThreadPool getExecutor() {
+        return _executor;
+    }
+    
 }

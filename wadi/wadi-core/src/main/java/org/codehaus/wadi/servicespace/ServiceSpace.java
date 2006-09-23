@@ -1,6 +1,5 @@
 /**
- *
- * Copyright 2003-2005 Core Developers Network Ltd.
+ * Copyright 2006 The Apache Software Foundation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,24 +13,30 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.location.impl;
+package org.codehaus.wadi.servicespace;
 
-import org.codehaus.wadi.group.Peer;
+import java.util.Set;
+
+import org.codehaus.wadi.group.Dispatcher;
+
+
 
 /**
- * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
+ * 
+ * @version $Revision: 1538 $
  */
-public class PartitionOwner {
+public interface ServiceSpace {
+    ServiceSpaceName getServiceSpaceName();
+    
+    Set getHostingPeers();
+    
+    ServiceRegistry getServiceRegistry();
 
-    protected Peer _node;
-    protected int _deviation;
-    protected boolean _leaving;
+    ServiceMonitor getServiceMonitor(ServiceName serviceName);
+    
+    void addServiceSpaceListener(ServiceSpaceListener listener);
 
-    public PartitionOwner(Peer node, int deviation, boolean leaving) {
-        _node=node;
-        _deviation=deviation;
-        _leaving=leaving;
-    }
-
+    void removeServiceSpaceListener(ServiceSpaceListener listener);
+    
+    Dispatcher getDispatcher();
 }

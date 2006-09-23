@@ -17,90 +17,79 @@
 package org.codehaus.wadi.activecluster;
 
 import java.io.ObjectStreamException;
-import java.util.HashMap;
-import java.util.Map;
+
+import javax.jms.Destination;
+
 import org.codehaus.wadi.group.Address;
-import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.Peer;
+import org.codehaus.wadi.group.PeerInfo;
 
 public class ActiveClusterPeer implements Peer, Address, Comparable {
 
-   protected final transient ActiveClusterCluster _cluster;
-   protected final transient Map _state;
+    protected final transient ActiveClusterCluster _cluster;
+    protected String name;
+    protected PeerInfo peerInfo;
+    protected Destination _acDestination;
 
-   protected javax.jms.Destination _acDestination; // set at init()-time
+    public ActiveClusterPeer(ActiveClusterCluster cluster, String name) {
+        if (null == cluster) {
+            throw new IllegalArgumentException("cluster is required");
+        } else if (null == name) {
+            throw new IllegalArgumentException("name is required");
+        }
+        _cluster = cluster;
+        this.name = name;
+        
+        peerInfo = new PeerInfo();
+    }
 
-   public ActiveClusterPeer(ActiveClusterCluster cluster) {
-       super();
-       _cluster=cluster;
-       _state=new HashMap();
-   }
+    protected ActiveClusterPeer(ActiveClusterCluster cluster, ActiveClusterPeer prototype) {
+        if (null == cluster) {
+            throw new IllegalArgumentException("cluster is required");
+        } else if (null == prototype) {
+            throw new IllegalArgumentException("prototype is required");
+        }
+        _cluster = cluster;
+        this.name = prototype.name;
+        this.peerInfo = prototype.peerInfo;
+        this._acDestination = prototype._acDestination;
+    }
 
-   // 'java.lang.Object' API
+    protected Object readResolve() throws ObjectStreamException {
+        // somehow always return same instance...
+        return ActiveClusterCluster.get(this);
+    }
 
-   protected Object readResolve() throws ObjectStreamException {
-       // somehow always return same instance...
-       return ActiveClusterCluster.get(_acDestination);
-   }
+    public int hashCode() {
+        return _acDestination == null ? 0 : _acDestination.hashCode();
+    }
 
-   public int hashCode() {
-       return _acDestination==null?0:_acDestination.hashCode();
-   }
+    public boolean equals(Object object) {
+        return this == object;
+    }
 
-   public boolean equals(Object object) {
-       return this==object;
-   }
+    public int compareTo(Object object) {
+        return _acDestination.toString().compareTo(((ActiveClusterPeer) object).getACDestination().toString());
+    }
 
-   // 'java.lang.Comparable' API
+    public Address getAddress() {
+        return this;
+    }
 
-   public int compareTo(Object object) {
-       return _acDestination.toString().compareTo(((ActiveClusterPeer)object).getACDestination().toString()); // painful - improve - TODO
-   }
+    public String getName() {
+        return name;
+    }
 
-   // 'org.codehaus.wadi.group.Peer' API
+    public PeerInfo getPeerInfo() {
+        return peerInfo;
+    }
 
-   public Address getAddress() {
-       return this;
-   }
+    public void init(Destination acDestination) {
+        _acDestination = acDestination;
+    }
 
-   public String getName() {
-       return (String)getAttribute(_peerNameKey);
-   }
-
-   public Map getState() {
-       return _state;
-   }
-
-   // 'org.codehaus.wadi.group.LocalPeer' API
-
-   public void init(javax.jms.Destination acDestination) {
-       _acDestination=acDestination;
-   }
-
-   public Object getAttribute(Object key) {
-       synchronized (_state) {return _state.get(key);}
-   }
-
-   public Object setAttribute(Object key, Object value) {
-       synchronized (_state) {return _state.put(key, value);}
-   }
-
-   public Object removeAttribute(Object key) {
-       synchronized (_state) {return _state.remove(key);}
-   }
-
-   public void setState(Map state) throws MessageExchangeException {
-       synchronized (_state) {
-           if (_state!=state) {
-               _state.clear();
-               _state.putAll(state);
-           }
-       }
-   }
-
-   public javax.jms.Destination getACDestination() {
-       return _acDestination;
-   }
+    public Destination getACDestination() {
+        return _acDestination;
+    }
 
 }
-

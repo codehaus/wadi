@@ -203,4 +203,9 @@ public class PartitionFacade extends AbstractPartition {
         _content = new RemotePartition(_key, _config, address);
         release();
     }
+    
+    public String toString() {
+        return "PartitionFacade for [" + _content + "]";
+    }
+    
 }

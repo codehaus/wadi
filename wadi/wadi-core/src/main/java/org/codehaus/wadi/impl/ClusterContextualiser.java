@@ -17,7 +17,6 @@
 package org.codehaus.wadi.impl;
 
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.logging.Log;
@@ -34,7 +33,6 @@ import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.Relocater;
 import org.codehaus.wadi.RelocaterConfig;
 import org.codehaus.wadi.group.Cluster;
-import org.codehaus.wadi.group.ClusterEvent;
 import org.codehaus.wadi.group.ClusterListener;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Message;
@@ -90,8 +88,6 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 		_dispatcher=ccc.getDispatcher();
 		_cluster=_dispatcher.getCluster();
 		_dindex=ccc.getDIndex();
-		_cluster.addClusterListener(this);
-		_dindex.getStateManager().setImmigrationListener(this);
 		_top=ccc.getContextualiser();
 		_relocater.init(this);
 	}
@@ -136,6 +132,12 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 		return _relocater.relocate(invocation, id, immoter, motionLock);
 	}
 
+    public void start() throws Exception {
+        super.start();
+        _cluster.addClusterListener(this);
+        _dindex.getStateManager().setImmigrationListener(this);
+    }
+    
 	public void stop() throws Exception {
 		super.stop();
 	}
@@ -249,23 +251,13 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
     public void onMembershipChanged(Cluster cluster, Set joiners, Set leavers, Peer coordinator) {
         for (Iterator i=joiners.iterator(); i.hasNext() ;) {
             Peer peer=(Peer)i.next();
-            Map state=peer.getState();
-            String nodeName=(String)state.get(_nodeNameKey);
-            if (_log.isTraceEnabled()) _log.trace("peer joined: " + nodeName);
+            if (_log.isTraceEnabled()) _log.trace("peer joined: " + peer);
         }
         for (Iterator i=leavers.iterator(); i.hasNext() ;) {
             Peer peer=(Peer)i.next();
-            Map state=peer.getState();
-            String nodeName=(String)state.get(_nodeNameKey);
-            if (_log.isTraceEnabled()) _log.trace("peer left: " + nodeName);
+            if (_log.isTraceEnabled()) _log.trace("peer left: " + peer);
         }
     }
-
-	public void onPeerUpdated(ClusterEvent event) {
-        Map state=event.getPeer().getState();
-        String nodeName=(String)state.get(_nodeNameKey);
-        if (_log.isTraceEnabled()) _log.trace("node updated: " + nodeName);
-	}
 
 	protected int _locationMaxInactiveInterval=30;
 
