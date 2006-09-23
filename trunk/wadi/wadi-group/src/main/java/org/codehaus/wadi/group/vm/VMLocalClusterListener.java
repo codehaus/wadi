@@ -18,8 +18,8 @@ package org.codehaus.wadi.group.vm;
 import java.util.Collections;
 import java.util.Set;
 import java.util.TreeSet;
+
 import org.codehaus.wadi.group.Cluster;
-import org.codehaus.wadi.group.ClusterEvent;
 import org.codehaus.wadi.group.ClusterListener;
 import org.codehaus.wadi.group.Peer;
 
@@ -108,17 +108,6 @@ public class VMLocalClusterListener implements ClusterListener {
         delegate.onMembershipChanged(localCluster, joiners, leavers, coordinator);
     }
 
-    public void onPeerUpdated(ClusterEvent event) {
-        if (false == localCluster.isRunning()) {
-            return;
-        }
-
-        if (event.getPeer().equals(peer)) {
-            return;
-        }
-        delegate.onPeerUpdated(event);
-    }
-    
     public boolean equals(Object obj) {
         if (false == obj instanceof VMLocalClusterListener) {
             return false;

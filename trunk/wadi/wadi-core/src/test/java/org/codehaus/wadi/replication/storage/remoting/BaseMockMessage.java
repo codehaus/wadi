@@ -16,6 +16,8 @@
 package org.codehaus.wadi.replication.storage.remoting;
 
 import java.io.Serializable;
+import java.util.Map;
+
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Message;
 
@@ -62,6 +64,18 @@ public class BaseMockMessage implements Message {
     }
 
     public Serializable getPayload() {
+        throw new UnsupportedOperationException();
+    }
+
+    public Map getProperties() {
+        throw new UnsupportedOperationException();
+    }
+
+    public Object getProperty(String key) {
+        throw new UnsupportedOperationException();
+    }
+
+    public void setProperty(String key, Object value) {
         throw new UnsupportedOperationException();
     }
 }

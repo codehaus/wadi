@@ -1,6 +1,9 @@
 package org.codehaus.wadi.tribes;
 
 import java.io.Serializable;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Message;
@@ -23,6 +26,7 @@ public class TribesMessage implements Message, Serializable {
     protected Address replyto;
     protected String sourceCorrId;
     protected String targetCorrId;
+    private final Map properties = new HashMap();
     
     public TribesMessage() {
     }
@@ -126,4 +130,17 @@ public class TribesMessage implements Message, Serializable {
     public void setTargetCorrelationId(String correlationId) {
         this.targetCorrId = correlationId;
     }
+
+    public Map getProperties() {
+        return Collections.unmodifiableMap(properties);
+    }
+
+    public Object getProperty(String key) {
+        return properties.get(key);
+    }
+
+    public void setProperty(String key, Object value) {
+        properties.put(key, value);
+    }
+    
 }

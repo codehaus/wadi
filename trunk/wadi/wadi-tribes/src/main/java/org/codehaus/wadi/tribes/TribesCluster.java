@@ -21,6 +21,7 @@ import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.ClusterException;
 import org.codehaus.wadi.group.ClusterListener;
+import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.ElectionStrategy;
 import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.Peer;
@@ -39,13 +40,23 @@ import org.codehaus.wadi.group.Peer;
  */
 public class TribesCluster implements Cluster {
     
+    private final byte[] clusterDomain;
     protected GroupChannel channel = null;
     protected ArrayList listeners = new ArrayList();
     private ElectionStrategy strategy;
     protected boolean initialized = false;
     private Member coordinator;
+    private final TribesDispatcher dispatcher;
 
-    public TribesCluster(byte[] clusterDomain) {
+    public TribesCluster(byte[] clusterDomain, TribesDispatcher dispatcher) {
+        if (null == clusterDomain) {
+            throw new IllegalArgumentException("clusterDomain is required");
+        } else if (null == dispatcher) {
+            throw new IllegalArgumentException("dispatcher is required");
+        }
+        this.clusterDomain = clusterDomain;
+        this.dispatcher = dispatcher;
+        
         channel = new GroupChannel();
         channel.addInterceptor(new WadiMemberInterceptor());
         //uncomment for java1.5
@@ -60,7 +71,14 @@ public class TribesCluster implements Cluster {
         channel.addInterceptor(filter);
         //channel.addInterceptor(new MessageTrackInterceptor());//for debug only
         channel.addInterceptor(new TcpFailureDetector());//this one should always be at the bottom
-        
+    }
+    
+    public String getClusterName() {
+        return new String(clusterDomain);
+    }
+    
+    public Dispatcher getDispatcher() {
+        return dispatcher;
     }
 
     /**

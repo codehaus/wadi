@@ -42,47 +42,44 @@ public class AbstractTestEvacuation extends TestCase {
 	}
 	
 	public void testEvacuation(Dispatcher redD, Dispatcher greenD) throws Exception {
-		MyStack red=new MyStack(_url, _ds, redD);
-		_log.info("RED STARTING...");
-		red.start();
-		_log.info("...RED STARTED");
-		MyStack green=new MyStack(_url, _ds, greenD);
-		_log.info("GREEN STARTING...");
-		green.start();
-		_log.info("...GREEN STARTED");
-		
-        TestUtil.waitForDispatcherSeeOthers(new Dispatcher[] {redD, greenD}, 5000);
-		
-		_log.info("CREATING SESSION...");
-		String id=red.getManager().create(null).getId();
-		_log.info("...DONE");
-		
-		assertTrue(id!=null);
-		
-		Thread.sleep(1000);// FIXME: prevents us stopping whilst a Partition transfer is ongoing....
-		
-		_log.info("RED STOPPING...");
-		red.stop();
-		_log.info("...RED STOPPED");
+		MyStack red = new MyStack(_url, _ds, redD);
+        red.start();
+        redD = red.getServiceSpace().getDispatcher();
 
-		FilterChain fc=new FilterChain() {
-			public void doFilter(ServletRequest req, ServletResponse res) throws IOException, ServletException {
-				HttpSession session=((HttpServletRequest)req).getSession();
-				assertTrue(session!=null);
-				_log.info("ACQUIRED SESSION: "+session.getId());
-			}
-		};
+        MyStack green = new MyStack(_url, _ds, greenD);
+        green.start();
+        greenD = green.getServiceSpace().getDispatcher();
 
-		Invocation invocation=new MockInvocation(new MyHttpServletRequest(), new MyHttpServletResponse(), fc);
-		boolean success=green.getManager().contextualise(invocation, id, null, null, true);
+        TestUtil.waitForDispatcherSeeOthers(new Dispatcher[] { redD, greenD }, 5000);
 
-		assertTrue(success);
+        String id = red.getManager().create(null).getId();
+        assertTrue(id != null);
 
-        TestUtil.waitForDispatcherSeeOthers(new Dispatcher[] {greenD}, 5000);
-		
-		_log.info("GREEN STOPPING...");
-		green.stop();
-		_log.info("...GREEN STOPPED");
+        red.stop();
+        TestUtil.waitForDispatcherSeeOthers(new Dispatcher[] { greenD }, 5000);
+
+        FilterChain fc = new FilterChain() {
+            public void doFilter(ServletRequest req, ServletResponse res) throws IOException, ServletException {
+                HttpSession session = ((HttpServletRequest) req).getSession();
+                assertTrue(session != null);
+                _log.info("ACQUIRED SESSION: " + session.getId());
+            }
+        };
+
+        Invocation invocation = new MockInvocation(new MyHttpServletRequest(), new MyHttpServletResponse(), fc);
+        boolean success = green.getManager().contextualise(invocation, id, null, null, true);
+        assertTrue(success);
+
+        red.start();
+        TestUtil.waitForDispatcherSeeOthers(new Dispatcher[] { redD, greenD }, 5000);
+        
+        invocation = new MockInvocation(new MyHttpServletRequest(), new MyHttpServletResponse(), fc);
+        success = red.getManager().contextualise(invocation, id, null, null, false);
+        assertTrue(success);
+        
+        red.stop();
+        TestUtil.waitForDispatcherSeeOthers(new Dispatcher[] { greenD }, 5000);
+
+        green.stop();
 	}
-	
 }

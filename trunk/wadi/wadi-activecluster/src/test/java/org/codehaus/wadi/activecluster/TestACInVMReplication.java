@@ -23,17 +23,17 @@ import org.codehaus.wadi.replication.AbstractTestReplication;
 public class TestACInVMReplication extends AbstractTestReplication {
 
   public TestACInVMReplication(String arg0) {
-    super(arg0);
-  }
+        super(arg0);
+    }
 
-  public void testReplication() throws Exception {
-    String clusterName=ActiveClusterCluster.TEST_CLUSTER_NAME;
-    String clusterUri=ActiveClusterCluster.TEST_VM_CLUSTER_URI;
-    long timeout=ActiveClusterCluster.TEST_CLUSTER_INACTIVE_TIME;
-    String peerName="red";
+    public void testReplication() throws Exception {
+        String clusterName = ACTestUtil.CLUSTER_NAME;
+        String clusterUri = ACTestUtil.CLUSTER_URI_VM;
+        long timeout = ACTestUtil.CLUSTER_INACTIVE_TIME;
+        String peerName = "red";
 
-    testReplication(new ActiveClusterDispatcher(clusterName, peerName, clusterUri, timeout));
-  }
+        testReplication(new ActiveClusterDispatcher(clusterName, peerName, clusterUri, timeout));
+    }
 
 }
 

@@ -16,11 +16,13 @@
 package org.codehaus.wadi.activecluster;
 
 import java.util.Collections;
-import java.util.Map;
 import java.util.Set;
 
+import javax.jms.Destination;
 import javax.jms.JMSException;
+import javax.jms.MessageConsumer;
 
+import org.apache.activecluster.ClusterEvent;
 import org.apache.activecluster.ClusterFactory;
 import org.apache.activecluster.Node;
 import org.apache.activecluster.impl.DefaultClusterFactory;
@@ -28,8 +30,8 @@ import org.apache.activemq.ActiveMQConnectionFactory;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.ClusterException;
 import org.codehaus.wadi.group.LocalPeer;
-import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.Peer;
+import org.codehaus.wadi.group.command.BootRemotePeer;
 import org.codehaus.wadi.group.impl.AbstractCluster;
 
 import EDU.oswego.cs.dl.util.concurrent.Latch;
@@ -40,85 +42,118 @@ import EDU.oswego.cs.dl.util.concurrent.Latch;
  */
 class ActiveClusterCluster extends AbstractCluster {
     
-    protected static final String _prefix="<"+Utils.basename(ActiveClusterCluster.class)+": ";
-    protected static final String _suffix=">";
-    
-    public static final String TEST_CLUSTER_NAME=ActiveClusterCluster.class.getPackage().getName()+".TEST";
-    public static final long TEST_CLUSTER_INACTIVE_TIME=5000;
-    public static final String TEST_PEER_CLUSTER_URI="peer://"+ActiveClusterCluster.class.getPackage().getName()+".TEST-"+Math.random()+"?persistent=false&useJmx=false";
-    public static final String TEST_VM_CLUSTER_URI="vm://localhost?broker.persistent=false&broker.useJmx=false";
-
     protected ActiveMQConnectionFactory _connectionFactory;
     protected ClusterFactory _clusterFactory;
     protected org.apache.activecluster.Cluster _acCluster;
-    protected javax.jms.Destination _clusterACDestination;
-    protected javax.jms.Destination _localACDestination;
-
+    protected Destination _clusterACDestination;
+    protected Destination _localACDestination;
     protected Latch _startLatch;
-    
-    public ActiveClusterCluster(String clusterName, String localPeerName, String clusterUri) throws JMSException  {
-        super(clusterName, localPeerName);
-        _clusterPeer = new ActiveClusterClusterPeer(this);
-        _localPeer = new ActiveClusterLocalPeer(this);
-        ((ActiveClusterLocalPeer)_localPeer).setAttribute(Peer._peerNameKey, _localPeerName);
 
-        _connectionFactory=new ActiveMQConnectionFactory(clusterUri);
-        DefaultClusterFactory tmp=new DefaultClusterFactory(_connectionFactory);
+    public ActiveClusterCluster(String clusterName, String localPeerName, String clusterUri,
+            ActiveClusterDispatcher dispatcher) throws JMSException {
+        super(clusterName, localPeerName, dispatcher);
+        _clusterPeer = new ActiveClusterClusterPeer(this, clusterName);
+        _localPeer = new ActiveClusterLocalPeer(this, localPeerName);
+
+        _connectionFactory = new ActiveMQConnectionFactory(clusterUri);
+        DefaultClusterFactory tmp = new DefaultClusterFactory(_connectionFactory);
         tmp.setInactiveTime(_inactiveTime);
-        _clusterFactory=tmp;
-        
-        _cluster.set(this); // set ThreadLocal
+        _clusterFactory = tmp;
+
+        _cluster.set(this);
     }
-    
-    // 'Object' API
 
     public String toString() {
-        return _prefix+_localPeerName+"/"+_clusterName+_suffix;
+        return "ActiveClusterCluster [" + _localPeerName + "/" + _clusterName + "]";
     }
-    
-    // 'org.codehaus.wadi.group.Cluster' API
-    
+
     public Address getAddress() {
-        return (ActiveClusterPeer)_clusterPeer;
+        return (ActiveClusterPeer) _clusterPeer;
     }
 
     public LocalPeer getLocalPeer() {
         return _localPeer;
     }
-    
+
     public Peer getPeerFromAddress(Address address) {
-        return (ActiveClusterPeer)address;
+        return (ActiveClusterPeer) address;
+    }
+    
+    private class NodeAddedAction implements Runnable {
+        private final org.apache.activecluster.ClusterEvent event;
+        
+        public NodeAddedAction(ClusterEvent event) {
+            this.event = event;
+        }
+
+        public void run() {
+            Node node = event.getNode();
+            _startLatch.release();
+            _cluster.set(ActiveClusterCluster.this);
+            ActiveClusterPeer remotePeer = new ActiveClusterPeer(ActiveClusterCluster.this, node.getName());
+            remotePeer.init(node.getDestination());
+            BootRemotePeer command = new BootRemotePeer(ActiveClusterCluster.this, remotePeer);
+            Peer peer = command.getSerializedPeer();
+            if (null == peer) {
+                return;
+            }
+            synchronized (_addressToPeer) {
+                _addressToPeer.put(peer, peer);
+            }
+            Set joiners = Collections.unmodifiableSet(Collections.singleton(peer));
+            Set leavers = Collections.EMPTY_SET;
+            notifyMembershipChanged(joiners, leavers);
+        }
+    }
+
+    private class NodeFailedAction implements Runnable {
+        private final org.apache.activecluster.ClusterEvent event;
+        
+        public NodeFailedAction(ClusterEvent event) {
+            this.event = event;
+        }
+
+        public void run() {
+            _cluster.set(ActiveClusterCluster.this);
+            Node node = event.getNode();
+            Peer failedPeer;
+            Peer peer;
+            synchronized (_backendKeyToPeer) {
+                failedPeer = (Peer) _backendKeyToPeer.remove(node.getDestination());
+            }
+            if (failedPeer == null) {
+                _log.warn("ActiveCluster issue - we have been notified of the loss of an unknown Peer - ignoring");
+                return;
+            }
+            synchronized (_addressToPeer) {
+                peer = (Peer) _addressToPeer.remove(failedPeer);
+            }
+            if (peer == null) {
+                throw new AssertionError();
+            }
+
+            Set joiners = Collections.EMPTY_SET;
+            Set leavers = Collections.unmodifiableSet(Collections.singleton(peer));
+            notifyMembershipChanged(joiners, leavers);
+        }
+    }
+    
+    private void executeRunnable(Runnable runnable) {
+        try {
+            dispatcher.getExecutor().execute(runnable);
+        } catch (InterruptedException e) {
+            _log.error(e);
+        }
     }
 
     class ACListener implements org.apache.activecluster.ClusterListener {
 
         public void onNodeAdd(org.apache.activecluster.ClusterEvent event) {
-            _startLatch.release();
-            _cluster.set(ActiveClusterCluster.this);
-            Node node=event.getNode();
-            Peer peer=get(node.getDestination());
-            Map state=node.getState();
-            try {
-                ((ActiveClusterRemotePeer)peer).setState(state);
-            } catch (MessageExchangeException e) {
-                _log.error("unexpected ActiveCluster problem", e);
-            }
-            _addressToPeer.put(peer,  peer);
-            Set joiners=Collections.unmodifiableSet(Collections.singleton(peer));
-            Set leavers=Collections.EMPTY_SET;
-            notifyMembershipChanged(joiners, leavers); 
+            NodeAddedAction action = new NodeAddedAction(event);
+            executeRunnable(action);
         }
 
         public void onNodeUpdate(org.apache.activecluster.ClusterEvent event) {
-            _cluster.set(ActiveClusterCluster.this);
-            Node node=event.getNode();
-            Peer peer=get(node.getDestination());
-            try {
-                ((ActiveClusterPeer)peer).setState(node.getState());
-                notifyPeerUpdated(peer);
-            } catch (MessageExchangeException e) {
-                _log.error("unexpected ActiveCluster problem", e);
-            }
         }
 
         public void onNodeRemoved(org.apache.activecluster.ClusterEvent event) {
@@ -126,57 +161,40 @@ class ActiveClusterCluster extends AbstractCluster {
         }
 
         public void onNodeFailed(org.apache.activecluster.ClusterEvent event) {
-            _cluster.set(ActiveClusterCluster.this);
-            Node node=event.getNode();
-            Peer peer=(Peer)_addressToPeer.remove(_backendToPeer.get(node.getDestination()));
-            
-            if (peer==null) {
-                if (_log.isWarnEnabled()) _log.warn("ActiveCluster issue - we have been notified of the loss of an unknown Peer - ignoring");
-                return;
-            }
-                
-            Map state=node.getState();
-            try {
-                ((ActiveClusterRemotePeer)peer).setState(state);
-            } catch (MessageExchangeException e) {
-                _log.error("unexpected ActiveCluster problem", e);
-            }
-            Set joiners=Collections.EMPTY_SET;
-            Set leavers=Collections.unmodifiableSet(Collections.singleton(peer));
-            
-            notifyMembershipChanged(joiners, leavers);
+            NodeFailedAction action = new NodeFailedAction(event);
+            executeRunnable(action);
         }
 
         public void onCoordinatorChanged(org.apache.activecluster.ClusterEvent event) {
             // ignore - we are doing our coordinator management
-            _log.trace("backend coordinator election notification ignored: "+event.getNode());
         }
 
     };
 
-    protected void doStart() throws ClusterException {
-        _startLatch=new Latch();
+    public synchronized void start() throws ClusterException {
+        _startLatch = new Latch();
         try {
-            _acCluster=_clusterFactory.createCluster(_clusterName); // StateServiceImpl and state race started...
-            _acCluster.addClusterListener(new ACListener()); // attach our own listener, to keep us up to date...
-            _acCluster.getLocalNode().setState(_localPeer.getState());
+            _acCluster = _clusterFactory.createCluster(_clusterName);
+            _acCluster.addClusterListener(new ACListener());
+            
+            MessageConsumer clusterConsumer = _acCluster.createConsumer(_acCluster.getDestination(), null, false);
+            clusterConsumer.setMessageListener((ActiveClusterDispatcher) dispatcher);
+            MessageConsumer nodeConsumer = _acCluster.createConsumer(_acCluster.getLocalNode().getDestination(), null, false);
+            nodeConsumer.setMessageListener((ActiveClusterDispatcher) dispatcher);
+
+            _clusterACDestination = _acCluster.getDestination();
+            ((ActiveClusterClusterPeer) _clusterPeer).init(_clusterACDestination);
+            _localACDestination = _acCluster.getLocalNode().getDestination();
+            ((ActiveClusterLocalPeer) _localPeer).init(_localACDestination);
+            _backendKeyToPeer.put(_localACDestination, _localPeer);
+
             _acCluster.start();
         } catch (JMSException e) {
             throw new ClusterException(e);
         }
-        
-        _localACDestination = _acCluster.getDestination(); // too early ?
-        long joinTime=System.currentTimeMillis();
-        _log.info(_localPeerName+" - "+"connected to Cluster");
-        _localACDestination=_acCluster.getLocalNode().getDestination();
-        _clusterACDestination=_acCluster.getDestination();
-        ((ActiveClusterClusterPeer)_clusterPeer).init(_clusterACDestination);
-        ((ActiveClusterLocalPeer)_localPeer).init(_localACDestination);
-        Map localState=_localPeer.getState();
-        localState.put(Peer._peerNameKey, _localPeerName);
-        localState.put(Peer._birthTimeKey, new Long(joinTime));
-        _backendToPeer.put(_localACDestination, _localPeer);
-        
+
+        _log.info(_localPeerName + " - " + "connected to Cluster");
+
         boolean isFirstPeer;
         try {
             isFirstPeer = !_startLatch.attempt(_inactiveTime);
@@ -188,20 +206,19 @@ class ActiveClusterCluster extends AbstractCluster {
         }
     }
 
-    protected void doStop() throws ClusterException {
+    public synchronized void stop() throws ClusterException {
         try {
             _acCluster.stop();
         } catch (JMSException e) {
             throw new ClusterException(e);
         }
-        _startLatch=null;
+        _startLatch = null;
     }
 
     public boolean equals(Object obj) {
         if (false == obj instanceof ActiveClusterCluster) {
             return false;
         }
-
         ActiveClusterCluster other = (ActiveClusterCluster) obj;
         return _acCluster.equals(other._acCluster);
     }
@@ -214,19 +231,25 @@ class ActiveClusterCluster extends AbstractCluster {
         return _acCluster;
     }
 
-    protected Peer create(Object backend) {
-        javax.jms.Destination acDestination=(javax.jms.Destination)backend;
+    protected Object extractKeyFromPeerSerialization(Object backend) {
+        ActiveClusterPeer remotePeer = (ActiveClusterPeer) backend;
+        return remotePeer.getACDestination();
+    }
+    
+    protected Peer createPeerFromPeerSerialization(Object backend) {
+        ActiveClusterPeer remotePeer = (ActiveClusterPeer) backend;
+        Destination acDestination = remotePeer.getACDestination();
         ActiveClusterPeer peer;
         if (acDestination.equals(_clusterACDestination)) {
-            peer=(ActiveClusterPeer)_clusterPeer;
+            peer = (ActiveClusterPeer) _clusterPeer;
         } else {
-            peer=new ActiveClusterRemotePeer(this, acDestination);
+            peer = new ActiveClusterRemotePeer(this, remotePeer);
         }
         return peer;
     }
 
-    javax.jms.Destination getACDestination() {
+    Destination getACDestination() {
         return _clusterACDestination;
     }
-    
+
 }

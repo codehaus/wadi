@@ -16,9 +16,8 @@
 package org.codehaus.wadi.group.vm;
 
 import java.io.Serializable;
-import java.util.Map;
+
 import org.codehaus.wadi.group.LocalPeer;
-import org.codehaus.wadi.group.MessageExchangeException;
 
 
 /**
@@ -30,25 +29,20 @@ public class VMLocalPeer extends VMPeer implements LocalPeer, Serializable, Comp
 
     public VMLocalPeer(String name) {
         super(name);
-        state.put(_peerNameKey, name);
-        state.put(_birthTimeKey, new Long(System.currentTimeMillis()));
-    }
-
-    public void setState(Map newState) throws MessageExchangeException {
-        if (newState!=state) {
-            synchronized (state) {
-                state.clear();
-                state.putAll(newState);
-            }
-	    // TODO - notify other peers of state change
-
-        }
     }
 
     public boolean equals(Object obj) {
-        return super.equals(obj);
+        if (!(obj instanceof VMLocalPeer)) {
+            return false;
+        }
+        VMLocalPeer other = (VMLocalPeer) obj;
+        return name.equals(other.name);
     }
 
+    public int hashCode() {
+        return name.hashCode();
+    }
+    
     public String toString() {
         return "Local Peer :" + name;
     }

@@ -27,12 +27,13 @@ public class TestACPeerRelocation extends AbstractTestRelocation {
     public TestACPeerRelocation(String arg0) {
         super(arg0);
     }
-    
+
     public void testSessionRelocation() throws Exception {
-        String clusterUri=ActiveClusterCluster.TEST_PEER_CLUSTER_URI;
-        String clusterName=ActiveClusterCluster.TEST_CLUSTER_NAME;
-        long timeout=ActiveClusterCluster.TEST_CLUSTER_INACTIVE_TIME;
-        testSessionRelocation(new ActiveClusterDispatcher(clusterName, "red", clusterUri, timeout), new ActiveClusterDispatcher(clusterName, "green", clusterUri, timeout));
+        String clusterUri = ACTestUtil.CLUSTER_URI_PEER;
+        String clusterName = ACTestUtil.CLUSTER_NAME;
+        long timeout = ACTestUtil.CLUSTER_INACTIVE_TIME;
+        testSessionRelocation(new ActiveClusterDispatcher(clusterName, "red", clusterUri, timeout),
+                new ActiveClusterDispatcher(clusterName, "green", clusterUri, timeout));
     }
     
 }

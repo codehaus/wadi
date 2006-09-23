@@ -18,6 +18,7 @@ package org.codehaus.wadi.replication;
 
 import java.io.File;
 import java.net.InetSocketAddress;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -63,6 +64,9 @@ import org.codehaus.wadi.impl.SimpleStreamer;
 import org.codehaus.wadi.impl.SimpleValuePool;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 import org.codehaus.wadi.impl.Utils;
+import org.codehaus.wadi.servicespace.ServiceName;
+import org.codehaus.wadi.servicespace.ServiceSpaceName;
+import org.codehaus.wadi.servicespace.basic.BasicServiceSpace;
 import org.codehaus.wadi.test.MockInvocation;
 import org.codehaus.wadi.web.AttributesFactory;
 import org.codehaus.wadi.web.WebSessionPool;
@@ -100,8 +104,10 @@ public abstract class AbstractTestReplication extends TestCase {
 
 	public void testReplication(Dispatcher dispatcher) throws Exception {
         dispatcher.start();
+        BasicServiceSpace serviceSpace = new BasicServiceSpace(new ServiceSpaceName(new URI("spaceName")), dispatcher);
+        dispatcher = serviceSpace.getDispatcher();
 
-		int sweepInterval=1000*60*60*24; // 1 eviction/day
+		int sweepInterval=1000*60*60*24;
 		boolean strictOrdering=true;
 		Streamer streamer=new SimpleStreamer();
 		Collapser collapser=new HashingCollapser(100, 1000);
@@ -149,13 +155,10 @@ public abstract class AbstractTestReplication extends TestCase {
 		EndPoint location = new WebEndPoint(new InetSocketAddress("localhost", 8080));
 		InvocationProxy proxy=new StandardHttpProxy("jsessionid");
 		ClusteredManager manager=new ClusteredManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), new DummyRouter(), true, streamer, true, replicaterfactory, location, proxy, dispatcher, 24, collapser);
-//		manager.setSessionListeners(new HttpSessionListener[]{});
-		//manager.setAttributelisteners(new HttpSessionAttributeListener[]{});
 		manager.init(new DummyManagerConfig());
 
-		manager.start();
-		//mevicter.stop(); // we'll run it by hand...
-		//devicter.stop();
+		serviceSpace.getServiceRegistry().register(new ServiceName("manager"), manager);
+		serviceSpace.start();
 
 		_log.info("CREATING SESSION");
 		AbstractReplicableSession session=(AbstractReplicableSession)manager.create(null);
@@ -201,10 +204,10 @@ public abstract class AbstractTestReplication extends TestCase {
 		assertTrue(mmap.size()==0);
 		assertTrue(dmap.size()==0);
 
-		manager.stop();
+        serviceSpace.stop();
 
-        dispatcher.stop();
-		dir.delete();
+        serviceSpace.getUnderlyingDispatcher().stop();
+        dir.delete();
 	}
 
 }

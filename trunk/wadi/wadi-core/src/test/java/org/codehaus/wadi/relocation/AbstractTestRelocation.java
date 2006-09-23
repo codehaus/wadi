@@ -98,19 +98,16 @@ public class AbstractTestRelocation extends TestCase {
 
 	public void testSessionRelocation(Dispatcher redD, Dispatcher greenD) throws Exception {
 		MyStack red=new MyStack(_url, _ds, redD);
-		_log.info("RED STARTING...");
 		red.start();
-		_log.info("...RED STARTED");
+        redD = red.getServiceSpace().getDispatcher();
+        
 		MyStack green=new MyStack(_url, _ds, greenD);
-		_log.info("GREEN STARTING...");
 		green.start();
-		_log.info("...GREEN STARTED");
+        greenD = green.getServiceSpace().getDispatcher();
 
         TestUtil.waitForDispatcherSeeOthers(new Dispatcher[] {redD, greenD}, 5000);
 
-		_log.info("CREATING SESSION...");
 		String id=red.getManager().create(null).getId();
-		_log.info("...DONE");
 
 		assertTrue(id!=null);
 
@@ -120,20 +117,13 @@ public class AbstractTestRelocation extends TestCase {
 		};
 
 		Invocation invocation=new MockInvocation(new MyHttpServletRequest(), new MyHttpServletResponse(), fc);
-		_log.info("RELOCATING SESSION...");
 		boolean success=green.getManager().contextualise(invocation, id, null, null, false);
-		_log.info("...DONE");
 
 		assertTrue(success);
 
-		_log.info("RED STOPPING...");
-		red.stop(); // causes exception
-		_log.info("...RED STOPPED");
-
+		red.stop();
         TestUtil.waitForDispatcherSeeOthers(new Dispatcher[] {greenD}, 5000);
 
-		_log.info("GREEN STOPPING...");
 		green.stop();
-		_log.info("...GREEN STOPPED");
 	}
 }

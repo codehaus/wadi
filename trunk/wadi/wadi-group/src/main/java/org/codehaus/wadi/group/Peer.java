@@ -15,21 +15,15 @@
  */
 package org.codehaus.wadi.group;
 
-import java.util.Map;
 
 /**
  * 
  * @version $Revision: 1603 $
  */
 public interface Peer {
-    
-    public static final String _peerNameKey="peerName";
-    public static final String _birthTimeKey="birthTime";
-
     String getName();
-
-    Map getState();
+    
+    PeerInfo getPeerInfo();
 
     Address getAddress();
-    
 }

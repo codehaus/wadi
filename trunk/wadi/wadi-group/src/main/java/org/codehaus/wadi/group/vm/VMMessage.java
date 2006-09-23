@@ -16,6 +16,10 @@
 package org.codehaus.wadi.group.vm;
 
 import java.io.Serializable;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Message;
 
@@ -29,8 +33,10 @@ public class VMMessage implements Message {
     private Address address;
     private String incomingCorrelationId;
     private String outgoingCorrelationId;
+    private Map properties;
 
     public VMMessage() {
+        properties = new HashMap();
     }
 
     public VMMessage(VMMessage prototype) {
@@ -39,6 +45,7 @@ public class VMMessage implements Message {
         this.address = prototype.address;
         this.incomingCorrelationId = prototype.incomingCorrelationId;
         this.outgoingCorrelationId = prototype.outgoingCorrelationId;
+        this.properties = prototype.properties;
     }
     
     public String getTargetCorrelationId() {
@@ -84,4 +91,17 @@ public class VMMessage implements Message {
     public String toString() {
         return "VMMessage: payload=" + payload;
     }
+
+    public Map getProperties() {
+        return Collections.unmodifiableMap(properties);
+    }
+
+    public Object getProperty(String key) {
+        return properties.get(key);
+    }
+
+    public void setProperty(String key, Object value) {
+        properties.put(key, value);
+    }
+    
 }

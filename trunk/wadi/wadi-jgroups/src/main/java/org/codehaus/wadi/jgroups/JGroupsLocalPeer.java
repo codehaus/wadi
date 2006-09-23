@@ -16,12 +16,7 @@
  */
 package org.codehaus.wadi.jgroups;
 
-import java.util.HashMap;
-import java.util.Map;
 import org.codehaus.wadi.group.LocalPeer;
-import org.codehaus.wadi.group.Message;
-import org.codehaus.wadi.group.MessageExchangeException;
-import org.codehaus.wadi.jgroups.messages.StateUpdate;
 
 /**
  * A WADI LocalPeer mapped onto JGroups
@@ -31,35 +26,12 @@ import org.codehaus.wadi.jgroups.messages.StateUpdate;
  */
 public class JGroupsLocalPeer extends JGroupsPeer implements LocalPeer {
 
-    protected static final String _prefix="<"+Utils.basename(JGroupsLocalPeer.class)+": ";
-    protected static final String _suffix=">";
-
-    public JGroupsLocalPeer(JGroupsCluster cluster) {
-        super(cluster);
+    public JGroupsLocalPeer(JGroupsCluster cluster, String name) {
+        super(cluster, name);
     }
-
-    // 'java.lang.Object' API
 
     public String toString() {
-        return _prefix+getName()+_suffix;
-    }
-
-    // 'org.codehaus.wadi.group.Peer' API
-    
-    public void setState(Map state) throws MessageExchangeException {
-        super.setState(state);
-        
-        // notify the rest of the Cluster (if we are connected) of the change - TODO - do this more efficiently...
-        if (_jgAddress!=null) {
-            Message message=new JGroupsMessage();
-            message.setReplyTo(this);
-            message.setPayload(new StateUpdate(state));
-            _cluster.send(_cluster.getAddress(), message);
-        }
-    }
-    
-    public Map copyState() {
-        synchronized (_state) {return new HashMap(_state);}
+        return "JGroupsLocalPeer [" + name + "]";
     }
 
 }

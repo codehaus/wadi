@@ -102,6 +102,10 @@ public class BaseMockDispatcher implements Dispatcher {
         throw new UnsupportedOperationException();
     }
 
+    public Map getDistributedState() {
+        throw new UnsupportedOperationException();
+    }
+    
     public void start() throws MessageExchangeException {
         throw new UnsupportedOperationException();
     }

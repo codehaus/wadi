@@ -51,20 +51,6 @@ class ClusterListenerSupport {
         }
     }
 
-    public void notifyUpdated(Peer node) {
-        Collection snapshotListeners;
-        synchronized (listeners) {
-            snapshotListeners = new ArrayList(listeners);
-        }
-        
-        for (Iterator iter = snapshotListeners.iterator(); iter.hasNext();) {
-            VMLocalClusterListener listener = (VMLocalClusterListener) iter.next();
-            VMLocalCluster localCluster = listener.getLocalCluster();
-            ClusterEvent event = new ClusterEvent(localCluster, node, ClusterEvent.PEER_UPDATED);
-            listener.onPeerUpdated(event);
-        }
-    }
-
     public void notifyMembershipChanged(LocalPeer peer, boolean joining, Peer coordinator) {
         Collection snapshotListeners;
         synchronized (listeners) {

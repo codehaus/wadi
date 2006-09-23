@@ -22,14 +22,15 @@ import org.codehaus.wadi.jgroups.JGroupsDispatcher;
 public class TestJGEvacuation extends AbstractTestEvacuation {
 
   public TestJGEvacuation(String name) {
-    super(name);
-  }
+        super(name);
+    }
 
-  public void testEvacuation() throws Exception {
-      String clusterName=JGroupsCluster.TEST_CLUSTER_NAME;
-      String clusterConfig=JGroupsCluster.TEST_CLUSTER_CONFIG;
-	  long timeout=5000;
-	  testEvacuation(new JGroupsDispatcher(clusterName, "red", timeout, clusterConfig), new JGroupsDispatcher(clusterName, "green", timeout, clusterConfig));
-  }
-  
+    public void testEvacuation() throws Exception {
+        String clusterName = JGTestUtil.TEST_CLUSTER_NAME;
+        String clusterConfig = JGTestUtil.TEST_CLUSTER_CONFIG;
+        long timeout = 5000;
+        testEvacuation(new JGroupsDispatcher(clusterName, "red", timeout, clusterConfig), 
+                new JGroupsDispatcher(clusterName, "green", timeout, clusterConfig));
+    }
+
 }

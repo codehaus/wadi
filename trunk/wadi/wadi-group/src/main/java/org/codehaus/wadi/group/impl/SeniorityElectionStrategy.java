@@ -29,10 +29,10 @@ public class SeniorityElectionStrategy implements ElectionStrategy {
 
     public Peer doElection(Cluster cluster) {
         Peer oldest = cluster.getLocalPeer();
-        long earliest = getBirthTime(oldest);
+        long earliest = oldest.getPeerInfo().getBirthtime();
         for (Iterator i = cluster.getRemotePeers().values().iterator(); i.hasNext();) {
             Peer candidate = (Peer) i.next();
-            long birthTime = getBirthTime(candidate);
+            long birthTime = candidate.getPeerInfo().getBirthtime();
             if (birthTime < earliest) {
                 earliest = birthTime;
                 oldest = candidate;
@@ -42,12 +42,4 @@ public class SeniorityElectionStrategy implements ElectionStrategy {
         return oldest;
     }
 
-    protected long getBirthTime(Peer node) {
-        Long birthTimeAsLong = (Long) node.getState().get("birthTime");
-        if (null == birthTimeAsLong) {
-            return Long.MAX_VALUE;
-        }
-        
-        return ((Long)node.getState().get("birthTime")).longValue(); // TODO - unify state keys somewhere
-    }
 }

@@ -16,26 +16,25 @@
  */
 package org.codehaus.wadi.activecluster;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
+
 import javax.jms.Destination;
 import javax.jms.JMSException;
-import javax.jms.MessageConsumer;
 import javax.jms.ObjectMessage;
-import org.apache.activecluster.LocalNode;
-import org.apache.activecluster.Node;
+
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.ClusterException;
 import org.codehaus.wadi.group.ClusterListener;
-import org.codehaus.wadi.group.DispatcherConfig;
 import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.Message;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.Peer;
-import org.codehaus.wadi.group.impl.AbstractCluster;
+import org.codehaus.wadi.group.command.ClusterCommand;
 import org.codehaus.wadi.group.impl.AbstractDispatcher;
 
 /**
@@ -46,192 +45,113 @@ import org.codehaus.wadi.group.impl.AbstractDispatcher;
  */
 public class ActiveClusterDispatcher extends AbstractDispatcher implements javax.jms.MessageListener {
     
-    protected static final String _prefix="<"+Utils.basename(ActiveClusterDispatcher.class)+": ";
-    protected static final String _suffix=">";
-    
-    
-	protected org.apache.activecluster.Cluster _acCluster;
-	protected MessageConsumer _clusterConsumer;
-	protected MessageConsumer _nodeConsumer;
-
     protected final String _clusterName;
-	protected final String _clusterUri;
+    protected final String _clusterUri;
     protected final String _localPeerName;
     protected final long _inactiveTime;
+    private final ActiveClusterCluster _cluster;
+    protected final LocalPeer _localPeer;
 
-    private ActiveClusterCluster _cluster;
-    protected LocalPeer _localPeer;
-    
-	public ActiveClusterDispatcher(String clusterName, String localPeerName, String clusterUri, long inactiveTime) throws Exception {
-		super(inactiveTime);
-        _clusterName=clusterName;
-        _localPeerName=localPeerName;
-		_clusterUri=clusterUri;
-		_log=LogFactory.getLog(getClass()+"#"+localPeerName);
-        _inactiveTime=inactiveTime;
-        _cluster = new ActiveClusterCluster(_clusterName, _localPeerName, _clusterUri);
+    public ActiveClusterDispatcher(String clusterName, String localPeerName, String clusterUri, long inactiveTime)
+            throws Exception {
+        super(inactiveTime);
+        _clusterName = clusterName;
+        _localPeerName = localPeerName;
+        _clusterUri = clusterUri;
+        _log = LogFactory.getLog(getClass() + "#" + localPeerName);
+        _inactiveTime = inactiveTime;
+        _cluster = new ActiveClusterCluster(_clusterName, _localPeerName, _clusterUri, this);
         _localPeer = _cluster.getLocalPeer();
-	}
-
-    // 'java.lang.Object' API
-    
-    public String toString() {
-        return _prefix+_cluster+_suffix;
     }
-    
-    // 5 calls
-	public Cluster getCluster() {
-		return _cluster;
-	}
 
-	//-----------------------------------------------------------------------------------------------
-	// AbstractDispatcher overrides
+    public String toString() {
+        return "Cluster [" + _cluster + "]";
+    }
 
-	public void init(DispatcherConfig config) throws Exception {
-		super.init(config);
+    public Cluster getCluster() {
+        return _cluster;
+    }
 
-	}
-
-	//-----------------------------------------------------------------------------------------------
-	// Dispatcher API
-
-	public void start() throws MessageExchangeException {
-	    try {
-	        _cluster.start();
-	    } catch (ClusterException e) {
-	        throw new MessageExchangeException(e);
-	    }
-	    try {
-	        boolean excludeSelf;
-	        excludeSelf=false;
-	        _acCluster =_cluster.getACCluster();
-	        _clusterConsumer=_acCluster.createConsumer(_acCluster.getDestination(), null, excludeSelf);
-	        _clusterConsumer.setMessageListener(this);
-	        excludeSelf=false;
-	        _nodeConsumer=_acCluster.createConsumer(_acCluster.getLocalNode().getDestination(), null, excludeSelf);
-	        _nodeConsumer.setMessageListener(this);
-	    } catch (JMSException e) {
-	        _log.warn("unexpected ActiveCluster problem", e);
-	    }
-
-        Map distributedState = _localPeer.getState();
-        distributedState.put(Peer._peerNameKey, _cluster.getLocalPeer().getName());
-        setDistributedState(distributedState);
-	}
-
-	public void stop() throws MessageExchangeException {
-		// shut down activemq cleanly - what happens if we are running more than one distributable webapp ?
-		// there must be an easier way - :-(
-
-		// TODO - sort this out
-
-//		ActiveMQConnection connection=(ActiveMQConnection)((ExtendedCluster)_cluster).getConnection();
-//		TransportChannel channel=(connection==null?null:connection.getTransportChannel());
-//		BrokerConnector connector=(channel==null?null:channel.getEmbeddedBrokerConnector());
-//		BrokerContainer container=(connector==null?null:connector.getBrokerContainer());
-//		if (container!=null)
-//			container.stop(); // for peer://
-
-		try {
-            _cluster.stop();
-            Thread.sleep(5*1000);
+    public synchronized void start() throws MessageExchangeException {
+        try {
+            _cluster.start();
         } catch (ClusterException e) {
             throw new MessageExchangeException(e);
-        } catch (InterruptedException e) {
+        }
+    }
+
+    public synchronized void stop() throws MessageExchangeException {
+        try {
+            _cluster.stop();
+        } catch (ClusterException e) {
             throw new MessageExchangeException(e);
         }
-	}
+    }
 
-	public Message createMessage() {
-	    return new ActiveClusterMessage();
-	}
+    public Message createMessage() {
+        return new ActiveClusterMessage();
+    }
 
-	public void send(Address target, Message message) throws MessageExchangeException {
-		if (_messageLog.isTraceEnabled()) {
-            _messageLog.trace("outgoing: "+message.getPayload()+" {"+getInternalPeerName(message.getReplyTo())+"->"+getInternalPeerName(message.getAddress())+"} - "+message.getTargetCorrelationId()+"/"+message.getSourceCorrelationId()+" on "+Thread.currentThread().getName());
-		}
-		try {
-            _acCluster.send(((ActiveClusterPeer)target).getACDestination(), ((ActiveClusterMessage)message).fill(_acCluster.createObjectMessage()));
+    public void send(Address target, Message message) throws MessageExchangeException {
+        if (_messageLog.isTraceEnabled()) {
+            _messageLog.trace("outgoing: " + message.getPayload() + " {" + getPeerName(message.getReplyTo())
+                    + "->" + getPeerName(message.getAddress()) + "} - " + message.getTargetCorrelationId()
+                    + "/" + message.getSourceCorrelationId() + " on " + Thread.currentThread().getName());
+        }
+        
+        Destination targetDestination = ((ActiveClusterPeer) target).getACDestination();
+        try {
+            ObjectMessage objectMsg = _cluster.getACCluster().createObjectMessage();
+            _cluster.getACCluster().send(targetDestination, ((ActiveClusterMessage) message).fill(objectMsg));
         } catch (JMSException e) {
             throw new MessageExchangeException(e);
         }
-	}
-
-	public void setDistributedState(Map state) throws MessageExchangeException {
-	    _cluster.getLocalPeer().setState(state);
-	}
+    }
 
     public Address getAddress(String nodeName) {
-        if (_cluster.getLocalPeer().getName().equals(nodeName)) {
-            return _localPeer.getAddress();
-        }
-
-        Map destToNode = _acCluster.getNodes();
+        Map destToNode = _cluster.getACCluster().getNodes();
         for (Iterator iter = destToNode.entrySet().iterator(); iter.hasNext();) {
             Map.Entry entry = (Map.Entry) iter.next();
             Destination destination = (Destination) entry.getKey();
-            String name = getInternalPeerName(destination);
-            if (name.equals(nodeName)) {
-                return (ActiveClusterPeer)AbstractCluster.get(destination);
+            Peer peer = _cluster.getPeerFromBackEndKey(destination);
+            if (peer.getName().equals(nodeName)) {
+                return peer.getAddress();
             }
         }
-
-        throw new IllegalArgumentException("Node " + nodeName + " is undefined.");
+        throw new IllegalArgumentException("Node [" + nodeName + "] is undefined.");
     }
 
     public String getPeerName(Address address) {
-        return getInternalPeerName(((ActiveClusterPeer)address).getACDestination());
+        return ((ActiveClusterPeer) address).getName();
     }
 
-    private String getInternalPeerName(Address address) {
-        Destination destination = ((ActiveClusterPeer)address).getACDestination();
-        return getInternalPeerName(destination);
-    }
-    
-	private String getInternalPeerName(Destination destination) {
-		LocalNode localNode = _acCluster.getLocalNode();
-		Destination localDestination=localNode.getDestination();
-
-		if (destination==null) {
-			return "<NULL-DESTINATION>";
-		}
-
-		if (destination.equals(localDestination))
-			return getNodeName(localNode);
-
-		Destination clusterDestination=_acCluster.getDestination();
-		if (destination.equals(clusterDestination))
-			return "cluster";
-
-		Node node=null;
-		if ((node=(Node)_acCluster.getNodes().get(destination))!=null)
-			return getNodeName(node);
-
-		return "<unknown>";
-	}
-
-	public void findRelevantSessionNames(int numPartitions, Collection[] resultSet) {
-		throw new UnsupportedOperationException("NYI");
-	}
-
-	public void setClusterListener(ClusterListener listener) {
-		_cluster.addClusterListener(listener);
-	}
-
-    private String getNodeName(Node node) {
-        return node==null?"<unknown>":(String)node.getState().get(Peer._peerNameKey);
+    public void findRelevantSessionNames(int numPartitions, Collection[] resultSet) {
+        throw new UnsupportedOperationException("NYI");
     }
 
-    // 'javax.jms.MessageListener
-    
+    public void setClusterListener(ClusterListener listener) {
+        _cluster.addClusterListener(listener);
+    }
+
     public void onMessage(javax.jms.Message message) {
-        if (_log.isTraceEnabled()) _log.trace(_localPeerName+" - message arrived: "+message);
-        ActiveClusterCluster._cluster.set(_cluster); // attach cluster to a ThreadLocal for future use...
+        if (_log.isTraceEnabled()) {
+            _log.trace(_localPeerName + " - message arrived: " + message);
+        }
+        ActiveClusterCluster._cluster.set(_cluster);
+
+        ActiveClusterMessage wadiMsg;
         try {
-            // why are we creating another object here ? - TODO
-            onMessage(new ActiveClusterMessage(_cluster, (ObjectMessage)message));
+            wadiMsg = new ActiveClusterMessage(_cluster, (ObjectMessage) message);
         } catch (JMSException e) {
             _log.error("ActiveCluster issue: could not demarshall incoming message", e);
+            return;
+        }
+
+        Serializable payload = wadiMsg.getPayload();
+        if (payload instanceof ClusterCommand) {
+            ((ClusterCommand) payload).execute(wadiMsg, _cluster);
+        } else {
+            onMessage(wadiMsg);
         }
     }
     

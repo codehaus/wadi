@@ -18,23 +18,12 @@ package org.codehaus.wadi.jgroups;
 
 public class JGroupsClusterPeer extends JGroupsPeer {
 
-    protected static final String _prefix="<"+Utils.basename(JGroupsClusterPeer.class)+": ";
-    protected static final String _suffix=">";
-    
-    public JGroupsClusterPeer(JGroupsCluster cluster) {
-        super(cluster);
+    public JGroupsClusterPeer(JGroupsCluster cluster, String name) {
+        super(cluster, name);
     }
-    
-    // 'java.lang.Object' API
     
     public String toString() {
-        return _prefix+getName()+"/"+_jgAddress+_suffix;
+        return "JGroupsClusterPeer [" + name + "/"+ _jgAddress + "]";
     }    
     
-    // 'org.codehaus.wadi.group.Peer' API
-    
-    public String getName() {
-        return _cluster.getName();
-    }
-
 }

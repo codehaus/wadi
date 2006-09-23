@@ -28,11 +28,12 @@ public class TestACInVMReplicationContextualiser extends AbstractReplicationCont
     protected Dispatcher createDispatcher(String clusterName, String nodeName, long timeout) throws Exception {
         return new ActiveClusterDispatcher(clusterName, 
                 nodeName, 
-                ActiveClusterCluster.TEST_VM_CLUSTER_URI, 
+                ACTestUtil.CLUSTER_URI_VM, 
                 timeout);
     }
 
     protected void failNode(String arg0) {
         throw new UnsupportedOperationException();
     }
+    
 }

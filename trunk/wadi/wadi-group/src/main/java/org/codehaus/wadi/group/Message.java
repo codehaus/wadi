@@ -16,6 +16,7 @@
 package org.codehaus.wadi.group;
 
 import java.io.Serializable;
+import java.util.Map;
 
 
 /**
@@ -23,6 +24,12 @@ import java.io.Serializable;
  * @version $Revision: 1603 $
  */
 public interface Message {
+    void setProperty(String key, Object value);
+
+    Object getProperty(String key);
+    
+    Map getProperties();
+
     String getTargetCorrelationId();
 
     void setTargetCorrelationId(String correlationId);

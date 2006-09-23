@@ -18,18 +18,21 @@ package org.codehaus.wadi.test;
 
 import java.io.File;
 import java.net.InetSocketAddress;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
+
 import javax.sql.DataSource;
+
 import org.codehaus.wadi.Collapser;
-import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.Contextualiser;
+import org.codehaus.wadi.EndPoint;
 import org.codehaus.wadi.Evicter;
 import org.codehaus.wadi.InvocationProxy;
 import org.codehaus.wadi.PoolableInvocationWrapperPool;
-import org.codehaus.wadi.EndPoint;
 import org.codehaus.wadi.ReplicaterFactory;
 import org.codehaus.wadi.SessionIdFactory;
+import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.group.Dispatcher;
@@ -53,6 +56,9 @@ import org.codehaus.wadi.impl.SimpleStreamer;
 import org.codehaus.wadi.impl.SimpleValuePool;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 import org.codehaus.wadi.impl.Utils;
+import org.codehaus.wadi.servicespace.ServiceName;
+import org.codehaus.wadi.servicespace.ServiceSpaceName;
+import org.codehaus.wadi.servicespace.basic.BasicServiceSpace;
 import org.codehaus.wadi.web.AttributesFactory;
 import org.codehaus.wadi.web.WebSessionPool;
 import org.codehaus.wadi.web.WebSessionWrapperFactory;
@@ -69,85 +75,96 @@ import org.codehaus.wadi.web.impl.WebSessionToSessionPoolAdapter;
 
 public class MyStack {
 
-	protected Dispatcher _dispatcher;
     protected ClusteredManager _manager;
     protected AbstractExclusiveContextualiser _memory;
+    private BasicServiceSpace serviceSpace;
 
     public MyStack(String url, DataSource dataSource, Dispatcher dispatcher) throws Exception {
-      _dispatcher = dispatcher;
-      _dispatcher.init(new DispatcherConfig() {
-        public String getContextPath() {
-            return null;
-        }
-      });
-      _dispatcher.start();
-    	
-      int sweepInterval=1000*60*60*24; // 1 eviction/day
-      boolean strictOrdering=true;
-      Streamer streamer=new SimpleStreamer();
-      Collapser collapser=new HashingCollapser(100, 1000);
+        dispatcher.init(new DispatcherConfig() {
+            public String getContextPath() {
+                return null;
+            }
+        });
+        dispatcher.start();
+        // Implementation note: we really need to wait some time to have a "stable" Dispatcher. For instance, in the
+        // case of ActiveCluster, 
+        Thread.sleep(1000);
 
-      // Terminator
-      Contextualiser terminator=new DummyContextualiser();
-      Streamer sessionStreamer=new SimpleStreamer();
+        serviceSpace = new BasicServiceSpace(new ServiceSpaceName(new URI("Space")), dispatcher);
+        dispatcher = serviceSpace.getDispatcher();
 
-      // DB
-      String storeTable="SESSIONS";
-      DatabaseStore store=new DatabaseStore(url, dataSource, storeTable, false, true, true);
-      boolean clean=true;
-      Contextualiser db=new SharedStoreContextualiser(terminator, collapser, clean, store);
+        int sweepInterval = 1000 * 60 * 60 * 24;
+        boolean strictOrdering = true;
+        Streamer streamer = new SimpleStreamer();
+        Collapser collapser = new HashingCollapser(100, 1000);
 
-      // Cluster
-      Contextualiser cluster=new ClusterContextualiser(db, collapser, new WebHybridRelocater(5000, 5000, true));
+        // Terminator
+        Contextualiser terminator = new DummyContextualiser();
+        Streamer sessionStreamer = new SimpleStreamer();
 
-      // Disc
-      Evicter devicter=new NeverEvicter(sweepInterval, strictOrdering);
-      Map dmap=new HashMap();
-      File dir=Utils.createTempDirectory("wadi", ".test", new File("/tmp"));
-      Contextualiser spool=new ExclusiveStoreContextualiser(cluster, collapser, false, devicter, dmap, sessionStreamer, dir);
+        // DB
+        String storeTable = "SESSIONS";
+        DatabaseStore store = new DatabaseStore(url, dataSource, storeTable, false, true, true);
+        boolean clean = true;
+        Contextualiser db = new SharedStoreContextualiser(terminator, collapser, clean, store);
 
-      Map mmap=new HashMap();
+        // Cluster
+        Contextualiser cluster = new ClusterContextualiser(db, collapser, new WebHybridRelocater(5000, 5000, true));
 
-      Contextualiser serial=new SerialContextualiser(spool, collapser, mmap);
+        // Disc
+        Evicter devicter = new NeverEvicter(sweepInterval, strictOrdering);
+        Map dmap = new HashMap();
+        File dir = Utils.createTempDirectory("wadi", ".test", new File("/tmp"));
+        Contextualiser spool = new ExclusiveStoreContextualiser(cluster, collapser, false, devicter, dmap,
+                sessionStreamer, dir);
 
-      WebSessionPool sessionPool=new SimpleSessionPool(new AtomicallyReplicableSessionFactory());
+        Map mmap = new HashMap();
+        Contextualiser serial = new SerialContextualiser(spool, collapser, mmap);
+        WebSessionPool sessionPool = new SimpleSessionPool(new AtomicallyReplicableSessionFactory());
 
-      // Memory
-      Evicter mevicter=new AlwaysEvicter(sweepInterval, strictOrdering);
-      SessionPool contextPool=new WebSessionToSessionPoolAdapter(sessionPool);
-      PoolableInvocationWrapperPool requestPool=new DummyStatefulHttpServletRequestWrapperPool();
-      _memory=new MemoryContextualiser(serial, mevicter, mmap, streamer, contextPool, requestPool);
+        // Memory
+        Evicter mevicter = new AlwaysEvicter(sweepInterval, strictOrdering);
+        SessionPool contextPool = new WebSessionToSessionPoolAdapter(sessionPool);
+        PoolableInvocationWrapperPool requestPool = new DummyStatefulHttpServletRequestWrapperPool();
+        _memory = new MemoryContextualiser(serial, mevicter, mmap, streamer, contextPool, requestPool);
 
-      // Manager
-      int numPartitions=72;
-      AttributesFactory attributesFactory=new DistributableAttributesFactory();
-      ValuePool valuePool=new SimpleValuePool(new DistributableValueFactory());
-      WebSessionWrapperFactory wrapperFactory=new StandardSessionWrapperFactory();
-      SessionIdFactory idFactory=new TomcatSessionIdFactory();
-      ReplicaterFactory replicaterfactory=new MemoryReplicaterFactory(numPartitions);
-      EndPoint location = new WebEndPoint(new InetSocketAddress("localhost", 8080));
-      InvocationProxy proxy=new StandardHttpProxy("jsessionid");
-      _manager=new ClusteredManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, _memory, _memory.getMap(), new DummyRouter(), true, streamer, true, replicaterfactory, location, proxy, dispatcher, 24, collapser);
-//    manager.setSessionListeners(new HttpSessionListener[]{});
-      //manager.setAttributelisteners(new HttpSessionAttributeListener[]{});
-      _manager.init(new DummyManagerConfig());
+        // Manager
+        int numPartitions = 72;
+        AttributesFactory attributesFactory = new DistributableAttributesFactory();
+        ValuePool valuePool = new SimpleValuePool(new DistributableValueFactory());
+        WebSessionWrapperFactory wrapperFactory = new StandardSessionWrapperFactory();
+        SessionIdFactory idFactory = new TomcatSessionIdFactory();
+        ReplicaterFactory replicaterfactory = new MemoryReplicaterFactory(numPartitions);
+        EndPoint location = new WebEndPoint(new InetSocketAddress("localhost", 8080));
+        InvocationProxy proxy = new StandardHttpProxy("jsessionid");
+        _manager = new ClusteredManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, _memory,
+                _memory.getMap(), new DummyRouter(), true, streamer, true, replicaterfactory, location, proxy,
+                dispatcher, 4, collapser);
+        // manager.setSessionListeners(new HttpSessionListener[]{});
+        // manager.setAttributelisteners(new HttpSessionAttributeListener[]{});
+        _manager.init(new DummyManagerConfig());
+
+        serviceSpace.getServiceRegistry().register(new ServiceName("manager"), _manager);
     }
 
     public void start() throws Exception {
-      _manager.start();
+        serviceSpace.start();
     }
 
     public void stop() throws Exception {
-      _manager.stop();
-      _dispatcher.stop();
+        serviceSpace.stop();
     }
 
     public AbstractExclusiveContextualiser getTop() {
-      return _memory;
+        return _memory;
     }
 
     public ClusteredManager getManager() {
-      return _manager;
+        return _manager;
     }
 
-  }
+    public BasicServiceSpace getServiceSpace() {
+        return serviceSpace;
+    }
+
+}

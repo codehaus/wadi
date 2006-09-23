@@ -22,6 +22,6 @@ import org.codehaus.wadi.replication.integration.AbstractReplicationManagerTest;
 public class TestACPeerReplicationManager extends AbstractReplicationManagerTest {
 
     protected Dispatcher createDispatcher(String clusterName, String nodeName, long timeout) throws Exception {
-        return new ActiveClusterDispatcher(clusterName, nodeName, ActiveClusterCluster.TEST_PEER_CLUSTER_URI, timeout);
+        return new ActiveClusterDispatcher(clusterName, nodeName, ACTestUtil.CLUSTER_URI_PEER, timeout);
     }
 }

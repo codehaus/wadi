@@ -22,6 +22,7 @@ import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.ClusterException;
 import org.codehaus.wadi.group.ClusterListener;
+import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.ElectionStrategy;
 import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.Message;
@@ -35,15 +36,25 @@ import org.codehaus.wadi.group.Peer;
 public class VMLocalCluster implements Cluster {
     private final VMBroker delegate;
     private final LocalPeer node;
+    private final VMDispatcher dispatcher;
     private ElectionStrategy electionStrategy;
     private boolean running;
 
-    public VMLocalCluster(VMBroker delegate, LocalPeer node) {
+    public VMLocalCluster(VMBroker delegate, LocalPeer node, VMDispatcher dispatcher) {
         this.delegate = delegate;
         this.node = node;
+        this.dispatcher = dispatcher;
+    }
+    
+    public String getClusterName() {
+        return delegate.getName();
     }
 
-    String getName() {
+    public Dispatcher getDispatcher() {
+        return dispatcher;
+    }
+    
+    public String getName() {
         return delegate.getName();
     }
 
@@ -64,10 +75,6 @@ public class VMLocalCluster implements Cluster {
 
     Address getAddress(String name) {
         return delegate.getAddress(name);
-    }
-
-    void setDistributedState(VMLocalPeer localNode, Map state) throws MessageExchangeException {
-        delegate.setDistributedState(localNode, state);
     }
 
     public int getPeerCount() {

@@ -55,13 +55,8 @@ public abstract class AbstractTestGroup extends TestCase {
     class MyClusterListener implements ClusterListener {
 
         public int _numRemotePeers=0;
-        public int _numUpdates=0;
         public WaitableInt _numCoordinators=new WaitableInt(0);
         public Peer _lastCoordinator=null;
-
-        public void onPeerUpdated(ClusterEvent event) {
-            _numUpdates++;
-        }
 
         public void onListenerRegistration(Cluster cluster, Set existing, Peer coordinator) {
             _lastCoordinator = coordinator;

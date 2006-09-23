@@ -18,23 +18,12 @@ package org.codehaus.wadi.activecluster;
 
 public class ActiveClusterClusterPeer extends ActiveClusterPeer {
 
-    protected static final String _prefix="<"+Utils.basename(ActiveClusterClusterPeer.class)+": ";
-    protected static final String _suffix=">";
-    
-    public ActiveClusterClusterPeer(ActiveClusterCluster cluster) {
-        super(cluster);
+    public ActiveClusterClusterPeer(ActiveClusterCluster cluster, String name) {
+        super(cluster, name);
     }
-    
-    // 'java.lang.Object' API
     
     public String toString() {
-        return _prefix+getName()+"/"+_acDestination+_suffix;
+        return "ActiveClusterClusterPeer [" + name + "/" + _acDestination + "]";
     }    
     
-    // 'org.codehaus.wadi.group.Peer' API
-    
-    public String getName() {
-        return _cluster.getName();
-    }
-
 }

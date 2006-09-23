@@ -17,12 +17,11 @@
 package org.codehaus.wadi.jgroups;
 
 import java.util.Collection;
-import java.util.Map;
+
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.ClusterException;
 import org.codehaus.wadi.group.DispatcherConfig;
-import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.Message;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.impl.AbstractCluster;
@@ -38,31 +37,21 @@ import org.jgroups.blocks.MessageDispatcher;
  */
 public class JGroupsDispatcher extends AbstractDispatcher {
 
-    protected static final String _prefix="<"+Utils.basename(JGroupsDispatcher.class)+": ";
-    protected static final String _suffix=">";
-    
-    protected final boolean _excludeSelf=true;
-
+    protected final boolean _excludeSelf = true;
     protected final JGroupsCluster _cluster;
     protected final org.jgroups.Address _localJGAddress;
     protected MessageDispatcher _dispatcher;
 
-    public JGroupsDispatcher(String clusterName, String localPeerName, long inactiveTime, String config) throws ChannelException {
+    public JGroupsDispatcher(String clusterName, String localPeerName, long inactiveTime, String config)
+            throws ChannelException {
         super(inactiveTime);
-        _cluster=new JGroupsCluster(clusterName, localPeerName, config);
-        _localJGAddress=((JGroupsPeer)_cluster.getLocalPeer()).getJGAddress();
-
-        // TODO - where is this method.
-        //      register(_cluster, "onMessage", StateUpdate.class);
+        _cluster = new JGroupsCluster(clusterName, localPeerName, config, this);
+        _localJGAddress = ((JGroupsPeer) _cluster.getLocalPeer()).getJGAddress();
     }
-    
-    // 'java.lang.Object' API
-    
+
     public String toString() {
-        return _prefix+_cluster+_suffix;
+        return "JGroupsDispatcher [" + _cluster + "]";
     }
-
-    // org.codehaus.wadi.group.Dispatcher' API
 
     public void start() throws MessageExchangeException {
         _dispatcher.start();
@@ -91,22 +80,12 @@ public class JGroupsDispatcher extends AbstractDispatcher {
     }
 
     public String getPeerName(Address address) {
-        JGroupsPeer peer=(JGroupsPeer)address;
-        assert(peer!=null);
-        assert(_cluster!=null);
+        JGroupsPeer peer = (JGroupsPeer) address;
         return peer.getName();
     }
 
     public Cluster getCluster() {
         return _cluster;
-    }
-
-    public synchronized void setDistributedState(Map state) throws MessageExchangeException {
-        // this seems to be the only test that ActiveCluster does, so there is no point in us doing any more...
-        LocalPeer localNode=_cluster.getLocalPeer();
-        //if (localNode.getState()!=state) {
-        localNode.setState(state);
-        // }
     }
 
     public Address getAddress(String name) {
@@ -115,7 +94,7 @@ public class JGroupsDispatcher extends AbstractDispatcher {
 
     public void init(DispatcherConfig config) throws Exception {
         super.init(config);
-        _dispatcher=new MessageDispatcher(_cluster.getChannel(), _cluster, _cluster, null);
+        _dispatcher = new MessageDispatcher(_cluster.getChannel(), _cluster, _cluster, null);
         _cluster.init(this);
     }
 
@@ -123,8 +102,6 @@ public class JGroupsDispatcher extends AbstractDispatcher {
         AbstractCluster._cluster.set(_cluster);
         super.hook();
     }
-
-    // 'org.codehaus.wadi.jgroups.JGroupsDispatcher' API
 
     public void findRelevantSessionNames(int numPartitions, Collection[] resultSet) {
         throw new UnsupportedOperationException("NYI");

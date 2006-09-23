@@ -15,12 +15,7 @@
  */
 package org.codehaus.wadi.activecluster;
 
-import java.util.Map;
-
-import javax.jms.JMSException;
-
 import org.codehaus.wadi.group.LocalPeer;
-import org.codehaus.wadi.group.MessageExchangeException;
 
 /**
  * 
@@ -28,29 +23,12 @@ import org.codehaus.wadi.group.MessageExchangeException;
  */
 class ActiveClusterLocalPeer extends ActiveClusterPeer implements LocalPeer {
     
-    protected static final String _prefix="<"+Utils.basename(ActiveClusterLocalPeer.class)+": ";
-    protected static final String _suffix=">";
-    
-    public ActiveClusterLocalPeer(ActiveClusterCluster cluster) {
-        super(cluster);
+    public ActiveClusterLocalPeer(ActiveClusterCluster cluster, String name) {
+        super(cluster, name);
     }
-
-    // 'java.lang.Object' API
 
     public String toString() {
-        return _prefix+getName()+_suffix;
+        return "ActiveClusterLocalPeer [" + name + "]";
     }
 
-    public void setState(Map state) throws MessageExchangeException {
-        super.setState(state);
-        org.apache.activecluster.Cluster acCluster=_cluster.getACCluster();
-        if (acCluster!=null) {
-            try {
-                acCluster.getLocalNode().setState(state);
-            } catch (JMSException e) {
-                throw new MessageExchangeException(e);
-            }
-        }
-    }
-    
 }

@@ -131,11 +131,6 @@ public class VMBroker {
         throw new IllegalArgumentException("Node node having the name:" + name);
     }
 
-    void setDistributedState(VMLocalPeer localNode, Map state) throws MessageExchangeException {
-        localNode.setState(state);
-        listenerSupport.notifyUpdated(localNode);
-    }
-
     void setCoordinator(Peer coordinator) {
         this.coordinator = coordinator;
     }

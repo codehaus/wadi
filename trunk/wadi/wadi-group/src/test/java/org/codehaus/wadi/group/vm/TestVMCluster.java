@@ -78,33 +78,6 @@ public class TestVMCluster extends TestCase {
         assertSame(ClusterEvent.PEER_ADDED, event.getType());
     }
 
-    public void testPeerUpdatedIsNotPropagatedToStoppedPeer() throws Exception {
-        VMBroker cluster = new VMBroker("clusterName");
-        
-        VMDispatcher dispatcher1 = new VMDispatcher(cluster, "node1", 1000);
-        dispatcher1.start();
-
-        VMDispatcher dispatcher2 = new VMDispatcher(cluster, "node2", 1000);
-        MockClusterListener listener2 = new MockClusterListener();
-        dispatcher2.getCluster().addClusterListener(listener2);
-
-        HashMap state = new HashMap();
-        dispatcher1.setDistributedState(state);
-        assertTrue(listener2.events.isEmpty());
-
-        dispatcher2.start();
-
-        dispatcher1.setDistributedState(state);
-        
-        assertEquals(2, listener2.events.size());
-        ClusterEvent event = (ClusterEvent) listener2.events.get(0);
-        assertSame(dispatcher1.getCluster().getLocalPeer(), event.getPeer());
-        assertSame(ClusterEvent.PEER_ADDED, event.getType());
-        event = (ClusterEvent) listener2.events.get(1);
-        assertSame(dispatcher1.getCluster().getLocalPeer(), event.getPeer());
-        assertSame(ClusterEvent.PEER_UPDATED, event.getType());
-    }
-
     private static class MockClusterListener implements ClusterListener {
         public final List events = new ArrayList();
 
@@ -126,8 +99,5 @@ public class TestVMCluster extends TestCase {
             }
         }
 
-        public void onPeerUpdated(ClusterEvent event) {
-            events.add(event);   
-        }
     }
 }
