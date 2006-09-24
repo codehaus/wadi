@@ -79,7 +79,7 @@ public class PartitionInfoUpdateBuilder {
         
         PartitionInfo[] localPartitionInfos = baseline.getLocalPartitionInfos();
         for (int i = 0; i < localPartitionInfos.length; i++) {
-            PartitionInfo localPartitionInfo = (PartitionInfo) localPartitionInfos[i];
+            PartitionInfo localPartitionInfo = localPartitionInfos[i];
             if (nbPartitionToRemove > 0) {
                 nbPartitionToRemove--;
             } else {
