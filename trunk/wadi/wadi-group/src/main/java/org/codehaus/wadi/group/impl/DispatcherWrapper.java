@@ -29,14 +29,14 @@ import org.codehaus.wadi.group.Quipu;
 import org.codehaus.wadi.group.ServiceEndpoint;
 
 public class DispatcherWrapper implements Dispatcher {
-    
+
     protected Dispatcher _delegate;
-    
+
     public DispatcherWrapper(Dispatcher delegate) throws MessageExchangeException {
         _delegate=delegate;
         _delegate.start();
     }
-    
+
     public Collection attemptMultiRendezVous(String correlationId, Quipu rv, long timeout) throws MessageExchangeException {
         return _delegate.attemptMultiRendezVous(correlationId, rv, timeout);
     }
@@ -121,10 +121,6 @@ public class DispatcherWrapper implements Dispatcher {
         _delegate.send(source, target, sourceCorrelationId, pojo);
     }
 
-    public void setDistributedState(Map state) throws MessageExchangeException {
-        _delegate.setDistributedState(state);
-    }
-
     public Quipu setRendezVous(String correlationId, int numLlamas) {
         return _delegate.setRendezVous(correlationId, numLlamas);
     }
@@ -144,5 +140,5 @@ public class DispatcherWrapper implements Dispatcher {
     public void onMessage(Message message) {
         _delegate.onMessage(message);
     }
-    
+
 }
