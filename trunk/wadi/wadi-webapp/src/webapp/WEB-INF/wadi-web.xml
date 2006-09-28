@@ -487,7 +487,7 @@
     <constructor-arg><ref bean="ReplicaterFactory"/></constructor-arg>
     <constructor-arg><ref bean="EndPoint"/></constructor-arg>
     <constructor-arg><ref bean="HttpProxy"/></constructor-arg>
-    <constructor-arg><ref bean="Dispatcher"/></constructor-arg>
+    <constructor-arg><ref bean="DispatcherWrapper"/></constructor-arg>
     <constructor-arg><ref bean="NumPartitions"/></constructor-arg>
     <constructor-arg><ref bean="Collapser"/></constructor-arg>
   </bean>
