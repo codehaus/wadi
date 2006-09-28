@@ -38,13 +38,13 @@ import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.deploy.FilterDef;
 import org.apache.catalina.deploy.FilterMap;
 import org.apache.catalina.util.LifecycleSupport;
+import org.apache.catalina.wadi.Filter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Manager;
 import org.codehaus.wadi.ManagerConfig;
 import org.codehaus.wadi.impl.SpringManagerFactory;
 import org.codehaus.wadi.impl.StandardManager;
-import org.codehaus.wadi.web.impl.Filter;
 import org.codehaus.wadi.web.impl.StandardSessionWrapperFactory;
 
 /**
