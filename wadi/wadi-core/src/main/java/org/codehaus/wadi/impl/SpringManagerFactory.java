@@ -70,7 +70,9 @@ public class SpringManagerFactory {
 
         _log.info("java.io.tmpdir="+System.getProperty("java.io.tmpdir"));
 
-    	new XmlBeanDefinitionReader(dlbf).loadBeanDefinitions(new InputStreamResource(descriptor));
+        XmlBeanDefinitionReader xbdr=new XmlBeanDefinitionReader(dlbf);
+        xbdr.setBeanClassLoader(SpringManagerFactory.class.getClassLoader());
+        xbdr.loadBeanDefinitions(new InputStreamResource(descriptor));
     	cfg.setSystemPropertiesMode(PropertyPlaceholderConfigurer.SYSTEM_PROPERTIES_MODE_FALLBACK);
     	cfg.postProcessBeanFactory(dlbf);
 
