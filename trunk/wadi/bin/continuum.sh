@@ -2,6 +2,9 @@
 
 ## an integration script for various ci systems.
 
+echo "***** Continuum build started *****"
+echo
+
 downloadSources=false
 help=false
 site=false
@@ -119,6 +122,6 @@ do
 done
 
 echo
-echo "***** BeetleJuice build completed *****"
+echo "***** Continuum build completed *****"
 
 exit $status
