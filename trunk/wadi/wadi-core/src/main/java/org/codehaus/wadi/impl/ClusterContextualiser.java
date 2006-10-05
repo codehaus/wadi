@@ -222,8 +222,9 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 
 			Emoter emoter=new ImmigrationEmoter(message);
 
-			if (!emotable.checkTimeframe(System.currentTimeMillis()))
-				if (_log.isWarnEnabled()) _log.warn("immigrating session has come from the future!: "+emotable.getName());
+			if (!emotable.checkTimeframe(System.currentTimeMillis())) {
+			    _log.warn("immigrating session has come from the future!: "+emotable.getName());
+            }
 
 			Immoter immoter=_top.getDemoter(name, emotable);
 			Utils.mote(emoter, immoter, emotable, name);
