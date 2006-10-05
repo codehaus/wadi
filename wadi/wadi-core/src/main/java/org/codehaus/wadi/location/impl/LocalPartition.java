@@ -174,7 +174,7 @@ public class LocalPartition extends AbstractPartition implements Serializable {
 
 
                 String sourceCorrelationId=message.getSourceCorrelationId();
-                boolean relocateSession=!request.getShuttingDown();
+                boolean relocateSession=request.getRelocateSession();
                 // tmp test...
                 //relocateSession=(Math.random()>0.5); // 50/50
                 relocateSession=true;
