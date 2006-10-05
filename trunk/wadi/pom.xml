@@ -246,8 +246,7 @@
     <junit.version>3.8.2</junit.version>
     <jetty5.version>5.1.10</jetty5.version>
     <jetty6.version>6.0.0beta12</jetty6.version>
-    <tomcat50.version>5.0.18</tomcat50.version>
-    <!-- <tomcat50.version>5.0.28</tomcat50.version> --> <!-- broken -->
+    <tomcat50.version>5.0.18</tomcat50.version><!-- should be 5.0.28 -->
     <tomcat55.version>5.5.12</tomcat55.version>
     <jboss4.version>4.0.2</jboss4.version>
     <mx4j.version>3.0.1</mx4j.version>
