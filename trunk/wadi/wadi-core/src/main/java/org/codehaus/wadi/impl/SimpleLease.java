@@ -132,28 +132,24 @@ public class SimpleLease implements Lease {
     }
 
     // 'Lease' API
+
+    protected Handle setAlarm(long leasePeriod) {
+        Releaser releaser=new Releaser();
+        Handle handle=new SimpleHandle(_daemon.executeAfterDelay(leasePeriod, releaser));
+        if (_lockLog.isTraceEnabled()) _lockLog.trace(_label+" - acquisition: "+this+"."+handle);
+        synchronized (_handles) {_handles.add(handle);}
+        releaser.init(handle);
+        return handle;
+    }
     
     public Handle acquire(long leasePeriod) throws InterruptedException {
         _sync.acquire();
-        Releaser releaser=new Releaser();
-        Handle handle;
-        synchronized (_handles) {
-            handle=new SimpleHandle(_daemon.executeAfterDelay(leasePeriod, releaser));
-            _handles.add(handle);
-            releaser.init(handle);
-        }
-        if (_lockLog.isTraceEnabled()) _lockLog.trace(_label+" - acquisition: "+this+"."+handle);
-        return handle;
+        return setAlarm(leasePeriod);
     }
 
     public Handle attempt(long timeframe, long leasePeriod) throws InterruptedException {
         if (_sync.attempt(timeframe)) {
-            Releaser releaser=new Releaser();
-            Handle handle=new SimpleHandle(_daemon.executeAfterDelay(leasePeriod, releaser));
-            if (_lockLog.isTraceEnabled()) _lockLog.trace(_label+" - acquisition: "+this+"."+handle);
-            synchronized (_handles) {_handles.add(handle);}
-            releaser.init(handle);
-            return handle;
+        	return setAlarm(leasePeriod);
         }
         else
             return null;

@@ -27,26 +27,26 @@ import org.codehaus.wadi.location.impl.SessionRequestImpl;
 public class MoveIMToPM extends SessionRequestImpl implements Serializable {
 
     protected String _peerName;
-    protected boolean _shuttingDown;
-    protected boolean _invocationIsRelocatable;
+    protected boolean _relocateSession;
+    protected boolean _relocateInvocation;
 
-    public MoveIMToPM(String sessionName, String peerName, boolean shuttingDown, boolean invocationIsRelocatable) {
+    public MoveIMToPM(String sessionName, String peerName, boolean relocateSession, boolean relocateInvocation) {
         super(sessionName);
         _peerName=peerName;
-        _shuttingDown=shuttingDown;
-        _invocationIsRelocatable=invocationIsRelocatable;
+        _relocateSession=relocateSession;
+        _relocateInvocation=relocateInvocation;
     }
 
     public String getNodeName() {
     	return _peerName;
     }
 
-    public boolean getShuttingDown() {
-        return _shuttingDown;
+    public boolean getRelocateSession() {
+        return _relocateSession;
     }
 
-    public boolean getInvocationIsRelocatable() {
-        return _invocationIsRelocatable;
+    public boolean getRelocateInvocation() {
+        return _relocateInvocation;
     }
     
     public String toString() {
