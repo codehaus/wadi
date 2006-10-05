@@ -47,20 +47,6 @@ public class TribesPeer implements Member, LocalPeer, Address, Serializable {
         peerInfo = new PeerInfo();
     }
 
-    public TribesPeer(MemberImpl mbr, String name, PeerInfo peerInfo) {
-        if (null == mbr) {
-            throw new IllegalArgumentException("mbr is required");
-        } else if (null == name) {
-            throw new IllegalArgumentException("name is required");
-        } else if (null == peerInfo) {
-            throw new IllegalArgumentException("peerInfo is required");
-        }
-        this.member = mbr;
-        this.name = name;
-        this.uniqueId = new UniqueId(mbr.getUniqueId());
-        this.peerInfo = peerInfo;
-    }
-
     /**
      * getHost
      *
