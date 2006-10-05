@@ -71,8 +71,6 @@ public class TribesDispatcher extends AbstractDispatcher implements ChannelListe
 
     public void init(DispatcherConfig config) throws Exception {
         super.init(config);
-        cluster.init();
-        ((TribesPeer)cluster.getLocalPeer()).setName(localPeerName);
     }
     
     public void messageReceived(Serializable serializable, Member member) {
@@ -108,9 +106,11 @@ public class TribesDispatcher extends AbstractDispatcher implements ChannelListe
      */
     public void start() throws MessageExchangeException {
         try {
+            cluster.init();
+            ((TribesPeer)cluster.getLocalPeer()).setName(localPeerName);
             cluster.channel.addChannelListener(this);
             cluster.start();
-        }catch ( Exception x ) {
+        } catch ( Exception x ) {
             throw new MessageExchangeException(x);
         }
     }
