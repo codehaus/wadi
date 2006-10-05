@@ -246,7 +246,6 @@
     <junit.version>3.8.2</junit.version>
     <jetty5.version>5.1.10</jetty5.version>
     <jetty6.version>6.0.0beta12</jetty6.version>
-    <!-- <jetty6.version>6.0-SNAPSHOT</jetty6.version> -->
     <tomcat50.version>5.0.18</tomcat50.version>
     <!-- <tomcat50.version>5.0.28</tomcat50.version> --> <!-- broken -->
     <tomcat55.version>5.5.12</tomcat55.version>
@@ -380,6 +379,11 @@
       <id>wadi-dependencies</id>
       <name>WADI Dependencies Repository at the Haus</name>
       <url>http://dist.codehaus.org/wadi/dependencies/maven2</url><!-- TODO: should be moved over to WadiReleaseRepository -->
+    </pluginRepository>
+    <pluginRepository>
+      <id>mortbay-repo</id>
+      <name>mortbay-repo</name>
+      <url>http://jetty.mortbay.org/maven2/release</url>
     </pluginRepository>
     <pluginRepository> <!-- for jdepend,  -->
       <id>maven-plugin-snapshots</id>
