@@ -34,54 +34,75 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  */
 public class DummyContextualiser extends AbstractContextualiser {
 	
-	public DummyContextualiser() {
-		super();
-	}
-	
-	/* (non-Javadoc)
-	 * @see org.codehaus.wadi.sandbox.context.Contextualiser#contextualise(javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain, java.lang.String, org.codehaus.wadi.sandbox.context.Contextualiser)
-	 */
-	public boolean contextualise(Invocation invocation, String key, Immoter immoter, Sync invocationLock, boolean exclusiveOnly) throws InvocationException {
-		return false;
-	}
-	
-	protected final Evicter _evicter=new DummyEvicter();
-	public Evicter getEvicter(){return _evicter;}
-	
-	public boolean isExclusive(){return false;}
-	
-	public class DummyImmoter implements Immoter {
-		public Motable nextMotable(String id, Motable emotable){return null;}
-		public String getInfo(){return "dummy";}
-		
-		public boolean prepare(String name, Motable emotable, Motable immotable) {return true;}
-		
-		public void commit(String name, Motable immotable) {
-			// throw away incoming state...
-		}
-		
-		public void rollback(String name, Motable immotable) {
-			// nothing to do...
-		}
-		
-		public boolean contextualise(Invocation invocation, String id, Motable immotable, Sync motionLock) throws InvocationException {
-			return false;
-		}
-	}
-	
-	protected final Immoter _immoter=new DummyImmoter();
-	public Immoter getDemoter(String name, Motable motable) {return _immoter;}
-	public Immoter getSharedDemoter(){return _immoter;}
-	
-	public void promoteToExclusive(Immoter immoter){/* empty */}
-	public void load(Emoter emoter, Immoter immoter) {/* empty */}
-	
-	public void setLastAccessedTime(Evictable evictable, long oldTime, long newTime) {/* do nothing */}
-	public void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval) {/* do nothing */}
-	
-	
-	public int getLocalSessionCount() {
-		return 0;
-	}
-	
+    protected final Evicter _evicter = new DummyEvicter();
+    protected final Immoter _immoter = new DummyImmoter();
+
+    public boolean contextualise(Invocation invocation, String key, Immoter immoter, Sync invocationLock,
+            boolean exclusiveOnly) throws InvocationException {
+        return false;
+    }
+
+    public Evicter getEvicter() {
+        return _evicter;
+    }
+
+    public boolean isExclusive() {
+        return false;
+    }
+
+    public static class DummyImmoter implements Immoter {
+        public Motable nextMotable(String id, Motable emotable) {
+            return new SimpleMotable();
+        }
+
+        public String getInfo() {
+            return "dummy";
+        }
+
+        public boolean prepare(String name, Motable emotable, Motable immotable) {
+            return true;
+        }
+
+        public void commit(String name, Motable immotable) {
+            // throw away incoming state...
+        }
+
+        public void rollback(String name, Motable immotable) {
+            // nothing to do...
+        }
+
+        public boolean contextualise(Invocation invocation, String id, Motable immotable, Sync motionLock)
+                throws InvocationException {
+            return false;
+        }
+    }
+
+    public Immoter getDemoter(String name, Motable motable) {
+        return _immoter;
+    }
+
+    public Immoter getSharedDemoter() {
+        return _immoter;
+    }
+
+    public void promoteToExclusive(Immoter immoter) {
+        /* empty */
+    }
+
+    public void load(Emoter emoter, Immoter immoter) {
+        /* empty */
+    }
+
+    public void setLastAccessedTime(Evictable evictable, long oldTime, long newTime) {
+        /* do nothing */
+    }
+
+    public void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval) {
+        /* do nothing */
+    }
+
+    public int getLocalSessionCount() {
+        return 0;
+    }
+
 }
