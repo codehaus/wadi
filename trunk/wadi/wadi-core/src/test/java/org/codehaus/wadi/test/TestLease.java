@@ -16,15 +16,22 @@
  */
 package org.codehaus.wadi.test;
 
-import org.codehaus.wadi.Lease;
-import org.codehaus.wadi.Lease.Handle;
-import org.codehaus.wadi.impl.SimpleLease;
-import EDU.oswego.cs.dl.util.concurrent.Mutex;
-import EDU.oswego.cs.dl.util.concurrent.Sync;
 import junit.framework.TestCase;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.Lease;
+import org.codehaus.wadi.Lease.Handle;
+import org.codehaus.wadi.impl.ExtendableLease;
+import org.codehaus.wadi.impl.SimpleLease;
+
+import EDU.oswego.cs.dl.util.concurrent.Mutex;
+import EDU.oswego.cs.dl.util.concurrent.Sync;
+
 public class TestLease extends TestCase {
-    
+
+	protected Log _log=LogFactory.getLog(getClass());
+	
     public TestLease(String name) {
         super(name);
     }
@@ -44,11 +51,11 @@ public class TestLease extends TestCase {
         protected Sync _sync=new Mutex();
         
         public void acquire() throws InterruptedException {
-            _count++;
             _sync.acquire();
+            _count++;
         }
 
-        public boolean attempt(long msecs) throws InterruptedException {
+        public synchronized boolean attempt(long msecs) throws InterruptedException {
             if (_sync.attempt(msecs)) {
                 _count++;
                 return true;
@@ -68,7 +75,37 @@ public class TestLease extends TestCase {
         
     }
     
-    public void testLease() throws Exception {
+    class Checker implements Runnable {
+
+    	protected CountedSync _lock;
+
+    	public Checker(CountedSync lock) {
+    		_lock=lock;
+    	}
+
+    	public void run() {
+    		try {
+    			_lock.acquire();
+    			assertTrue(_lock.getCount()==1);
+    			_lock.release();
+    		} catch(Exception e) {
+    			assertTrue(false);
+    		};
+    	}
+    };
+    
+    public void testSyncLock() throws Exception {
+    	final CountedSync lock=new CountedSync();
+    	int numThreads=100;
+    	Thread[] threads=new Thread[numThreads];
+    	for (int i=0; i<numThreads; i++)
+    		(threads[i]=new Thread(new Checker(lock))).start();
+    	for (int i=0; i<numThreads; i++)
+    		threads[i].join();
+    	
+    }
+    
+    public void testSimpleLease() throws Exception {
         CountedSync sync=new CountedSync();
         Lease lease=new SimpleLease("TEST", sync);
 
@@ -154,6 +191,62 @@ public class TestLease extends TestCase {
                 // ignore
             }
         }
+    }
+
+    class CountedExtender implements ExtendableLease.Extender {
+    	
+    	protected int _count;
+    	
+    	public CountedExtender(int seconds) {
+    		_count=seconds;
+    	}
+    	
+    	public boolean extend() {
+    		return _count-->1;
+    	}
+    	
+    	public int getCount() {
+    		return _count;
+    	}
+    	
+    }
+    
+    public void testExtendableLease() throws Exception {
+    
+        CountedSync sync=new CountedSync();
+    	ExtendableLease lease=new ExtendableLease("TEST", sync);
+
+        // acquire a Lease - implicit release
+        {
+            long leasePeriod=1000;
+            long count=3;
+            CountedExtender extender=new CountedExtender(3);
+            assertTrue(sync.getCount()==0);
+            assertTrue(extender.getCount()==count);
+            long started=System.currentTimeMillis();
+            lease.acquire(leasePeriod, extender); // acquire a 1 second lease
+            lease.acquire(); // in order for us to acquire it, it must have released itself...
+            long elapsed=System.currentTimeMillis()-started;
+            assertTrue(elapsed>(leasePeriod*count)); // not the best way to test this...
+            lease.release();
+            assertTrue(sync.getCount()==0);
+            assertTrue(extender.getCount()==0);
+        }
+    }
+    
+    public void testScalability() throws Exception {
+    	int count=100000;
+    	long period=1000;
+    	Lease[] _leases=new Lease[count];
+    	long start=System.currentTimeMillis();
+    	for (int i=0; i<count; i++)
+    		(_leases[i]=new SimpleLease("Lease-"+i, new CountedSync())).acquire(period);
+    	for (int i=0; i<count; i++)
+    		_leases[i].acquire();
+    	for (int i=0; i<count; i++)
+    		_leases[i].release();
+    	long elapsed=System.currentTimeMillis()-start;
+    	_log.info("LEASES: "+elapsed);
     }
     
 }
