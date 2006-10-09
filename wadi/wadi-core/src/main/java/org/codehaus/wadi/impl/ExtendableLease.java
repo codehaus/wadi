@@ -29,33 +29,35 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  */
 public class ExtendableLease extends SimpleLease {
 
-    interface Extender {
+    public interface Extender {
     	public boolean extend();
     }
 
     protected static final Extender _DefaultExtender=new Extender(){public boolean extend(){return false;}};
     
 	protected Extender _extender=_DefaultExtender;
+	protected long _leasePeriod;
 	
     public ExtendableLease(String label, Sync sync) {
     	super(label, sync);
     }
     
     public Handle acquire(long leasePeriod, Extender extender) throws InterruptedException {
-    	Handle handle=acquire(leasePeriod);
+    	Handle handle=super.acquire(leasePeriod);
     	_extender=extender; // TODO - needs some form of atomicity
     	return handle;
     }
 
     public Handle attempt(long timeframe, long leasePeriod, Extender extender) throws InterruptedException {
-    	Handle handle=attempt(timeframe, leasePeriod);
+    	Handle handle=super.attempt(timeframe, leasePeriod);
     	_extender=extender;
     	return handle;
     }
 
     // Use an ExtendableReleaser here
     protected Handle setAlarm(long leasePeriod) {
-        Releaser releaser=new Releaser();
+    	_leasePeriod=leasePeriod;
+        Releaser releaser=new ExtendableReleaser();
         Handle handle=new SimpleHandle(_daemon.executeAfterDelay(leasePeriod, releaser));
         if (_lockLog.isTraceEnabled()) _lockLog.trace(_label+" - acquisition: "+this+"."+handle);
         synchronized (_handles) {_handles.add(handle);}
@@ -67,7 +69,8 @@ public class ExtendableLease extends SimpleLease {
 
         public void run() {
         	if (_extender.extend()) {
-        		// set up another lease - how...
+        		// set up another lease...
+        		setAlarm(_leasePeriod);
         	} else {
         		// release lock
         		super.run();
