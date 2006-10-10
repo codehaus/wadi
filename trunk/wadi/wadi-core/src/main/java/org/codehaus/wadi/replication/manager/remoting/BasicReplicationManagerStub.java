@@ -19,7 +19,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.impl.ServiceEndpointBuilder;
 import org.codehaus.wadi.replication.common.ReplicaInfo;
@@ -69,7 +69,7 @@ public class BasicReplicationManagerStub implements ReplicationManager {
         Address target = dispatcher.getCluster().getAddress();
         ReplicaInfo info = null;
         try {
-            Message message = dispatcher.exchangeSend(target, command, ReleasePrimaryRequest.DEFAULT_TWO_WAY_TIMEOUT);
+            Envelope message = dispatcher.exchangeSend(target, command, ReleasePrimaryRequest.DEFAULT_TWO_WAY_TIMEOUT);
             if (null != message) {
                 ReleasePrimaryResult result = (ReleasePrimaryResult) message.getPayload();
                 info = (ReplicaInfo) result.getPayload();

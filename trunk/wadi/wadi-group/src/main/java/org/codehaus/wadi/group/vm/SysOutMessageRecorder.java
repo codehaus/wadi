@@ -16,7 +16,7 @@
 package org.codehaus.wadi.group.vm;
 
 import org.codehaus.wadi.group.Address;
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 
 
 /**
@@ -28,7 +28,7 @@ public class SysOutMessageRecorder implements MessageRecorder {
     public void setVMCluster(VMBroker cluster) {
     }
     
-    public void record(Address to, Message message) {
+    public void record(Address to, Envelope message) {
         System.out.println("Message sent to=[" + to + "] msg=[" + message + "]");     
     }
 }

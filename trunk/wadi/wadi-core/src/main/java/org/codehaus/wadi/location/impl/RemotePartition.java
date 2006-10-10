@@ -20,7 +20,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.impl.Utils;
 import org.codehaus.wadi.location.SessionRequestMessage;
@@ -64,7 +64,7 @@ public class RemotePartition extends AbstractPartition {
         return false;
     }
 
-    protected void forward(Message message) {
+    protected void forward(Envelope message) {
         try {
             _config.getDispatcher().forward(message, _address);
         } catch (MessageExchangeException e) {
@@ -74,25 +74,25 @@ public class RemotePartition extends AbstractPartition {
 
     // incoming...
 
-    public void onMessage(Message message, InsertIMToPM request) {
+    public void onMessage(Envelope message, InsertIMToPM request) {
         if (_log.isTraceEnabled()) _log.trace("#"+_key+" : forwarding: " + request + " from "+_config.getLocalPeerName()+" to " + _config.getPeerName(_address));
 
         forward(message);
     }
 
-    public void onMessage(Message message, DeleteIMToPM request) {
+    public void onMessage(Envelope message, DeleteIMToPM request) {
         if (_log.isTraceEnabled()) _log.trace("indirecting: " + request + " via " + _config.getPeerName(_address));
 
         forward(message);
     }
 
-    public void onMessage(Message message, EvacuateIMToPM request) {
+    public void onMessage(Envelope message, EvacuateIMToPM request) {
         if (_log.isTraceEnabled()) _log.trace("indirecting: " + request + " via " + _config.getPeerName(_address));
 
         forward(message);
     }
 
-    public void onMessage(Message message, MoveIMToPM request) {
+    public void onMessage(Envelope message, MoveIMToPM request) {
         if (_log.isWarnEnabled()) _log.warn(_config.getLocalPeerName()+": not Master of Partition["+_key+"] - forwarding message to "+_config.getPeerName(_address));
 
         forward(message);
@@ -100,7 +100,7 @@ public class RemotePartition extends AbstractPartition {
 
     // outgoing...
 
-    public Message exchange(SessionRequestMessage request, long timeout) throws Exception {
+    public Envelope exchange(SessionRequestMessage request, long timeout) throws Exception {
         Dispatcher dispatcher=_config.getDispatcher();
         Address target=_address;
         if (_log.isTraceEnabled()) _log.trace("exchanging message ("+request+") with node: "+_config.getPeerName(target)+" on "+Thread.currentThread().getName());

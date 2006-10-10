@@ -15,12 +15,12 @@
  */
 package org.codehaus.wadi.group.vm;
 
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 
 /**
  * 
  * @version $Revision: 1603 $
  */
 public interface MessageTransformer {
-    Message transform(Message message);
+    Envelope transform(Envelope message);
 }

@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.codehaus.wadi.group.Address;
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 
 /**
  * <p>Title: </p>
@@ -20,7 +20,7 @@ import org.codehaus.wadi.group.Message;
  * @author not attributable
  * @version 1.0
  */
-public class TribesMessage implements Message, Serializable {
+public class TribesEnvelope implements Envelope, Serializable {
     protected Address address;
     protected Serializable payload;
     protected Address replyto;
@@ -28,7 +28,7 @@ public class TribesMessage implements Message, Serializable {
     protected String targetCorrId;
     private final Map properties = new HashMap();
     
-    public TribesMessage() {
+    public TribesEnvelope() {
     }
 
     /**

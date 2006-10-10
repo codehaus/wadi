@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.ServiceEndpoint;
 
 /**
@@ -79,9 +79,9 @@ public class ServiceEndpointBuilder {
     }
 
     private void buildSEITwoParameters(Dispatcher dispatcher, Method method, Class[] parameterTypes, Object target) {
-        if (parameterTypes[0] != Message.class) {
+        if (parameterTypes[0] != Envelope.class) {
             throw new IllegalArgumentException("First parameter of " +
-                method + " must be " + Message.class.getName());
+                method + " must be " + Envelope.class.getName());
         } else if (false == Serializable.class.isAssignableFrom(parameterTypes[1])) {
             throw new IllegalArgumentException("Second parameter of " +
                             method + " must be an instance of " +

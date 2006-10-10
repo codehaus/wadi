@@ -17,7 +17,7 @@ package org.codehaus.wadi.replication.storage.remoting;
 
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.replication.common.ComponentEventType;
 import org.codehaus.wadi.replication.common.NodeInfo;
 import org.codehaus.wadi.replication.storage.ReplicaStorage;
@@ -53,7 +53,7 @@ class BasicReplicaStorageAdvertiser implements ReplicaStorageAdvertiser {
 
     private void sendToDestination(ComponentEventType type, NodeInfo nodeInfo, Address target) {
         try {
-            Message message = dispatcher.createMessage();
+            Envelope message = dispatcher.createMessage();
             message.setPayload(new ReplicaStorageEvent(type, nodeInfo));
             dispatcher.send(target, message);
         } catch (Exception e) {

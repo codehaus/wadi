@@ -216,7 +216,7 @@ public class TestLease extends TestCase {
         CountedSync sync=new CountedSync();
     	ExtendableLease lease=new ExtendableLease("TEST", sync);
 
-        // acquire a Lease - implicit release
+        // acquire a Lease - implicit release, with a number of extensions...
         {
             long leasePeriod=1000;
             long count=3;
@@ -234,19 +234,31 @@ public class TestLease extends TestCase {
         }
     }
     
+    // create a large number of Leases and let them time-out...
     public void testScalability() throws Exception {
     	int count=100000;
     	long period=1000;
+    	_log.info("Leases: "+count);
+    	_log.info("period (millis): "+period);
     	Lease[] _leases=new Lease[count];
+    	_log.info("creating Leases...");
+    	for (int i=0; i<count; i++)
+    		_leases[i]=new SimpleLease("Lease-"+i, new CountedSync());
+    	_log.info("acquiring Leases...");
     	long start=System.currentTimeMillis();
     	for (int i=0; i<count; i++)
-    		(_leases[i]=new SimpleLease("Lease-"+i, new CountedSync())).acquire(period);
+    		_leases[i].acquire(period);
+    	_log.info("reacquiring Leases...");
     	for (int i=0; i<count; i++)
     		_leases[i].acquire();
+    	long elapsed=System.currentTimeMillis()-start;
+    	_log.info("releasing Leases...");
     	for (int i=0; i<count; i++)
     		_leases[i].release();
-    	long elapsed=System.currentTimeMillis()-start;
-    	_log.info("LEASES: "+elapsed);
+    	long overhead=(elapsed-period);
+    	_log.info("overhead: "+overhead);
+    	_log.info("overhead/Lease: "+overhead/count);
+    	_log.info("Leases/second: "+(count*1000)/overhead);
     }
     
 }

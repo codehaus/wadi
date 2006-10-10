@@ -9,7 +9,7 @@ import org.apache.catalina.tribes.Member;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.DispatcherConfig;
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.impl.AbstractDispatcher;
 
@@ -45,8 +45,8 @@ public class TribesDispatcher extends AbstractDispatcher implements ChannelListe
         }
     }
 
-    public Message createMessage() {
-        return new TribesMessage();
+    public Envelope createMessage() {
+        return new TribesEnvelope();
     }
 
     public Address getAddress(String name) {
@@ -61,9 +61,9 @@ public class TribesDispatcher extends AbstractDispatcher implements ChannelListe
         return ((TribesPeer)address).getName();
     }
 
-    public void send(Address target, Message message) throws MessageExchangeException {
+    public void send(Address target, Envelope message) throws MessageExchangeException {
         try {
-            cluster.channel.send(new Member[] {(TribesPeer)target},(TribesMessage)message,Channel.SEND_OPTIONS_ASYNCHRONOUS);
+            cluster.channel.send(new Member[] {(TribesPeer)target},(TribesEnvelope)message,Channel.SEND_OPTIONS_ASYNCHRONOUS);
         }catch ( ChannelException x ) {
             throw new MessageExchangeException(x);
         }
@@ -74,8 +74,8 @@ public class TribesDispatcher extends AbstractDispatcher implements ChannelListe
     }
     
     public void messageReceived(Serializable serializable, Member member) {
-        if (serializable instanceof TribesMessage) {
-            final TribesMessage msg = (TribesMessage) serializable;
+        if (serializable instanceof TribesEnvelope) {
+            final TribesEnvelope msg = (TribesEnvelope) serializable;
             msg.setReplyTo((Address) member); //do we need this?
             msg.setAddress((Address) cluster.channel.getLocalMember(false));
             Runnable r = new Runnable() {
@@ -92,7 +92,7 @@ public class TribesDispatcher extends AbstractDispatcher implements ChannelListe
     }
     
     public boolean accept(Serializable serializable, Member member) {
-        boolean result = (serializable instanceof TribesMessage);
+        boolean result = (serializable instanceof TribesEnvelope);
         //System.out.println("\n\n\nMEGA DEBUG\nAccept called on:"+this+" with "+serializable+ " result:"+result);
         return result;
     }

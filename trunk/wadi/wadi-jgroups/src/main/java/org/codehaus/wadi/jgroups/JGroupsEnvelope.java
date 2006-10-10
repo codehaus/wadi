@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.codehaus.wadi.group.Address;
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 
 /**
  * A WADI Message mapped onto JGroups
@@ -30,7 +30,7 @@ import org.codehaus.wadi.group.Message;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision: 1647 $
  */
-public class JGroupsMessage implements Message, Serializable {
+public class JGroupsEnvelope implements Envelope, Serializable {
 
     protected transient JGroupsCluster _cluster;
     protected JGroupsPeer _replyTo;

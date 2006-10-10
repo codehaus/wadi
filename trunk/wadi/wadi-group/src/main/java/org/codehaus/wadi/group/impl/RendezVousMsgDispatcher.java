@@ -19,7 +19,7 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.Quipu;
 
 /**
@@ -33,7 +33,7 @@ public class RendezVousMsgDispatcher extends AbstractMsgDispatcher {
         super(dispatcher, type);
     }
 
-    public void dispatch(Message om) throws Exception {
+    public void dispatch(Envelope om) throws Exception {
         String correlationId = om.getTargetCorrelationId();
         Map rendezVousMap = _dispatcher.getRendezVousMap();
         synchronized (rendezVousMap) {

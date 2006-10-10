@@ -16,7 +16,7 @@
  */
 package org.codehaus.wadi.location.impl;
 
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.location.SessionRequestMessage;
 import org.codehaus.wadi.location.session.DeleteIMToPM;
 import org.codehaus.wadi.location.session.EvacuateIMToPM;
@@ -47,25 +47,25 @@ public class UnknownPartition extends AbstractPartition {
 
     // incoming ...
 
-    public void onMessage(Message message, InsertIMToPM request) {
+    public void onMessage(Envelope message, InsertIMToPM request) {
         throw new UnsupportedOperationException();
     }
 
-    public void onMessage(Message message, DeleteIMToPM request) {
+    public void onMessage(Envelope message, DeleteIMToPM request) {
         throw new UnsupportedOperationException();
     }
 
-    public void onMessage(Message message, EvacuateIMToPM request) {
+    public void onMessage(Envelope message, EvacuateIMToPM request) {
         throw new UnsupportedOperationException();
     }
 
-    public void onMessage(Message message, MoveIMToPM request) {
+    public void onMessage(Envelope message, MoveIMToPM request) {
         throw new UnsupportedOperationException();
     }
 
     // outgoing...
 
-    public Message exchange(SessionRequestMessage request, long timeout) throws Exception {
+    public Envelope exchange(SessionRequestMessage request, long timeout) throws Exception {
         throw new UnsupportedOperationException();
     }
 

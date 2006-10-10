@@ -148,7 +148,7 @@ public abstract class AbstractTestGroup extends TestCase {
             _latch=latch;
         }
         
-        public void dispatch(Message om) throws Exception {
+        public void dispatch(Envelope om) throws Exception {
             Address content=(Address)om.getPayload();
             Address target=om.getAddress();
             assertSame(_local, content);
@@ -168,7 +168,7 @@ public abstract class AbstractTestGroup extends TestCase {
             _local=local;
         }
         
-        public void dispatch(Message om) throws Exception {
+        public void dispatch(Envelope om) throws Exception {
             Address content=(Address)om.getPayload();
             Address target=om.getAddress();
             assertSame(_local, content);
@@ -223,7 +223,7 @@ public abstract class AbstractTestGroup extends TestCase {
         dispatcher1.register(sync);
         Peer peer2=(Peer)cluster0.getRemotePeers().values().iterator().next();
         Address target=peer2.getAddress();
-        Message reply=dispatcher0.exchangeSend(target, target, 5000); // red sends green its own address and green sends it back
+        Envelope reply=dispatcher0.exchangeSend(target, target, 5000); // red sends green its own address and green sends it back
         Address payload=(Address)reply.getPayload();
         assertTrue(target==payload);
         dispatcher1.unregister(sync, 10, 500); // what are these params for ?

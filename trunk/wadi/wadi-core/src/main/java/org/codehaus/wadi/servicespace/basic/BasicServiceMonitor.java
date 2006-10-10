@@ -27,7 +27,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Lifecycle;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.LocalPeer;
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.ServiceEndpoint;
@@ -147,7 +147,7 @@ public class BasicServiceMonitor implements ServiceMonitor, Lifecycle {
     
     protected class ServiceLifecycleEndpoint implements ServiceEndpoint {
 
-        public void dispatch(Message om) throws Exception {
+        public void dispatch(Envelope om) throws Exception {
             ServiceLifecycleEvent event = (ServiceLifecycleEvent) om.getPayload();
             processLifecycleEvent(event);
         }
@@ -156,7 +156,7 @@ public class BasicServiceMonitor implements ServiceMonitor, Lifecycle {
             return;
         }
 
-        public boolean testDispatchMessage(Message om) {
+        public boolean testDispatchMessage(Envelope om) {
             Serializable payload = om.getPayload();
             if (!(payload instanceof ServiceLifecycleEvent)) {
                 return false;

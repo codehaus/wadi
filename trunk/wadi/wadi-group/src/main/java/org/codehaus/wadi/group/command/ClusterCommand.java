@@ -18,7 +18,7 @@ package org.codehaus.wadi.group.command;
 import java.io.Serializable;
 
 import org.codehaus.wadi.group.Cluster;
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 
 
 /**
@@ -26,5 +26,5 @@ import org.codehaus.wadi.group.Message;
  * @version $Revision: 1538 $
  */
 public interface ClusterCommand extends Serializable {
-    void execute(Message msg, Cluster cluster);
+    void execute(Envelope msg, Cluster cluster);
 }

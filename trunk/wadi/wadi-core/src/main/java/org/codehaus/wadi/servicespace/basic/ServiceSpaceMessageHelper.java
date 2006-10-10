@@ -15,7 +15,7 @@
  */
 package org.codehaus.wadi.servicespace.basic;
 
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.servicespace.ServiceSpace;
 import org.codehaus.wadi.servicespace.ServiceSpaceName;
 
@@ -28,11 +28,11 @@ public class ServiceSpaceMessageHelper {
 
     private final ServiceSpace serviceSpace;
  
-    public static void setServiceSpaceName(ServiceSpaceName serviceSpaceName, Message message) {
+    public static void setServiceSpaceName(ServiceSpaceName serviceSpaceName, Envelope message) {
         message.setProperty(PROPERTY_KEY_SERVICE_SPACE_NAME, serviceSpaceName);
     }
 
-    public static ServiceSpaceName getServiceSpaceNameStatic(Message message) {
+    public static ServiceSpaceName getServiceSpaceNameStatic(Envelope message) {
         return (ServiceSpaceName) message.getProperty(PROPERTY_KEY_SERVICE_SPACE_NAME);
     }
     
@@ -43,11 +43,11 @@ public class ServiceSpaceMessageHelper {
         this.serviceSpace = serviceSpace;
     }
     
-    public ServiceSpaceName getServiceSpaceName(Message message) {
+    public ServiceSpaceName getServiceSpaceName(Envelope message) {
         return (ServiceSpaceName) message.getProperty(PROPERTY_KEY_SERVICE_SPACE_NAME);
     }
 
-    public void setServiceSpaceName(Message message) {
+    public void setServiceSpaceName(Envelope message) {
         setServiceSpaceName(serviceSpace.getServiceSpaceName(), message);
     }
     

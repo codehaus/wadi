@@ -15,14 +15,14 @@
  */
 package org.codehaus.wadi.replication.storage.remoting;
 
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 
 /**
  * 
  * @version $Revision: 1647 $
  */
 public interface BasicReplicaStorageExporterMessageListener {
-    void onCommand(Message message, ReplicaStorageRequest command);
+    void onCommand(Envelope message, ReplicaStorageRequest command);
 
-    void onMonitorEvent(Message message, ReplicaStorageMonitorEvent event);
+    void onMonitorEvent(Envelope message, ReplicaStorageMonitorEvent event);
 }

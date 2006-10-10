@@ -16,11 +16,13 @@
  */
 package org.codehaus.wadi;
 
+import java.io.Serializable;
+
 /**
  * Message - a Message sent between WADI Peers. A Marker Interface.
  * 
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public interface Message {
+public interface Message extends Serializable {
 }

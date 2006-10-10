@@ -16,7 +16,7 @@
  */
 package org.codehaus.wadi.location;
 
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.location.session.DeleteIMToPM;
 import org.codehaus.wadi.location.session.EvacuateIMToPM;
 import org.codehaus.wadi.location.session.InsertIMToPM;
@@ -46,7 +46,7 @@ public interface Partition {
      * @param message
      * @param request
      */
-    void onMessage(Message message, InsertIMToPM request);
+    void onMessage(Envelope message, InsertIMToPM request);
 
     /**
      * A Peer has destroyed a Session...
@@ -54,7 +54,7 @@ public interface Partition {
      * @param message
      * @param request
      */
-    void onMessage(Message message, DeleteIMToPM request);
+    void onMessage(Envelope message, DeleteIMToPM request);
 
     /**
      * A Peer wishes to evacuate a Session...
@@ -62,7 +62,7 @@ public interface Partition {
      * @param message
      * @param request
      */
-    void onMessage(Message message, EvacuateIMToPM request);
+    void onMessage(Envelope message, EvacuateIMToPM request);
 
     /**
      * A Peer has an Invocation for a Session of which it is not the owner...
@@ -70,7 +70,7 @@ public interface Partition {
      * @param message
      * @param request
      */
-    void onMessage(Message message, MoveIMToPM request);
+    void onMessage(Envelope message, MoveIMToPM request);
 
     // outgoing...
 
@@ -82,6 +82,6 @@ public interface Partition {
      * @return the response
      * @throws Exception
      */
-    Message exchange(SessionRequestMessage request, long timeout) throws Exception;
+    Envelope exchange(SessionRequestMessage request, long timeout) throws Exception;
 
 }

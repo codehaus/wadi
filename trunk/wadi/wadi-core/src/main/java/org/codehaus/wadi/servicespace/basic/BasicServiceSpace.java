@@ -30,7 +30,7 @@ import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.ClusterListener;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.LocalPeer;
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.ServiceEndpoint;
@@ -210,7 +210,7 @@ public class BasicServiceSpace implements ServiceSpace, Lifecycle {
         for (Iterator iter = peerMulticasted.values().iterator(); iter.hasNext();) {
             Peer peer = (Peer) iter.next();
             try {
-                Message message = underlyingDispatcher.createMessage();
+                Envelope message = underlyingDispatcher.createMessage();
                 messageHelper.setServiceSpaceName(message);
                 message.setReplyTo(underlyingDispatcher.getCluster().getLocalPeer().getAddress());
                 message.setAddress(peer.getAddress());
@@ -255,7 +255,7 @@ public class BasicServiceSpace implements ServiceSpace, Lifecycle {
     
     protected class ServiceSpaceLifecycleEndpoint implements ServiceEndpoint {
 
-        public void dispatch(Message om) throws Exception {
+        public void dispatch(Envelope om) throws Exception {
             ServiceSpaceLifecycleEvent event = (ServiceSpaceLifecycleEvent) om.getPayload();
             processLifecycleEvent(event);
         }
@@ -264,7 +264,7 @@ public class BasicServiceSpace implements ServiceSpace, Lifecycle {
             return;
         }
 
-        public boolean testDispatchMessage(Message om) {
+        public boolean testDispatchMessage(Envelope om) {
             Serializable payload = om.getPayload();
             if (!(payload instanceof ServiceSpaceLifecycleEvent)) {
                 return false;

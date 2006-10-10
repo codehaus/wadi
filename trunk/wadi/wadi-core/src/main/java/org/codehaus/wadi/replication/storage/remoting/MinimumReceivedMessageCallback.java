@@ -15,7 +15,7 @@
  */
 package org.codehaus.wadi.replication.storage.remoting;
 
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 
 /**
  * 
@@ -30,7 +30,7 @@ class MinimumReceivedMessageCallback implements TwoWayMessageCallback {
         this.minimumReceived = minimumReceived;
     }
 
-    public void receivedMessage(Message message) {
+    public void receivedMessage(Envelope message) {
         if (null != message) {
             received++;
         }

@@ -15,7 +15,7 @@
  */
 package org.codehaus.wadi.location.impl;
 
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.location.partition.PartitionEvacuationRequest;
 import org.codehaus.wadi.location.partition.PartitionRepopulateRequest;
 import org.codehaus.wadi.location.partition.PartitionTransferRequest;
@@ -28,17 +28,17 @@ import org.codehaus.wadi.partition.RetrieveBalancingInfoEvent;
  */
 public interface PartitionManagerMessageListener {
     // a node wants to shutdown...
-    void onPartitionEvacuationRequest(Message om, PartitionEvacuationRequest request);
+    void onPartitionEvacuationRequest(Envelope om, PartitionEvacuationRequest request);
 
     // a node wants to rebuild a lost partition
-    void onPartitionRepopulateRequest(Message om, PartitionRepopulateRequest request);
+    void onPartitionRepopulateRequest(Envelope om, PartitionRepopulateRequest request);
 
     // receive a transfer of partitions
-    void onPartitionTransferRequest(Message om, PartitionTransferRequest request);
+    void onPartitionTransferRequest(Envelope om, PartitionTransferRequest request);
     
-    void onPartitionManagerJoiningEvent(Message om, PartitionManagerJoiningEvent joiningEvent);
+    void onPartitionManagerJoiningEvent(Envelope om, PartitionManagerJoiningEvent joiningEvent);
     
-    void onRetrieveBalancingInfoEvent(Message om, RetrieveBalancingInfoEvent infoEvent);
+    void onRetrieveBalancingInfoEvent(Envelope om, RetrieveBalancingInfoEvent infoEvent);
     
-    void onPartitionBalancingInfoUpdate(Message om, PartitionBalancingInfoUpdate infoUpdate);
+    void onPartitionBalancingInfoUpdate(Envelope om, PartitionBalancingInfoUpdate infoUpdate);
 }

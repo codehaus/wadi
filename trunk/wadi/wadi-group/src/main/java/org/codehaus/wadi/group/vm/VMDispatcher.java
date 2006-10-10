@@ -17,7 +17,7 @@ package org.codehaus.wadi.group.vm;
 
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Cluster;
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.impl.AbstractDispatcher;
 
@@ -65,12 +65,12 @@ public class VMDispatcher extends AbstractDispatcher {
             ". Was:" + address.getClass().getName());
     }
 
-    public void send(Address target, Message message) throws MessageExchangeException {
+    public void send(Address target, Envelope message) throws MessageExchangeException {
         cluster.send(target, message);
     }
 
-    public Message createMessage() {
-        return new VMMessage();
+    public Envelope createMessage() {
+        return new VMEnvelope();
     }
 
     public Address getAddress(String name) {

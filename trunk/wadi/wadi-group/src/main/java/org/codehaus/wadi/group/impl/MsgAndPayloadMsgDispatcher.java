@@ -17,7 +17,7 @@ package org.codehaus.wadi.group.impl;
 
 import java.lang.reflect.Method;
 import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 
 /**
  * 
@@ -34,7 +34,7 @@ class MsgAndPayloadMsgDispatcher extends AbstractMsgMethodDispatcher {
         super(dispatcher, target, method, type);
     }
 
-    public void dispatch(Message om) throws Exception {
+    public void dispatch(Envelope om) throws Exception {
         Object[] pair = (Object[]) _pair.get();
         pair[0] = om;
         pair[1] = om.getPayload();

@@ -21,5 +21,5 @@ package org.codehaus.wadi.group;
  * @version $Revision: 1603 $
  */
 public interface MessageListener {
-    void onMessage(Message message);
+    void onMessage(Envelope message);
 }

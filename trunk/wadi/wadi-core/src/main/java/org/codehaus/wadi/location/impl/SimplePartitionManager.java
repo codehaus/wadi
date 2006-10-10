@@ -31,7 +31,7 @@ import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.ClusterEvent;
 import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.Quipu;
@@ -192,7 +192,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
         return _partitions[partition];
     }
 
-    public void onPartitionEvacuationRequest(Message om, PartitionEvacuationRequest request) {
+    public void onPartitionEvacuationRequest(Envelope om, PartitionEvacuationRequest request) {
         Peer from;
         Address address = om.getReplyTo();
         Peer local = _localPeer;
@@ -206,7 +206,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
         _callback.onPartitionEvacuationRequest(new ClusterEvent(_cluster, from, ClusterEvent.PEER_REMOVED));
     }
 
-    public void onPartitionRepopulateRequest(Message om, PartitionRepopulateRequest request) {
+    public void onPartitionRepopulateRequest(Envelope om, PartitionRepopulateRequest request) {
         int keys[] = request.getKeys();
         _log.info("PartitionRepopulateRequest ARRIVED: " + keys);
         Collection[] c = request.createPartitionIndexToSessionNames(_numPartitions);
@@ -222,11 +222,11 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
         }
     }
 
-    public void onPartitionManagerJoiningEvent(Message om, PartitionManagerJoiningEvent joiningEvent) {
+    public void onPartitionManagerJoiningEvent(Envelope om, PartitionManagerJoiningEvent joiningEvent) {
         _callback.onPartitionManagerJoiningEvent(joiningEvent);
     }
 
-    public void onRetrieveBalancingInfoEvent(Message om, RetrieveBalancingInfoEvent infoEvent) {
+    public void onRetrieveBalancingInfoEvent(Envelope om, RetrieveBalancingInfoEvent infoEvent) {
         try {
             _dispatcher.reply(om, new PartitionBalancingInfoState(evacuatingPartitions, balancingInfo));
         } catch (MessageExchangeException e) {
@@ -237,7 +237,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
     /**
      * TODO lock partition manager as a whole. Properly handle exceptions.
      */
-    public void onPartitionBalancingInfoUpdate(Message om, PartitionBalancingInfoUpdate infoUpdate) {
+    public void onPartitionBalancingInfoUpdate(Envelope om, PartitionBalancingInfoUpdate infoUpdate) {
         balancingInfo = infoUpdate.buildNewPartitionInfo(_localPeer);
         
         if (infoUpdate.isPartitionManagerAlone()) {
@@ -300,7 +300,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
         
         Collection results = rv.getResults();
         for (Iterator i = results.iterator(); i.hasNext();) {
-            Message message = (Message) i.next();
+            Envelope message = (Envelope) i.next();
             Address from = message.getReplyTo();
             PartitionRepopulateResponse response = (PartitionRepopulateResponse) message.getPayload();
             Collection[] relevantKeys = response.getKeys();
@@ -331,7 +331,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 
     protected void transferPartitionToPeers(Peer peer, List facades) {
         LocalPartition[] acquired = new LocalPartition[facades.size()];
-        Message replyMsg = null;
+        Envelope replyMsg = null;
         try {
             for (int i = 0; i < acquired.length; i++) {
                 PartitionFacade facade = (PartitionFacade) facades.get(i);
@@ -384,7 +384,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
         return peerToFacadeToTransfer;
     }
 
-    public void onPartitionTransferRequest(Message om, PartitionTransferRequest request) {
+    public void onPartitionTransferRequest(Envelope om, PartitionTransferRequest request) {
         LocalPartition[] partitions = request.getPartitions();
         for (int i = 0; i < partitions.length; i++) {
             LocalPartition partition = partitions[i];

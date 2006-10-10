@@ -21,7 +21,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import junit.framework.TestCase;
 import org.codehaus.wadi.group.Address;
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.ServiceEndpoint;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.replication.common.NodeInfo;
@@ -126,10 +126,10 @@ public class BasicReplicaStorageStubTest extends TestCase {
             int idx = 0;
             public void register(ServiceEndpoint internalDispatcher) {
             }
-            public Message exchangeSend(Address to, Serializable request, long timeout) {
+            public Envelope exchangeSend(Address to, Serializable request, long timeout) {
                 actualDestinations[idx] = to;
                 requests[idx++] = request;
-                return new BaseMockMessage() {
+                return new BaseMockEnvelope() {
                     public Serializable getPayload() {
                         ByteArrayOutputStream memOut = new ByteArrayOutputStream();
                         try {

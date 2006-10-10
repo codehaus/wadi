@@ -16,7 +16,7 @@
 package org.codehaus.wadi.group.vm;
 
 import org.codehaus.wadi.group.Address;
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 
 
 /**
@@ -26,5 +26,5 @@ import org.codehaus.wadi.group.Message;
 public interface MessageRecorder {
     void setVMCluster(VMBroker cluster);
     
-    void record(Address to, Message message);
+    void record(Address to, Envelope message);
 }
