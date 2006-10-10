@@ -40,7 +40,7 @@ public interface Dispatcher extends MessageListener {
      *            The Message itself
      * @throws MessageExchangeException
      */
-    void send(Address target, Message message) throws MessageExchangeException;
+    void send(Address target, Envelope message) throws MessageExchangeException;
 
     /**
      * send a Serializable pojo to an Address - async - no reply expected
@@ -106,7 +106,7 @@ public interface Dispatcher extends MessageListener {
      * @return a response in the form of a Message
      * @throws MessageExchangeException
      */
-    Message exchangeSend(Address target, Serializable pojo, long timeout) throws MessageExchangeException;
+    Envelope exchangeSend(Address target, Serializable pojo, long timeout) throws MessageExchangeException;
 
     /**
      * Send a Serializable 'pojo' to a 'target' Address - sync - and wait for a
@@ -126,7 +126,7 @@ public interface Dispatcher extends MessageListener {
      * @return a response in the form of a Message
      * @throws MessageExchangeException
      */
-    Message exchangeSend(Address target, Serializable body, long timeout, String targetCorrelationId) throws MessageExchangeException;
+    Envelope exchangeSend(Address target, Serializable body, long timeout, String targetCorrelationId) throws MessageExchangeException;
 
     /**
      * Send a Serializable 'pojo' to a 'target' Address - sync - and wait for a
@@ -147,16 +147,16 @@ public interface Dispatcher extends MessageListener {
      * @return a response in the form of a Message
      * @throws MessageExchangeException
      */
-    Message exchangeSend(Address target, String sourceCorrelationId, Serializable pojo, long timeout) throws MessageExchangeException;
+    Envelope exchangeSend(Address target, String sourceCorrelationId, Serializable pojo, long timeout) throws MessageExchangeException;
 
     void reply(Address from, Address to, String sourceCorrelationId, Serializable body) throws MessageExchangeException;
 
-    void reply(Message message, Serializable body) throws MessageExchangeException;
+    void reply(Envelope message, Serializable body) throws MessageExchangeException;
 
-    void forward(Message message, Address destination) throws MessageExchangeException;
+    void forward(Envelope message, Address destination) throws MessageExchangeException;
 
     // can we lose this ?
-    void forward(Message message, Address destination, Serializable body) throws MessageExchangeException;
+    void forward(Envelope message, Address destination, Serializable body) throws MessageExchangeException;
 
     String nextCorrelationId();
 
@@ -164,7 +164,7 @@ public interface Dispatcher extends MessageListener {
 
     Quipu setRendezVous(String correlationId, int numLlamas);
 
-    Message attemptRendezVous(String correlationId, Quipu rv, long timeout) throws MessageExchangeException;
+    Envelope attemptRendezVous(String correlationId, Quipu rv, long timeout) throws MessageExchangeException;
 
     Collection attemptMultiRendezVous(String correlationId, Quipu rv, long timeout) throws MessageExchangeException;
     
@@ -172,7 +172,7 @@ public interface Dispatcher extends MessageListener {
 
     void stop() throws MessageExchangeException;
 
-    Message createMessage();
+    Envelope createMessage();
 
     Cluster getCluster();
 

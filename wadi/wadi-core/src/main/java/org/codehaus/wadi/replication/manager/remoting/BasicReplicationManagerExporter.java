@@ -18,7 +18,7 @@ package org.codehaus.wadi.replication.manager.remoting;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.impl.ServiceEndpointBuilder;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
@@ -51,7 +51,7 @@ public class BasicReplicationManagerExporter implements ReplicationManagerExport
         this.manager = null;
     }
     
-    public void onRequest(Message message, ReplicationManagerRequest command) {
+    public void onRequest(Envelope message, ReplicationManagerRequest command) {
         if (null == manager) {
             throw new IllegalStateException("ReplicationManager has been unexported.");
         }

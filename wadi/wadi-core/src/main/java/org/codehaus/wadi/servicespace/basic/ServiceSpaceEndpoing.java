@@ -15,7 +15,7 @@
  */
 package org.codehaus.wadi.servicespace.basic;
 
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.ServiceEndpoint;
 import org.codehaus.wadi.servicespace.ServiceSpace;
 import org.codehaus.wadi.servicespace.ServiceSpaceName;
@@ -37,7 +37,7 @@ public class ServiceSpaceEndpoing implements ServiceEndpoint {
         messageHelper = new ServiceSpaceMessageHelper(serviceSpace);
     }
 
-    public void dispatch(Message om) throws Exception {
+    public void dispatch(Envelope om) throws Exception {
         serviceSpace.getDispatcher().onMessage(om);
     }
 
@@ -45,7 +45,7 @@ public class ServiceSpaceEndpoing implements ServiceEndpoint {
         return;
     }
 
-    public boolean testDispatchMessage(Message om) {
+    public boolean testDispatchMessage(Envelope om) {
         ServiceSpaceName serviceSpaceName = messageHelper.getServiceSpaceName(om);
         if (null == serviceSpaceName) {
             return false;

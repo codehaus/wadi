@@ -26,7 +26,7 @@ import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.StreamerConfig;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.impl.ServiceEndpointBuilder;
 import org.codehaus.wadi.impl.SimpleStreamer;
 import org.codehaus.wadi.replication.common.NodeInfo;
@@ -68,7 +68,7 @@ public class BasicReplicaStorageStub implements ReplicaStorage {
 
     public ReplicaInfo retrieveReplicaInfo(Object key) {
         RetrieveReplicaInfoRequest command = new RetrieveReplicaInfoRequest(key);
-        Message message = sendCommand(command, new MinimumReceivedMessageCallback(1));
+        Envelope message = sendCommand(command, new MinimumReceivedMessageCallback(1));
         if (null == message) {
             return null;
         }
@@ -95,12 +95,12 @@ public class BasicReplicaStorageStub implements ReplicaStorage {
         return new UpdateRequest(key, replicaInfo);
     }
 
-    protected Message sendCommand(ReplicaStorageRequest command) {
+    protected Envelope sendCommand(ReplicaStorageRequest command) {
         return sendCommand(command, null);
     }    
     
-    protected Message sendCommand(ReplicaStorageRequest command, TwoWayMessageCallback callback) {
-        Message message = null;
+    protected Envelope sendCommand(ReplicaStorageRequest command, TwoWayMessageCallback callback) {
+        Envelope message = null;
         if (command.isOneWay()) {
             sendOneWay(command);
         } else {
@@ -112,8 +112,8 @@ public class BasicReplicaStorageStub implements ReplicaStorage {
         return message;
     }
 
-    protected Message sendTwoWay(ReplicaStorageRequest command, TwoWayMessageCallback callback) {
-        Message message = null;
+    protected Envelope sendTwoWay(ReplicaStorageRequest command, TwoWayMessageCallback callback) {
+        Envelope message = null;
         for (int i = 0; i < destinations.length && !callback.testStopSend(); i++) {
             Address target = destinations[i];
             try {

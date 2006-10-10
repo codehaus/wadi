@@ -35,7 +35,7 @@ import org.codehaus.wadi.RelocaterConfig;
 import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.ClusterListener;
 import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.location.StateManager;
 import org.codehaus.wadi.location.impl.DIndex;
@@ -184,9 +184,9 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 	 */
 	class ImmigrationEmoter extends AbstractChainedEmoter {
 
-		protected final Message _message;
+		protected final Envelope _message;
 
-		public ImmigrationEmoter(Message message) {
+		public ImmigrationEmoter(Envelope message) {
 			_message=message;
 		}
 
@@ -211,7 +211,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 		}
 	}
 
-	public void onImmigration(Message message, Motable emotable) {
+	public void onImmigration(Envelope message, Motable emotable) {
 		String name=emotable.getName();
 		if (_log.isTraceEnabled()) _log.trace("EmigrationRequest received: "+name);
 		Sync invocationLock=_locker.getLock(name, emotable);

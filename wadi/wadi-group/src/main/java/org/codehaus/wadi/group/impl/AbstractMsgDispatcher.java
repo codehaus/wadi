@@ -17,7 +17,7 @@ package org.codehaus.wadi.group.impl;
 
 import java.io.Serializable;
 import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.ServiceEndpoint;
 
 /**
@@ -33,7 +33,7 @@ public abstract class AbstractMsgDispatcher implements ServiceEndpoint {
         _type = type;
     }
 
-    public boolean testDispatchMessage(Message om) {
+    public boolean testDispatchMessage(Envelope om) {
         Serializable payload = om.getPayload();
         if (null == payload) {
             return false;

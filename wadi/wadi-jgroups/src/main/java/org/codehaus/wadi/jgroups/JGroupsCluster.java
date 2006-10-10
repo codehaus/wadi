@@ -26,7 +26,7 @@ import java.util.TreeSet;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.ClusterException;
 import org.codehaus.wadi.group.LocalPeer;
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.command.BootRemotePeer;
@@ -269,7 +269,7 @@ public class JGroupsCluster extends AbstractCluster implements MembershipListene
             // setup a ThreadLocal to be read during deserialisation...
             _cluster.set(this);
             Object o = msg.getObject();
-            JGroupsMessage wadiMsg = (JGroupsMessage) o;
+            JGroupsEnvelope wadiMsg = (JGroupsEnvelope) o;
             Serializable payload = wadiMsg.getPayload();
             if (payload instanceof ClusterCommand) {
                 ((ClusterCommand) payload).execute(wadiMsg, this);
@@ -301,8 +301,8 @@ public class JGroupsCluster extends AbstractCluster implements MembershipListene
         _dispatcher = dispatcher;
     }
 
-    public void send(Address target, Message message) throws MessageExchangeException {
-        JGroupsMessage msg = (JGroupsMessage) message;
+    public void send(Address target, Envelope message) throws MessageExchangeException {
+        JGroupsEnvelope msg = (JGroupsEnvelope) message;
         JGroupsPeer tgt = (JGroupsPeer) target;
         try {
             msg.setCluster(this);

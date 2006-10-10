@@ -13,95 +13,69 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.group.vm;
+package org.codehaus.wadi.replication.storage.remoting;
 
 import java.io.Serializable;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.codehaus.wadi.group.Address;
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 
 /**
  * 
  * @version $Revision: 1603 $
  */
-public class VMMessage implements Message {
-    private Serializable payload;
-    private Address replyTo;
-    private Address address;
-    private String incomingCorrelationId;
-    private String outgoingCorrelationId;
-    private Map properties;
+public class BaseMockEnvelope implements Envelope {
 
-    public VMMessage() {
-        properties = new HashMap();
-    }
-
-    public VMMessage(VMMessage prototype) {
-        this.payload = prototype.payload;
-        this.replyTo = prototype.replyTo;
-        this.address = prototype.address;
-        this.incomingCorrelationId = prototype.incomingCorrelationId;
-        this.outgoingCorrelationId = prototype.outgoingCorrelationId;
-        this.properties = prototype.properties;
-    }
-    
     public String getTargetCorrelationId() {
-        return incomingCorrelationId;
+        throw new UnsupportedOperationException();
     }
 
     public void setTargetCorrelationId(String correlationId) {
-        this.incomingCorrelationId = correlationId;
+        throw new UnsupportedOperationException();
     }
 
     public String getSourceCorrelationId() {
-        return outgoingCorrelationId;
+        throw new UnsupportedOperationException();
     }
 
     public void setSourceCorrelationId(String correlationId) {
-        this.outgoingCorrelationId = correlationId;
+        throw new UnsupportedOperationException();
     }
 
     public Address getReplyTo() {
-        return replyTo;
+        throw new UnsupportedOperationException();
     }
 
     public void setReplyTo(Address replyTo) {
-        this.replyTo = replyTo;
+        throw new UnsupportedOperationException();
     }
 
     public Address getAddress() {
-        return address;
+        throw new UnsupportedOperationException();
     }
 
     public void setAddress(Address address) {
-        this.address = address;
+        throw new UnsupportedOperationException();
     }
 
     public void setPayload(Serializable payload) {
-        this.payload = payload;
+        throw new UnsupportedOperationException();
     }
 
     public Serializable getPayload() {
-        return payload;
-    }
-
-    public String toString() {
-        return "VMMessage: payload=" + payload;
+        throw new UnsupportedOperationException();
     }
 
     public Map getProperties() {
-        return Collections.unmodifiableMap(properties);
+        throw new UnsupportedOperationException();
     }
 
     public Object getProperty(String key) {
-        return properties.get(key);
+        throw new UnsupportedOperationException();
     }
 
     public void setProperty(String key, Object value) {
-        properties.put(key, value);
+        throw new UnsupportedOperationException();
     }
-    
 }

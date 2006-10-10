@@ -21,9 +21,9 @@ package org.codehaus.wadi.group;
  * @version $Revision: 1603 $
  */
 public interface ServiceEndpoint {
-    boolean testDispatchMessage(Message om);
+    boolean testDispatchMessage(Envelope om);
     
-    void dispatch(Message om) throws Exception;
+    void dispatch(Envelope om) throws Exception;
 
     void dispose(int nbAttemp, long delayMillis);
 }

@@ -23,7 +23,8 @@ import java.util.Map;
  * 
  * @version $Revision: 1603 $
  */
-public interface Message {
+public interface Envelope extends Serializable {
+	
     void setProperty(String key, Object value);
 
     Object getProperty(String key);

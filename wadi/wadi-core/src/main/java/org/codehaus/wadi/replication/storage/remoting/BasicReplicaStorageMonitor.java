@@ -24,7 +24,7 @@ import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.ClusterEvent;
 import org.codehaus.wadi.group.ClusterListener;
 import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.impl.ServiceEndpointBuilder;
 import org.codehaus.wadi.replication.common.ComponentEventType;
@@ -73,7 +73,7 @@ public class BasicReplicaStorageMonitor implements ReplicaStorageMonitor, Cluste
         storageNodes.clear();
     }
 
-    public void onReplicaStorageEvent(Message message, ReplicaStorageEvent event) {
+    public void onReplicaStorageEvent(Envelope message, ReplicaStorageEvent event) {
         ComponentEventType type = event.getType();
         NodeInfo hostingNode = event.getHostingNode();
         synchronized (storageNodes) {

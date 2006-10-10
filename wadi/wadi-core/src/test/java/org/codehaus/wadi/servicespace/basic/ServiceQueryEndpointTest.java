@@ -17,7 +17,7 @@ package org.codehaus.wadi.servicespace.basic;
 
 import java.util.Collections;
 
-import org.codehaus.wadi.group.vm.VMMessage;
+import org.codehaus.wadi.group.vm.VMEnvelope;
 import org.codehaus.wadi.servicespace.LifecycleState;
 import org.codehaus.wadi.servicespace.ServiceLifecycleEvent;
 import org.codehaus.wadi.servicespace.ServiceName;
@@ -51,7 +51,7 @@ public class ServiceQueryEndpointTest extends AbstractServiceSpaceTestCase {
         startVerification();
         
         ServiceQueryEndpoint endpoint = new ServiceQueryEndpoint(serviceRegistry, serviceSpace);
-        VMMessage message = new VMMessage();
+        VMEnvelope message = new VMEnvelope();
         ServiceQueryEvent serviceQueryEvent = new ServiceQueryEvent(serviceSpaceName, serviceName1, remote1);
         message.setPayload(serviceQueryEvent);
         assertTrue(endpoint.testDispatchMessage(message));
@@ -66,7 +66,7 @@ public class ServiceQueryEndpointTest extends AbstractServiceSpaceTestCase {
         startVerification();
         
         ServiceQueryEndpoint endpoint = new ServiceQueryEndpoint(serviceRegistry, serviceSpace);
-        VMMessage message = new VMMessage();
+        VMEnvelope message = new VMEnvelope();
         ServiceQueryEvent serviceQueryEvent = new ServiceQueryEvent(serviceSpaceName, serviceName1, remote1);
         message.setPayload(serviceQueryEvent);
         assertTrue(endpoint.testDispatchMessage(message));

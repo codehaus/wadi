@@ -18,7 +18,7 @@ package org.codehaus.wadi.servicespace.basic;
 import java.io.Serializable;
 
 import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.ServiceEndpoint;
 import org.codehaus.wadi.servicespace.LifecycleState;
 import org.codehaus.wadi.servicespace.ServiceLifecycleEvent;
@@ -45,7 +45,7 @@ public class ServiceQueryEndpoint implements ServiceEndpoint {
         this.serviceSpace = serviceSpace;
     }
 
-    public void dispatch(Message om) throws Exception {
+    public void dispatch(Envelope om) throws Exception {
         ServiceQueryEvent event = (ServiceQueryEvent) om.getPayload();
         ServiceName serviceName = event.getServiceName();
         if (registry.getServiceNames().contains(serviceName)) {
@@ -63,7 +63,7 @@ public class ServiceQueryEndpoint implements ServiceEndpoint {
         return;
     }
 
-    public boolean testDispatchMessage(Message om) {
+    public boolean testDispatchMessage(Envelope om) {
         Serializable payload = om.getPayload();
         return payload instanceof ServiceQueryEvent;
     }

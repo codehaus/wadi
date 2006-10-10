@@ -19,7 +19,7 @@ import java.util.Set;
 
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.ServiceEndpoint;
-import org.codehaus.wadi.group.vm.VMMessage;
+import org.codehaus.wadi.group.vm.VMEnvelope;
 import org.codehaus.wadi.servicespace.LifecycleState;
 import org.codehaus.wadi.servicespace.ServiceLifecycleEvent;
 import org.codehaus.wadi.servicespace.ServiceListener;
@@ -78,7 +78,7 @@ public class BasicServiceMonitorTest extends AbstractServiceSpaceTestCase {
         Set hostingPeers = monitor.getHostingPeers();
         assertEquals(0, hostingPeers.size());
 
-        VMMessage message = new VMMessage();
+        VMEnvelope message = new VMEnvelope();
         message.setPayload(newServiceLifecycleEvent(remote1, LifecycleState.STARTED));
         endpoint.dispatch(message);
         
@@ -104,7 +104,7 @@ public class BasicServiceMonitorTest extends AbstractServiceSpaceTestCase {
         monitor.start();
         
 
-        VMMessage message = new VMMessage();
+        VMEnvelope message = new VMEnvelope();
         message.setPayload(newServiceLifecycleEvent(remote1, LifecycleState.STARTED));
         endpoint.dispatch(message);
         
@@ -132,7 +132,7 @@ public class BasicServiceMonitorTest extends AbstractServiceSpaceTestCase {
         Set hostingPeers = monitor.getHostingPeers();
         assertEquals(0, hostingPeers.size());
 
-        VMMessage message = new VMMessage();
+        VMEnvelope message = new VMEnvelope();
         message.setPayload(newServiceLifecycleEvent(remote1, LifecycleState.STARTED));
         endpoint.dispatch(message);
         
@@ -159,7 +159,7 @@ public class BasicServiceMonitorTest extends AbstractServiceSpaceTestCase {
         Set hostingPeers = monitor.getHostingPeers();
         assertEquals(0, hostingPeers.size());
 
-        VMMessage message = new VMMessage();
+        VMEnvelope message = new VMEnvelope();
         message.setPayload(newServiceLifecycleEvent(remote1, state));
         assertTrue(endpoint.testDispatchMessage(message));
         endpoint.dispatch(message);

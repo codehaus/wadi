@@ -24,7 +24,7 @@ import org.codehaus.wadi.group.ClusterListener;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.DispatcherConfig;
 import org.codehaus.wadi.group.ServiceEndpoint;
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.Quipu;
 
@@ -46,15 +46,15 @@ public class BaseMockDispatcher implements Dispatcher {
         throw new UnsupportedOperationException();
     }
     
-    public Message exchangeSend(Address to, Serializable body, long timeout) {
+    public Envelope exchangeSend(Address to, Serializable body, long timeout) {
         throw new UnsupportedOperationException();
     }
 
-    public Message exchangeSend(Address target, Serializable body, long timeout, String targetCorrelationId) {
+    public Envelope exchangeSend(Address target, Serializable body, long timeout, String targetCorrelationId) {
         throw new UnsupportedOperationException();
     }
 
-    public Message exchangeSend(Address target, String targetCorrelationId, Serializable pojo, long timeout) {
+    public Envelope exchangeSend(Address target, String targetCorrelationId, Serializable pojo, long timeout) {
         throw new UnsupportedOperationException();
     }
 
@@ -62,15 +62,15 @@ public class BaseMockDispatcher implements Dispatcher {
         throw new UnsupportedOperationException();
     }
 
-    public void reply(Message message, Serializable body) {
+    public void reply(Envelope message, Serializable body) {
         throw new UnsupportedOperationException();
     }
 
-    public void forward(Message message, Address destination) {
+    public void forward(Envelope message, Address destination) {
         throw new UnsupportedOperationException();
     }
 
-    public void forward(Message message, Address destination, Serializable body) {
+    public void forward(Envelope message, Address destination, Serializable body) {
         throw new UnsupportedOperationException();
     }
 
@@ -86,7 +86,7 @@ public class BaseMockDispatcher implements Dispatcher {
         throw new UnsupportedOperationException();
     }
 
-    public Message attemptRendezVous(String correlationId, Quipu rv, long timeout) {
+    public Envelope attemptRendezVous(String correlationId, Quipu rv, long timeout) {
         throw new UnsupportedOperationException();
     }
 
@@ -118,27 +118,27 @@ public class BaseMockDispatcher implements Dispatcher {
         throw new UnsupportedOperationException();
     }
 
-    public String getIncomingCorrelationId(Message message) throws Exception {
+    public String getIncomingCorrelationId(Envelope message) throws Exception {
         throw new UnsupportedOperationException();
     }
 
-    public void setIncomingCorrelationId(Message message, String correlationId) throws Exception {
+    public void setIncomingCorrelationId(Envelope message, String correlationId) throws Exception {
         throw new UnsupportedOperationException();
     }
 
-    public String getOutgoingCorrelationId(Message message) throws Exception {
+    public String getOutgoingCorrelationId(Envelope message) throws Exception {
         throw new UnsupportedOperationException();
     }
 
-    public void setOutgoingCorrelationId(Message message, String correlationId) throws Exception {
+    public void setOutgoingCorrelationId(Envelope message, String correlationId) throws Exception {
         throw new UnsupportedOperationException();
     }
 
-    public void send(Address target, Message message) throws MessageExchangeException {
+    public void send(Address target, Envelope message) throws MessageExchangeException {
         throw new UnsupportedOperationException();
     }
 
-    public Message createMessage() {
+    public Envelope createMessage() {
         throw new UnsupportedOperationException();
     }
 
@@ -154,7 +154,7 @@ public class BaseMockDispatcher implements Dispatcher {
         throw new UnsupportedOperationException();
     }
 
-    public void onMessage(Message arg0) {
+    public void onMessage(Envelope arg0) {
         throw new UnsupportedOperationException();
     }
 

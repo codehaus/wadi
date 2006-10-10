@@ -15,12 +15,12 @@
  */
 package org.codehaus.wadi.replication.manager.remoting;
 
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 
 /**
  * 
  * @version $Revision: 1603 $
  */
 public interface BasicReplicationManagerExporterMessageListener {
-    void onRequest(Message message, ReplicationManagerRequest command);
+    void onRequest(Envelope message, ReplicationManagerRequest command);
 }

@@ -31,7 +31,7 @@ import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.ClusterException;
 import org.codehaus.wadi.group.ClusterListener;
 import org.codehaus.wadi.group.LocalPeer;
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.command.ClusterCommand;
@@ -88,11 +88,11 @@ public class ActiveClusterDispatcher extends AbstractDispatcher implements javax
         }
     }
 
-    public Message createMessage() {
-        return new ActiveClusterMessage();
+    public Envelope createMessage() {
+        return new ActiveClusterEnvelope();
     }
 
-    public void send(Address target, Message message) throws MessageExchangeException {
+    public void send(Address target, Envelope message) throws MessageExchangeException {
         if (_messageLog.isTraceEnabled()) {
             _messageLog.trace("outgoing: " + message.getPayload() + " {" + getPeerName(message.getReplyTo())
                     + "->" + getPeerName(message.getAddress()) + "} - " + message.getTargetCorrelationId()
@@ -102,7 +102,7 @@ public class ActiveClusterDispatcher extends AbstractDispatcher implements javax
         Destination targetDestination = ((ActiveClusterPeer) target).getACDestination();
         try {
             ObjectMessage objectMsg = _cluster.getACCluster().createObjectMessage();
-            _cluster.getACCluster().send(targetDestination, ((ActiveClusterMessage) message).fill(objectMsg));
+            _cluster.getACCluster().send(targetDestination, ((ActiveClusterEnvelope) message).fill(objectMsg));
         } catch (JMSException e) {
             throw new MessageExchangeException(e);
         }
@@ -139,9 +139,9 @@ public class ActiveClusterDispatcher extends AbstractDispatcher implements javax
         }
         ActiveClusterCluster._cluster.set(_cluster);
 
-        ActiveClusterMessage wadiMsg;
+        ActiveClusterEnvelope wadiMsg;
         try {
-            wadiMsg = new ActiveClusterMessage(_cluster, (ObjectMessage) message);
+            wadiMsg = new ActiveClusterEnvelope(_cluster, (ObjectMessage) message);
         } catch (JMSException e) {
             _log.error("ActiveCluster issue: could not demarshall incoming message", e);
             return;

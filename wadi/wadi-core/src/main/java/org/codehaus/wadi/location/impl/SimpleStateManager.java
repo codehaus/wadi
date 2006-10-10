@@ -26,7 +26,7 @@ import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.impl.ServiceEndpointBuilder;
 import org.codehaus.wadi.impl.AbstractMotable;
@@ -101,19 +101,19 @@ public class SimpleStateManager implements StateManager, StateManagerMessageList
         _endpointBuilder.dispose(10, 500);
 	}
 
-	public void onDIndexInsertionRequest(Message om, InsertIMToPM request) {
+	public void onDIndexInsertionRequest(Envelope om, InsertIMToPM request) {
 		_config.getPartition(request.getKey()).onMessage(om, request);
 	}
 
-	public void onDIndexDeletionRequest(Message om, DeleteIMToPM request) {
+	public void onDIndexDeletionRequest(Envelope om, DeleteIMToPM request) {
 		_config.getPartition(request.getKey()).onMessage(om, request);
 	}
 
-	public void onDIndexRelocationRequest(Message om, EvacuateIMToPM request) {
+	public void onDIndexRelocationRequest(Envelope om, EvacuateIMToPM request) {
 		_config.getPartition(request.getKey()).onMessage(om, request);
 	}
 
-	public void onMessage(Message message, MoveIMToPM request) {
+	public void onMessage(Envelope message, MoveIMToPM request) {
 		_config.getPartition(request.getKey()).onMessage(message, request);
 	}
 
@@ -123,10 +123,10 @@ public class SimpleStateManager implements StateManager, StateManagerMessageList
 
 		protected final String _name;
 		protected final String _tgtNodeName;
-		protected Message _message1;
+		protected Envelope _message1;
 		protected final MovePMToSM _get;
 
-		public PMToIMEmotable(String name, String nodeName, Message message1, MovePMToSM get) {
+		public PMToIMEmotable(String name, String nodeName, Envelope message1, MovePMToSM get) {
 			_name=name;
 			_tgtNodeName=nodeName;
 			_message1=message1;
@@ -148,7 +148,7 @@ public class SimpleStateManager implements StateManager, StateManagerMessageList
 			MoveSMToIM request=new MoveSMToIM(immotable);
 			// send on state from StateMaster to InvocationMaster...
 			if (_log.isTraceEnabled()) _log.trace("exchanging MoveSMToIM between: "+_config.getPeerName(sm)+"->"+_config.getPeerName(im));
-			Message message2=dispatcher.exchangeSend(im, request, timeout, _get.getIMCorrelationId());
+			Envelope message2=dispatcher.exchangeSend(im, request, timeout, _get.getIMCorrelationId());
 			// should receive response from IM confirming safe receipt...
 			if (message2==null) {
                 // TODO throw exception
@@ -181,13 +181,13 @@ public class SimpleStateManager implements StateManager, StateManagerMessageList
 		protected final Log _log=LogFactory.getLog(getClass());
 
 		protected final String _tgtNodeName;
-		protected Message _message;
+		protected Envelope _message;
 		protected final MovePMToSM _request;
 
 		protected boolean _found=false;
 		protected Sync _invocationLock;
 
-		public RelocationImmoter(String nodeName, Message message, MovePMToSM request) {
+		public RelocationImmoter(String nodeName, Envelope message, MovePMToSM request) {
 			_tgtNodeName=nodeName;
 			_message=message;
 			_request=request;
@@ -243,7 +243,7 @@ public class SimpleStateManager implements StateManager, StateManagerMessageList
 	//--------------------------------------------------------------------------------------
 
 	// called on State Master...
-	public void onMessage(Message message1, MovePMToSM request) {
+	public void onMessage(Envelope message1, MovePMToSM request) {
 		// DO NOT Dispatch onto Partition - deal with it here...
 		Object key=request.getKey();
 		//String nodeName=_config.getLocalNodeName();
@@ -274,7 +274,7 @@ public class SimpleStateManager implements StateManager, StateManagerMessageList
 					Address sm=_dispatcher.getCluster().getLocalPeer().getAddress();
 					long timeout=_config.getInactiveTime();
 					_log.info("sending 0 bytes to : "+imName);
-					Message ignore=_dispatcher.exchangeSend(im, req, timeout, request.getIMCorrelationId());
+					Envelope ignore=_dispatcher.exchangeSend(im, req, timeout, request.getIMCorrelationId());
 					_log.info("received: "+ignore);
 					// StateMaster replies to PartitionMaster indicating failure...
 					_log.info("reporting failure to PM");
@@ -297,7 +297,7 @@ public class SimpleStateManager implements StateManager, StateManagerMessageList
 	public boolean offerEmigrant(String key, Motable emotable, long timeout) {
 	    Partition partition=_config.getPartition(key);
 	    ReleaseEntryRequest pojo=new ReleaseEntryRequest(emotable);
-        Message response=null;
+        Envelope response=null;
 	    try {
 	        response=partition.exchange(pojo, timeout);
             boolean ok=key.equals(((ReleaseEntryResponse)response.getPayload()).getId());
@@ -311,7 +311,7 @@ public class SimpleStateManager implements StateManager, StateManagerMessageList
 	    }
 	}
 
-	public void acceptImmigrant(Message message, String name, Motable motable) {
+	public void acceptImmigrant(Envelope message, String name, Motable motable) {
         try {
             _dispatcher.reply(message, new ReleaseEntryResponse(name));
         } catch (MessageExchangeException e) {
@@ -332,7 +332,7 @@ public class SimpleStateManager implements StateManager, StateManagerMessageList
 		}
 	}
 
-	public void onEmigrationRequest(Message message, ReleaseEntryRequest request) {
+	public void onEmigrationRequest(Envelope message, ReleaseEntryRequest request) {
         if (null == _listener) {
             return;
         }

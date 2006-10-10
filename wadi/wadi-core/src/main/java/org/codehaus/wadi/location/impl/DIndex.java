@@ -33,7 +33,7 @@ import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.ClusterEvent;
 import org.codehaus.wadi.group.ClusterListener;
 import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.impl.SeniorityElectionStrategy;
 import org.codehaus.wadi.impl.AbstractChainedEmoter;
@@ -213,7 +213,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
         try {
             InsertIMToPM request = new InsertIMToPM(name, _localPeer);
             PartitionFacade pf = getPartition(name);
-            Message reply = pf.exchange(request, timeout);
+            Envelope reply = pf.exchange(request, timeout);
             return ((InsertPMToIM) reply.getPayload()).getSuccess();
         } catch (Exception e) {
             _log.warn("problem inserting session key into DHT", e);
@@ -243,11 +243,11 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
         protected final Log _log = LogFactory.getLog(getClass());
 
         protected final String _nodeName;
-        protected final Message _message;
+        protected final Envelope _message;
         protected Sync _invocationLock;
         protected Sync _stateLock;
 
-        public SMToIMEmoter(String nodeName, Message message) {
+        public SMToIMEmoter(String nodeName, Envelope message) {
             _nodeName = nodeName;
             _message = message;
         }
@@ -301,7 +301,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
     public Motable relocate(Invocation invocation, String sessionName, String peerName, boolean shuttingDown,
             long timeout, Immoter immoter) throws Exception {
         MoveIMToPM request = new MoveIMToPM(sessionName, peerName, shuttingDown, invocation.getRelocatable());
-        Message message = getPartition(sessionName).exchange(request, timeout);
+        Envelope message = getPartition(sessionName).exchange(request, timeout);
 
         if (message == null) {
             _log.error("something went wrong - what should we do?"); // TODO

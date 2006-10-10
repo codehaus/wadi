@@ -23,7 +23,7 @@ import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.DispatcherConfig;
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.Quipu;
 import org.codehaus.wadi.group.ServiceEndpoint;
@@ -41,31 +41,31 @@ public class DispatcherWrapper implements Dispatcher {
         return _delegate.attemptMultiRendezVous(correlationId, rv, timeout);
     }
 
-    public Message attemptRendezVous(String correlationId, Quipu rv, long timeout) throws MessageExchangeException {
+    public Envelope attemptRendezVous(String correlationId, Quipu rv, long timeout) throws MessageExchangeException {
         return _delegate.attemptRendezVous(correlationId, rv, timeout);
     }
 
-    public Message createMessage() {
+    public Envelope createMessage() {
         return _delegate.createMessage();
     }
 
-    public Message exchangeSend(Address target, Serializable pojo, long timeout) throws MessageExchangeException {
+    public Envelope exchangeSend(Address target, Serializable pojo, long timeout) throws MessageExchangeException {
         return _delegate.exchangeSend(target, pojo, timeout);
     }
 
-    public Message exchangeSend(Address target, Serializable body, long timeout, String targetCorrelationId) throws MessageExchangeException {
+    public Envelope exchangeSend(Address target, Serializable body, long timeout, String targetCorrelationId) throws MessageExchangeException {
         return _delegate.exchangeSend(target, body, timeout, targetCorrelationId);
     }
 
-    public Message exchangeSend(Address target, String sourceCorrelationId, Serializable pojo, long timeout) throws MessageExchangeException {
+    public Envelope exchangeSend(Address target, String sourceCorrelationId, Serializable pojo, long timeout) throws MessageExchangeException {
         return _delegate.exchangeSend(target, sourceCorrelationId, pojo, timeout);
     }
 
-    public void forward(Message message, Address destination) throws MessageExchangeException {
+    public void forward(Envelope message, Address destination) throws MessageExchangeException {
         _delegate.forward(message, destination);
     }
 
-    public void forward(Message message, Address destination, Serializable body) throws MessageExchangeException {
+    public void forward(Envelope message, Address destination, Serializable body) throws MessageExchangeException {
         _delegate.forward(message, destination, body);
     }
 
@@ -101,11 +101,11 @@ public class DispatcherWrapper implements Dispatcher {
         _delegate.reply(from, to, sourceCorrelationId, body);
     }
 
-    public void reply(Message message, Serializable body) throws MessageExchangeException {
+    public void reply(Envelope message, Serializable body) throws MessageExchangeException {
         _delegate.reply(message, body);
     }
 
-    public void send(Address target, Message message) throws MessageExchangeException {
+    public void send(Address target, Envelope message) throws MessageExchangeException {
         _delegate.send(target, message);
     }
 
@@ -137,7 +137,7 @@ public class DispatcherWrapper implements Dispatcher {
         _delegate.unregister(internalDispatcher, nbAttemp, delayMillis);
     }
 
-    public void onMessage(Message message) {
+    public void onMessage(Envelope message) {
         _delegate.onMessage(message);
     }
 

@@ -24,7 +24,7 @@ import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.ClusterException;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.LocalPeer;
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.impl.AbstractCluster;
@@ -60,8 +60,8 @@ public class BasicServiceSpaceDispatcher extends AbstractDispatcher {
         serviceSpaceCluster = new BasicServiceSpaceCluster();
     }
 
-    public Message createMessage() {
-        Message message = underlyingDispatcher.createMessage();
+    public Envelope createMessage() {
+        Envelope message = underlyingDispatcher.createMessage();
         messageHelper.setServiceSpaceName(message);
         return message;
     }
@@ -78,7 +78,7 @@ public class BasicServiceSpaceDispatcher extends AbstractDispatcher {
         return underlyingDispatcher.getPeerName(address);
     }
 
-    public void send(Address target, Message message) throws MessageExchangeException {
+    public void send(Address target, Envelope message) throws MessageExchangeException {
         underlyingDispatcher.send(target, message);
     }
 

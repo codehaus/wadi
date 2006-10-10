@@ -22,7 +22,7 @@ import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.ClusterException;
 import org.codehaus.wadi.group.DispatcherConfig;
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.impl.AbstractCluster;
 import org.codehaus.wadi.group.impl.AbstractDispatcher;
@@ -71,11 +71,11 @@ public class JGroupsDispatcher extends AbstractDispatcher {
         _dispatcher.stop();
     }
 
-    public Message createMessage() {
-        return new JGroupsMessage();
+    public Envelope createMessage() {
+        return new JGroupsEnvelope();
     }
 
-    public void send(Address target, Message message) throws MessageExchangeException {
+    public void send(Address target, Envelope message) throws MessageExchangeException {
         _cluster.send(target, message);
     }
 

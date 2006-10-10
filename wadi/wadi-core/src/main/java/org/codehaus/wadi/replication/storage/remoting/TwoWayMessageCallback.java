@@ -15,14 +15,14 @@
  */
 package org.codehaus.wadi.replication.storage.remoting;
 
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 
 /**
  * 
  * @version $Revision: 1538 $
  */
 interface TwoWayMessageCallback {
-    void receivedMessage(Message message);
+    void receivedMessage(Envelope message);
     
     boolean testStopSend();
 }

@@ -18,7 +18,7 @@ package org.codehaus.wadi.location;
 
 
 import org.codehaus.wadi.Motable;
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -30,10 +30,10 @@ public interface StateManager {
 	void start() throws Exception;
 	void stop() throws Exception;
 
-	interface ImmigrationListener { void onImmigration(Message message, Motable immigrant); }
+	interface ImmigrationListener { void onImmigration(Envelope message, Motable immigrant); }
 
 	boolean offerEmigrant(String key, Motable emotable, long timeout);
-	void acceptImmigrant(Message message, String name, Motable immotable);
+	void acceptImmigrant(Envelope message, String name, Motable immotable);
 
 	void setImmigrationListener(ImmigrationListener listener);
 	void unsetImmigrationListener(ImmigrationListener listener);

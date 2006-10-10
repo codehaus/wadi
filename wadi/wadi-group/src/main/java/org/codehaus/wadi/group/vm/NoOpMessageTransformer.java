@@ -15,7 +15,7 @@
  */
 package org.codehaus.wadi.group.vm;
 
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 
 /**
  * 
@@ -23,7 +23,7 @@ import org.codehaus.wadi.group.Message;
  */
 public class NoOpMessageTransformer implements MessageTransformer {
 
-    public Message transform(Message message) {
+    public Envelope transform(Envelope message) {
         return message;
     }
 }

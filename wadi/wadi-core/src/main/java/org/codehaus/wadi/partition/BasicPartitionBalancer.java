@@ -25,7 +25,7 @@ import java.util.Map.Entry;
 
 import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.Quipu;
@@ -87,7 +87,7 @@ public class BasicPartitionBalancer implements PartitionBalancer {
         Collection results = dispatcher.attemptMultiRendezVous(correlationId, peerResponseWaitable, 5000);
         Map peerToBalancingInfoState = new HashMap();
         for (Iterator iter = results.iterator(); iter.hasNext();) {
-            Message replyMsg = (Message) iter.next();
+            Envelope replyMsg = (Envelope) iter.next();
             PartitionBalancingInfoState balancingInfoState = (PartitionBalancingInfoState) replyMsg.getPayload();
             peerToBalancingInfoState.put(balancingInfoState.getDefiningPeer(), balancingInfoState);
         }

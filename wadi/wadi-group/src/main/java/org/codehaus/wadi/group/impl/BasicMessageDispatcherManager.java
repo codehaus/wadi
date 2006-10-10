@@ -22,7 +22,7 @@ import java.util.IdentityHashMap;
 import java.util.Iterator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.ServiceEndpoint;
 
 /**
@@ -68,7 +68,7 @@ class BasicMessageDispatcherManager implements MessageDispatcherManager {
         }
     }
 	
-	public void onMessage(Message message) {
+	public void onMessage(Envelope message) {
 		try {
             Collection targetDispatchers;
             synchronized (_msgDispatchers) {
@@ -107,9 +107,9 @@ class BasicMessageDispatcherManager implements MessageDispatcherManager {
     
     class DispatchRunner implements Runnable {
         protected final ServiceEndpointWrapper _msgDispatcher;
-        protected final Message _message;
+        protected final Envelope _message;
         
-        public DispatchRunner(ServiceEndpointWrapper msgDispatcher, Message message) {
+        public DispatchRunner(ServiceEndpointWrapper msgDispatcher, Envelope message) {
             _msgDispatcher=msgDispatcher;
             _message=message;
         }

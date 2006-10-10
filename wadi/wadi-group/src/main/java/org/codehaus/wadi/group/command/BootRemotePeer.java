@@ -20,7 +20,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.LocalPeer;
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.impl.ServiceEndpointBuilder;
@@ -46,7 +46,7 @@ public class BootRemotePeer implements ClusterCommand {
         this.cluster = cluster;
     }
 
-    public void execute(Message msg, Cluster cluster) {
+    public void execute(Envelope msg, Cluster cluster) {
         LocalPeer localPeer = cluster.getLocalPeer();
         try {
             cluster.getDispatcher().reply(msg, new BootPeerResponse(localPeer));
@@ -59,7 +59,7 @@ public class BootRemotePeer implements ClusterCommand {
         ServiceEndpointBuilder endpointBuilder = new ServiceEndpointBuilder();
         Dispatcher dispatcher = cluster.getDispatcher();
         endpointBuilder.addCallback(dispatcher, BootPeerResponse.class);
-        Message message = null;
+        Envelope message = null;
         try {
             message = dispatcher.exchangeSend(targetPeer.getAddress(), this, 5000);
         } catch (MessageExchangeException e) {

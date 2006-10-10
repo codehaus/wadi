@@ -22,7 +22,7 @@ import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.ClusterListener;
 import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.ServiceEndpoint;
 import org.codehaus.wadi.servicespace.LifecycleState;
@@ -167,7 +167,7 @@ public class BasicServiceSpaceTest extends AbstractServiceSpaceTestCase {
         beginSection(s.ordered("STARTING"));
         ServiceSpaceLifecycleEvent event = new ServiceSpaceLifecycleEvent(serviceSpaceName, remote1, 
                 LifecycleState.STARTING);
-        Message message = recordMessage(event);
+        Envelope message = recordMessage(event);
         
         serviceSpaceDispatcher.send(address1, new ServiceSpaceLifecycleEvent(serviceSpaceName, localPeer,
                 LifecycleState.AVAILABLE));
@@ -195,7 +195,7 @@ public class BasicServiceSpaceTest extends AbstractServiceSpaceTestCase {
         beginSection(s.ordered("STARTED "));
         ServiceSpaceLifecycleEvent startedEvent = new ServiceSpaceLifecycleEvent(serviceSpaceName, remote1, 
                 LifecycleState.STARTED);
-        Message startedMessage = recordReceiveEvent(startedEvent);
+        Envelope startedMessage = recordReceiveEvent(startedEvent);
         
         ServiceSpaceLifecycleEvent event = new ServiceSpaceLifecycleEvent(serviceSpaceName, remote1,
                 LifecycleState.FAILED);
@@ -227,10 +227,10 @@ public class BasicServiceSpaceTest extends AbstractServiceSpaceTestCase {
         beginSection(s.ordered("STARTED -> " + state));
         ServiceSpaceLifecycleEvent startedEvent = new ServiceSpaceLifecycleEvent(serviceSpaceName, remote1, 
                 LifecycleState.STARTED);
-        Message startedMessage = recordReceiveEvent(startedEvent);
+        Envelope startedMessage = recordReceiveEvent(startedEvent);
         
         ServiceSpaceLifecycleEvent event = new ServiceSpaceLifecycleEvent(serviceSpaceName, remote1, state);
-        Message message = recordReceiveEvent(event);
+        Envelope message = recordReceiveEvent(event);
         endSection();
         
         startVerification();
@@ -259,7 +259,7 @@ public class BasicServiceSpaceTest extends AbstractServiceSpaceTestCase {
         recordStartPhase();
         
         ServiceSpaceLifecycleEvent event = new ServiceSpaceLifecycleEvent(serviceSpaceName, remote1, state);
-        Message message = recordReceiveEvent(event);
+        Envelope message = recordReceiveEvent(event);
         
         startVerification();
         
@@ -276,14 +276,14 @@ public class BasicServiceSpaceTest extends AbstractServiceSpaceTestCase {
         assertTrue(hostingPeers.contains(remote1));
     }
     
-    private Message recordReceiveEvent(ServiceSpaceLifecycleEvent event) {
-        Message message = recordMessage(event);
+    private Envelope recordReceiveEvent(ServiceSpaceLifecycleEvent event) {
+        Envelope message = recordMessage(event);
         listener.receive(event);
         return message;
     }
 
-    private Message recordMessage(ServiceSpaceLifecycleEvent event) {
-        Message startedMessage = (Message) mock(Message.class);
+    private Envelope recordMessage(ServiceSpaceLifecycleEvent event) {
+        Envelope startedMessage = (Envelope) mock(Envelope.class);
         startedMessage.setPayload(event);
         startedMessage.getPayload();
         modify().multiplicity(expect.from(0));
@@ -350,7 +350,7 @@ public class BasicServiceSpaceTest extends AbstractServiceSpaceTestCase {
 
     private void recordCreateMessageAndSend(Address address, LifecycleState state) throws MessageExchangeException {
         beginSection(s.ordered("Create message and send with ServiceSpaceName"));
-        Message message = (Message) mock(Message.class);
+        Envelope message = (Envelope) mock(Envelope.class);
 
         dispatcher.createMessage();
         modify().returnValue(message);

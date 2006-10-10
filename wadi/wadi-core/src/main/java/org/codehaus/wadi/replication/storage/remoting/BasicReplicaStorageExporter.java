@@ -19,7 +19,7 @@ package org.codehaus.wadi.replication.storage.remoting;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.impl.ServiceEndpointBuilder;
 import org.codehaus.wadi.replication.common.ComponentEventType;
@@ -63,7 +63,7 @@ public class BasicReplicaStorageExporter implements ReplicaStorageExporter, Basi
         adviser.advertiseLeave(storage);
     }
     
-    public void onCommand(Message message, ReplicaStorageRequest command) {
+    public void onCommand(Envelope message, ReplicaStorageRequest command) {
         if (null == storage) {
             // TODO do not die silently.
             log.warn("Request " + command + " received and storage not set.");
@@ -84,7 +84,7 @@ public class BasicReplicaStorageExporter implements ReplicaStorageExporter, Basi
         }
     }
 
-    public void onMonitorEvent(Message message, ReplicaStorageMonitorEvent event) {
+    public void onMonitorEvent(Envelope message, ReplicaStorageMonitorEvent event) {
         if (null == storage) {
             // TODO do not die silently.
             log.warn("Event " + event + " received and storage not set.");

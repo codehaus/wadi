@@ -15,7 +15,7 @@
  */
 package org.codehaus.wadi.group.impl;
 
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.ServiceEndpoint;
 
 
@@ -44,7 +44,7 @@ class ServiceEndpointWrapper implements ServiceEndpoint {
         return count;
     }
 
-    public void dispatch(Message om) throws Exception {
+    public void dispatch(Envelope om) throws Exception {
         delegate.dispatch(om);
     }
 
@@ -52,7 +52,7 @@ class ServiceEndpointWrapper implements ServiceEndpoint {
         delegate.dispose(nbAttemp, delayMillis);
     }
 
-    public boolean testDispatchMessage(Message om) {
+    public boolean testDispatchMessage(Envelope om) {
         return delegate.testDispatchMessage(om);
     }
 }

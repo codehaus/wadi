@@ -16,7 +16,7 @@
  */
 package org.codehaus.wadi.location.impl;
 
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.location.session.DeleteIMToPM;
 import org.codehaus.wadi.location.session.EvacuateIMToPM;
 import org.codehaus.wadi.location.session.InsertIMToPM;
@@ -29,17 +29,17 @@ import org.codehaus.wadi.location.session.ReleaseEntryRequest;
  * @version $Revision: 1603 $
  */
 public interface StateManagerMessageListener {
-    void onDIndexInsertionRequest(Message om, InsertIMToPM request);
+    void onDIndexInsertionRequest(Envelope om, InsertIMToPM request);
 
-    void onDIndexDeletionRequest(Message om, DeleteIMToPM request);
+    void onDIndexDeletionRequest(Envelope om, DeleteIMToPM request);
 
-    void onDIndexRelocationRequest(Message om, EvacuateIMToPM request);
+    void onDIndexRelocationRequest(Envelope om, EvacuateIMToPM request);
 
-    void onMessage(Message message, MoveIMToPM request);
+    void onMessage(Envelope message, MoveIMToPM request);
 
     // called on State Master...
-    void onMessage(Message message1, MovePMToSM request);
+    void onMessage(Envelope message1, MovePMToSM request);
 
-    void onEmigrationRequest(Message message, ReleaseEntryRequest request);
+    void onEmigrationRequest(Envelope message, ReleaseEntryRequest request);
 
 }

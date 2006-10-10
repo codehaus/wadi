@@ -17,7 +17,7 @@ package org.codehaus.wadi.servicespace.basic;
 
 import java.net.URI;
 
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.servicespace.ServiceSpaceName;
 
 
@@ -28,7 +28,7 @@ import org.codehaus.wadi.servicespace.ServiceSpaceName;
 public class ServiceSpaceEndpoingTest extends AbstractServiceSpaceTestCase {
 
     public void testDispatch() throws Exception {
-        Message message = (Message) mock(Message.class);
+        Envelope message = (Envelope) mock(Envelope.class);
         dispatcher.onMessage(message);
         
         startVerification();
@@ -39,7 +39,7 @@ public class ServiceSpaceEndpoingTest extends AbstractServiceSpaceTestCase {
 
     public void testTestDispatchMessageOK() {
         beginSection(s.ordered("Get ServiceSpaceName and test for equality"));
-        Message message = (Message) mock(Message.class);
+        Envelope message = (Envelope) mock(Envelope.class);
         ServiceSpaceMessageHelper.getServiceSpaceNameStatic(message);
         modify().returnValue(serviceSpaceName);
         endSection();
@@ -52,7 +52,7 @@ public class ServiceSpaceEndpoingTest extends AbstractServiceSpaceTestCase {
 
     public void testTestDispatchMessageServiceSpaceIsDifferent() throws Exception {
         beginSection(s.ordered("Get ServiceSpaceName and test for equality"));
-        Message message = (Message) mock(Message.class);
+        Envelope message = (Envelope) mock(Envelope.class);
         ServiceSpaceMessageHelper.getServiceSpaceNameStatic(message);
         modify().returnValue(new ServiceSpaceName(new URI("NEW_SPACE")));
         endSection();
@@ -65,7 +65,7 @@ public class ServiceSpaceEndpoingTest extends AbstractServiceSpaceTestCase {
 
     public void testTestDispatchMessageServiceSpaceIsUndefined() throws Exception {
         beginSection(s.ordered("Get ServiceSpaceName and test for equality"));
-        Message message = (Message) mock(Message.class);
+        Envelope message = (Envelope) mock(Envelope.class);
         ServiceSpaceMessageHelper.getServiceSpaceNameStatic(message);
         endSection();
 

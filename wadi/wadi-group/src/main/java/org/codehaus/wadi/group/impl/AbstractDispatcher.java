@@ -26,7 +26,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.DispatcherConfig;
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.Quipu;
 import org.codehaus.wadi.group.ServiceEndpoint;
@@ -73,7 +73,7 @@ public abstract class AbstractDispatcher implements Dispatcher {
         inboundMessageDispatcher.unregister(msgDispatcher, nbAttemp, delayMillis);
     }
 
-    public void onMessage(Message message) {
+    public void onMessage(Envelope message) {
         if (_messageLog.isTraceEnabled()) _messageLog.trace("incoming: "+message.getPayload()+" {"+message.getReplyTo()+"->"+message.getAddress()+"} - "+message.getTargetCorrelationId()+"/"+message.getSourceCorrelationId()+" on "+Thread.currentThread().getName());
         inboundMessageDispatcher.onMessage(message);
     }
@@ -104,12 +104,12 @@ public abstract class AbstractDispatcher implements Dispatcher {
 		return rv;
 	}
 	
-	public Message attemptRendezVous(String correlationId, Quipu rv, long timeout) throws MessageExchangeException {
+	public Envelope attemptRendezVous(String correlationId, Quipu rv, long timeout) throws MessageExchangeException {
         Collection messages = attemptMultiRendezVous(correlationId, rv, timeout);
         if (messages.size() > 1) {
             throw new MessageExchangeException("[" + messages.size() + "] result messages. Expected only one.");
         }
-        return (Message) messages.iterator().next();
+        return (Envelope) messages.iterator().next();
 	}
 	
     public Collection attemptMultiRendezVous(String correlationId, Quipu rv, long timeout) throws MessageExchangeException {
@@ -153,16 +153,16 @@ public abstract class AbstractDispatcher implements Dispatcher {
         return response;
     }
     
-    public Message exchangeSend(Address target, Object pojo, long timeout) throws MessageExchangeException {
+    public Envelope exchangeSend(Address target, Object pojo, long timeout) throws MessageExchangeException {
         return exchangeSend(target, (Serializable)pojo, timeout);
     }
 	
-	public Message exchangeSend(Address to, Serializable body, long timeout) throws MessageExchangeException {
+	public Envelope exchangeSend(Address to, Serializable body, long timeout) throws MessageExchangeException {
 		return exchangeSend(to, body, timeout, null);
 	}
 	
-	public void reply(Message message, Serializable body) throws MessageExchangeException {
-        Message msg=createMessage();
+	public void reply(Envelope message, Serializable body) throws MessageExchangeException {
+        Envelope msg=createMessage();
         Address from=getCluster().getLocalPeer().getAddress();
         msg.setReplyTo(from);
         Address to=message.getReplyTo();
@@ -176,7 +176,7 @@ public abstract class AbstractDispatcher implements Dispatcher {
 
     public void send(Address to, Serializable body) throws MessageExchangeException {
         try {
-            Message om = createMessage();
+            Envelope om = createMessage();
             om.setReplyTo(getCluster().getLocalPeer().getAddress());
             om.setAddress(to);
             om.setPayload(body);
@@ -188,7 +188,7 @@ public abstract class AbstractDispatcher implements Dispatcher {
 	
     public void send(Address target, String sourceCorrelationId, Serializable pojo) throws MessageExchangeException {
         try {
-            Message om = createMessage();
+            Envelope om = createMessage();
             om.setReplyTo(getCluster().getLocalPeer().getAddress());
             om.setAddress(target);
             om.setPayload(pojo);
@@ -200,7 +200,7 @@ public abstract class AbstractDispatcher implements Dispatcher {
     }
 
     public void send(Address source, Address target, String sourceCorrelationId, Serializable pojo) throws MessageExchangeException {
-        Message om=createMessage();
+        Envelope om=createMessage();
         om.setReplyTo(source);
         om.setAddress(target);
         om.setSourceCorrelationId(sourceCorrelationId);
@@ -209,9 +209,9 @@ public abstract class AbstractDispatcher implements Dispatcher {
         send(target, om);
 	}
 	
-	public Message exchangeSend(Address target, Serializable body, long timeout, String targetCorrelationId) throws MessageExchangeException {
+	public Envelope exchangeSend(Address target, Serializable body, long timeout, String targetCorrelationId) throws MessageExchangeException {
         Address from=getCluster().getLocalPeer().getAddress();
-        Message om=createMessage();
+        Envelope om=createMessage();
         om.setReplyTo(from);
         om.setAddress(target);
         om.setPayload(body);
@@ -225,7 +225,7 @@ public abstract class AbstractDispatcher implements Dispatcher {
         return attemptRendezVous(sourceCorrelationId, rv, timeout);
 	}
     
-	public Message exchangeSend(Address target, String sourceCorrelationId, Serializable pojo, long timeout) {
+	public Envelope exchangeSend(Address target, String sourceCorrelationId, Serializable pojo, long timeout) {
 		Quipu rv=null;
 		// set up a rendez-vous...
 		rv=setRendezVous(sourceCorrelationId, 1);
@@ -239,7 +239,7 @@ public abstract class AbstractDispatcher implements Dispatcher {
 	}
 	
 	public void reply(Address from, Address to, String incomingCorrelationId, Serializable body) throws MessageExchangeException {
-        Message om=createMessage();
+        Envelope om=createMessage();
         om.setReplyTo(from);
         om.setAddress(to);
         om.setTargetCorrelationId(incomingCorrelationId);
@@ -248,11 +248,11 @@ public abstract class AbstractDispatcher implements Dispatcher {
         send(to, om);
 	}
 	
-	public void forward(Message message, Address destination) throws MessageExchangeException {
+	public void forward(Envelope message, Address destination) throws MessageExchangeException {
         forward(message, destination, message.getPayload());
 	}
 	
-	public void forward(Message message, Address destination, Serializable body) throws MessageExchangeException {
+	public void forward(Envelope message, Address destination, Serializable body) throws MessageExchangeException {
         send(message.getReplyTo(), destination, message.getSourceCorrelationId(), body);
 	}
 

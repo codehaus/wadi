@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 
 /**
  * 
@@ -34,7 +34,7 @@ public class SerializeMessageTransformer implements MessageTransformer {
         this.cluster = cluster;
     }
 
-    public Message transform(Message message) {
+    public Envelope transform(Envelope message) {
         Serializable payload = message.getPayload();
         if (null == payload) {
             return message;
@@ -56,7 +56,7 @@ public class SerializeMessageTransformer implements MessageTransformer {
             throw (IllegalStateException) new IllegalStateException().initCause(e);
         }
         
-        VMMessage clone = new VMMessage((VMMessage) message);
+        VMEnvelope clone = new VMEnvelope((VMEnvelope) message);
         clone.setPayload(payload);
         
         return clone;

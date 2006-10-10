@@ -19,7 +19,7 @@ package org.codehaus.wadi.location.impl;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.group.Address;
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.impl.Utils;
 import org.codehaus.wadi.location.Partition;
 import org.codehaus.wadi.location.PartitionConfig;
@@ -72,7 +72,7 @@ public class PartitionFacade extends AbstractPartition {
     }
 
     // incoming...
-    public void onMessage(Message message, InsertIMToPM request) {
+    public void onMessage(Envelope message, InsertIMToPM request) {
         Sync sync = _lock.readLock(); // SHARED
         try {
             Utils.acquireWithoutTimeout("Partition [shared]", _keyString, sync);
@@ -82,7 +82,7 @@ public class PartitionFacade extends AbstractPartition {
         }
     }
 
-    public void onMessage(Message message, DeleteIMToPM request) {
+    public void onMessage(Envelope message, DeleteIMToPM request) {
         Sync sync = _lock.readLock(); // SHARED
         try {
             Utils.acquireWithoutTimeout("Partition [shared]", _keyString, sync);
@@ -92,7 +92,7 @@ public class PartitionFacade extends AbstractPartition {
         }
     }
 
-    public void onMessage(Message message, EvacuateIMToPM request) {
+    public void onMessage(Envelope message, EvacuateIMToPM request) {
         Sync sync = _lock.readLock(); // SHARED
         try {
             Utils.acquireWithoutTimeout("Partition [shared]", _keyString, sync);
@@ -102,7 +102,7 @@ public class PartitionFacade extends AbstractPartition {
         }
     }
 
-    public void onMessage(Message message, MoveIMToPM request) {
+    public void onMessage(Envelope message, MoveIMToPM request) {
         Sync sync = _lock.readLock(); // SHARED
         try {
             Utils.acquireWithoutTimeout("Partition [shared]", _keyString, sync);
@@ -113,7 +113,7 @@ public class PartitionFacade extends AbstractPartition {
     }
 
     // outgoing...
-    public Message exchange(SessionRequestMessage request, long timeout) throws Exception {
+    public Envelope exchange(SessionRequestMessage request, long timeout) throws Exception {
         Sync sync = _lock.readLock(); // SHARED
         try {
             Utils.acquireWithoutTimeout("Partition [shared]", _keyString, sync);

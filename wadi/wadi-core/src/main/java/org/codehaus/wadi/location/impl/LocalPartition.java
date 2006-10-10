@@ -28,7 +28,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Lease;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.impl.SimpleLease;
 import org.codehaus.wadi.location.SessionRequestMessage;
@@ -80,7 +80,7 @@ public class LocalPartition extends AbstractPartition implements Serializable {
         return true;
     }
 
-    public void onMessage(Message message, InsertIMToPM request) {
+    public void onMessage(Envelope message, InsertIMToPM request) {
         Address newAddress=message.getReplyTo();
         boolean success=false;
         Object key=request.getKey();
@@ -113,7 +113,7 @@ public class LocalPartition extends AbstractPartition implements Serializable {
         }
     }
 
-    public void onMessage(Message message, DeleteIMToPM request) {
+    public void onMessage(Envelope message, DeleteIMToPM request) {
         Object key=request.getKey();
         Location location=null;
         boolean success=false;
@@ -138,7 +138,7 @@ public class LocalPartition extends AbstractPartition implements Serializable {
         }
     }
 
-    public void onMessage(Message message, MoveIMToPM request) {
+    public void onMessage(Envelope message, MoveIMToPM request) {
 
         // TODO - whilst we are in here, we should have a SHARED lock on this Partition, so it cannot be moved
         // The Partitions lock should be held in the Facade, so that it can swap Partitions in and out whilst holding an exclusive lock
@@ -218,7 +218,7 @@ public class LocalPartition extends AbstractPartition implements Serializable {
             Dispatcher dispatcher=_config.getDispatcher();
 
             MovePMToSM request=new MovePMToSM(key, im, pm, imCorrelationId);
-            Message tmp=dispatcher.exchangeSend(sm, request, _config.getInactiveTime());
+            Envelope tmp=dispatcher.exchangeSend(sm, request, _config.getInactiveTime());
 
             if (tmp==null) {
                 _log.error("move: "+key+" {"+_config.getPeerName(sm)+"->"+_config.getPeerName(im)+"}");
@@ -263,7 +263,7 @@ public class LocalPartition extends AbstractPartition implements Serializable {
         // think about how a further message from the IM could release the sharedLease...
     }
 
-    public void onMessage(Message message, EvacuateIMToPM request) {
+    public void onMessage(Envelope message, EvacuateIMToPM request) {
         Address newAddress=message.getReplyTo();
         Object key=request.getKey();
         boolean success=false;
@@ -303,7 +303,7 @@ public class LocalPartition extends AbstractPartition implements Serializable {
         }
     }
 
-    public Message exchange(SessionRequestMessage request, long timeout) throws Exception {
+    public Envelope exchange(SessionRequestMessage request, long timeout) throws Exception {
         if (_log.isTraceEnabled()) _log.trace("local dispatch - needs optimisation");
         Dispatcher dispatcher=_config.getDispatcher();
         Address target=dispatcher.getCluster().getLocalPeer().getAddress();

@@ -23,7 +23,7 @@ import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
 
 import org.codehaus.wadi.group.Address;
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 
 import edu.emory.mathcs.backport.java.util.Collections;
 
@@ -31,7 +31,7 @@ import edu.emory.mathcs.backport.java.util.Collections;
  * 
  * @version $Revision: 1603 $
  */
-class ActiveClusterMessage implements Message {
+class ActiveClusterEnvelope implements Envelope {
     
     private static final String TARGET_COR_ID_KEY = "TARGET_COR_ID_KEY";
 	private static final String SOURCE_COR_ID_KEY = "SOURCE_COR_ID_KEY";
@@ -43,7 +43,7 @@ class ActiveClusterMessage implements Message {
 	protected String _targetCorrelationId;
 	private final Map properties;
 
-	public ActiveClusterMessage(ActiveClusterCluster cluster, ObjectMessage message) throws JMSException {
+	public ActiveClusterEnvelope(ActiveClusterCluster cluster, ObjectMessage message) throws JMSException {
 	    PayloadInfo payloadInfo = (PayloadInfo) message.getObject();
 	    _payload = payloadInfo.payload;
 		_address = payloadInfo.address;
@@ -53,7 +53,7 @@ class ActiveClusterMessage implements Message {
 		properties = payloadInfo.properties;
 	}
 
-	public ActiveClusterMessage() {
+	public ActiveClusterEnvelope() {
 		properties = new HashMap();
 	}
 

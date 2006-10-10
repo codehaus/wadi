@@ -23,7 +23,7 @@ import org.codehaus.wadi.group.ClusterException;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.ElectionStrategy;
 import org.codehaus.wadi.group.LocalPeer;
-import org.codehaus.wadi.group.Message;
+import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.impl.SeniorityElectionStrategy;
@@ -97,7 +97,7 @@ public class VMBroker {
         listenerSupport.notifyMembershipChanged(localPeer, false, coordinator);
     }
 
-    void send(Address to, Message message) throws MessageExchangeException {
+    void send(Address to, Envelope message) throws MessageExchangeException {
         if (null != messageRecorder) {
             messageRecorder.record(to, message);
         }
@@ -191,7 +191,7 @@ public class VMBroker {
         }
     }
 
-    private void sendToAddress(Address to, Message message) {
+    private void sendToAddress(Address to, Envelope message) {
         Map snapshotMap = snapshotDispatcherMap();
 
         for (Iterator iter = snapshotMap.entrySet().iterator(); iter.hasNext();) {
@@ -205,7 +205,7 @@ public class VMBroker {
         throw new IllegalArgumentException("Destination " + to + " is unknown.");
     }
 
-    private void sendToClusterDestination(Message message) {
+    private void sendToClusterDestination(Envelope message) {
         Map snapshotMap = snapshotDispatcherMap();
 
         for (Iterator iter = snapshotMap.entrySet().iterator(); iter.hasNext();) {
