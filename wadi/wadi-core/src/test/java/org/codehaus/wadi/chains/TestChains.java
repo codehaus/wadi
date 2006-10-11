@@ -18,7 +18,10 @@ package org.codehaus.wadi.chains;
 
 import junit.framework.TestCase;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Message;
+import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.MessageExchangeException;
@@ -53,6 +56,8 @@ import org.codehaus.wadi.location.session.MoveIMToPM;
  */
 public class TestChains extends TestCase {
 
+	protected Log _log=LogFactory.getLog(getClass());
+	
 	public TestChains(String name) {
 		super(name);
 	}
@@ -80,6 +85,17 @@ public class TestChains extends TestCase {
 		_dispatcher1=null;
 	}
 
+	protected Envelope exchangeSendLoop(Dispatcher dispatcher, Address address, Message message, long timeout, int retries) throws MessageExchangeException {
+		for (int attempts=0; attempts<retries; attempts++) {
+			try {
+				return dispatcher.exchangeSend(address, message, timeout);
+			} catch (MessageExchangeException e) {
+				_log.warn("no reply to message within timeframe - retrying ("+attempts+"/"+retries+")", e);
+			}
+		}
+		throw new MessageExchangeException("no reply to repeated message");
+	}
+	
 	public void testIMToPM() throws Exception {
 		assertTrue(true);
 		String sessionName="xxx";
@@ -89,7 +105,7 @@ public class TestChains extends TestCase {
 		Message message=new MoveIMToPM(sessionName, peerName, relocateSession, relocateInvocation);
 		long timeout=1000;
 		try {
-			Envelope envelope=_dispatcher1.exchangeSend(_dispatcher2.getCluster().getLocalPeer().getAddress(), message, timeout);
+			Envelope envelope=exchangeSendLoop(_dispatcher1, _dispatcher2.getCluster().getLocalPeer().getAddress(), message, timeout, 3);
 		} catch (MessageExchangeException e) {
 			// ok - for the moment...
 		}
