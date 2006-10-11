@@ -15,17 +15,7 @@
 
   <dependencyManagement>
     <dependencies>
-      <dependency>
-	<groupId>geronimo-spec</groupId>
-	<artifactId>geronimo-spec-j2ee-management</artifactId>
-	<version>1.0-rc4</version>
-	<scope>provided</scope>
-      </dependency>
-      <dependency>
-	<groupId>jcache</groupId>
-	<artifactId>jcache</artifactId>
-	<version>1.0-dev-2</version>
-      </dependency>
+<!--
       <dependency>
 	<groupId>org.apache.derby</groupId>
 	<artifactId>derby</artifactId>
@@ -36,50 +26,8 @@
 	<artifactId>derbyclient</artifactId>
 	<version>${derby.version}</version>
       </dependency>
-      <dependency>
-	<groupId>axion</groupId><!-- used by some tests -->
-	<artifactId>axion</artifactId>
-	<version>1.0-M3-dev</version>
-	<exclusions>
-	  <exclusion>
-	    <groupId>javacc</groupId>
-	    <artifactId>javacc</artifactId>
-	  </exclusion>
-	  <exclusion>
-	    <groupId>commons-logging</groupId>
-	    <artifactId>commons-logging</artifactId>
-	  </exclusion>
-	</exclusions>
-      </dependency>
-      <dependency>
-	<groupId>commons-primitives</groupId><!-- needed by axion -->
-	<artifactId>commons-primitives</artifactId>
-	<version>1.0</version>
-      </dependency>
+-->
       <!-- run time -->
-      <dependency>
-	<groupId>commons-httpclient</groupId>
-	<artifactId>commons-httpclient</artifactId>
-<!--	<version>2.0.2</version> -->
-      <version>3.0</version>
-	<exclusions>
-	  <exclusion>
-	    <groupId>commons-logging</groupId>
-	    <artifactId>commons-logging</artifactId>
-	  </exclusion>
-	</exclusions>
-      </dependency>
-      <dependency>
-	<groupId>commons-el</groupId>
-	<artifactId>commons-el</artifactId>
-	<version>1.0</version>
-	<exclusions>
-	  <exclusion>
-	    <groupId>commons-logging</groupId>
-	    <artifactId>commons-logging</artifactId>
-	  </exclusion>
-	</exclusions>
-      </dependency>
       <dependency>
 	<groupId>commons-pool</groupId>
 	<artifactId>commons-pool</artifactId>
@@ -157,31 +105,69 @@
       <version>${project.version}</version>
     </dependency>
 
+    <!--
     <dependency>
       <groupId>geronimo-spec</groupId>
       <artifactId>geronimo-spec-j2ee-management</artifactId>
+      <version>1.0-rc4</version>
+      <scope>provided</scope>
     </dependency>
+    -->
+    <!--
     <dependency>
       <groupId>jcache</groupId>
       <artifactId>jcache</artifactId>
+      <version>1.0-dev-2</version>
     </dependency>
+    -->
     <dependency>
       <groupId>axion</groupId><!-- used by some tests -->
       <artifactId>axion</artifactId>
+      <version>1.0-M3-dev</version>
+      <scope>test</scope>
+      <exclusions>
+	<exclusion>
+	  <groupId>javacc</groupId>
+	  <artifactId>javacc</artifactId>
+	</exclusion>
+	<exclusion>
+	  <groupId>commons-logging</groupId>
+	  <artifactId>commons-logging</artifactId>
+	</exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>commons-primitives</groupId><!-- needed by axion -->
       <artifactId>commons-primitives</artifactId>
+      <version>1.0</version>
+      <scope>test</scope>
     </dependency>
     <!-- run time -->
     <dependency>
       <groupId>commons-httpclient</groupId>
       <artifactId>commons-httpclient</artifactId>
+      <!--	<version>2.0.2</version> -->
+      <version>3.0</version>
+      <exclusions>
+	<exclusion>
+	  <groupId>commons-logging</groupId>
+	  <artifactId>commons-logging</artifactId>
+	</exclusion>
+      </exclusions>
     </dependency>
+    <!--
     <dependency>
       <groupId>commons-el</groupId>
       <artifactId>commons-el</artifactId>
+      <version>1.0</version>
+      <exclusions>
+	<exclusion>
+	  <groupId>commons-logging</groupId>
+	  <artifactId>commons-logging</artifactId>
+	</exclusion>
+      </exclusions>
     </dependency>
+    -->
     <dependency>
       <groupId>concurrent</groupId>
       <artifactId>concurrent</artifactId>
