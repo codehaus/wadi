@@ -243,7 +243,7 @@
   <properties>
     <jse.version>1.4</jse.version>
     <jee.version>1.4</jee.version>
-    <junit.version>3.8.2</junit.version>
+    <junit.version>3.8.1</junit.version>
     <rmock.version>2.0.0-rc-6</rmock.version>
     <commons-logging.version>1.1</commons-logging.version>
     <jetty5.version>5.1.10</jetty5.version>
@@ -361,15 +361,31 @@
     </dependency>
     <dependency>
       <groupId>commons-logging</groupId>
-      <artifactId>commons-logging-api</artifactId>
-      <version>${commons-logging.version}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>commons-logging</groupId>
       <artifactId>commons-logging</artifactId>
       <version>${commons-logging.version}</version>
-      <scope>test</scope>
+      <!-- <scope>provided</scope> -->
+      <exclusions>
+	<exclusion>
+	  <groupId>javax.servlet</groupId>
+	  <artifactId>servlet-api</artifactId>
+	</exclusion>
+	<exclusion>
+	  <groupId>avalon-framework</groupId>
+	  <artifactId>avalon-framework</artifactId>
+	</exclusion>
+	<exclusion>
+	  <groupId>log4j</groupId>
+	  <artifactId>log4j</artifactId>
+	</exclusion>
+	<exclusion>
+	  <groupId>logkit</groupId>
+	  <artifactId>logkit</artifactId>
+	</exclusion>
+	<exclusion>
+	  <groupId></groupId>
+	  <artifactId></artifactId>
+	</exclusion>
+      </exclusions>
     </dependency>
   </dependencies>
 
@@ -451,6 +467,8 @@
 	    InVM and TCP tests also seem buggy.
 	    -->
 	    <exclude implementation="java.lang.String">**/TestAC*.java</exclude>
+	    <!-- JGroups -->
+	    <exclude implementation="java.lang.String">**/TestJGRelocation.java</exclude>
 	    <!--  -->
 	  </excludes>
 	  <!--
