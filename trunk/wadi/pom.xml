@@ -381,10 +381,6 @@
 	  <groupId>logkit</groupId>
 	  <artifactId>logkit</artifactId>
 	</exclusion>
-	<exclusion>
-	  <groupId></groupId>
-	  <artifactId></artifactId>
-	</exclusion>
       </exclusions>
     </dependency>
   </dependencies>
