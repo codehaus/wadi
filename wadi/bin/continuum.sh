@@ -64,7 +64,7 @@ done
 if [ "$help" == true ]
 then
     echo
-    echo "usage: $0 [-help] [-sources] [-jdk 1.4|1.5|5|5.0]"
+    echo "usage: $0 [-help] [-sources] [-jdk 1.4|1.5|5|5.0] [-target compile|test|site]"
     echo
     exit 1
 fi
