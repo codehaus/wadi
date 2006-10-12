@@ -467,12 +467,7 @@
 	    <exclude implementation="java.lang.String">**/TestJGRelocation.java</exclude>
 	    <!--  -->
 	  </excludes>
-	  <!--
-	  <childDelegation>false</childDelegation>
-	  -->
-	  <!--
-	  <forkMode>pertest</forkMode>
-	  -->
+	  <forkMode>pertest</forkMode><!-- we must fork in order to enable argLine -->
 	  <argLine>-enableassertions -Xmx1024m</argLine>
 	  <systemProperties>
 	    <property>
@@ -535,10 +530,6 @@
 	  </links>
 	</configuration>
       </plugin>
-      <plugin>
-	<groupId>org.codehaus.mojo</groupId>
-	<artifactId>jxr-maven-plugin</artifactId>
-      </plugin>
       <!--
       <plugin>
       <groupId>org.codehaus.mojo</groupId>
@@ -548,14 +539,6 @@
     </configuration>
     </plugin>
       -->
-      <plugin>
-	<groupId>org.apache.maven.plugins</groupId>
-	<artifactId>maven-checkstyle-plugin</artifactId>
-      </plugin>
-      <plugin>
-	<groupId>org.apache.maven.plugins</groupId>
-	<artifactId>maven-pmd-plugin</artifactId>
-      </plugin>
       <plugin>
 	<groupId>org.codehaus.mojo</groupId>
 	<artifactId>jdepend-maven-plugin</artifactId> <!-- needs: maven-plugin-snapshots -->

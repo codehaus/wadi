@@ -53,6 +53,31 @@
       <artifactId>jgroups-all</artifactId>
       <version>2.2.9.1</version>
     </dependency>
+
+    <!-- test -->
+    <!-- why isn't axion dragged in by wadi-core-test? -->
+    <dependency>
+      <groupId>axion</groupId><!-- for a number of tests -->
+      <artifactId>axion</artifactId>
+      <version>1.0-M3-dev</version>
+      <scope>test</scope>
+      <exclusions>
+	<exclusion>
+	  <groupId>javacc</groupId>
+	  <artifactId>javacc</artifactId>
+	</exclusion>
+	<exclusion>
+	  <groupId>commons-logging</groupId>
+	  <artifactId>commons-logging</artifactId>
+	</exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>commons-primitives</groupId><!-- for axion -->
+      <artifactId>commons-primitives</artifactId>
+      <version>1.0</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
 </project>
