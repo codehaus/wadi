@@ -1,3 +1,19 @@
+<!--
+ TODO:
+
+ reference xsd
+ rationalise repo use
+ use a staging website ?
+ lose dependencyManagement ?
+ update plugin versions
+ merge in pom-clover.xml
+ etc...
+ scope collisions for junit/commons-httpclient ?
+ redeploy website
+ fix website css
+
+-->
+
 <project>
 
   <modelVersion>4.0.0</modelVersion>
@@ -237,6 +253,7 @@
       <id>codehaus.org</id>
       <name>WADI Website</name>
       <url>dav:https://dav.codehaus.org/wadi/</url>
+      <!-- <url>file:///tmp/WADI/${project.version}/</url> -->
     </site>
   </distributionManagement>
 
@@ -292,8 +309,7 @@
 
   <!-- defaults for dependencies that may be used by modules -->
   <dependencyManagement>
-    <dependencies>
-      <!-- done -->
+    <dependencies><!-- TODO: do we need these ? -->
       <dependency>
 	<groupId>concurrent</groupId>
 	<artifactId>concurrent</artifactId>
@@ -396,21 +412,27 @@
       <name>mortbay-repo</name>
       <url>http://jetty.mortbay.org/maven2/release</url>
     </pluginRepository>
-    <pluginRepository> <!-- for jdepend,  -->
-      <id>maven-plugin-snapshots</id>
-      <url>http://snapshots.maven.codehaus.org/maven2/</url>
-      <snapshots>
-	<enabled>true</enabled>
-      </snapshots>
-      <releases>
-	<enabled>false</enabled>
-      </releases>
+    <pluginRepository><!-- std maven2 repo -->
+      <id>maven2-apache</id>
+      <name>Maven 2 Repository at Apache</name>
+      <url>http://www.apache.org/dist/maven-repository</url>
+    </pluginRepository>
+    <pluginRepository><!-- std maven2 repo -->
+      <id>maven2-apache</id>
+      <name>Maven 2 Repository at Apache</name>
+      <url>http://people.apache.org/repo/m2-ibiblio-rsync-repository</url>
+    </pluginRepository>
+    <pluginRepository><!-- std maven2 repo -->
+      <id>maven2-ibiblio</id>
+      <name>Maven 2 Repository at Ibiblio</name>
+      <url>http://ibiblio.org/maven2/plugins</url>
     </pluginRepository>
   </pluginRepositories>
 
   <!-- Building: default plugin set for all modules -->
   <build>
     <extensions>
+      <!-- TODO: which wagon strategy do we need ? -->
       <extension>
 	<groupId>org.apache.maven.wagon</groupId>
 	<artifactId>wagon-ssh-external</artifactId>
@@ -418,13 +440,14 @@
       <extension>
 	<groupId>org.apache.maven.wagon</groupId>
 	<artifactId>wagon-webdav</artifactId>
-	<version>1.0-beta-1</version>
+	<version>1.0-beta-1</version><!-- TODO: update? -->
       </extension>
     </extensions>
     <plugins>
       <plugin>
 	<groupId>org.apache.maven.plugins</groupId>
 	<artifactId>maven-compiler-plugin</artifactId>
+	<version>2.0</version>
 	<configuration>
 	  <source>${jse.version}</source>
 	  <target>${jse.version}</target>
@@ -505,7 +528,6 @@
       <plugin>
 	<groupId>org.apache.maven.plugins</groupId>
 	<artifactId>maven-javadoc-plugin</artifactId>
-	<version>2.0-SNAPSHOT</version>
 	<configuration>
 	  <!--
 	  I thought that we might be able to aggregate javadoc for all
@@ -530,24 +552,27 @@
 	  </links>
 	</configuration>
       </plugin>
-      <!--
+      <!-- tags -->
       <plugin>
-      <groupId>org.codehaus.mojo</groupId>
-      <artifactId>taglist-maven-plugin</artifactId>
-      <configuration>
-      <tags>TODO, @todo, FIXME, @deprecated</tags>
-    </configuration>
-    </plugin>
-      -->
+	<groupId>org.codehaus.mojo</groupId>
+	<artifactId>taglist-maven-plugin</artifactId>
+	<configuration>
+	  <tags>
+	    <tag>TODO</tag>
+	    <tag>@todo</tag>
+	    <tag>FIXME</tag>
+	    <tag>HACK</tag>
+	    <tag>@deprecated</tag>
+	  </tags>
+	</configuration>
+      </plugin>
       <plugin>
 	<groupId>org.codehaus.mojo</groupId>
 	<artifactId>jdepend-maven-plugin</artifactId> <!-- needs: maven-plugin-snapshots -->
-	<version>2.0-beta-1-SNAPSHOT</version>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-report-plugin</artifactId>
-        <version>2.0</version>
       </plugin>
     </plugins>
   </reporting>
