@@ -1,14 +1,11 @@
 <project name="wadi-jgroups">
+
   <bannerLeft>
     <name>WADI</name>
-    <src>../images/wadi.png</src>
+    <src>../images/wadi.gif</src>
     <href>http://wadi.codehaus.org</href>
   </bannerLeft>
-  <bannerRight>
-    <name>Codehaus</name>
-    <src>../images/codehaus-small.png</src>
-    <href>http://www.codehaus.org</href>
-  </bannerRight>
+
   <body>
     <links>
       <item name="JGroups 2.2.x" href="http://www.jgroups.org"/>
