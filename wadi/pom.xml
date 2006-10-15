@@ -297,15 +297,15 @@
 
   <!-- repositories for all modules -->
   <repositories>
-    <repository><!-- our own repo for custom deps -->
-      <id>wadi-dependencies</id>
-      <name>WADI Dependencies Repository at the Haus</name>
-      <url>http://dist.codehaus.org/wadi/dependencies/maven2</url><!-- TODO: should be moved over to WadiReleaseRepository -->
-    </repository>
     <repository><!-- std maven2 repo -->
       <id>maven2-ibiblio</id>
       <name>Maven 2 Repository at Ibiblio</name>
       <url>http://ibiblio.org/maven2</url>
+    </repository>
+    <repository><!-- our own repo for custom deps -->
+      <id>wadi-dependencies</id>
+      <name>WADI Dependencies Repository at the Haus</name>
+      <url>http://dist.codehaus.org/wadi/dependencies/maven2</url><!-- TODO: should be moved over to WadiReleaseRepository -->
     </repository>
   </repositories>
 
@@ -404,7 +404,17 @@
   </dependencies>
 
   <pluginRepositories>
-    <pluginRepository><!-- our own repo for custom deps -->
+    <pluginRepository><!-- std maven2 repo -->
+      <id>maven2-apache</id>
+      <name>Maven 2 Repository at Apache</name>
+      <url>http://people.apache.org/repo/m2-ibiblio-rsync-repository</url><!-- org.apache.maven.plugins -->
+    </pluginRepository>
+    <pluginRepository>
+      <id>maven2-ibiblio</id>
+      <name>Maven 2 Repository at Ibiblio</name>
+      <url>http://www.ibiblio.org/maven2/</url><!-- org.codehaus.mojo -->
+    </pluginRepository>
+    <pluginRepository>
       <id>wadi-dependencies</id>
       <name>WADI Dependencies Repository at the Haus</name>
       <url>http://dist.codehaus.org/wadi/dependencies/maven2</url><!-- TODO: should be moved over to WadiReleaseRepository -->
@@ -412,22 +422,7 @@
     <pluginRepository>
       <id>mortbay-repo</id>
       <name>mortbay-repo</name>
-      <url>http://jetty.mortbay.org/maven2/release</url>
-    </pluginRepository>
-    <pluginRepository><!-- std maven2 repo -->
-      <id>maven2-apache</id>
-      <name>Maven 2 Repository at Apache</name>
-      <url>http://www.apache.org/dist/maven-repository</url>
-    </pluginRepository>
-    <pluginRepository><!-- std maven2 repo -->
-      <id>maven2-apache</id>
-      <name>Maven 2 Repository at Apache</name>
-      <url>http://people.apache.org/repo/m2-ibiblio-rsync-repository</url>
-    </pluginRepository>
-    <pluginRepository><!-- std maven2 repo -->
-      <id>maven2-ibiblio</id>
-      <name>Maven 2 Repository at Ibiblio</name>
-      <url>http://ibiblio.org/maven2/plugins</url>
+      <url>http://jetty.mortbay.org/maven2/release</url><!-- org.mortbay -->
     </pluginRepository>
   </pluginRepositories>
 
@@ -535,7 +530,9 @@
 	<artifactId>maven-project-info-reports-plugin</artifactId>
       </plugin>
       <plugin>
-	<artifactId>maven-clover-plugin</artifactId>
+ 	<groupId>org.codehaus.mojo</groupId>
+	<artifactId>jxr-maven-plugin</artifactId>
+	<version>2.0-beta-1</version>
       </plugin>
       <plugin>
 	<groupId>org.apache.maven.plugins</groupId>
@@ -567,6 +564,9 @@
 	    <!-- <link>http://www.openejb.org/apidocs</link> --> <!-- causing trouble -->
 	  </links>
 	</configuration>
+      </plugin>
+      <plugin>
+	<artifactId>maven-clover-plugin</artifactId>
       </plugin>
       <!-- tags -->
       <plugin>
