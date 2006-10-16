@@ -18,8 +18,7 @@ package org.codehaus.wadi.servicespace;
 import java.util.Set;
 
 import org.codehaus.wadi.group.Dispatcher;
-
-
+import org.codehaus.wadi.group.LocalPeer;
 
 /**
  * 
@@ -27,16 +26,20 @@ import org.codehaus.wadi.group.Dispatcher;
  */
 public interface ServiceSpace {
     ServiceSpaceName getServiceSpaceName();
-    
+
+    LocalPeer getLocalPeer();
+
     Set getHostingPeers();
-    
+
     ServiceRegistry getServiceRegistry();
 
     ServiceMonitor getServiceMonitor(ServiceName serviceName);
-    
+
+    ServiceProxyFactory getServiceProxyFactory(ServiceName serviceName, Class[] interfaces);
+
     void addServiceSpaceListener(ServiceSpaceListener listener);
 
     void removeServiceSpaceListener(ServiceSpaceListener listener);
-    
+
     Dispatcher getDispatcher();
 }

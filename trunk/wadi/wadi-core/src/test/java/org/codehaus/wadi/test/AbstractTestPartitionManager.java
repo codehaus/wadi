@@ -27,7 +27,6 @@ import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.ClusterEvent;
 import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.group.DispatcherConfig;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.impl.SimplePartitionMapper;
 import org.codehaus.wadi.location.PartitionManager;
@@ -67,14 +66,6 @@ public abstract class AbstractTestPartitionManager extends TestCase {
 		String clusterName="WADI";
 		long inactiveTime=5000L;
 		Dispatcher dispatcher=createDispatcher(clusterName, nodeName, inactiveTime);
-		DispatcherConfig dc=new DispatcherConfig() {
-
-			public String getContextPath() {
-				return "/";
-			}
-
-		};
-		dispatcher.init(dc);
 		dispatcher.start();
 
 		Callback callback = new Callback() {

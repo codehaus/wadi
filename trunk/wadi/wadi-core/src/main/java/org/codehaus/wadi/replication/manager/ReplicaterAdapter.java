@@ -46,15 +46,16 @@ public class ReplicaterAdapter implements Replicater {
 
     public void acquireFromOtherReplicater(Object tmp) {
         WebSession session = castAndEnsureType(tmp);
-        Object object = replicationManager.acquirePrimary(session.getName());
-        // TODO initialize the state of the session. This is required to 
-        // support reusingStore set to true.
+        WebSession acquiredSession = (WebSession) replicationManager.acquirePrimary(session.getName());
+        try {
+            session.setBodyAsByteArray(acquiredSession.getBodyAsByteArray());
+        } catch (Exception e) {
+            throw (IllegalStateException) new IllegalStateException().initCause(e);
+        }
     }
     
     public boolean getReusingStore() {
-        // TODO this should actually be true. Yet, the migration protocol
-        // does not work in this case.
-        return false;
+        return true;
     }
     
     private WebSession castAndEnsureType(Object tmp) {

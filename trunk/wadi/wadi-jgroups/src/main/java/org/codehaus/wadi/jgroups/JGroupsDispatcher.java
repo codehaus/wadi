@@ -21,7 +21,6 @@ import java.util.Collection;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.ClusterException;
-import org.codehaus.wadi.group.DispatcherConfig;
 import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.impl.AbstractCluster;
@@ -40,13 +39,14 @@ public class JGroupsDispatcher extends AbstractDispatcher {
     protected final boolean _excludeSelf = true;
     protected final JGroupsCluster _cluster;
     protected final org.jgroups.Address _localJGAddress;
-    protected MessageDispatcher _dispatcher;
+    protected final MessageDispatcher _dispatcher;
 
     public JGroupsDispatcher(String clusterName, String localPeerName, long inactiveTime, String config)
             throws ChannelException {
         super(inactiveTime);
         _cluster = new JGroupsCluster(clusterName, localPeerName, config, this);
         _localJGAddress = ((JGroupsPeer) _cluster.getLocalPeer()).getJGAddress();
+        _dispatcher = new MessageDispatcher(_cluster.getChannel(), _cluster, _cluster, null);
     }
 
     public String toString() {
@@ -90,12 +90,6 @@ public class JGroupsDispatcher extends AbstractDispatcher {
 
     public Address getAddress(String name) {
         throw new UnsupportedOperationException();
-    }
-
-    public void init(DispatcherConfig config) throws Exception {
-        super.init(config);
-        _dispatcher = new MessageDispatcher(_cluster.getChannel(), _cluster, _cluster, null);
-        _cluster.init(this);
     }
 
     protected void hook() {

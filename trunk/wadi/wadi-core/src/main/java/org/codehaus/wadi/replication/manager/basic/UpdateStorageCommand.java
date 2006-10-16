@@ -15,20 +15,22 @@
  */
 package org.codehaus.wadi.replication.manager.basic;
 
-import org.codehaus.wadi.replication.common.NodeInfo;
+import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.replication.common.ReplicaInfo;
 import org.codehaus.wadi.replication.storage.ReplicaStorage;
-import org.codehaus.wadi.replication.storage.ReplicaStorageStubFactory;
+import org.codehaus.wadi.servicespace.ServiceProxyFactory;
 
 
 class UpdateStorageCommand extends AbstractStorageCommand {
     
-    public UpdateStorageCommand(NodeInfo[] targets, Object key, ReplicaInfo replicaInfo) {
+    public UpdateStorageCommand(Peer[] targets, Object key, ReplicaInfo replicaInfo) {
         super(targets, key, replicaInfo);
     }
-    
-    public void execute(ReplicaStorageStubFactory storageStubFactory) {
-        ReplicaStorage storage = storageStubFactory.buildStub(targets);
+
+    public void execute(ServiceProxyFactory serviceProxy) {
+        serviceProxy.getInvocationMetaData().setTargets(targets);
+        ReplicaStorage storage = (ReplicaStorage) serviceProxy.getProxy();
         storage.mergeUpdate(key, replicaInfo);
     }
+    
 }

@@ -55,13 +55,14 @@ public class JGroupsCluster extends AbstractCluster implements MembershipListene
     protected final Latch _viewLatch = new Latch();
     protected final ViewThread _viewThread = new ViewThread("WADI/JGroups View Thread");
     protected final Channel _channel;
+    protected final JGroupsDispatcher _dispatcher;
 
     // initialised in init()
-    protected JGroupsDispatcher _dispatcher;
     protected org.jgroups.Address _localJGAddress;
 
     public JGroupsCluster(String clusterName, String localPeerName, String config, JGroupsDispatcher dispatcher) throws ChannelException {
         super(clusterName, localPeerName, dispatcher);
+        _dispatcher = dispatcher;
         _clusterPeer = new JGroupsClusterPeer(this, clusterName);
         _localPeer = new JGroupsLocalPeer(this, localPeerName);
         _channel = new JChannel(config);
@@ -297,10 +298,6 @@ public class JGroupsCluster extends AbstractCluster implements MembershipListene
     }
 
     // 'JGroupsCluster' API
-    public void init(JGroupsDispatcher dispatcher) throws Exception {
-        _dispatcher = dispatcher;
-    }
-
     public void send(Address target, Envelope message) throws MessageExchangeException {
         JGroupsEnvelope msg = (JGroupsEnvelope) message;
         JGroupsPeer tgt = (JGroupsPeer) target;

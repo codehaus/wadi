@@ -282,11 +282,8 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 		throw new UnsupportedOperationException();
 	}
 	
-	protected static final String _prefix="<"+Utils.basename(ClusterContextualiser.class)+": ";
-	protected static final String _suffix=">";
-
 	public String toString() {
-		return _prefix+_cluster+_suffix;
+		return "ClusterContextualiser [" + _cluster + "]";
 	}
 
 }

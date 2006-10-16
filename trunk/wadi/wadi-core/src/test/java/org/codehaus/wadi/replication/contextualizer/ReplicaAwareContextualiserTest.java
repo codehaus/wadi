@@ -1,19 +1,27 @@
 package org.codehaus.wadi.replication.contextualizer;
 
-import junit.framework.TestCase;
-
 import org.codehaus.wadi.Emoter;
 import org.codehaus.wadi.Motable;
-import org.codehaus.wadi.replication.manager.BaseMockReplicationManager;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
 import org.codehaus.wadi.test.DummyDistributableSessionConfig;
 import org.codehaus.wadi.web.WebSession;
 import org.codehaus.wadi.web.impl.DistributableSession;
 
-public class ReplicaAwareContextualiserTest extends TestCase {
+import com.agical.rmock.extension.junit.RMockTestCase;
 
+public class ReplicaAwareContextualiserTest extends RMockTestCase {
+
+    private ReplicationManager manager;
+
+    protected void setUp() throws Exception {
+        manager = (ReplicationManager) mock(ReplicationManager.class);
+    }
+    
     public void testEmoter() throws Exception {
-        ReplicaAwareContextualiser contextualiser = new ReplicaAwareContextualiser(null, null);
+        ReplicaAwareContextualiser contextualiser = new ReplicaAwareContextualiser(null, manager);
+        
+        startVerification();
+        
         Emoter emoter = contextualiser.getEmoter();
         
         WebSession emotable = new DistributableSession(new DummyDistributableSessionConfig());
@@ -31,19 +39,16 @@ public class ReplicaAwareContextualiserTest extends TestCase {
     }
 
     public void testGet() {
-        final WebSession motable = new DistributableSession(new DummyDistributableSessionConfig());
-        final Object[] parameters = new Object[1];
-        ReplicationManager manager = new BaseMockReplicationManager() {
-            public Object acquirePrimary(Object key) {
-                parameters[0] = key;
-                return motable;
-            }
-        };
+        WebSession motable = new DistributableSession(new DummyDistributableSessionConfig());
+        String key = "id";
+        
+        manager.acquirePrimary(key);
+        modify().returnValue(motable);
+        
+        startVerification();
         
         ReplicaAwareContextualiser contextualiser = new ReplicaAwareContextualiser(null, manager);
-        String key = "id";
         Motable actualMotable = contextualiser.get(key);
-        assertSame(key, parameters[0]);
         assertSame(motable, actualMotable);
     }
 }

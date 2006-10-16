@@ -89,16 +89,16 @@ public class DiscStore implements Store, DiscMotableConfig {
                     motable.setLastAccessedTime(time);
                 } else {
                     if (motable.getTimedOut(time)) {
-                        if (_log.isWarnEnabled()) _log.warn("LOADED DEAD SESSION: "+motable.getName());
+                        _log.warn("LOADED DEAD SESSION: "+motable.getName());
                         // TODO - something cleverer...
                     }
                 }
                 putter.put(id, motable);
             } catch (Exception e) {
-                if (_log.isErrorEnabled()) _log.error("failed to load: "+name);
+                _log.error("failed to load: "+name);
             }
         }
-        if (_log.isInfoEnabled())_log.info("loaded (exclusive disc): "+list.length);
+        _log.info("loaded (exclusive disc): "+list.length);
     }
 
     public StoreMotable create() {

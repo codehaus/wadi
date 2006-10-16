@@ -18,15 +18,12 @@ package org.codehaus.wadi.group;
 
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.Map;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision: 1563 $
  */
 public interface Dispatcher extends MessageListener {
-    void init(DispatcherConfig config) throws Exception;
-
     void register(ServiceEndpoint internalDispatcher);
 
     void unregister(ServiceEndpoint internalDispatcher, int nbAttemp, long delayMillis);
@@ -149,24 +146,28 @@ public interface Dispatcher extends MessageListener {
      */
     Envelope exchangeSend(Address target, String sourceCorrelationId, Serializable pojo, long timeout) throws MessageExchangeException;
 
+    Envelope exchangeSend(Address target, Envelope om, long timeout) throws MessageExchangeException;
+
+    Envelope exchangeSend(Address target, Envelope om, long timeout, String targetCorrelationId) throws MessageExchangeException;
+    
     void reply(Address from, Address to, String sourceCorrelationId, Serializable body) throws MessageExchangeException;
 
     void reply(Envelope message, Serializable body) throws MessageExchangeException;
+
+    void reply(Envelope request, Envelope reply) throws MessageExchangeException;
 
     void forward(Envelope message, Address destination) throws MessageExchangeException;
 
     // can we lose this ?
     void forward(Envelope message, Address destination, Serializable body) throws MessageExchangeException;
 
-    String nextCorrelationId();
+    void addRendezVousEnvelope(Envelope envelope);
 
-    Map getRendezVousMap();
+    Quipu newRendezVous(int numLlamas);
 
-    Quipu setRendezVous(String correlationId, int numLlamas);
+    Envelope attemptRendezVous(Quipu rv, long timeout) throws MessageExchangeException;
 
-    Envelope attemptRendezVous(String correlationId, Quipu rv, long timeout) throws MessageExchangeException;
-
-    Collection attemptMultiRendezVous(String correlationId, Quipu rv, long timeout) throws MessageExchangeException;
+    Collection attemptMultiRendezVous(Quipu rv, long timeout) throws MessageExchangeException;
     
     void start() throws MessageExchangeException;
 

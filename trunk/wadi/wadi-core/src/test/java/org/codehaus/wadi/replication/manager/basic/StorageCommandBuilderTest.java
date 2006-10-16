@@ -15,118 +15,75 @@
  */
 package org.codehaus.wadi.replication.manager.basic;
 
-import junit.framework.TestCase;
-
-import org.codehaus.wadi.replication.common.NodeInfo;
+import org.codehaus.wadi.group.Peer;
+import org.codehaus.wadi.group.vm.VMPeer;
 import org.codehaus.wadi.replication.common.ReplicaInfo;
 import org.codehaus.wadi.replication.storage.ReplicaStorage;
-import org.codehaus.wadi.replication.storage.ReplicaStorageStubFactory;
+import org.codehaus.wadi.servicespace.InvocationMetaData;
+import org.codehaus.wadi.servicespace.ServiceProxyFactory;
 
-public class StorageCommandBuilderTest extends TestCase {
+import com.agical.rmock.extension.junit.RMockTestCase;
 
+public class StorageCommandBuilderTest extends RMockTestCase {
+
+    private Peer peer1;
+    private Peer peer2;
+    private Peer peer3;
+    private Peer peer4;
+
+    protected void setUp() throws Exception {
+        peer1 = new VMPeer("peer1");
+        peer2 = new VMPeer("peer2");
+        peer3 = new VMPeer("peer3");
+        peer4 = new VMPeer("peer4");
+    }
+    
     public void testBuild() throws Exception {
-        final NodeInfo node1 = new NodeInfo("node1");
-        final NodeInfo node2 = new NodeInfo("node2");
-        final NodeInfo node3 = new NodeInfo("node3");
-        final NodeInfo node4 = new NodeInfo("node4");
-        final String expectedKey = "key";
+        InvocationMetaData invMetaData = (InvocationMetaData) intercept(InvocationMetaData.class, "invMetaData");
+        
+        String expectedKey = "key";
         Object payload = new Object();
-        final ReplicaInfo expectedReplicaInfo = new ReplicaInfo(node1, new NodeInfo[] {node2, node3}, payload);
-        StorageCommandBuilder builder = new StorageCommandBuilder(expectedKey,
-                expectedReplicaInfo,
-                new NodeInfo[] {node3, node4});
+        ReplicaInfo expectedReplicaInfo = new ReplicaInfo(peer1, new Peer[] {peer2, peer3}, payload);
+
+        ReplicaStorage storage = (ReplicaStorage) mock(ReplicaStorage.class);
+
+        ServiceProxyFactory serviceProxy = (ServiceProxyFactory) mock(ServiceProxyFactory.class);
+        beginSection(s.ordered("create - update - destroy"));
+        serviceProxy.getInvocationMetaData();
+        modify().returnValue(invMetaData);
+        invMetaData.setTargets(new Peer[] {peer2});
+        serviceProxy.getProxy();
+        modify().returnValue(storage);
+        storage.mergeCreate(expectedKey, expectedReplicaInfo);
+        modify().args(is.AS_RECORDED, is.NOT_NULL);
+
+        serviceProxy.getInvocationMetaData();
+        modify().returnValue(invMetaData);
+        invMetaData.setTargets(new Peer[] {peer3});
+        serviceProxy.getProxy();
+        modify().returnValue(storage);
+        storage.mergeUpdate(expectedKey, new ReplicaInfo(peer1, expectedReplicaInfo.getSecondaries()));
+        modify().args(is.AS_RECORDED, is.NOT_NULL);
+
+        serviceProxy.getInvocationMetaData();
+        modify().returnValue(invMetaData);
+        invMetaData.setTargets(new Peer[] {peer4});
+        serviceProxy.getProxy();
+        modify().returnValue(storage);
+        storage.mergeDestroy(expectedKey);
+        endSection();
+
+        startVerification();
+        
+        StorageCommandBuilder builder = new StorageCommandBuilder(expectedKey, expectedReplicaInfo, 
+                new Peer[] {peer3, peer4});
         
         StorageCommand[] commands = builder.build();
         assertEquals(3, commands.length);
 
-        StorageCommand command = commands[0];
-        MockReplicaStorageStubFactory stubFactory = new MockReplicaStorageStubFactory();
-        stubFactory.expectedNodes = new NodeInfo[] {node2};
-        stubFactory.storage = new MockReplicaStorage() {
-            public void mergeCreate(Object key, ReplicaInfo replicaInfo) {
-                assertSame(expectedKey, key);
-                assertSame(expectedReplicaInfo, replicaInfo);
-            };
-        };
-        command.execute(stubFactory);
-        
-        command = commands[1];
-        stubFactory.expectedNodes = new NodeInfo[] {node3};
-        stubFactory.storage = new MockReplicaStorage() {
-            public void mergeUpdate(Object key, ReplicaInfo replicaInfo) {
-                assertSame(expectedKey, key);
-                assertSame(expectedReplicaInfo.getPrimary(), replicaInfo.getPrimary());
-                assertSame(expectedReplicaInfo.getSecondaries(), replicaInfo.getSecondaries());
-                assertNull(replicaInfo.getReplica());
-            };
-        };
-        command.execute(stubFactory);
-
-        command = commands[2];
-        stubFactory.expectedNodes = new NodeInfo[] {node4};
-        stubFactory.storage = new MockReplicaStorage() {
-            public void mergeDestroy(Object key) {
-                assertSame(expectedKey, key);
-            };
-        };
-        command.execute(stubFactory);
+        commands[0].execute(serviceProxy);
+        commands[1].execute(serviceProxy);
+        commands[2].execute(serviceProxy);
     }
     
-    private class MockReplicaStorageStubFactory implements ReplicaStorageStubFactory {
-        private NodeInfo[] expectedNodes;
-        private ReplicaStorage storage;
-        
-        public void start() {
-        }
-        
-        public void stop() {
-        }
-        
-        public ReplicaStorage buildStub() {
-            throw new AssertionError();
-        }
-
-        public ReplicaStorage buildStub(NodeInfo[] nodes) {
-            assertEquals(expectedNodes.length, nodes.length);
-            for (int i = 0; i < nodes.length; i++) {
-                assertEquals(expectedNodes[i], nodes[i]);
-            }
-            return storage;
-        }
-    }
-    
-    private class MockReplicaStorage implements ReplicaStorage {
-
-        public void mergeCreate(Object key, ReplicaInfo replicaInfo) {
-            throw new AssertionError();
-        }
-
-        public void mergeUpdate(Object key, ReplicaInfo replicaInfo) {
-            throw new AssertionError();
-        }
-
-        public void mergeDestroy(Object key) {
-            throw new AssertionError();
-        }
-
-        public ReplicaInfo retrieveReplicaInfo(Object key) {
-            throw new AssertionError();
-        }
-
-        public boolean storeReplicaInfo(Object key) {
-            throw new AssertionError();
-        }
-
-        public NodeInfo getHostingNode() {
-            throw new AssertionError();
-        }
-
-        public void start() throws Exception {
-            throw new AssertionError();
-        }
-
-        public void stop() throws Exception {
-            throw new AssertionError();
-        }
-    }
 }

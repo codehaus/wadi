@@ -127,13 +127,11 @@ public class DistributableManager extends StandardManager implements ReplicableS
 	}
 
     public WebSession rehydrate(String key, byte[] body) throws RehydrationException {
-        notifySessionRelocation(key);
-
+//        notifySessionRelocation(key);
         WebSession session = _sessionPool.take();
         long time = System.currentTimeMillis();
         session.rehydrate(time, time, _maxInactiveInterval, key, body);
-        _map.put(key, session);
-
+//        _map.put(key, session);
         return session;
     }
 

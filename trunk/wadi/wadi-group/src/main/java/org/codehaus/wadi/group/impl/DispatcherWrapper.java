@@ -18,11 +18,10 @@ package org.codehaus.wadi.group.impl;
 
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.Map;
+
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.group.DispatcherConfig;
 import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.Quipu;
@@ -37,12 +36,12 @@ public class DispatcherWrapper implements Dispatcher {
         _delegate.start();
     }
 
-    public Collection attemptMultiRendezVous(String correlationId, Quipu rv, long timeout) throws MessageExchangeException {
-        return _delegate.attemptMultiRendezVous(correlationId, rv, timeout);
+    public Collection attemptMultiRendezVous(Quipu rv, long timeout) throws MessageExchangeException {
+        return _delegate.attemptMultiRendezVous(rv, timeout);
     }
 
-    public Envelope attemptRendezVous(String correlationId, Quipu rv, long timeout) throws MessageExchangeException {
-        return _delegate.attemptRendezVous(correlationId, rv, timeout);
+    public Envelope attemptRendezVous(Quipu rv, long timeout) throws MessageExchangeException {
+        return _delegate.attemptRendezVous(rv, timeout);
     }
 
     public Envelope createMessage() {
@@ -81,18 +80,6 @@ public class DispatcherWrapper implements Dispatcher {
         return _delegate.getPeerName(address);
     }
 
-    public Map getRendezVousMap() {
-        return _delegate.getRendezVousMap();
-    }
-
-    public void init(DispatcherConfig config) throws Exception {
-        _delegate.init(config);
-    }
-
-    public String nextCorrelationId() {
-        return _delegate.nextCorrelationId();
-    }
-
     public void register(ServiceEndpoint internalDispatcher) {
         _delegate.register(internalDispatcher);
     }
@@ -121,10 +108,6 @@ public class DispatcherWrapper implements Dispatcher {
         _delegate.send(source, target, sourceCorrelationId, pojo);
     }
 
-    public Quipu setRendezVous(String correlationId, int numLlamas) {
-        return _delegate.setRendezVous(correlationId, numLlamas);
-    }
-
     public void start() throws MessageExchangeException {
         // already started
     }
@@ -139,6 +122,26 @@ public class DispatcherWrapper implements Dispatcher {
 
     public void onMessage(Envelope message) {
         _delegate.onMessage(message);
+    }
+
+    public Envelope exchangeSend(Address target, Envelope om, long timeout, String targetCorrelationId) throws MessageExchangeException {
+        return _delegate.exchangeSend(target, om, timeout, targetCorrelationId);
+    }
+
+    public Envelope exchangeSend(Address target, Envelope om, long timeout) throws MessageExchangeException {
+        return _delegate.exchangeSend(target, om, timeout);
+    }
+
+    public void reply(Envelope request, Envelope reply) throws MessageExchangeException {
+        _delegate.reply(request, reply);
+    }
+
+    public void addRendezVousEnvelope(Envelope envelope) {
+        _delegate.addRendezVousEnvelope(envelope);
+    }
+    
+    public Quipu newRendezVous(int numLlamas) {
+        return _delegate.newRendezVous(numLlamas);
     }
 
 }

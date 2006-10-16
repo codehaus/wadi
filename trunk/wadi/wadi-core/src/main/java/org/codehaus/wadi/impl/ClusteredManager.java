@@ -39,10 +39,10 @@ import org.codehaus.wadi.ValueHelper;
 import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.group.DispatcherConfig;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.location.PartitionManagerConfig;
 import org.codehaus.wadi.location.impl.DIndex;
+import org.codehaus.wadi.servicespace.ServiceName;
 import org.codehaus.wadi.web.AttributesFactory;
 import org.codehaus.wadi.web.Router;
 import org.codehaus.wadi.web.WebSession;
@@ -56,8 +56,9 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class ClusteredManager extends DistributableManager implements ClusteredContextualiserConfig, DispatcherConfig, PartitionManagerConfig {
-
+public class ClusteredManager extends DistributableManager implements ClusteredContextualiserConfig, PartitionManagerConfig {
+    public static final ServiceName NAME = new ServiceName("ClusteredManager");
+    
 	protected final Dispatcher _dispatcher;
 	protected final Collapser _collapser;
 	protected final int _numPartitions;
@@ -73,10 +74,6 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
 		_dispatcher=dispatcher;
         _numPartitions=numPartitions;
 		_collapser=collapser;
-	}
-
-	public String getContextPath() {
-		return "/";
 	}
 
 	public void init(ManagerConfig config) {

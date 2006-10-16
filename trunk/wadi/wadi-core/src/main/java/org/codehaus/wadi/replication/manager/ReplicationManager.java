@@ -17,12 +17,15 @@ package org.codehaus.wadi.replication.manager;
 
 import org.codehaus.wadi.Lifecycle;
 import org.codehaus.wadi.replication.common.ReplicaInfo;
+import org.codehaus.wadi.servicespace.ServiceName;
 
 /**
  * 
  * @version $Revision$
  */
 public interface ReplicationManager extends Lifecycle {
+    ServiceName NAME = new ServiceName("ReplicationManager");
+    
     void create(Object key, Object tmp);
     
     void update(Object key, Object tmp);
@@ -31,7 +34,7 @@ public interface ReplicationManager extends Lifecycle {
 
     Object acquirePrimary(Object key);
 
-    ReplicaInfo releasePrimary(Object key);
+    void releasePrimary(Object key);
 
     ReplicaInfo retrieveReplicaInfo(Object key);
 

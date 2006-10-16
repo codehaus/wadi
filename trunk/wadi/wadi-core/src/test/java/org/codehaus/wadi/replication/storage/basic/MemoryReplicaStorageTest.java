@@ -17,18 +17,25 @@ package org.codehaus.wadi.replication.storage.basic;
 
 import junit.framework.TestCase;
 
-import org.codehaus.wadi.replication.common.NodeInfo;
+import org.codehaus.wadi.group.Peer;
+import org.codehaus.wadi.group.vm.VMPeer;
 import org.codehaus.wadi.replication.common.ReplicaInfo;
 
 public class MemoryReplicaStorageTest extends TestCase {
     private MemoryReplicaStorage storage;
-    private NodeInfo node1;
-    private NodeInfo node2;
+    private Peer node1;
+    private Peer node2;
 
+    protected void setUp() throws Exception {
+        storage = new MemoryReplicaStorage();
+        node1 = new VMPeer("node1");
+        node2 = new VMPeer("node2");
+    }
+    
     public void testMergeCreate() {
         Object key = new Object();
         Object replica = new Object();
-        ReplicaInfo replicaInfo = new ReplicaInfo(node1, new NodeInfo[] {node2}, replica);
+        ReplicaInfo replicaInfo = new ReplicaInfo(node1, new Peer[] {node2}, replica);
         storage.mergeCreate(key, replicaInfo);
         
         assertTrue(storage.storeReplicaInfo(key));
@@ -40,34 +47,28 @@ public class MemoryReplicaStorageTest extends TestCase {
     public void testMergeUpdate() {
         Object key = new Object();
         Object replica = new Object();
-        ReplicaInfo replicaInfo = new ReplicaInfo(node1, new NodeInfo[] {node2}, replica);
+        ReplicaInfo replicaInfo = new ReplicaInfo(node1, new Peer[] {node2}, replica);
         storage.mergeCreate(key, replicaInfo);
 
         replica = new Object();
-        storage.mergeUpdate(key, new ReplicaInfo(null, null, replica));
+        storage.mergeUpdate(key, new ReplicaInfo(replica));
         
         assertTrue(storage.storeReplicaInfo(key));
         ReplicaInfo actualReplicaInfo = storage.retrieveReplicaInfo(key);
         assertNotNull(actualReplicaInfo);
-        assertReplicaInfo(new ReplicaInfo(node1, new NodeInfo[] {node2}, replica), actualReplicaInfo);
+        assertReplicaInfo(new ReplicaInfo(node1, new Peer[] {node2}, replica), actualReplicaInfo);
     }
 
     public void testMergeDestroy() {
         Object key = new Object();
         Object replica = new Object();
-        ReplicaInfo replicaInfo = new ReplicaInfo(node1, new NodeInfo[] {node2}, replica);
+        ReplicaInfo replicaInfo = new ReplicaInfo(node1, new Peer[] {node2}, replica);
         storage.mergeCreate(key, replicaInfo);
 
         storage.mergeDestroy(key);
         assertFalse(storage.storeReplicaInfo(key));
     }
 
-    protected void setUp() throws Exception {
-        storage = new MemoryReplicaStorage(null, new NodeInfo("node"));
-        node1 = new NodeInfo("node1");
-        node2 = new NodeInfo("node2");
-    }
-    
     private void assertReplicaInfo(ReplicaInfo expected, ReplicaInfo actual) {
         if (null == expected.getPrimary()) {
             assertNull(actual.getPrimary());
@@ -75,8 +76,8 @@ public class MemoryReplicaStorageTest extends TestCase {
             assertSame(expected.getPrimary(), actual.getPrimary());
         }
         
-        NodeInfo[] expectedSecondaries = expected.getSecondaries();
-        NodeInfo[] actualSecondaries = actual.getSecondaries();
+        Peer[] expectedSecondaries = expected.getSecondaries();
+        Peer[] actualSecondaries = actual.getSecondaries();
         if (null == expectedSecondaries) {
             assertNull(expectedSecondaries);
         } else {
@@ -88,4 +89,5 @@ public class MemoryReplicaStorageTest extends TestCase {
         
         assertSame(expected.getReplica(), actual.getReplica());
     }
+    
 }

@@ -15,40 +15,44 @@
  */
 package org.codehaus.wadi.replication.common;
 
+import org.codehaus.wadi.group.Peer;
+import org.codehaus.wadi.group.vm.VMPeer;
+
 import junit.framework.TestCase;
 
 public class ReplicaInfoTest extends TestCase {
-    private static final NodeInfo node1 = new NodeInfo("NODE1");
-    private static final NodeInfo node2 = new NodeInfo("NODE2");
-    private static final NodeInfo node3 = new NodeInfo("NODE3");
+    private static final Peer peer1 = new VMPeer("PEER1");
+    private static final Peer peer2 = new VMPeer("PEER2");
+    private static final Peer peer3 = new VMPeer("PEER3");
     
     public void testCreateWithReplica() {
-        ReplicaInfo info = new ReplicaInfo(node1, new NodeInfo[] {node2}, null);
+        ReplicaInfo info = new ReplicaInfo(peer1, new Peer[] {peer2}, new Object());
         Object replica = new Object();
         info = new ReplicaInfo(info, replica);
-        assertSame(node1, info.getPrimary());
+        assertSame(peer1, info.getPrimary());
         assertEquals(1, info.getSecondaries().length);
-        assertSame(node2, info.getSecondaries()[0]);
+        assertSame(peer2, info.getSecondaries()[0]);
         assertSame(replica, info.getReplica());
     }
 
     public void testCreateWithPrimaryAndSecondaries() {
         Object replica = new Object();
-        ReplicaInfo info = new ReplicaInfo(node1, new NodeInfo[] {node2}, replica);
-        info = new ReplicaInfo(info, node2, new NodeInfo[] {node3});
-        assertSame(node2, info.getPrimary());
+        ReplicaInfo info = new ReplicaInfo(peer1, new Peer[] {peer2}, replica);
+        info = new ReplicaInfo(info, peer2, new Peer[] {peer3});
+        assertSame(peer2, info.getPrimary());
         assertEquals(1, info.getSecondaries().length);
-        assertSame(node3, info.getSecondaries()[0]);
+        assertSame(peer3, info.getSecondaries()[0]);
         assertSame(replica, info.getReplica());
     }
 
     public void testCreateWithOverride() {
-        ReplicaInfo info = new ReplicaInfo(node1, new NodeInfo[] {node2}, null);
+        ReplicaInfo info = new ReplicaInfo(peer1, new Peer[] {peer2}, new Object());
         Object replica = new Object();
-        info = new ReplicaInfo(info, new ReplicaInfo(node2, new NodeInfo[] {node3}, replica));
-        assertSame(node2, info.getPrimary());
+        info = new ReplicaInfo(info, new ReplicaInfo(peer2, new Peer[] {peer3}, replica));
+        assertSame(peer2, info.getPrimary());
         assertEquals(1, info.getSecondaries().length);
-        assertSame(node3, info.getSecondaries()[0]);
+        assertSame(peer3, info.getSecondaries()[0]);
         assertSame(replica, info.getReplica());
     }
+    
 }

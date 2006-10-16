@@ -95,6 +95,9 @@ public class AbstractServiceSpaceTestCase extends RMockTestCase {
         
         serviceSpace.getServiceSpaceName();
         modify().multiplicity(expect.from(0)).returnValue(serviceSpaceName);
+        
+        serviceSpace.getLocalPeer();
+        modify().multiplicity(expect.from(0)).returnValue(localPeer);
     }
     
 }

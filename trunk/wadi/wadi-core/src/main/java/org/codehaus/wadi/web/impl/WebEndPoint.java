@@ -18,8 +18,8 @@ package org.codehaus.wadi.web.impl;
 
 import java.io.Serializable;
 import java.net.InetSocketAddress;
+
 import org.codehaus.wadi.EndPoint;
-import org.codehaus.wadi.impl.Utils;
 
 
 /**
@@ -36,10 +36,8 @@ public class WebEndPoint implements EndPoint, Comparable, Serializable {
         _address=address;
     }
 
-    // 'java.lang.Object' API
-    
     public String toString() {
-        return "<"+Utils.basename(getClass())+":"+_address+">";
+        return "WebEndPoint [" + _address + "]";
     }
     
     public boolean equals(Object object) {

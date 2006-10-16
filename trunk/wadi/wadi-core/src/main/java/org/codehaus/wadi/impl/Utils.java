@@ -59,24 +59,21 @@ public class Utils {
 	 * @return - the resulting immotable - in other words - the data's new representation in the target Contextualiser
 	 */
 	public static Motable mote(Emoter emoter, Immoter immoter, Motable emotable, String name) {
-		long startTime=System.currentTimeMillis();
-		Motable immotable=immoter.nextMotable(name, emotable);
-		boolean i=false;
-		boolean e=false;
-		if ((i=immoter.prepare(name, emotable, immotable)) &&(e=emoter.prepare(name, emotable, immotable))) {
-			immoter.commit(name, immotable);
-			emoter.commit(name, emotable);
-			long elapsedTime=System.currentTimeMillis()-startTime;
-			if (_log.isDebugEnabled())_log.debug("motion: "+name+" : "+emoter.getInfo()+" -> "+immoter.getInfo()+" ("+elapsedTime+" millis)");
-			return immotable;
-		} else {
-			if (e) emoter.rollback(name, emotable);
-			if (i) immoter.rollback(name, immotable);
-			long elapsedTime=System.currentTimeMillis()-startTime;
-			if (_log.isWarnEnabled()) _log.warn("motion failed: "+name+" : "+emoter.getInfo()+" -> "+immoter.getInfo()+" ("+elapsedTime+" millis)");
-			return null;
-		}
-	}
+        Motable immotable = immoter.nextMotable(name, emotable);
+        boolean immotionOK = true;
+        if ((immotionOK = immoter.prepare(name, emotable, immotable)) && emoter.prepare(name, emotable, immotable)) {
+            immoter.commit(name, immotable);
+            emoter.commit(name, emotable);
+            return immotable;
+        } else {
+            immoter.rollback(name, immotable);
+            if (immotionOK) {
+                emoter.rollback(name, emotable);
+            }
+            _log.warn("motion failed: " + name + " : " + emoter.getInfo() + " -> " + immoter.getInfo());
+            return null;
+        }
+    }
 
 	/**
 	 * Ignore any interruptions whilst acquiring a lock.
@@ -292,12 +289,6 @@ public class Utils {
     	dir.delete();
     	dir.mkdir();
     	return dir;
-    }
-
-    public static String basename(Class clazz) {
-      String name=clazz.getName();
-      int i=name.lastIndexOf('.');
-      return name.substring(i+1);
     }
 
 }

@@ -15,11 +15,10 @@
  */
 package org.codehaus.wadi.replication.strategy;
 
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.codehaus.wadi.replication.common.NodeInfo;
+import org.codehaus.wadi.group.Peer;
 
 
 /**
@@ -27,7 +26,7 @@ import org.codehaus.wadi.replication.common.NodeInfo;
  * @version $Revision$
  */
 public class RoundRobinBackingStrategy implements BackingStrategy {
-    private static final NodeInfo[] EMPTY_NODES = new NodeInfo[0];
+    private static final Peer[] EMPTY_NODES = new Peer[0];
     
     private final int nbReplica;
     private final List secondaries;
@@ -42,8 +41,8 @@ public class RoundRobinBackingStrategy implements BackingStrategy {
         secondaries = new LinkedList();
     }
 
-    public NodeInfo[] electSecondaries(Object key) {
-        NodeInfo[] result = new NodeInfo[nbReplica];
+    public Peer[] electSecondaries(Object key) {
+        Peer[] result = new Peer[nbReplica];
         int resultIndex = 0;
         int initialReplicaIndex =  lastReplicaIndex;
         boolean looped = false;
@@ -62,12 +61,12 @@ public class RoundRobinBackingStrategy implements BackingStrategy {
                 if (lastReplicaIndex == initialReplicaIndex && looped) {
                     break;
                 }
-                result[resultIndex++] = (NodeInfo) secondaries.get(lastReplicaIndex++);
+                result[resultIndex++] = (Peer) secondaries.get(lastReplicaIndex++);
             }
         }
         
         if (resultIndex < nbReplica) {
-            NodeInfo[] resizedResult = new NodeInfo[resultIndex];
+            Peer[] resizedResult = new Peer[resultIndex];
             System.arraycopy(result, 0, resizedResult, 0, resultIndex);
             result = resizedResult;
         }
@@ -75,25 +74,34 @@ public class RoundRobinBackingStrategy implements BackingStrategy {
         return result;
     }
 
-    public NodeInfo[] reElectSecondaries(Object key, NodeInfo primary, NodeInfo[] secondaries) {
+    public Peer[] reElectSecondaries(Object key, Peer primary, Peer[] secondaries) {
         return electSecondaries(key);
     }
 
-    public void addSecondaries(NodeInfo[] newSecondaries) {
+    public void addSecondaries(Peer[] newSecondaries) {
         synchronized (secondaries) {
-            secondaries.addAll(Arrays.asList(newSecondaries));
+            for (int i = 0; i < newSecondaries.length; i++) {
+                secondaries.add(newSecondaries[i]);
+            }
         }
     }
     
-    public void addSecondary(NodeInfo secondary) {
+    public void addSecondary(Peer secondary) {
         synchronized (secondaries) {
             secondaries.add(secondary);
         }
     }
 
-    public void removeSecondary(NodeInfo secondary) {
+    public void removeSecondary(Peer secondary) {
         synchronized (secondaries) {
             secondaries.remove(secondary);
         }
     }
+    
+    public void reset() {
+        synchronized (secondaries) {
+            secondaries.clear();
+        }
+    }
+    
 }

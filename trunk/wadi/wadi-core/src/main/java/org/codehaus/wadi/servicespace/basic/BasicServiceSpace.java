@@ -32,11 +32,13 @@ import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.MessageExchangeException;
+import org.codehaus.wadi.group.MessageListener;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.ServiceEndpoint;
 import org.codehaus.wadi.servicespace.LifecycleState;
 import org.codehaus.wadi.servicespace.ServiceMonitor;
 import org.codehaus.wadi.servicespace.ServiceName;
+import org.codehaus.wadi.servicespace.ServiceProxyFactory;
 import org.codehaus.wadi.servicespace.ServiceRegistry;
 import org.codehaus.wadi.servicespace.ServiceSpace;
 import org.codehaus.wadi.servicespace.ServiceSpaceLifecycleEvent;
@@ -79,10 +81,19 @@ public class BasicServiceSpace implements ServiceSpace, Lifecycle {
 
         localPeer = dispatcher.getCluster().getLocalPeer();
         serviceRegistry = newServiceRegistry();
-        serviceSpaceEndpoint = new ServiceSpaceEndpoing(this);
+        
+        MessageListener messageListener = dispatcher; 
+        messageListener = new ServiceInvocationListener(this, messageListener);
+        messageListener = new ServiceResponseListener(this, messageListener);
+        serviceSpaceEndpoint = new ServiceSpaceEndpoing(this, messageListener);
+        
         lifecycleEndpoint = new ServiceSpaceLifecycleEndpoint();
         underlyingClusterListener = new UnderlyingClusterListener();
         messageHelper = new ServiceSpaceMessageHelper(this);
+    }
+    
+    public LocalPeer getLocalPeer() {
+        return localPeer;
     }
     
     public void addServiceSpaceListener(ServiceSpaceListener listener) {
@@ -144,7 +155,9 @@ public class BasicServiceSpace implements ServiceSpace, Lifecycle {
     }
 
     public synchronized void stop() throws Exception {
-        hostingPeers.clear();
+        synchronized (hostingPeers) {
+            hostingPeers.clear();
+        }
         
         try {
             serviceRegistry.stop();
@@ -175,11 +188,15 @@ public class BasicServiceSpace implements ServiceSpace, Lifecycle {
 
         unregisterEndPoints();
     }
+    
+    public ServiceProxyFactory getServiceProxyFactory(ServiceName serviceName, Class[] interfaces) {
+        return new CGLIBServiceProxyFactory(serviceName, interfaces, new BasicServiceInvoker(this, serviceName));
+    }
 
     public Dispatcher getUnderlyingDispatcher() {
         return underlyingDispatcher;
     }
-    
+
     protected StartableServiceRegistry newServiceRegistry() {
         return new BasicServiceRegistry(this);
     }
@@ -293,4 +310,8 @@ public class BasicServiceSpace implements ServiceSpace, Lifecycle {
 
     }
 
+    public String toString() {
+        return "ServiceSpace [" + name + "]";
+    }
+    
 }

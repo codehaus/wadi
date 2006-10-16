@@ -156,8 +156,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
         Peer localPeer = _localPeer;
         Peer coordPeer = _config.getCoordinator();
         if (_log.isTraceEnabled()) {
-            _log.trace("evacuating partitions...: " + _dispatcher.getPeerName(localPeer.getAddress()) + " -> "
-                    + coordPeer.getName());
+            _log.trace("evacuating partitions...: " + localPeer.getName() + " -> " + coordPeer.getName());
         }
 
         int failures = 0;
@@ -274,12 +273,11 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
     protected void repopulatePartition(int[] partitionIndicesToRepopulate) {
         _log.info("REPOPULATING PARTITIONS...: " + partitionIndicesToRepopulate);
 
-        String correlationId = _dispatcher.nextCorrelationId();
-        Quipu rv = _dispatcher.setRendezVous(correlationId, _dispatcher.getCluster().getPeerCount() - 1);
+        Quipu rv = _dispatcher.newRendezVous(_dispatcher.getCluster().getPeerCount() - 1);
         PartitionRepopulateRequest partitionRepopulateRequest = 
             new PartitionRepopulateRequest(partitionIndicesToRepopulate);
         try {
-            _dispatcher.send(_localPeer.getAddress(), _dispatcher.getCluster().getAddress(), correlationId,
+            _dispatcher.send(_localPeer.getAddress(), _dispatcher.getCluster().getAddress(), rv.getCorrelationId(),
                     partitionRepopulateRequest);
         } catch (MessageExchangeException e) {
             _log.error("unexpected problem repopulating lost index");
@@ -293,6 +291,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 
         // boolean success=false;
         try {
+            // TODO - I, Gianny, think this is incorrect.
             /* success= */rv.waitFor(_inactiveTime);
         } catch (InterruptedException e) {
             _log.warn("unexpected interruption", e);

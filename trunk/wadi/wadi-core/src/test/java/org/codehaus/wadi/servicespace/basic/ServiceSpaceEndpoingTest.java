@@ -33,7 +33,7 @@ public class ServiceSpaceEndpoingTest extends AbstractServiceSpaceTestCase {
         
         startVerification();
         
-        ServiceSpaceEndpoing endpoint = new ServiceSpaceEndpoing(serviceSpace);
+        ServiceSpaceEndpoing endpoint = new ServiceSpaceEndpoing(serviceSpace, dispatcher);
         endpoint.dispatch(message);
     }
 
@@ -46,7 +46,7 @@ public class ServiceSpaceEndpoingTest extends AbstractServiceSpaceTestCase {
 
         startVerification();
         
-        ServiceSpaceEndpoing endpoint = new ServiceSpaceEndpoing(serviceSpace);
+        ServiceSpaceEndpoing endpoint = new ServiceSpaceEndpoing(serviceSpace, dispatcher);
         assertTrue(endpoint.testDispatchMessage(message));
     }
 
@@ -59,7 +59,7 @@ public class ServiceSpaceEndpoingTest extends AbstractServiceSpaceTestCase {
 
         startVerification();
         
-        ServiceSpaceEndpoing endpoint = new ServiceSpaceEndpoing(serviceSpace);
+        ServiceSpaceEndpoing endpoint = new ServiceSpaceEndpoing(serviceSpace, dispatcher);
         assertFalse(endpoint.testDispatchMessage(message));
     }
 
@@ -71,7 +71,7 @@ public class ServiceSpaceEndpoingTest extends AbstractServiceSpaceTestCase {
 
         startVerification();
         
-        ServiceSpaceEndpoing endpoint = new ServiceSpaceEndpoing(serviceSpace);
+        ServiceSpaceEndpoing endpoint = new ServiceSpaceEndpoing(serviceSpace, dispatcher);
         assertFalse(endpoint.testDispatchMessage(message));
     }
 

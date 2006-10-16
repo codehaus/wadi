@@ -16,6 +16,7 @@
 package org.codehaus.wadi.partition;
 
 import java.io.Serializable;
+
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.PeerInfo;

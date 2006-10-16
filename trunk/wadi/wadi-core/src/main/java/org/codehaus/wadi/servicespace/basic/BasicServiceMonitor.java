@@ -120,6 +120,8 @@ public class BasicServiceMonitor implements ServiceMonitor, Lifecycle {
     public synchronized void stop() throws Exception {
         dispatcher.unregister(lifecycleEndpoint, 10, 500);
         serviceSpace.removeServiceSpaceListener(hostingServiceSpaceFailure);
+        
+        started = false;
     }
     
     protected void notifyListeners(ServiceLifecycleEvent event) {

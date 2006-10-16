@@ -17,6 +17,8 @@ package org.codehaus.wadi.replication.common;
 
 import java.io.Serializable;
 
+import org.codehaus.wadi.group.Peer;
+
 /**
  * 
  * @version $Revision$
@@ -24,29 +26,78 @@ import java.io.Serializable;
 public class ReplicaInfo implements Serializable {
     private static final long serialVersionUID = 1554455972740137174L;
 
-    private final NodeInfo primary;
-    private final NodeInfo[] secondaries;
+    private final Peer primary;
+    private final Peer[] secondaries;
     private final Object replica;
-    
-    public ReplicaInfo(NodeInfo primary, NodeInfo[] secondaries, Object replica) {
+
+    public ReplicaInfo(Object replica) {
+        if (null == replica) {
+            throw new IllegalArgumentException("replica is required");
+        }
+        this.replica = replica;
+
+        primary = null;
+        secondaries = null;
+    }
+
+    public ReplicaInfo(Peer primary, Peer[] secondaries) {
+        if (null == primary) {
+            throw new IllegalArgumentException("primary is required");
+        } else if (null == secondaries) {
+            throw new IllegalArgumentException("secondaries is required");
+        }
+        this.primary = primary;
+        this.secondaries = secondaries;
+        
+        replica = null;
+    }
+
+    public ReplicaInfo(Peer primary, Peer[] secondaries, Object replica) {
+        if (null == primary) {
+            throw new IllegalArgumentException("primary is required");
+        } else if (null == secondaries) {
+            throw new IllegalArgumentException("secondaries is required");
+        } else if (null == replica) {
+            throw new IllegalArgumentException("replica is required");
+        }
         this.primary = primary;
         this.secondaries = secondaries;
         this.replica = replica;
     }
 
     public ReplicaInfo(ReplicaInfo prototype, Object replica) {
-        this.primary = prototype.primary;
-        this.secondaries = prototype.secondaries;
+        if (null == prototype) {
+            throw new IllegalArgumentException("prototype is required");
+        } else if (null == replica) {
+            throw new IllegalArgumentException("replica is required");
+        }
         this.replica = replica;
+        
+        primary = prototype.primary;
+        secondaries = prototype.secondaries;
     }
 
-    public ReplicaInfo(ReplicaInfo prototype, NodeInfo primary, NodeInfo[] secondaries) {
+    public ReplicaInfo(ReplicaInfo prototype, Peer primary, Peer[] secondaries) {
+        if (null == prototype) {
+            throw new IllegalArgumentException("prototype is required");
+        } else if (null == primary) {
+            throw new IllegalArgumentException("primary is required");
+        } else if (null == secondaries) {
+            throw new IllegalArgumentException("secondaries is required");
+        }
         this.primary = primary;
         this.secondaries = secondaries;
-        this.replica = prototype.replica;
+        
+        replica = prototype.replica;
     }
 
     public ReplicaInfo(ReplicaInfo prototype, ReplicaInfo override) {
+        if (null == prototype) {
+            throw new IllegalArgumentException("prototype is required");
+        } else if (null == override) {
+            throw new IllegalArgumentException("override is required");
+        }
+        
         if (null != override.primary) {
             this.primary = override.primary;
         } else {
@@ -64,11 +115,11 @@ public class ReplicaInfo implements Serializable {
         }
     }
 
-    public NodeInfo getPrimary() {
+    public Peer getPrimary() {
         return primary;
     }
     
-    public NodeInfo[] getSecondaries() {
+    public Peer[] getSecondaries() {
         return secondaries;
     }
     
@@ -78,14 +129,18 @@ public class ReplicaInfo implements Serializable {
     
     public String toString() {
         StringBuffer buffer = new StringBuffer();
-        buffer.append("ReplicaInfo: primary:");
+        buffer.append("ReplicaInfo: primary [");
         buffer.append(primary);
-        buffer.append("; secondaries:");
-        for (int i = 0; i < secondaries.length; i++) {
-            buffer.append("[" + i + "] " + secondaries[i]);
+        buffer.append("]; secondaries:");
+        if (null == secondaries) {
+            buffer.append("null");
+        } else {
+            for (int i = 0; i < secondaries.length; i++) {
+                buffer.append("[" + i + "] " + secondaries[i]);
+            }
         }
-        buffer.append("; replica:" + replica);
-        
+        buffer.append("; replica [" + replica + "]");
         return buffer.toString();
     }
+    
 }

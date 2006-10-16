@@ -30,6 +30,11 @@ public class SessionReplicationManager implements ReplicationManager {
     private final SessionRehydrater rehydrater;
     
     public SessionReplicationManager(ReplicationManager replicationManager, SessionRehydrater rehydrater) {
+        if (null == replicationManager) {
+            throw new IllegalArgumentException("replicationManager is required");
+        } else if (null == rehydrater) {
+            throw new IllegalArgumentException("rehydrater is required");
+        }
         this.replicationManager = replicationManager;
         this.rehydrater = rehydrater;
     }
@@ -58,8 +63,7 @@ public class SessionReplicationManager implements ReplicationManager {
 
     public Object acquirePrimary(Object key) {
         if (false == key instanceof String) {
-            throw new IllegalArgumentException("key must be a string. Was :" +
-                    key.getClass().getName());
+            throw new IllegalArgumentException("key must be a string. Was [" + key.getClass().getName() + "]");
         }
         
         byte[] body = (byte[]) replicationManager.acquirePrimary(key);
@@ -74,8 +78,8 @@ public class SessionReplicationManager implements ReplicationManager {
         }
     }
 
-    public ReplicaInfo releasePrimary(Object key) {
-        return replicationManager.releasePrimary(key);
+    public void releasePrimary(Object key) {
+        replicationManager.releasePrimary(key);
     }
 
     public ReplicaInfo retrieveReplicaInfo(Object key) {

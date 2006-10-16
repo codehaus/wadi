@@ -15,7 +15,7 @@
  */
 package org.codehaus.wadi.replication.manager.basic;
 
-import org.codehaus.wadi.replication.common.NodeInfo;
+import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.replication.common.ReplicaInfo;
 
 /**
@@ -23,13 +23,14 @@ import org.codehaus.wadi.replication.common.ReplicaInfo;
  * @version $Revision: 1603 $
  */
 abstract class AbstractStorageCommand implements StorageCommand {
-    protected final NodeInfo[] targets;
+    protected final Peer[] targets;
     protected final Object key;
     protected final ReplicaInfo replicaInfo;
     
-    public AbstractStorageCommand(NodeInfo[] targets, Object key, ReplicaInfo replicaInfo) {
+    public AbstractStorageCommand(Peer[] targets, Object key, ReplicaInfo replicaInfo) {
         this.targets = targets;
         this.key = key;
         this.replicaInfo = replicaInfo;
     }
+    
 }

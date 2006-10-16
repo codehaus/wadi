@@ -15,7 +15,7 @@
  */
 package org.codehaus.wadi.servicespace;
 
-import java.util.Set;
+import java.util.List;
 
 import org.codehaus.wadi.Lifecycle;
 
@@ -24,9 +24,13 @@ import org.codehaus.wadi.Lifecycle;
  * @version $Revision: 1538 $
  */
 public interface ServiceRegistry {
-    void register(ServiceName name, Lifecycle service);
+    void register(ServiceName name, Lifecycle service) throws ServiceAlreadyRegisteredException;
     
-    void unregister(ServiceName name);
+    void unregister(ServiceName name) throws ServiceNotFoundException;
     
-    Set getServiceNames();
+    List getServiceNames();
+    
+    Object getStartedService(ServiceName name) throws ServiceNotFoundException, ServiceNotAvailableException;
+
+    boolean isServiceStarted(ServiceName serviceName);
 }

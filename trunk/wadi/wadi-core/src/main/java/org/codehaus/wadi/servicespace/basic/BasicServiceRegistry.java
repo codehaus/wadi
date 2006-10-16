@@ -18,17 +18,18 @@ package org.codehaus.wadi.servicespace.basic;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Lifecycle;
 import org.codehaus.wadi.group.Dispatcher;
+import org.codehaus.wadi.servicespace.ServiceAlreadyRegisteredException;
 import org.codehaus.wadi.servicespace.ServiceName;
+import org.codehaus.wadi.servicespace.ServiceNotAvailableException;
+import org.codehaus.wadi.servicespace.ServiceNotFoundException;
 import org.codehaus.wadi.servicespace.ServiceSpace;
 
 /**
@@ -55,19 +56,36 @@ public class BasicServiceRegistry implements StartableServiceRegistry {
         queryEndpoint = new ServiceQueryEndpoint(this, serviceSpace);
     }
     
-    public synchronized Set getServiceNames() {
-        synchronized (nameToServiceHolder) {
-            return new HashSet(nameToServiceHolder.keySet());
+    public synchronized List getServiceNames() {
+        return new ArrayList(nameToServiceHolder.keySet());
+    }
+    
+    public synchronized Object getStartedService(ServiceName name) throws ServiceNotFoundException,
+            ServiceNotAvailableException {
+        BasicServiceHolder serviceHolder = (BasicServiceHolder) nameToServiceHolder.get(name);
+        if (null == serviceHolder) {
+            throw new ServiceNotFoundException(name);
+        } else if (!serviceHolder.isStarted()) {
+            throw new ServiceNotAvailableException(name);
         }
+        return serviceHolder.getService();
+    }
+    
+    public synchronized boolean isServiceStarted(ServiceName name) {
+        BasicServiceHolder serviceHolder = (BasicServiceHolder) nameToServiceHolder.get(name);
+        if (null == serviceHolder) {
+            return false;
+        }
+        return serviceHolder.isStarted();
     }
 
-    public synchronized void register(ServiceName name, Lifecycle service) {
+    public synchronized void register(ServiceName name, Lifecycle service) throws ServiceAlreadyRegisteredException {
         if (null == name) {
             throw new IllegalArgumentException("name is required");
-        } else if (nameToServiceHolder.containsKey(name)) {
-            throw new IllegalArgumentException("A service has already been bound to [" + name + "]");
         } else if (started) {
             throw new IllegalStateException("ServiceRegistry is started. Cannot register service");
+        } else if (nameToServiceHolder.containsKey(name)) {
+            throw new ServiceAlreadyRegisteredException(name);
         }
         nameToServiceHolder.put(name, new BasicServiceHolder(serviceSpace, name, service));
     }
