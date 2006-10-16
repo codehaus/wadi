@@ -16,7 +16,6 @@
 */
 package org.codehaus.wadi.evacuation;
 
-import org.codehaus.wadi.group.vm.SysOutMessageRecorder;
 import org.codehaus.wadi.group.vm.VMBroker;
 import org.codehaus.wadi.group.vm.VMDispatcher;
 
@@ -29,7 +28,6 @@ public class TestInVMEvacuation extends AbstractTestEvacuation {
 	
 	public void testEvacuation() throws Exception {
         VMBroker cluster = new VMBroker("TEST");
-        cluster.setMessageRecorder(new SysOutMessageRecorder());
 		long timeout=5000;
 		testEvacuation(new VMDispatcher(cluster, "red", timeout), new VMDispatcher(cluster, "green", timeout));
 	}
