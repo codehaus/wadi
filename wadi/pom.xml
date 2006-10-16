@@ -281,9 +281,7 @@
   <modules>
     <module>wadi-group</module>
     <module>wadi-core</module>
-<!--
     <module>wadi-activecluster</module>
--->
     <module>wadi-jgroups</module>
     <module>wadi-tribes</module>
     <module>wadi-jetty5</module>

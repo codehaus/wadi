@@ -48,13 +48,13 @@ public class ServiceQueryEndpoint implements ServiceEndpoint {
     public void dispatch(Envelope om) throws Exception {
         ServiceQueryEvent event = (ServiceQueryEvent) om.getPayload();
         ServiceName serviceName = event.getServiceName();
-        if (registry.getServiceNames().contains(serviceName)) {
+        if (registry.isServiceStarted(serviceName)) {
             Dispatcher dispatcher = serviceSpace.getDispatcher();
             dispatcher.send(event.getQueryingPeer().getAddress(),
                     new ServiceLifecycleEvent(
                             serviceSpace.getServiceSpaceName(), 
                             serviceName,
-                            dispatcher.getCluster().getLocalPeer(),
+                            serviceSpace.getLocalPeer(),
                             LifecycleState.AVAILABLE));
         }
     }

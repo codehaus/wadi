@@ -32,6 +32,7 @@ import org.codehaus.wadi.group.impl.AbstractDispatcher;
 import org.codehaus.wadi.group.impl.ThreadPool;
 import org.codehaus.wadi.servicespace.LifecycleState;
 import org.codehaus.wadi.servicespace.ServiceSpace;
+import org.codehaus.wadi.servicespace.ServiceSpaceException;
 import org.codehaus.wadi.servicespace.ServiceSpaceLifecycleEvent;
 import org.codehaus.wadi.servicespace.ServiceSpaceListener;
 

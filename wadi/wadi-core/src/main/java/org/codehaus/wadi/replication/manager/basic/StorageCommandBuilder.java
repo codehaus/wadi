@@ -20,15 +20,22 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.codehaus.wadi.replication.common.NodeInfo;
+import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.replication.common.ReplicaInfo;
 
 class StorageCommandBuilder {
     private final Object key;
     private final ReplicaInfo replicaInfo;
-    private final NodeInfo[] oldSecondaries;
+    private final Peer[] oldSecondaries;
     
-    public StorageCommandBuilder(Object key, ReplicaInfo replicaInfo, NodeInfo[] oldSecondaries) {
+    public StorageCommandBuilder(Object key, ReplicaInfo replicaInfo, Peer[] oldSecondaries) {
+        if (null == key) {
+            throw new IllegalArgumentException("key is required");
+        } else if (null == replicaInfo) {
+            throw new IllegalArgumentException("replicaInfo is required");
+        } else if (null == oldSecondaries) {
+            throw new IllegalArgumentException("oldSecondaries is required");
+        }
         this.key = key;
         this.replicaInfo = replicaInfo;
         this.oldSecondaries = oldSecondaries;
@@ -40,12 +47,12 @@ class StorageCommandBuilder {
             destroySecondariesSet.add(oldSecondaries[i]);
         }
 
-        NodeInfo newSecondaries[] = replicaInfo.getSecondaries();
+        Peer newSecondaries[] = replicaInfo.getSecondaries();
         
         Set createSecondariesSet = new HashSet();
         Set updateSecondariesSet = new HashSet();
         for (int i = 0; i < newSecondaries.length; i++) {
-            NodeInfo secondary = newSecondaries[i];
+            Peer secondary = newSecondaries[i];
             boolean exist = destroySecondariesSet.remove(secondary);
             if (exist) {
                 updateSecondariesSet.add(secondary);
@@ -57,23 +64,18 @@ class StorageCommandBuilder {
         Collection commands = new ArrayList(3);
 
         if (0 != createSecondariesSet.size()) {
-            NodeInfo targets[] = (NodeInfo[]) createSecondariesSet.toArray(new NodeInfo[0]);
-            commands.add(
-                    new CreateStorageCommand(targets,
-                            key,
-                            replicaInfo));
+            Peer targets[] = (Peer[]) createSecondariesSet.toArray(new Peer[0]);
+            commands.add(new CreateStorageCommand(targets, key, replicaInfo));
         }
 
         if (0 != updateSecondariesSet.size()) {
-            NodeInfo targets[] = (NodeInfo[]) updateSecondariesSet.toArray(new NodeInfo[0]);
-            commands.add(
-                    new UpdateStorageCommand(targets,
-                            key,
-                            new ReplicaInfo(replicaInfo.getPrimary(), newSecondaries, null)));
+            Peer targets[] = (Peer[]) updateSecondariesSet.toArray(new Peer[0]);
+            ReplicaInfo updateReplicaInfo = new ReplicaInfo(replicaInfo.getPrimary(), newSecondaries);
+            commands.add(new UpdateStorageCommand(targets, key, updateReplicaInfo));
         }
 
         if (0 != destroySecondariesSet.size()) {
-            NodeInfo targets[] = (NodeInfo[]) destroySecondariesSet.toArray(new NodeInfo[0]);
+            Peer targets[] = (Peer[]) destroySecondariesSet.toArray(new Peer[0]);
             commands.add(new DestroyStorageCommand(targets,key));
         }
 

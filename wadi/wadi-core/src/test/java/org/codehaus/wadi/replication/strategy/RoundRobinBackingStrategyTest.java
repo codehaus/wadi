@@ -15,48 +15,49 @@
  */
 package org.codehaus.wadi.replication.strategy;
 
-import org.codehaus.wadi.replication.common.NodeInfo;
+import java.util.Arrays;
+import java.util.HashSet;
 
 import junit.framework.TestCase;
 
+import org.codehaus.wadi.group.Peer;
+import org.codehaus.wadi.group.vm.VMPeer;
+
 public class RoundRobinBackingStrategyTest extends TestCase {
     private RoundRobinBackingStrategy strategy;
-    private NodeInfo node1;
-    private NodeInfo node2;
-    private NodeInfo node3;
-    private NodeInfo node4;
-
-    public void testElectSecondaries() {
-        strategy.addSecondaries(new NodeInfo[] {node1, node2, node3, node4});
-        
-        NodeInfo[] actualSecondaries = strategy.electSecondaries(null);
-        assertEquals(2, actualSecondaries.length);
-        assertEquals(node1, actualSecondaries[0]);
-        assertEquals(node2, actualSecondaries[1]);
-        
-        actualSecondaries = strategy.electSecondaries(null);
-        assertEquals(2, actualSecondaries.length);
-        assertEquals(node3, actualSecondaries[0]);
-        assertEquals(node4, actualSecondaries[1]);
-
-        strategy.removeSecondary(node2);
-
-        actualSecondaries = strategy.electSecondaries(null);
-        assertEquals(2, actualSecondaries.length);
-        assertEquals(node1, actualSecondaries[0]);
-        assertEquals(node3, actualSecondaries[1]);
-
-        actualSecondaries = strategy.electSecondaries(null);
-        assertEquals(2, actualSecondaries.length);
-        assertEquals(node4, actualSecondaries[0]);
-        assertEquals(node1, actualSecondaries[1]);
-   }
+    private Peer peer1;
+    private Peer peer2;
+    private Peer peer3;
+    private Peer peer4;
 
     protected void setUp() throws Exception {
         strategy = new RoundRobinBackingStrategy(2);
-        node1 = new NodeInfo("node1");
-        node2 = new NodeInfo("node2");
-        node3 = new NodeInfo("node3");
-        node4 = new NodeInfo("node4");
+        peer1 = new VMPeer("peer1");
+        peer2 = new VMPeer("peer2");
+        peer3 = new VMPeer("peer3");
+        peer4 = new VMPeer("peer4");
     }
+    
+    public void testElectSecondaries() {
+        strategy.addSecondaries(new Peer[] {peer1, peer2, peer3, peer4});
+        
+        Peer[] actualSecondaries = strategy.electSecondaries(null);
+        assertSecondaries(new Peer[] {peer1, peer2}, actualSecondaries);
+        
+        actualSecondaries = strategy.electSecondaries(null);
+        assertSecondaries(new Peer[] {peer3, peer4}, actualSecondaries);
+
+        strategy.removeSecondary(peer2);
+
+        actualSecondaries = strategy.electSecondaries(null);
+        assertSecondaries(new Peer[] {peer1, peer3}, actualSecondaries);
+
+        actualSecondaries = strategy.electSecondaries(null);
+        assertSecondaries(new Peer[] {peer4, peer1}, actualSecondaries);
+   }
+
+    private void assertSecondaries(Peer[] expectedPeers, Peer[] actualPeers) {
+        assertEquals(new HashSet(Arrays.asList(expectedPeers)), new HashSet(Arrays.asList(actualPeers)));
+    }
+    
 }

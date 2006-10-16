@@ -15,9 +15,8 @@
  */
 package org.codehaus.wadi.replication.manager;
 
-import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.replication.storage.ReplicaStorageFactory;
 import org.codehaus.wadi.replication.strategy.BackingStrategyFactory;
+import org.codehaus.wadi.servicespace.ServiceSpace;
 
 
 /**
@@ -25,8 +24,7 @@ import org.codehaus.wadi.replication.strategy.BackingStrategyFactory;
  * @version $Revision$
  */
 public interface ReplicationManagerFactory {
-    ReplicationManager factory(
-            Dispatcher dispatcher, 
-            ReplicaStorageFactory replicaStoragefactory,
-            BackingStrategyFactory backingStrategyFactory);
+    ReplicationManager factory(ServiceSpace serviceSpace, 
+            BackingStrategyFactory backingStrategyFactory,
+            boolean syncReplication);
 }

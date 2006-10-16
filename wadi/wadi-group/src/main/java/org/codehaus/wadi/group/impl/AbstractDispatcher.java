@@ -18,14 +18,12 @@ package org.codehaus.wadi.group.impl;
 
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.group.DispatcherConfig;
 import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.Quipu;
@@ -46,7 +44,6 @@ public abstract class AbstractDispatcher implements Dispatcher {
 	protected final ThreadPool _executor;
 	protected final Log _messageLog = LogFactory.getLog("org.codehaus.wadi.MESSAGES");
     protected Log _log = LogFactory.getLog(getClass());
-    protected DispatcherConfig _config;
     protected final Map _rvMap = new ConcurrentHashMap();
 
     private final MessageDispatcherManager inboundMessageDispatcher; 
@@ -59,10 +56,6 @@ public abstract class AbstractDispatcher implements Dispatcher {
 
 	public AbstractDispatcher(long inactiveTime) {
         this(new PooledExecutorAdapter(10));
-	}
-	
-	public void init(DispatcherConfig config) throws Exception {
-		_config=config;
 	}
 	
 	public void register(ServiceEndpoint msgDispatcher) {
@@ -90,29 +83,41 @@ public abstract class AbstractDispatcher implements Dispatcher {
 	
 	protected final SimpleCorrelationIDFactory _factory=new SimpleCorrelationIDFactory();
 
-	public Map getRendezVousMap() {
-		return Collections.unmodifiableMap(_rvMap);
-	}
-	
-	public String nextCorrelationId() {
-		return _factory.create();
-	}
-	
+    public void addRendezVousEnvelope(Envelope envelope) {
+        String targetCorrelationId = envelope.getTargetCorrelationId();
+        if (null == targetCorrelationId) {
+            throw new IllegalStateException("No targetCorrelationId");
+        }
+        Quipu rv= (Quipu) _rvMap.get(targetCorrelationId);
+        if (null == rv) {
+            _log.warn("no one waiting for [" + targetCorrelationId + "]");
+        } else {
+            if (_log.isTraceEnabled()) {
+                _log.trace("successful correlation [" + targetCorrelationId + "]");
+            }
+            rv.putResult(envelope);
+        }
+    }
+    
 	public Quipu setRendezVous(String correlationId, int numLlamas) {
-		Quipu rv=new Quipu(numLlamas);
-		_rvMap.put(correlationId, rv);
-		return rv;
-	}
+        Quipu rv = new Quipu(numLlamas, correlationId);
+        _rvMap.put(correlationId, rv);
+        return rv;
+    }
 	
-	public Envelope attemptRendezVous(String correlationId, Quipu rv, long timeout) throws MessageExchangeException {
-        Collection messages = attemptMultiRendezVous(correlationId, rv, timeout);
+    public Quipu newRendezVous(int numLlamas) {
+        return setRendezVous(_factory.create(), numLlamas);
+    }
+
+	public Envelope attemptRendezVous(Quipu rv, long timeout) throws MessageExchangeException {
+        Collection messages = attemptMultiRendezVous(rv, timeout);
         if (messages.size() > 1) {
             throw new MessageExchangeException("[" + messages.size() + "] result messages. Expected only one.");
         }
         return (Envelope) messages.iterator().next();
 	}
 	
-    public Collection attemptMultiRendezVous(String correlationId, Quipu rv, long timeout) throws MessageExchangeException {
+    public Collection attemptMultiRendezVous(Quipu rv, long timeout) throws MessageExchangeException {
         Collection response = null;
         try {
             do {
@@ -123,29 +128,20 @@ public abstract class AbstractDispatcher implements Dispatcher {
                         long elapsedTime = System.currentTimeMillis()-startTime;
                         if (_log.isTraceEnabled()) {
                             _log.trace("successful message exchange within timeframe (" + elapsedTime + 
-                                    "<" + timeout + " millis) {" + correlationId + "}");
+                                    "<" + timeout + " millis) {" + rv + "}");
                         }
                     } else {
-                        if (_log.isWarnEnabled()) {
-                            _log.warn("unsuccessful message exchange within timeframe (" + timeout + 
-                                    " millis) {" + correlationId + "}", new Exception());
-                        }
+                        _log.warn("unsuccessful message exchange within timeframe (" + timeout + 
+                                " millis) {" + rv + "}", new Exception());
                     }
                 } catch (TimeoutException e) {
-                    if (_log.isWarnEnabled()) {
-                        _log.warn("no response to request within timeout ("+timeout+" millis)");
-                    }
+                    _log.warn("no response to request within timeout ("+timeout+" millis)");
                 } catch (InterruptedException e) {
-                    if (_log.isWarnEnabled()) {
-                        _log.warn("waiting for response - interruption ignored");
-                    }
+                    _log.warn("waiting for response - interruption ignored");
                 }
             } while (Thread.interrupted());
         } finally {
-            // tidy up rendez-vous
-            if (null != correlationId) {
-                _rvMap.remove(correlationId);
-            }
+            _rvMap.remove(rv);
         }
         if (null == response) {
             throw new MessageExchangeException("No correlated messages received within [" + timeout + "]ms");
@@ -162,17 +158,23 @@ public abstract class AbstractDispatcher implements Dispatcher {
 	}
 	
 	public void reply(Envelope message, Serializable body) throws MessageExchangeException {
-        Envelope msg=createMessage();
-        Address from=getCluster().getLocalPeer().getAddress();
-        msg.setReplyTo(from);
-        Address to=message.getReplyTo();
-        msg.setAddress(to);
-        String incomingCorrelationId=message.getSourceCorrelationId();
-        msg.setTargetCorrelationId(incomingCorrelationId);
-        msg.setPayload(body);
-        if (_log.isTraceEnabled()) _log.trace("reply: " + getPeerName(from) + " -> " + getPeerName(to) + " {" + incomingCorrelationId + "} : " + body);
-        send(to, msg);
+        Envelope reply = createMessage();
+        reply.setPayload(body);
+        reply(message, reply);
 	}
+
+    public void reply(Envelope request, Envelope reply) throws MessageExchangeException {
+        Address from = getCluster().getLocalPeer().getAddress();
+        reply.setReplyTo(from);
+        Address to = request.getReplyTo();
+        reply.setAddress(to);
+        String incomingCorrelationId = request.getSourceCorrelationId();
+        reply.setTargetCorrelationId(incomingCorrelationId);
+        if (_log.isTraceEnabled()) {
+            _log.trace("reply [" + reply + "]");
+        }
+        send(to, reply);
+    }
 
     public void send(Address to, Serializable body) throws MessageExchangeException {
         try {
@@ -210,21 +212,31 @@ public abstract class AbstractDispatcher implements Dispatcher {
 	}
 	
 	public Envelope exchangeSend(Address target, Serializable body, long timeout, String targetCorrelationId) throws MessageExchangeException {
-        Address from=getCluster().getLocalPeer().getAddress();
-        Envelope om=createMessage();
-        om.setReplyTo(from);
-        om.setAddress(target);
-        om.setPayload(body);
-        String sourceCorrelationId=nextCorrelationId();
-        om.setSourceCorrelationId(sourceCorrelationId);
-        if (targetCorrelationId!=null)
-            om.setTargetCorrelationId(targetCorrelationId);
-        Quipu rv=setRendezVous(sourceCorrelationId, 1);
-        if (_log.isTraceEnabled()) _log.trace("exchangeSend {" + sourceCorrelationId + "}: " + getPeerName(from) + " -> " + getPeerName(target) + " : " + body);
-        send(target, om);
-        return attemptRendezVous(sourceCorrelationId, rv, timeout);
+	    Envelope message = createMessage();
+        message.setPayload(body);
+        return exchangeSend(target, message, timeout, targetCorrelationId);
 	}
     
+    public Envelope exchangeSend(Address target, Envelope om, long timeout) throws MessageExchangeException {
+        return exchangeSend(target, om, timeout, null);
+    }
+
+	public Envelope exchangeSend(Address target, Envelope om, long timeout, String targetCorrelationId) throws MessageExchangeException {
+	    Address from=getCluster().getLocalPeer().getAddress();
+	    om.setReplyTo(from);
+	    om.setAddress(target);
+	    Quipu rv= newRendezVous(1);
+	    om.setSourceCorrelationId(rv.getCorrelationId());
+	    if (targetCorrelationId!=null) {
+	        om.setTargetCorrelationId(targetCorrelationId);
+        }
+	    if (_log.isTraceEnabled()) {
+            _log.trace("exchangeSend [" + om + "]");
+        }
+	    send(target, om);
+	    return attemptRendezVous(rv, timeout);
+	}
+	
 	public Envelope exchangeSend(Address target, String sourceCorrelationId, Serializable pojo, long timeout) {
 		Quipu rv=null;
 		// set up a rendez-vous...
@@ -232,7 +244,7 @@ public abstract class AbstractDispatcher implements Dispatcher {
 		// send the message...
         try {
             send(getCluster().getLocalPeer().getAddress(), target, sourceCorrelationId, pojo);
-            return attemptRendezVous(sourceCorrelationId, rv, timeout);
+            return attemptRendezVous(rv, timeout);
         } catch (MessageExchangeException e) {
             return null;
         }

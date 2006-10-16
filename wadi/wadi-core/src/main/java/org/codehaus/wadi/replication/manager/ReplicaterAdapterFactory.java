@@ -33,10 +33,9 @@ public class ReplicaterAdapterFactory implements ReplicaterFactory {
     }
 
     public Replicater create(DistributableManager manager) {
-        DistributableManagerRehydrater sessionRehydrater =
-            new DistributableManagerRehydrater(manager);
-        ReplicationManager sessionRepManager = 
-            new SessionReplicationManager(replicationManager, sessionRehydrater);
+        DistributableManagerRehydrater sessionRehydrater = new DistributableManagerRehydrater(manager);
+        ReplicationManager sessionRepManager = new SessionReplicationManager(replicationManager, sessionRehydrater);
         return new ReplicaterAdapter(sessionRepManager);
     }
+    
 }

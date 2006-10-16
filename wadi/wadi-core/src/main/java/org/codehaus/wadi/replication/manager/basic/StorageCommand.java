@@ -15,8 +15,8 @@
  */
 package org.codehaus.wadi.replication.manager.basic;
 
-import org.codehaus.wadi.replication.storage.ReplicaStorageStubFactory;
+import org.codehaus.wadi.servicespace.ServiceProxyFactory;
 
 interface StorageCommand {
-    void execute(ReplicaStorageStubFactory storageStubFactory);
+    void execute(ServiceProxyFactory serviceProxy);
 }

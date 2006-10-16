@@ -18,6 +18,7 @@ package org.codehaus.wadi.servicespace.basic;
 import java.io.Serializable;
 
 import org.codehaus.wadi.Lifecycle;
+import org.codehaus.wadi.servicespace.ServiceAlreadyRegisteredException;
 import org.codehaus.wadi.servicespace.ServiceName;
 
 import com.agical.rmock.core.match.Expression;
@@ -54,7 +55,7 @@ public class BasicServiceRegistryTest extends AbstractServiceSpaceTestCase {
         try {
             registry.register(serviceName1, service2);
             fail();
-        } catch (IllegalArgumentException e) {
+        } catch (ServiceAlreadyRegisteredException e) {
         }
     }
 

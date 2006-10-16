@@ -15,7 +15,7 @@
  */
 package org.codehaus.wadi.replication.strategy;
 
-import org.codehaus.wadi.replication.common.NodeInfo;
+import org.codehaus.wadi.group.Peer;
 
 
 /**
@@ -23,13 +23,15 @@ import org.codehaus.wadi.replication.common.NodeInfo;
  * @version $Revision$
  */
 public interface BackingStrategy {
-    NodeInfo[] electSecondaries(Object key);
+    Peer[] electSecondaries(Object key);
 
-    NodeInfo[] reElectSecondaries(Object key, NodeInfo primary, NodeInfo[] secondaries);
+    Peer[] reElectSecondaries(Object key, Peer primary, Peer[] secondaries);
     
-    void addSecondaries(NodeInfo secondaries[]);
+    void addSecondaries(Peer[] secondaries);
     
-    void addSecondary(NodeInfo secondary);
+    void addSecondary(Peer secondary);
     
-    void removeSecondary(NodeInfo secondary);
+    void removeSecondary(Peer secondary);
+    
+    void reset();
 }

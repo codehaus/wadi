@@ -15,19 +15,21 @@
  */
 package org.codehaus.wadi.replication.manager.basic;
 
-import org.codehaus.wadi.replication.common.NodeInfo;
+import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.replication.storage.ReplicaStorage;
-import org.codehaus.wadi.replication.storage.ReplicaStorageStubFactory;
+import org.codehaus.wadi.servicespace.ServiceProxyFactory;
 
 
 class DestroyStorageCommand extends AbstractStorageCommand {
     
-    public DestroyStorageCommand(NodeInfo[] targets, Object key) {
+    public DestroyStorageCommand(Peer[] targets, Object key) {
         super(targets, key, null);
     }
     
-    public void execute(ReplicaStorageStubFactory storageStubFactory) {
-        ReplicaStorage storage = storageStubFactory.buildStub(targets);
+    public void execute(ServiceProxyFactory serviceProxy) {
+        serviceProxy.getInvocationMetaData().setTargets(targets);
+        ReplicaStorage storage = (ReplicaStorage) serviceProxy.getProxy();
         storage.mergeDestroy(key);
     }
+    
 }

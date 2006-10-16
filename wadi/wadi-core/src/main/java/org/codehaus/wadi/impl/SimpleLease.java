@@ -57,10 +57,8 @@ public class SimpleLease implements Lease {
             _taskId=taskId;
         }
 
-        // 'Object' API
-        
         public String toString() {
-            return "<"+Utils.basename(getClass())+">";
+            return "SimpleHandle";
         }
         
         // 'Comparable' API
@@ -107,10 +105,8 @@ public class SimpleLease implements Lease {
         _sync=sync;
     }
     
-    // 'java.lang.Object' API
-    
     public String toString() {
-        return "<"+Utils.basename(getClass())+":"+_label+">";
+        return "SimpleLease [" + _label + "]";
     }
     
     // 'Sync' API

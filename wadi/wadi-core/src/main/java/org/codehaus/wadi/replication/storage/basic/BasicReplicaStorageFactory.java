@@ -15,11 +15,9 @@
  */
 package org.codehaus.wadi.replication.storage.basic;
 
-import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.replication.common.NodeInfo;
 import org.codehaus.wadi.replication.storage.ReplicaStorage;
 import org.codehaus.wadi.replication.storage.ReplicaStorageFactory;
-import org.codehaus.wadi.replication.storage.remoting.BasicReplicaStorageExporter;
+import org.codehaus.wadi.servicespace.ServiceSpace;
 
 
 /**
@@ -28,9 +26,8 @@ import org.codehaus.wadi.replication.storage.remoting.BasicReplicaStorageExporte
  */
 public class BasicReplicaStorageFactory implements ReplicaStorageFactory {
     
-    public ReplicaStorage factory(Dispatcher dispatcher) {
-        return new MemoryReplicaStorage(
-                new BasicReplicaStorageExporter(dispatcher),
-                new NodeInfo(dispatcher.getCluster().getLocalPeer().getName()));
+    public ReplicaStorage factory(ServiceSpace serviceSpace) {
+        return new MemoryReplicaStorage();
     }
+    
 }

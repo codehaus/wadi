@@ -34,7 +34,6 @@ import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.StreamerConfig;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.group.DispatcherConfig;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.impl.DummyContextualiser;
 import org.codehaus.wadi.impl.MemoryContextualiser;
@@ -54,7 +53,7 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class DIndexNode implements DispatcherConfig, PartitionManagerConfig {
+public class DIndexNode implements PartitionManagerConfig {
 
 	protected final Log _log=LogFactory.getLog(getClass());
 
@@ -88,9 +87,7 @@ public class DIndexNode implements DispatcherConfig, PartitionManagerConfig {
 	}
 
 	// DIndexNode API
-
 	public void start() throws Exception {
-		_dispatcher.init(this);
 		_dindex=new DIndex(_numPartitions, _dispatcher, _mapper);
 		_dindex.init(this);
 		_log.info("starting Cluster...");
@@ -136,12 +133,6 @@ public class DIndexNode implements DispatcherConfig, PartitionManagerConfig {
 
 	public String getPeerName(Address address) {
 		return _dispatcher.getPeerName(address);
-	}
-
-	// DispatcherConfig API
-
-	public String getContextPath() {
-		return "/";
 	}
 
 	//-----------------------------------------------------------

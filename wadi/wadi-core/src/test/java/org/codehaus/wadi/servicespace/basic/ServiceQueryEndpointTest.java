@@ -38,11 +38,11 @@ public class ServiceQueryEndpointTest extends AbstractServiceSpaceTestCase {
         serviceName2 = new ServiceName("name2");
     }
     
-    public void testServiceQueryEventForAvailableService() throws Exception {
+    public void testServiceQueryEventForStartedService() throws Exception {
         beginSection(s.ordered("Get service names - send available event"));
         ServiceRegistry serviceRegistry = (ServiceRegistry) mock(ServiceRegistry.class);
-        serviceRegistry.getServiceNames();
-        modify().returnValue(Collections.singleton(serviceName1));
+        serviceRegistry.isServiceStarted(serviceName1);
+        modify().returnValue(true);
 
         dispatcher.send(address1, new ServiceLifecycleEvent(serviceSpaceName, serviceName1, localPeer,
                 LifecycleState.AVAILABLE));
@@ -60,8 +60,8 @@ public class ServiceQueryEndpointTest extends AbstractServiceSpaceTestCase {
 
     public void testServiceQueryEventForUnknowService() throws Exception {
         ServiceRegistry serviceRegistry = (ServiceRegistry) mock(ServiceRegistry.class);
-        serviceRegistry.getServiceNames();
-        modify().returnValue(Collections.singleton(serviceName2));
+        serviceRegistry.isServiceStarted(serviceName1);
+        modify().returnValue(false);
         
         startVerification();
         

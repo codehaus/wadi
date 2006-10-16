@@ -113,11 +113,9 @@ public class VMLocalCluster implements Cluster {
     }
 
     public void start() throws ClusterException {
-        //throw new UnsupportedOperationException(); 
     }
 
     public void stop() throws ClusterException {
-        //throw new UnsupportedOperationException(); 
     }
 
     public boolean waitOnMembershipCount(int membershipCount, long timeout) throws InterruptedException {

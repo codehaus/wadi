@@ -18,42 +18,33 @@ package org.codehaus.wadi.replication.storage.basic;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.codehaus.wadi.replication.common.NodeInfo;
 import org.codehaus.wadi.replication.common.ReplicaInfo;
 import org.codehaus.wadi.replication.storage.ReplicaStorage;
-import org.codehaus.wadi.replication.storage.remoting.ReplicaStorageExporter;
 
 /**
  * 
  * @version $Revision$
  */
 public class MemoryReplicaStorage implements ReplicaStorage {
-    private final NodeInfo hostingNode;
     private final Map keyToReplica;
-    private final ReplicaStorageExporter storageExporter;
     
-    public MemoryReplicaStorage(ReplicaStorageExporter storageExporter,
-            NodeInfo hostingNode) {
-        this.storageExporter = storageExporter;
-        this.hostingNode = hostingNode;
-        
+    public MemoryReplicaStorage() {
         keyToReplica = new HashMap();
     }
 
     public void start() throws Exception {
-        storageExporter.export(this);
     }
 
     public void stop() throws Exception {
-        storageExporter.unexport(this);
-        keyToReplica.clear();
+        synchronized (keyToReplica) {
+            keyToReplica.clear();
+        }
     }
     
     public void mergeCreate(Object key, ReplicaInfo replicaInfo) {
         synchronized (keyToReplica) {
             if (keyToReplica.containsKey(key)) {
-                throw new IllegalArgumentException("Key " + key + 
-                        " is already defined by " + hostingNode);
+                throw new IllegalArgumentException("Key [" + key + "] is already defined");
             }
             keyToReplica.put(key, replicaInfo);
         }
@@ -71,16 +62,14 @@ public class MemoryReplicaStorage implements ReplicaStorage {
         synchronized (keyToReplica) {
             Object object = keyToReplica.remove(key);
             if (null == object) {
-                throw new IllegalArgumentException("Key " + key +
-                        " is not defined by " + hostingNode);
+                throw new IllegalArgumentException("Key [" + key + "] is not defined");
             }
         }
     }
     
     public ReplicaInfo retrieveReplicaInfo(Object key) {
         synchronized (keyToReplica) {
-            ReplicaInfo replicaInfo = getRequiredReplicaInfo(key);
-            return replicaInfo;
+            return getRequiredReplicaInfo(key);
         }
     }
 
@@ -90,16 +79,12 @@ public class MemoryReplicaStorage implements ReplicaStorage {
         }
     }
     
-    public NodeInfo getHostingNode() {
-        return hostingNode;
-    }
-    
     private ReplicaInfo getRequiredReplicaInfo(Object key) {
         ReplicaInfo replicaInfo = (ReplicaInfo) keyToReplica.get(key);
         if (null == replicaInfo) {
-            throw new IllegalArgumentException("Key " + key +
-                    " is not defined by " + hostingNode);
+            throw new IllegalArgumentException("Key [" + key + "] is not defined");
         }
         return replicaInfo;
     }
+    
 }

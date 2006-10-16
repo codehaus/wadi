@@ -15,19 +15,11 @@
  */
 package org.codehaus.wadi.replication.manager.basic;
 
-import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.replication.common.NodeInfo;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
 import org.codehaus.wadi.replication.manager.ReplicationManagerFactory;
-import org.codehaus.wadi.replication.manager.remoting.BasicReplicationManagerExporter;
-import org.codehaus.wadi.replication.manager.remoting.BasicReplicationManagerStubFactory;
-import org.codehaus.wadi.replication.storage.ReplicaStorage;
-import org.codehaus.wadi.replication.storage.ReplicaStorageFactory;
-import org.codehaus.wadi.replication.storage.ReplicaStorageStubFactory;
-import org.codehaus.wadi.replication.storage.remoting.BasicReplicaStorageMonitor;
-import org.codehaus.wadi.replication.storage.remoting.BasicReplicaStorageStubFactory;
 import org.codehaus.wadi.replication.strategy.BackingStrategy;
 import org.codehaus.wadi.replication.strategy.BackingStrategyFactory;
+import org.codehaus.wadi.servicespace.ServiceSpace;
 
 /**
  * 
@@ -35,26 +27,12 @@ import org.codehaus.wadi.replication.strategy.BackingStrategyFactory;
  */
 public class BasicReplicationManagerFactory implements ReplicationManagerFactory {
 
-    public ReplicationManager factory(Dispatcher dispatcher, 
-            ReplicaStorageFactory replicaStoragefactory,
-            BackingStrategyFactory backingStrategyFactory) {
-        NodeInfo nodeInfo = new NodeInfo(dispatcher.getCluster().getLocalPeer().getName());
-        
+    public ReplicationManager factory(ServiceSpace serviceSpace, 
+            BackingStrategyFactory backingStrategyFactory,
+            boolean syncReplication) {
         BackingStrategy backingStrategy = backingStrategyFactory.factory();
-        ReplicaStorage storage = replicaStoragefactory.factory(dispatcher);
         
-        return new BasicReplicationManager(
-                backingStrategy,
-                new BasicReplicationManagerStubFactory(dispatcher),
-                newReplicaStorageStubFactory(dispatcher),
-                new BasicReplicaStorageMonitor(dispatcher),
-                storage,
-                new BasicReplicationManagerExporter(dispatcher), 
-                nodeInfo);
-    }
-
-    protected ReplicaStorageStubFactory newReplicaStorageStubFactory(Dispatcher dispatcher) {
-        return new BasicReplicaStorageStubFactory(dispatcher);
+        return new BasicReplicationManager(serviceSpace, backingStrategy, syncReplication);
     }
 
 }

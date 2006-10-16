@@ -36,7 +36,6 @@ import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.group.DispatcherConfig;
 import org.codehaus.wadi.impl.AbstractExclusiveContextualiser;
 import org.codehaus.wadi.impl.AlwaysEvicter;
 import org.codehaus.wadi.impl.ClusterContextualiser;
@@ -80,11 +79,6 @@ public class MyStack {
     private BasicServiceSpace serviceSpace;
 
     public MyStack(String url, DataSource dataSource, Dispatcher dispatcher) throws Exception {
-        dispatcher.init(new DispatcherConfig() {
-            public String getContextPath() {
-                return null;
-            }
-        });
         dispatcher.start();
         // Implementation note: we really need to wait some time to have a "stable" Dispatcher. For instance, in the
         // case of ActiveCluster, 

@@ -331,7 +331,9 @@ public class StandardManager implements Lifecycle, WebSessionConfig, Contextuali
     
     public void contextualise(Invocation invocation) throws InvocationException {
         String key=invocation.getSessionKey();
-        if (_log.isTraceEnabled()) _log.trace("potentially stateful request: "+key);
+        if (_log.isTraceEnabled()) {
+            _log.trace("potentially stateful request: "+key);
+        }
         
         if (key==null) {
             processStateless(invocation);
@@ -339,11 +341,14 @@ public class StandardManager implements Lifecycle, WebSessionConfig, Contextuali
             // already associated with a session...
             String name=_router.strip(key); // strip off any routing info...
             if (!_contextualiser.contextualise(invocation, name, null, null, false)) {
-                if (_log.isErrorEnabled()) _log.error("could not acquire session: " + name);
-                if (_errorIfSessionNotAcquired) // send the client a 503...
+                _log.error("could not acquire session: " + name);
+                if (_errorIfSessionNotAcquired) {
+                    // send the client a 503...
                     invocation.sendError(503, "session "+name+" is not known");
-                else // process request without session - it may create a new one...
+                } else {
+                    // process request without session - it may create a new one...
                     processStateless(invocation);
+                }
             }
         }
     }

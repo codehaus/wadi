@@ -32,6 +32,9 @@ public class ReplicaAwareContextualiser extends AbstractSharedContextualiser {
     
     public ReplicaAwareContextualiser(Contextualiser next, ReplicationManager replicationManager) {
         super(next, new RWLocker(), false);
+        if (null == replicationManager) {
+            throw new IllegalArgumentException("replicationManager is required");
+        }
         this.replicationManager = replicationManager;
     }
 
@@ -40,8 +43,7 @@ public class ReplicaAwareContextualiser extends AbstractSharedContextualiser {
     }
 
     public Immoter getImmoter() {
-        // TODO - delegate to next.
-        throw new UnsupportedOperationException();
+        return _next.getSharedDemoter();
     }
 
     public Motable get(String id) {
@@ -78,4 +80,5 @@ public class ReplicaAwareContextualiser extends AbstractSharedContextualiser {
             return null;
         }
     }
+    
 }

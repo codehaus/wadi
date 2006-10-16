@@ -16,8 +16,8 @@
 package org.codehaus.wadi.replication.storage;
 
 import org.codehaus.wadi.Lifecycle;
-import org.codehaus.wadi.replication.common.NodeInfo;
 import org.codehaus.wadi.replication.common.ReplicaInfo;
+import org.codehaus.wadi.servicespace.ServiceName;
 
 
 /**
@@ -25,6 +25,8 @@ import org.codehaus.wadi.replication.common.ReplicaInfo;
  * @version $Revision$
  */
 public interface ReplicaStorage extends Lifecycle {
+    ServiceName NAME = new ServiceName("ReplicaStorage");
+    
     void mergeCreate(Object key, ReplicaInfo replicaInfo);
     
     void mergeUpdate(Object key, ReplicaInfo replicaInfo);
@@ -34,6 +36,4 @@ public interface ReplicaStorage extends Lifecycle {
     ReplicaInfo retrieveReplicaInfo(Object key);
 
     boolean storeReplicaInfo(Object key);
-
-    NodeInfo getHostingNode();
 }

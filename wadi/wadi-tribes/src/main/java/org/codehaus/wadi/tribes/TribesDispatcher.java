@@ -8,7 +8,6 @@ import org.apache.catalina.tribes.ChannelListener;
 import org.apache.catalina.tribes.Member;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Cluster;
-import org.codehaus.wadi.group.DispatcherConfig;
 import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.impl.AbstractDispatcher;
@@ -69,10 +68,6 @@ public class TribesDispatcher extends AbstractDispatcher implements ChannelListe
         }
     }
 
-    public void init(DispatcherConfig config) throws Exception {
-        super.init(config);
-    }
-    
     public void messageReceived(Serializable serializable, Member member) {
         if (serializable instanceof TribesEnvelope) {
             final TribesEnvelope msg = (TribesEnvelope) serializable;

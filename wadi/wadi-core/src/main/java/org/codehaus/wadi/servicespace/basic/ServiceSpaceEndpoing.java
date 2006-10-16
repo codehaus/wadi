@@ -16,6 +16,7 @@
 package org.codehaus.wadi.servicespace.basic;
 
 import org.codehaus.wadi.group.Envelope;
+import org.codehaus.wadi.group.MessageListener;
 import org.codehaus.wadi.group.ServiceEndpoint;
 import org.codehaus.wadi.servicespace.ServiceSpace;
 import org.codehaus.wadi.servicespace.ServiceSpaceName;
@@ -27,18 +28,22 @@ import org.codehaus.wadi.servicespace.ServiceSpaceName;
 public class ServiceSpaceEndpoing implements ServiceEndpoint {
     private final ServiceSpace serviceSpace;
     private final ServiceSpaceMessageHelper messageHelper;
+    private final MessageListener messageListener;
     
-    public ServiceSpaceEndpoing(ServiceSpace serviceSpace) {
+    public ServiceSpaceEndpoing(ServiceSpace serviceSpace, MessageListener messageListener) {
         if (null == serviceSpace) {
             throw new IllegalArgumentException("serviceSpace is required");
+        } else if (null == messageListener) {
+            throw new IllegalArgumentException("messageListener is required");
         }
         this.serviceSpace = serviceSpace;
+        this.messageListener = messageListener;
         
         messageHelper = new ServiceSpaceMessageHelper(serviceSpace);
     }
 
     public void dispatch(Envelope om) throws Exception {
-        serviceSpace.getDispatcher().onMessage(om);
+        messageListener.onMessage(om);
     }
 
     public void dispose(int nbAttemp, long delayMillis) {

@@ -33,7 +33,7 @@ import org.codehaus.wadi.group.impl.SeniorityElectionStrategy;
  * @version $Revision: 1603 $
  */
 public class VMBroker {
-    protected final long inactiveTime=5000; // TODO - parameterise
+    protected final long inactiveTime = 5000;
 
     private final String name;
     private final Address address;
@@ -176,7 +176,7 @@ public class VMBroker {
             dispatcher = (VMDispatcher) nodeNameToDispatcher.remove(nodeName);
         }
         if (null == dispatcher) {
-            throw new IllegalArgumentException("Node " + nodeName + " is unknown.");
+            throw new IllegalArgumentException("Node [" + nodeName + "] is unknown.");
         }
     }
 

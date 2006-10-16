@@ -15,7 +15,7 @@
  */
 package org.codehaus.wadi.replication.storage;
 
-import org.codehaus.wadi.group.Dispatcher;
+import org.codehaus.wadi.servicespace.ServiceSpace;
 
 
 /**
@@ -23,5 +23,5 @@ import org.codehaus.wadi.group.Dispatcher;
  * @version $Revision$
  */
 public interface ReplicaStorageFactory {
-    ReplicaStorage factory(Dispatcher dispatcher);
+    ReplicaStorage factory(ServiceSpace serviceSpace);
 }

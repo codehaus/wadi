@@ -304,7 +304,6 @@ public class LocalPartition extends AbstractPartition implements Serializable {
     }
 
     public Envelope exchange(SessionRequestMessage request, long timeout) throws Exception {
-        if (_log.isTraceEnabled()) _log.trace("local dispatch - needs optimisation");
         Dispatcher dispatcher=_config.getDispatcher();
         Address target=dispatcher.getCluster().getLocalPeer().getAddress();
         return dispatcher.exchangeSend(target, request, timeout);

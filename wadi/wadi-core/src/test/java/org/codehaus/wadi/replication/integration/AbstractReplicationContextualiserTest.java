@@ -16,19 +16,23 @@
 package org.codehaus.wadi.replication.integration;
 
 import java.net.InetSocketAddress;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
+
 import javax.servlet.FilterChain;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+
 import junit.framework.TestCase;
+
 import org.codehaus.wadi.Collapser;
-import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Evicter;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.PoolableInvocationWrapperPool;
 import org.codehaus.wadi.RWLockListener;
+import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.impl.AlwaysEvicter;
@@ -49,8 +53,12 @@ import org.codehaus.wadi.replication.manager.ReplicationManager;
 import org.codehaus.wadi.replication.manager.basic.BasicReplicationManagerFactory;
 import org.codehaus.wadi.replication.manager.basic.DistributableManagerRehydrater;
 import org.codehaus.wadi.replication.manager.basic.SessionReplicationManager;
-import org.codehaus.wadi.replication.storage.basic.BasicReplicaStorageFactory;
+import org.codehaus.wadi.replication.storage.ReplicaStorage;
+import org.codehaus.wadi.replication.storage.basic.MemoryReplicaStorage;
 import org.codehaus.wadi.replication.strategy.RoundRobinBackingStrategyFactory;
+import org.codehaus.wadi.servicespace.ServiceRegistry;
+import org.codehaus.wadi.servicespace.ServiceSpaceName;
+import org.codehaus.wadi.servicespace.basic.BasicServiceSpace;
 import org.codehaus.wadi.test.MockInvocation;
 import org.codehaus.wadi.web.WebSession;
 import org.codehaus.wadi.web.impl.AtomicallyReplicableSessionFactory;
@@ -96,7 +104,7 @@ public abstract class AbstractReplicationContextualiserTest extends TestCase {
         ((RWLockListener) session).readEnded();
 		String sessionId = session.getId();
 
-        failNode(nodeInfo1.clusteredManager.getNodeName());
+        nodeInfo1.serviceSpace.stop();
         
         promoteNode(nodeInfo2, sessionId);
         
@@ -106,13 +114,6 @@ public abstract class AbstractReplicationContextualiserTest extends TestCase {
         assertEquals(attrValue, actualAttrValue);
         
         assertNull(nodeInfo1.mmap.get(attrName));
-        
-        nodeInfo1 = setUpNode("node1");
-        nodeInfo1.start();
-
-        promoteNode(nodeInfo1, sessionId);
-        
-        assertNull(nodeInfo2.mmap.get(attrName));
     }
 
     private void promoteNode(NodeInfo nodeInfo, String sessionId) throws InvocationException {
@@ -147,7 +148,11 @@ public abstract class AbstractReplicationContextualiserTest extends TestCase {
     protected abstract Dispatcher createDispatcher(String clusterName, String nodeName, long timeout) throws Exception;
 
     private NodeInfo setUpNode(String nodeName) throws Exception {
-        Dispatcher dispatcher = createDispatcher(CLUSTER_NAME, nodeName, TIMEOUT); 
+        Dispatcher dispatcher = createDispatcher(CLUSTER_NAME, nodeName, TIMEOUT);
+        dispatcher.start();
+        
+        BasicServiceSpace serviceSpace = new BasicServiceSpace(new ServiceSpaceName(new URI("name")), dispatcher);
+        dispatcher = serviceSpace.getDispatcher();
         
         int sweepInterval = 1000*60*60*24;
         Streamer streamer = new SimpleStreamer();
@@ -159,7 +164,7 @@ public abstract class AbstractReplicationContextualiserTest extends TestCase {
         SessionPool contextPool = new WebSessionToSessionPoolAdapter(sessionPool);
         PoolableInvocationWrapperPool requestPool = new DummyStatefulHttpServletRequestWrapperPool();
         
-        ReplicationManager replicationManager = createReplicationManager(dispatcher);
+        ReplicationManager replicationManager = createReplicationManager(serviceSpace);
         
         DistributableManagerRehydrater sessionRehydrater =
             new DistributableManagerRehydrater();
@@ -187,45 +192,47 @@ public abstract class AbstractReplicationContextualiserTest extends TestCase {
                 new WebEndPoint(new InetSocketAddress("localhost", 8080)),
                 new StandardHttpProxy("jsessionid"),
                 dispatcher,
-                72,
+                24,
                 collapser);
 
         sessionRehydrater.setManager(manager);
         
         manager.init(new DummyManagerConfig());
+
+        ReplicaStorage replicaStorage = new MemoryReplicaStorage();
         
-        return new NodeInfo(manager, replicationManager, mmap);
+        ServiceRegistry serviceRegistry = serviceSpace.getServiceRegistry();
+        serviceRegistry.register(ReplicaStorage.NAME, replicaStorage);
+        serviceRegistry.register(ReplicationManager.NAME, replicationManager);
+        serviceRegistry.register(ClusteredManager.NAME, manager);
+        
+        return new NodeInfo(serviceSpace, manager, mmap);
     }
 
-    private ReplicationManager createReplicationManager(Dispatcher dispatcher) {
+    private ReplicationManager createReplicationManager(BasicServiceSpace serviceSpace) {
         BasicReplicationManagerFactory managerFactory = new BasicReplicationManagerFactory();
-        ReplicationManager replicationManager = managerFactory.factory(dispatcher,
-                new BasicReplicaStorageFactory(),
-                new RoundRobinBackingStrategyFactory(1));
+        ReplicationManager replicationManager = managerFactory.factory(serviceSpace,
+                new RoundRobinBackingStrategyFactory(1), true);
         return replicationManager;
     }
     
     private static class NodeInfo {
+        private final BasicServiceSpace serviceSpace;
         private final ClusteredManager clusteredManager;
-        private final ReplicationManager replicationManager;
         private final Map mmap;
 
-        public NodeInfo(ClusteredManager clusteredManager, 
-                ReplicationManager replicationManager,
-                Map mmap) {
+        public NodeInfo(BasicServiceSpace serviceSpace, ClusteredManager clusteredManager,Map mmap) {
+            this.serviceSpace = serviceSpace;
             this.clusteredManager = clusteredManager;
-            this.replicationManager = replicationManager;
             this.mmap = mmap;
         }
         
         public void start() throws Exception {
-            clusteredManager.start();
-            replicationManager.start();
+            serviceSpace.start();
         }
         
         public void stop() throws Exception {
-            replicationManager.stop();
-            clusteredManager.stop();
+            serviceSpace.stop();
         }
     }
 }

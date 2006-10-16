@@ -23,8 +23,8 @@ import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.impl.Utils;
-import org.codehaus.wadi.location.SessionRequestMessage;
 import org.codehaus.wadi.location.PartitionConfig;
+import org.codehaus.wadi.location.SessionRequestMessage;
 import org.codehaus.wadi.location.session.DeleteIMToPM;
 import org.codehaus.wadi.location.session.EvacuateIMToPM;
 import org.codehaus.wadi.location.session.InsertIMToPM;
@@ -36,13 +36,8 @@ import org.codehaus.wadi.location.session.MoveIMToPM;
  */
 public class RemotePartition extends AbstractPartition {
 
-    protected static final String _prefix="<"+Utils.basename(RemotePartition.class)+": ";
-    protected static final String _suffix=">";
-
     protected transient Log _log;
-
     protected final PartitionConfig _config;
-
     protected Address _address;
 
     public RemotePartition(int key, PartitionConfig config, Address address) {
@@ -52,10 +47,8 @@ public class RemotePartition extends AbstractPartition {
         _log=LogFactory.getLog(getClass().getName()+"#"+_key+"@"+_config.getLocalPeerName());
     }
 
-    // 'java.lang.Object' API
-
     public String toString() {
-        return _prefix+_key+"@"+_config.getLocalPeerName()+"->"+_config.getPeerName(_address)+_suffix;
+        return "RemotePartition [" + _key + "@" + _config.getLocalPeerName() + "->" + _config.getPeerName(_address) + "]";
     }
 
     // 'Partition' API
@@ -103,7 +96,9 @@ public class RemotePartition extends AbstractPartition {
     public Envelope exchange(SessionRequestMessage request, long timeout) throws Exception {
         Dispatcher dispatcher=_config.getDispatcher();
         Address target=_address;
-        if (_log.isTraceEnabled()) _log.trace("exchanging message ("+request+") with node: "+_config.getPeerName(target)+" on "+Thread.currentThread().getName());
+        if (_log.isTraceEnabled()) {
+            _log.trace("exchanging message ("+request+") with node: "+_config.getPeerName(target));
+        }
         return dispatcher.exchangeSend(target, request, timeout);
     }
 

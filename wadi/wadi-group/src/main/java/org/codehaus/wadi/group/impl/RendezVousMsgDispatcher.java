@@ -15,38 +15,21 @@
  */
 package org.codehaus.wadi.group.impl;
 
-import java.util.Map;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Envelope;
-import org.codehaus.wadi.group.Quipu;
 
 /**
  * 
  * @version $Revision: 1603 $
  */
 public class RendezVousMsgDispatcher extends AbstractMsgDispatcher {
-    private static final Log log = LogFactory.getLog(RendezVousMsgDispatcher.class);
     
     public RendezVousMsgDispatcher(Dispatcher dispatcher, Class type) {
         super(dispatcher, type);
     }
 
     public void dispatch(Envelope om) throws Exception {
-        String correlationId = om.getTargetCorrelationId();
-        Map rendezVousMap = _dispatcher.getRendezVousMap();
-        synchronized (rendezVousMap) {
-            Quipu rv= (Quipu) rendezVousMap.get(correlationId);
-            if (null == rv) {
-                log.warn("no one waiting for: " + correlationId);
-            } else {
-                if (log.isTraceEnabled()) {
-                    log.trace("successful correlation: " + correlationId);
-                }
-                rv.putResult(om);
-            }
-        }
+        _dispatcher.addRendezVousEnvelope(om);
     }
 
     public String toString() {

@@ -18,7 +18,6 @@ package org.codehaus.wadi.group;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -33,33 +32,52 @@ import EDU.oswego.cs.dl.util.concurrent.WaitableInt;
  * @version $Revision: 1346 $
  */
 public class Quipu extends WaitableInt {
-
 	protected final static Log _log = LogFactory.getLog(Quipu.class);
-	
-	public Quipu(int numLlammas) {
+
+    protected final Collection _results = new ArrayList();
+    protected final String correlationId;
+
+    public Quipu(int numLlammas, String correlationId) {
         super(numLlammas);
-        // TODO Auto-generated constructor stub
+        if (null == correlationId) {
+            throw new IllegalArgumentException("correlationId is required");
+        }
+        this.correlationId = correlationId;
     }
 
     public boolean waitFor(long timeout) throws InterruptedException {
-        long end=System.currentTimeMillis()+timeout;
-        long now=0;
-        synchronized(lock_) {
-          while (!(value_==0) && (now=System.currentTimeMillis())<end) lock_.wait(end-now);
+        long end = System.currentTimeMillis() + timeout;
+        long now = 0;
+        synchronized (lock_) {
+            while (!(value_ == 0) && (now = System.currentTimeMillis()) < end) {
+                lock_.wait(end - now);
+            }
+            return value_ == 0;
         }
-        return value_==0;
-      }
-    
-    // TODO - consider synchronisation...
-    protected final Collection _results=Collections.synchronizedCollection(new ArrayList());
-    
+    }
+
     public void putResult(Object result) {
-        _results.add(result);
-        if (_log.isTraceEnabled()) _log.trace("result arrived: "+result);
-        decrement();
+        synchronized (lock_) {
+            _results.add(result);
+            if (_log.isTraceEnabled()) {
+                _log.trace("result arrived: " + result);
+            }
+            decrement();
+        }
+    }
+
+    public Collection getResults() {
+        synchronized (lock_) {
+            return new ArrayList(_results);
+        }
+    }
+
+    public String getCorrelationId() {
+        return correlationId;
     }
     
-    public Collection getResults() {
-        return _results;
+    public String toString() {
+        return "Quipu [" + correlationId + "]";
     }
+    
 }

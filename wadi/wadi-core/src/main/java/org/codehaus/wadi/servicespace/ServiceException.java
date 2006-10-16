@@ -21,4 +21,17 @@ package org.codehaus.wadi.servicespace;
  */
 public class ServiceException extends Exception {
 
+    private final ServiceName serviceName;
+
+    public ServiceException(ServiceName serviceName) {
+        if (null == serviceName) {
+            throw new IllegalArgumentException("serviceName is required");
+        }
+        this.serviceName = serviceName;
+    }
+
+    public ServiceName getServiceName() {
+        return serviceName;
+    }
+    
 }

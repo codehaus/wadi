@@ -41,6 +41,7 @@ public class BasicServiceHolder implements Lifecycle {
     private final ServiceSpace serviceSpace;
     private final Lifecycle service;
     private final ServiceName serviceName;
+    private volatile boolean started;
  
     public BasicServiceHolder(ServiceSpace serviceSpace, ServiceName serviceName, Lifecycle service) {
         if (null == serviceSpace) {
@@ -64,9 +65,11 @@ public class BasicServiceHolder implements Lifecycle {
             multicastLifecycleEvent(LifecycleState.FAILED);
             throw e;
         }
+        started = true;
     }
     
     public synchronized void stop() throws Exception {
+        started = false;
         multicastLifecycleEvent(LifecycleState.STOPPING);
         try {
             service.stop();
@@ -76,7 +79,15 @@ public class BasicServiceHolder implements Lifecycle {
             throw e;
         }
     }
+
+    public boolean isStarted() {
+        return started;
+    }
     
+    public Lifecycle getService() {
+        return service;
+    }
+
     protected void multicastLifecycleEvent(LifecycleState state) {
         Dispatcher dispatcher = serviceSpace.getDispatcher();
         LocalPeer localPeer = dispatcher.getCluster().getLocalPeer();

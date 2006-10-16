@@ -77,10 +77,7 @@ public abstract class AbstractTestGroup extends TestCase {
     public void testMembership() throws Exception {
         String clusterName="org.codehaus.wadi.cluster.TEST-"+Math.random();
 
-        DispatcherConfig config=new DummyDispatcherConfig();
-        
         Dispatcher dispatcher0=_dispatcherFactory.create(clusterName, "red", 5000);
-        dispatcher0.init(config);
         dispatcher0.start();
         
         MyClusterListener listener0=new MyClusterListener();
@@ -95,7 +92,6 @@ public abstract class AbstractTestGroup extends TestCase {
         _log.info(dispatcher0);
         
         Dispatcher dispatcher1=_dispatcherFactory.create(clusterName, "green", 5000);
-        dispatcher1.init(config);
         dispatcher1.start();
 
         Cluster cluster1=dispatcher1.getCluster();
@@ -183,13 +179,8 @@ public abstract class AbstractTestGroup extends TestCase {
     public void testDispatcher() throws Exception {
         String clusterName="org.codehaus.wadi.cluster.TEST-"+Math.random();
 
-        DispatcherConfig config=new DummyDispatcherConfig();
-        
         Dispatcher dispatcher0=_dispatcherFactory.create(clusterName, "red", 5000);
         Dispatcher dispatcher1=_dispatcherFactory.create(clusterName, "green", 5000);
-
-        dispatcher0.init(config);
-        dispatcher1.init(config);
 
         Cluster cluster0=dispatcher0.getCluster();
         Cluster cluster1=dispatcher1.getCluster();

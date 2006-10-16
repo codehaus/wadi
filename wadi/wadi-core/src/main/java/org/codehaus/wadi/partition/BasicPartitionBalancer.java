@@ -76,15 +76,14 @@ public class BasicPartitionBalancer implements PartitionBalancer {
     }
 
     protected Map fetchBalancingInfoState(Set peers) throws MessageExchangeException {
-        String correlationId = dispatcher.nextCorrelationId();
-        Quipu peerResponseWaitable = dispatcher.setRendezVous(correlationId, peers.size());
+        Quipu quipu = dispatcher.newRendezVous(peers.size());
         
         for (Iterator iter = peers.iterator(); iter.hasNext();) {
             Peer peer = (Peer) iter.next();
-            dispatcher.send(peer.getAddress(), correlationId, new RetrieveBalancingInfoEvent());
+            dispatcher.send(peer.getAddress(), quipu.getCorrelationId(), new RetrieveBalancingInfoEvent());
         }
 
-        Collection results = dispatcher.attemptMultiRendezVous(correlationId, peerResponseWaitable, 5000);
+        Collection results = dispatcher.attemptMultiRendezVous(quipu, 5000);
         Map peerToBalancingInfoState = new HashMap();
         for (Iterator iter = results.iterator(); iter.hasNext();) {
             Envelope replyMsg = (Envelope) iter.next();
