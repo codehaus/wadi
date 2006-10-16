@@ -281,7 +281,9 @@
   <modules>
     <module>wadi-group</module>
     <module>wadi-core</module>
+<!--
     <module>wadi-activecluster</module>
+-->
     <module>wadi-jgroups</module>
     <module>wadi-tribes</module>
     <module>wadi-jetty5</module>
@@ -312,6 +314,11 @@
   <!-- defaults for dependencies that may be used by modules -->
   <dependencyManagement>
     <dependencies><!-- TODO: do we need these ? -->
+      <dependency>
+        <groupId>cglib</groupId>
+        <artifactId>cglib-nodep</artifactId>
+        <version>2.1_3</version>
+      </dependency>
       <dependency>
 	<groupId>concurrent</groupId>
 	<artifactId>concurrent</artifactId>
