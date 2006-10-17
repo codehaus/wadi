@@ -16,6 +16,7 @@
 package org.codehaus.wadi.activecluster;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,8 +25,6 @@ import javax.jms.ObjectMessage;
 
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Envelope;
-
-import edu.emory.mathcs.backport.java.util.Collections;
 
 /**
  * 
