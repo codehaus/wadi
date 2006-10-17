@@ -20,23 +20,26 @@ import org.codehaus.wadi.replication.ReplicationException;
 import org.codehaus.wadi.replication.common.ReplicaInfo;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
 import org.codehaus.wadi.web.WebSession;
+import org.codehaus.wadi.web.WebSessionPool;
 
 /**
  * 
  * @version $Revision: 1603 $
  */
 public class SessionReplicationManager implements ReplicationManager {
-    private final ReplicationManager replicationManager;
-    private final SessionRehydrater rehydrater;
+    private static final int maxInactiveInterval =  30 * 60;
     
-    public SessionReplicationManager(ReplicationManager replicationManager, SessionRehydrater rehydrater) {
+    private final ReplicationManager replicationManager;
+    private final WebSessionPool sessionPool;
+    
+    public SessionReplicationManager(ReplicationManager replicationManager, WebSessionPool sessionPool) {
         if (null == replicationManager) {
             throw new IllegalArgumentException("replicationManager is required");
-        } else if (null == rehydrater) {
-            throw new IllegalArgumentException("rehydrater is required");
+        } else if (null == sessionPool) {
+            throw new IllegalArgumentException("sessionPool is required");
         }
         this.replicationManager = replicationManager;
-        this.rehydrater = rehydrater;
+        this.sessionPool = sessionPool;
     }
 
     public void create(Object key, Object tmp) {
@@ -71,11 +74,14 @@ public class SessionReplicationManager implements ReplicationManager {
             return null;
         }
         
+        WebSession session = sessionPool.take();
+        long time = System.currentTimeMillis();
         try {
-            return rehydrater.rehydrate((String) key, body);
+            session.rehydrate(time, time, maxInactiveInterval, (String) key, body);
         } catch (RehydrationException e) {
             throw (IllegalStateException) new IllegalStateException().initCause(e);
         }
+        return session;
     }
 
     public void releasePrimary(Object key) {

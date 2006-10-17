@@ -23,7 +23,6 @@ import java.util.Map;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.DistributableContextualiserConfig;
 import org.codehaus.wadi.ManagerConfig;
-import org.codehaus.wadi.RehydrationException;
 import org.codehaus.wadi.Replicater;
 import org.codehaus.wadi.ReplicaterFactory;
 import org.codehaus.wadi.SessionIdFactory;
@@ -35,7 +34,6 @@ import org.codehaus.wadi.impl.ClusteredManager.HelperPair;
 import org.codehaus.wadi.web.AttributesFactory;
 import org.codehaus.wadi.web.ReplicableSessionConfig;
 import org.codehaus.wadi.web.Router;
-import org.codehaus.wadi.web.WebSession;
 import org.codehaus.wadi.web.WebSessionPool;
 import org.codehaus.wadi.web.WebSessionWrapperFactory;
 
@@ -126,17 +124,7 @@ public class DistributableManager extends StandardManager implements ReplicableS
 		return _streamer;
 	}
 
-    public WebSession rehydrate(String key, byte[] body) throws RehydrationException {
-//        notifySessionRelocation(key);
-        WebSession session = _sessionPool.take();
-        long time = System.currentTimeMillis();
-        session.rehydrate(time, time, _maxInactiveInterval, key, body);
-//        _map.put(key, session);
-        return session;
-    }
-
 	// ReplicableSessionConfig
-	
 	public Replicater getReplicater() {
 		return _replicaterFactory.create(this);
 	}

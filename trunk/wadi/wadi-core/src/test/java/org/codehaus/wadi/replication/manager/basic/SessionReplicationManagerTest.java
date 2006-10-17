@@ -19,8 +19,10 @@ import org.codehaus.wadi.replication.common.ReplicaInfo;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
 import org.codehaus.wadi.test.DummyDistributableSessionConfig;
 import org.codehaus.wadi.web.WebSession;
+import org.codehaus.wadi.web.WebSessionPool;
 import org.codehaus.wadi.web.impl.DistributableSession;
 
+import com.agical.rmock.core.match.Expression;
 import com.agical.rmock.extension.junit.RMockTestCase;
 
 /**
@@ -30,13 +32,13 @@ import com.agical.rmock.extension.junit.RMockTestCase;
 public class SessionReplicationManagerTest extends RMockTestCase {
 
     private ReplicationManager repManager;
-    private SessionRehydrater sessionRehydrater;
+    private WebSessionPool sessionPool;
     private String key;
 
     protected void setUp() throws Exception {
         key = "key";
         repManager = (ReplicationManager) mock(ReplicationManager.class);
-        sessionRehydrater = (SessionRehydrater) mock(SessionRehydrater.class);
+        sessionPool = (WebSessionPool) mock(WebSessionPool.class);
     }
     
     public void testCreate() throws Exception {
@@ -45,7 +47,7 @@ public class SessionReplicationManagerTest extends RMockTestCase {
         repManager.create(key, session.getBodyAsByteArray());
         startVerification();
         
-        SessionReplicationManager manager = new SessionReplicationManager(repManager, sessionRehydrater);
+        SessionReplicationManager manager = new SessionReplicationManager(repManager, sessionPool);
         manager.create(key, session);
     }
 
@@ -55,7 +57,7 @@ public class SessionReplicationManagerTest extends RMockTestCase {
         repManager.update(key, session.getBodyAsByteArray());
         startVerification();
 
-        SessionReplicationManager manager = new SessionReplicationManager(repManager, sessionRehydrater);
+        SessionReplicationManager manager = new SessionReplicationManager(repManager, sessionPool);
         manager.update(key, session);
     }
 
@@ -63,7 +65,7 @@ public class SessionReplicationManagerTest extends RMockTestCase {
         repManager.destroy(key);
         startVerification();
         
-        SessionReplicationManager manager = new SessionReplicationManager(repManager, sessionRehydrater);
+        SessionReplicationManager manager = new SessionReplicationManager(repManager, sessionPool);
         manager.destroy(key);
     }
 
@@ -73,13 +75,14 @@ public class SessionReplicationManagerTest extends RMockTestCase {
         repManager.acquirePrimary(key);
         modify().returnValue(session.getBodyAsByteArray());
 
-        sessionRehydrater.rehydrate(key, session.getBodyAsByteArray());
-        modify().returnValue(session);
+        WebSession webSession = sessionPool.take();
+        webSession.rehydrate(0, 0, 0, key, session.getBodyAsByteArray());
+        modify().args(new Expression[] {is.ANYTHING, is.ANYTHING, is.ANYTHING, is.AS_RECORDED, is.AS_RECORDED});
         startVerification();
         
-        SessionReplicationManager manager = new SessionReplicationManager(repManager, sessionRehydrater);
+        SessionReplicationManager manager = new SessionReplicationManager(repManager, sessionPool);
         Object actualSession = manager.acquirePrimary(key);
-        assertSame(session, actualSession);
+        assertSame(webSession, actualSession);
     }
 
     public void testReleasePrimary() {
@@ -88,7 +91,7 @@ public class SessionReplicationManagerTest extends RMockTestCase {
         repManager.releasePrimary(key);
         startVerification();
 
-        SessionReplicationManager manager = new SessionReplicationManager(repManager, sessionRehydrater);
+        SessionReplicationManager manager = new SessionReplicationManager(repManager, sessionPool);
         manager.releasePrimary(key);
     }
 
@@ -99,7 +102,7 @@ public class SessionReplicationManagerTest extends RMockTestCase {
         modify().returnValue(replicaInfo);
         startVerification();
         
-        SessionReplicationManager manager = new SessionReplicationManager(repManager, sessionRehydrater);
+        SessionReplicationManager manager = new SessionReplicationManager(repManager, sessionPool);
         ReplicaInfo actualReplicaInfo = manager.retrieveReplicaInfo(key);
         assertSame(replicaInfo, actualReplicaInfo);
     }
@@ -109,7 +112,7 @@ public class SessionReplicationManagerTest extends RMockTestCase {
         modify().returnValue(true);
         startVerification();
 
-        SessionReplicationManager manager = new SessionReplicationManager(repManager, sessionRehydrater);
+        SessionReplicationManager manager = new SessionReplicationManager(repManager, sessionPool);
         boolean manage = manager.managePrimary(key);
         assertTrue(manage);
     }
