@@ -1,20 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+
 <!--
  TODO:
 
- reference xsd
- rationalise repo use
- use a staging website ?
- lose dependencyManagement ?
- update plugin versions
  merge in pom-clover.xml
- etc...
  scope collisions for junit/commons-httpclient ?
- redeploy website
- fix website css
 
 -->
 
-<project>
+<project
+  xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"
+  >
 
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.codehaus.wadi</groupId>
@@ -216,7 +214,6 @@
     <url>http://jira.codehaus.org/browse/WADI</url>
   </issueManagement>
 
-  <!-- not yet read by Beetlejuice... -->
   <ciManagement>
     <system>Continuum</system>
     <url>http://ouroboros.dnsalias.net:8080/continuum</url>
@@ -238,7 +235,7 @@
     </notifiers>
   </ciManagement>
 
-<distributionManagement>
+  <distributionManagement>
     <repository>
       <id>codehaus.org</id>
       <name>WADI Central Repository</name>
@@ -252,16 +249,21 @@
     <site>
       <id>codehaus.org</id>
       <name>WADI Website</name>
-      <url>dav:https://dav.codehaus.org/wadi/</url>
-      <!-- <url>file:///tmp/WADI/${project.version}/</url> -->
+      <!-- <url>dav:https://dav.codehaus.org/wadi/</url> -->
+      <url>file:///tmp/WADI/${project.version}/</url>
     </site>
   </distributionManagement>
 
+  <!--
+  [becoming] complete list of versions of all components consumed
+  directly by WADI at any level. In alphabetical order.
+  -->
   <properties>
     <activemq.version>4.0.1</activemq.version>
+    <backport-util-concurrent.version>2.0_01_pd</backport-util-concurrent.version>
+    <cglib.version>2.1_3</cglib.version>
     <commons-dbcp.version>1.2.1</commons-dbcp.version>
     <commons-logging.version>1.1</commons-logging.version>
-    <concurrent-backport.version>2.0_01_pd</concurrent-backport.version>
     <concurrent.version>1.3.4</concurrent.version>
     <derby.version>10.1.1.0</derby.version>
     <geronimo-spec-jms.version>1.1-rc4</geronimo-spec-jms.version>
@@ -278,6 +280,9 @@
     <tomcat55.version>5.5.12</tomcat55.version>
   </properties>
 
+  <!--
+  modules in compilation order.
+  -->
   <modules>
     <module>wadi-group</module>
     <module>wadi-core</module>
@@ -295,7 +300,10 @@
     <module>wadi-assembly</module>
   </modules>
 
-  <!-- repositories for all modules -->
+  <!--
+  repositories from which to retrieve dependencies. In order of
+  likelihood of a cache hit.
+  -->
   <repositories>
     <repository><!-- std maven2 repo -->
       <id>maven2-ibiblio</id>
@@ -309,66 +317,33 @@
     </repository>
   </repositories>
 
-  <!-- defaults for dependencies that may be used by modules -->
+  <!--
+  templates for dependencies that are used in more than one module -
+  but not declared in this pom's dependencies element.  in vague order
+  of level complexity. saves typing when mentioned in module dependencies.
+  -->
   <dependencyManagement>
-    <dependencies><!-- TODO: do we need these ? -->
-      <dependency>
-        <groupId>cglib</groupId>
-        <artifactId>cglib-nodep</artifactId>
-        <version>2.1_3</version>
-      </dependency>
+    <dependencies>
+      <!-- group, [core], jgroups, activecluster, axis2, [itest] -->
       <dependency>
 	<groupId>concurrent</groupId>
 	<artifactId>concurrent</artifactId>
 	<version>${concurrent.version}</version>
       </dependency>
-      <dependency>
-	<groupId>geronimo-spec</groupId>
-	<artifactId>geronimo-spec-jms</artifactId>
-	<version>${geronimo-spec-jms.version}</version>
-	<scope>provided</scope>
-      </dependency>
-      <dependency>
-	<groupId>incubator-activemq</groupId>
-	<artifactId>activecluster</artifactId>
-	<version>${activemq.version}</version>
-      </dependency>
+      <!-- core, tc*, jetty*, axis -->
       <dependency>
 	<groupId>geronimo-spec</groupId>
 	<artifactId>geronimo-spec-servlet</artifactId>
 	<version>${geronimo-spec-servlet.version}</version>
 	<scope>provided</scope>
       </dependency>
-      <dependency>
-	<groupId>backport-util-concurrent</groupId>
-	<artifactId>backport-util-concurrent</artifactId>
-	<version>${concurrent-backport.version}</version>
-      </dependency>
-      <!-- runtime lib for connection pooling -->
-      <dependency>
-	<groupId>commons-dbcp</groupId>
-	<artifactId>commons-dbcp</artifactId>
-	<version>${commons-dbcp.version}</version>
-	<exclusions>
-	  <exclusion>
-	    <groupId>jdbc</groupId>
-	    <artifactId>jdbc</artifactId>
-	  </exclusion>
-	  <exclusion>
-	    <groupId>xml-apis</groupId>
-	    <artifactId>xml-apis</artifactId>
-	  </exclusion>
-	  <exclusion>
-	    <groupId>xerces</groupId>
-	    <artifactId>xerces</artifactId>
-	  </exclusion>
-	</exclusions>
-      </dependency>
-
+      <!--  -->
     </dependencies>
   </dependencyManagement>
 
-  <!-- dependencies common to all modules -->
+  <!--
+  dependencies common to most modules.
+  -->
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
@@ -408,6 +383,10 @@
     </dependency>
   </dependencies>
 
+  <!--
+  repositories from which to retrieve plugin dependencies. In order of
+  likelihood of a cache hit.
+  -->
   <pluginRepositories>
     <pluginRepository><!-- std maven2 repo -->
       <id>maven2-apache</id>
@@ -481,9 +460,6 @@
 	  <excludes>
 	    <exclude implementation="java.lang.String">**/*$*.java</exclude><!-- do not run nested classes -->
 	    <exclude implementation="java.lang.String">**/Abstract*.java</exclude><!-- do not run abstract classes -->
-	    <!-- what is wrong with these ? -->
-	    <exclude implementation="java.lang.String">**/Test*ReplicationManager.java</exclude>
-	    <exclude implementation="java.lang.String">**/Test*ReplicationContextualiser.java</exclude>
 	    <!-- InVM -->
 	    <exclude implementation="java.lang.String">**/TestInVMReplication.java</exclude>
 	    <!-- Tribes -->
@@ -498,9 +474,6 @@
 	    InVM and TCP tests also seem buggy.
 	    -->
 	    <exclude implementation="java.lang.String">**/TestAC*.java</exclude>
-	    <!-- JGroups -->
-	    <exclude implementation="java.lang.String">**/TestJGRelocation.java</exclude>
-	    <!--  -->
 	  </excludes>
 	  <forkMode>pertest</forkMode><!-- we must fork in order to enable argLine -->
 	  <argLine>-enableassertions -Xmx1024m</argLine>
