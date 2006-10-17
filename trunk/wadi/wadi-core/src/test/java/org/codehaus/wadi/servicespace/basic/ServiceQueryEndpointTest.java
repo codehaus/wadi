@@ -15,8 +15,6 @@
  */
 package org.codehaus.wadi.servicespace.basic;
 
-import java.util.Collections;
-
 import org.codehaus.wadi.group.vm.VMEnvelope;
 import org.codehaus.wadi.servicespace.LifecycleState;
 import org.codehaus.wadi.servicespace.ServiceLifecycleEvent;
@@ -30,12 +28,10 @@ import org.codehaus.wadi.servicespace.ServiceRegistry;
 public class ServiceQueryEndpointTest extends AbstractServiceSpaceTestCase {
     
     private ServiceName serviceName1;
-    private ServiceName serviceName2;
 
     protected void setUp() throws Exception {
         super.setUp();
         serviceName1 = new ServiceName("name1");
-        serviceName2 = new ServiceName("name2");
     }
     
     public void testServiceQueryEventForStartedService() throws Exception {
