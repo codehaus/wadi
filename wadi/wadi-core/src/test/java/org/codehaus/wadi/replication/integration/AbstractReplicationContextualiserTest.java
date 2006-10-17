@@ -51,7 +51,6 @@ import org.codehaus.wadi.replication.contextualizer.ReplicaAwareContextualiser;
 import org.codehaus.wadi.replication.manager.ReplicaterAdapterFactory;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
 import org.codehaus.wadi.replication.manager.basic.BasicReplicationManagerFactory;
-import org.codehaus.wadi.replication.manager.basic.DistributableManagerRehydrater;
 import org.codehaus.wadi.replication.manager.basic.SessionReplicationManager;
 import org.codehaus.wadi.replication.storage.ReplicaStorage;
 import org.codehaus.wadi.replication.storage.basic.MemoryReplicaStorage;
@@ -166,10 +165,7 @@ public abstract class AbstractReplicationContextualiserTest extends TestCase {
         
         ReplicationManager replicationManager = createReplicationManager(serviceSpace);
         
-        DistributableManagerRehydrater sessionRehydrater =
-            new DistributableManagerRehydrater();
-        ReplicationManager sessionRepManager = 
-            new SessionReplicationManager(replicationManager, sessionRehydrater);
+        ReplicationManager sessionRepManager = new SessionReplicationManager(replicationManager, sessionPool);
 
         Contextualiser contextualiser = new DummyContextualiser();
         contextualiser = new ReplicaAwareContextualiser(contextualiser, sessionRepManager);
@@ -188,14 +184,12 @@ public abstract class AbstractReplicationContextualiserTest extends TestCase {
                 true,
                 streamer,
                 true,
-                new ReplicaterAdapterFactory(replicationManager),
+                new ReplicaterAdapterFactory(replicationManager, sessionPool),
                 new WebEndPoint(new InetSocketAddress("localhost", 8080)),
                 new StandardHttpProxy("jsessionid"),
                 dispatcher,
                 24,
                 collapser);
-
-        sessionRehydrater.setManager(manager);
         
         manager.init(new DummyManagerConfig());
 
