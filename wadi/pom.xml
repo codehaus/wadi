@@ -3,6 +3,11 @@
 <!--
  TODO:
 
+<<<<<<< .mine
+ reference xsd
+ use a staging website ?
+=======
+>>>>>>> .r2072
  merge in pom-clover.xml
  scope collisions for junit/commons-httpclient ?
 
@@ -461,7 +466,7 @@
 	    <exclude implementation="java.lang.String">**/*$*.java</exclude><!-- do not run nested classes -->
 	    <exclude implementation="java.lang.String">**/Abstract*.java</exclude><!-- do not run abstract classes -->
 	    <!-- InVM -->
-	    <exclude implementation="java.lang.String">**/TestInVMReplication.java</exclude>
+	    <exclude implementation="java.lang.String">**/TestInVMReplication*.java</exclude>
 	    <!-- Tribes -->
 	    <exclude implementation="java.lang.String">**/TestTribesEvacuation.java</exclude>
 	    <exclude implementation="java.lang.String">**/TestTribesRelocation.java</exclude>
@@ -524,16 +529,13 @@
 	  <aggregate>false</aggregate>
 	  <source>${jse.version}</source>
 	  <links>
-<!-- TODO: put these links back -->
-
 <!--
 	    <link>http://java.sun.com/j2se/${jse.version}/docs/api</link>
 	    <link>http://java.sun.com/j2ee/${jee.version}/docs/api</link>
 	    <link>http://www.junit.org/junit/javadoc/${junit.version}</link>
 	    <link>http://jakarta.apache.org/commons/logging/commons-logging-${commons-logging.version}/apidocs</link>
-	    <link>http://jakarta.apache.org/commons/httpclient/apidocs</link>
-	    <link>http://dev.eclipse.org/viewcvs/indextech.cgi/~checkout~/aspectj-home/doc/api</link>
 	    <link>http://gee.cs.oswego.edu/dl/classes/EDU/oswego/cs/dl/util/concurrent</link>
+	    <link>http://jakarta.apache.org/commons/httpclient/apidocs</link>
 	    <link>http://www.jgroups.org/javagroupsnew/docs/javadoc</link>
 -->
 	    <!-- <link>http://mx4j.sourceforge.net/docs/api</link> -->
