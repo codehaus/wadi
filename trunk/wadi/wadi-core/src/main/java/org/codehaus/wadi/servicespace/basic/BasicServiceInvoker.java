@@ -125,7 +125,7 @@ public class BasicServiceInvoker implements ServiceInvoker {
             try {
                 dispatcher.send(target, message);
             } catch (MessageExchangeException e) {
-                throw (IllegalStateException) new IllegalStateException().initCause(e);
+                return new InvocationResult(e);
             }
             return null;
         } else {
