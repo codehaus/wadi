@@ -88,10 +88,6 @@ public class VMEnvelope implements Envelope {
         return payload;
     }
 
-    public String toString() {
-        return "VMMessage: payload=" + payload;
-    }
-
     public Map getProperties() {
         return Collections.unmodifiableMap(properties);
     }
@@ -103,5 +99,10 @@ public class VMEnvelope implements Envelope {
     public void setProperty(String key, Object value) {
         properties.put(key, value);
     }
-    
+
+    public String toString() {
+        return "VMMessage: payload=[" + payload + "], incomingCorrelationId [" + incomingCorrelationId + 
+            "], outgoingCorrelationId [" + outgoingCorrelationId + "";
+    }
+
 }
