@@ -33,6 +33,7 @@ import org.codehaus.wadi.servicespace.ServiceMonitor;
 import org.codehaus.wadi.servicespace.ServiceProxy;
 import org.codehaus.wadi.servicespace.ServiceProxyFactory;
 import org.codehaus.wadi.servicespace.ServiceSpace;
+import org.codehaus.wadi.servicespace.replyaccessor.DoNotReplyWithNull;
 
 /**
  * 
@@ -44,14 +45,12 @@ public class BasicReplicationManager implements ReplicationManager {
     private final Map keyToReplicaInfo;
     private final BackingStrategy backingStrategy;
     private final ServiceMonitor storageMonitor;
-    private final boolean aSyncReplication;
     private final ReplicationManager replicationManagerProxy;
     private final ReplicaStorage replicaStorageProxy;
     private final ServiceProxyFactory replicaStorageServiceProxy;
     
     public BasicReplicationManager(ServiceSpace serviceSpace,
-            BackingStrategy backingStrategy,
-            boolean aSyncReplication) {
+            BackingStrategy backingStrategy) {
         if (null == serviceSpace) {
             throw new IllegalArgumentException("serviceSpace is required");
         } else if (null == backingStrategy) {
@@ -59,7 +58,6 @@ public class BasicReplicationManager implements ReplicationManager {
         }
         this.serviceSpace = serviceSpace;
         this.backingStrategy = backingStrategy;
-        this.aSyncReplication = aSyncReplication;
         
         localPeer = serviceSpace.getLocalPeer();
 
@@ -70,6 +68,8 @@ public class BasicReplicationManager implements ReplicationManager {
         replicaStorageServiceProxy = serviceSpace.getServiceProxyFactory(
                         ReplicaStorage.NAME, new Class[] {ReplicaStorage.class});
         replicaStorageProxy = (ReplicaStorage) replicaStorageServiceProxy.getProxy();
+        ServiceProxy serviceProxy = (ServiceProxy) replicaStorageProxy;
+        serviceProxy.getInvocationMetaData().setReplyAssessor(DoNotReplyWithNull.ASSESSOR);
 
         keyToReplicaInfo = new HashMap();
     }
@@ -87,6 +87,7 @@ public class BasicReplicationManager implements ReplicationManager {
 
     public void stop() throws Exception {
         synchronized (keyToReplicaInfo) {
+            // TODO - clear the storages
             keyToReplicaInfo.clear();
         }
         stopStorageMonitoring();
@@ -94,18 +95,18 @@ public class BasicReplicationManager implements ReplicationManager {
     
     public void create(Object key, Object tmp) {
         Peer secondaries[] = backingStrategy.electSecondaries(key);
-
         ReplicaInfo replicaInfo = new ReplicaInfo(localPeer, secondaries, tmp);
+
+        if (secondaries.length != 0) {
+            ReplicaStorage storage = newReplicaStorageStub(secondaries);
+            storage.mergeCreate(key, replicaInfo);
+        }
+        
         synchronized (keyToReplicaInfo) {
             if (keyToReplicaInfo.containsKey(key)) {
                 throw new IllegalArgumentException("Key [" + key + "] is already defined.");
             }
             keyToReplicaInfo.put(key, replicaInfo);
-        }
-
-        if (secondaries.length != 0) {
-            ReplicaStorage storage = newReplicaStorageStub(secondaries);
-            storage.mergeCreate(key, replicaInfo);
         }
     }
 
@@ -116,13 +117,12 @@ public class BasicReplicationManager implements ReplicationManager {
             if (null == replicaInfo) {
                 throw new IllegalStateException("Key [" + key + "] is not defined.");
             }
+            if (replicaInfo.getSecondaries().length != 0) {
+                ReplicaStorage storage = newReplicaStorageStub(replicaInfo.getSecondaries());
+                storage.mergeUpdate(key, new ReplicaInfo(tmp));
+            }
             replicaInfo = new ReplicaInfo(replicaInfo, tmp);
             keyToReplicaInfo.put(key, replicaInfo);
-        }
-        
-        if (replicaInfo.getSecondaries().length != 0) {
-            ReplicaStorage storage = newReplicaStorageStub(replicaInfo.getSecondaries());
-            storage.mergeUpdate(key, new ReplicaInfo(tmp));
         }
     }
 
@@ -240,7 +240,7 @@ public class BasicReplicationManager implements ReplicationManager {
             this.backingStrategy = backingStrategy;
         }
 
-        public void receive(ServiceLifecycleEvent event) {
+        public void receive(ServiceLifecycleEvent event, Set newHostingPeers) {
             LifecycleState state = event.getState();
             if (state == LifecycleState.AVAILABLE || state == LifecycleState.STARTED) {
                 backingStrategy.addSecondary(event.getHostingPeer());

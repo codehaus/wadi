@@ -13,16 +13,20 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.replication.manager;
+package org.codehaus.wadi.servicespace.replyaccessor;
 
-import org.codehaus.wadi.replication.strategy.BackingStrategyFactory;
-import org.codehaus.wadi.servicespace.ServiceSpace;
-
+import org.codehaus.wadi.servicespace.InvocationResult;
+import org.codehaus.wadi.servicespace.ReplyRequiredAssessor;
 
 /**
  * 
- * @version $Revision$
+ * @version $Revision: 1538 $
  */
-public interface ReplicationManagerFactory {
-    ReplicationManager factory(ServiceSpace serviceSpace, BackingStrategyFactory backingStrategyFactory);
+public class TwoWay implements ReplyRequiredAssessor {
+    public static final TwoWay ASSESSOR = new TwoWay();
+    
+    public boolean isReplyRequired(InvocationResult result) {
+        return true;
+    }
+    
 }

@@ -15,6 +15,8 @@
  */
 package org.codehaus.wadi.servicespace.basic;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.codehaus.wadi.group.Peer;
@@ -68,7 +70,7 @@ public class BasicServiceMonitorTest extends AbstractServiceSpaceTestCase {
 
         ServiceLifecycleEvent eventStopped = newServiceLifecycleEvent(remote1, LifecycleState.STOPPED);
         ServiceListener listener = (ServiceListener) mock(ServiceListener.class);
-        listener.receive(eventStopped);
+        listener.receive(eventStopped, Collections.EMPTY_SET);
         
         startVerification();
         
@@ -96,7 +98,7 @@ public class BasicServiceMonitorTest extends AbstractServiceSpaceTestCase {
 
         ServiceLifecycleEvent eventStopped = newServiceLifecycleEvent(remote1, LifecycleState.FAILED);
         ServiceListener listener = (ServiceListener) mock(ServiceListener.class);
-        listener.receive(eventStopped);
+        listener.receive(eventStopped, Collections.EMPTY_SET);
         
         startVerification();
         
@@ -149,7 +151,10 @@ public class BasicServiceMonitorTest extends AbstractServiceSpaceTestCase {
 
         ServiceLifecycleEvent eventRemote2 = newServiceLifecycleEvent(remote2, state);
         ServiceListener listener = (ServiceListener) mock(ServiceListener.class);
-        listener.receive(eventRemote2);
+        Set expectedHostingPeers = new HashSet();
+        expectedHostingPeers.add(remote1);
+        expectedHostingPeers.add(remote2);
+        listener.receive(eventRemote2, expectedHostingPeers);
         
         startVerification();
         

@@ -22,7 +22,6 @@ import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.vm.VMLocalPeer;
 import org.codehaus.wadi.group.vm.VMPeer;
-import org.codehaus.wadi.replication.common.ReplicaInfo;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
 import org.codehaus.wadi.replication.storage.ReplicaStorage;
 import org.codehaus.wadi.replication.strategy.BackingStrategy;
@@ -31,9 +30,11 @@ import org.codehaus.wadi.servicespace.LifecycleState;
 import org.codehaus.wadi.servicespace.ServiceLifecycleEvent;
 import org.codehaus.wadi.servicespace.ServiceListener;
 import org.codehaus.wadi.servicespace.ServiceMonitor;
+import org.codehaus.wadi.servicespace.ServiceProxy;
 import org.codehaus.wadi.servicespace.ServiceProxyFactory;
 import org.codehaus.wadi.servicespace.ServiceSpace;
 import org.codehaus.wadi.servicespace.ServiceSpaceName;
+import org.codehaus.wadi.servicespace.replyaccessor.DoNotReplyWithNull;
 
 import com.agical.rmock.core.Action;
 import com.agical.rmock.core.MethodHandle;
@@ -51,7 +52,7 @@ public class BasicReplicationManagerTest extends RMockTestCase {
     private BackingStrategy backingStrategy;
     private ServiceSpaceName serviceSpaceName;
     private ServiceProxyFactory replicaStorageServiceProxyFactory;
-    private ReplicaStorage replicaStorageProxy;
+    private ReplicaStorageMixInServiceProxy replicaStorageProxy;
     private ReplicationManager replicationManagerProxy;
 
     protected void setUp() throws Exception {
@@ -94,7 +95,7 @@ public class BasicReplicationManagerTest extends RMockTestCase {
         endSection();
         startVerification();
         
-        BasicReplicationManager manager = new BasicReplicationManager(serviceSpace, backingStrategy, true);
+        BasicReplicationManager manager = new BasicReplicationManager(serviceSpace, backingStrategy);
         manager.start();
     }
     
@@ -107,91 +108,17 @@ public class BasicReplicationManagerTest extends RMockTestCase {
         endSection();
         startVerification();
         
-        new BasicReplicationManager(serviceSpace, backingStrategy, true);
+        new BasicReplicationManager(serviceSpace, backingStrategy);
         
-        serviceListener.receive(
-                new ServiceLifecycleEvent(serviceSpaceName, ReplicaStorage.NAME, peer3, LifecycleState.AVAILABLE));
-        serviceListener.receive(
-                new ServiceLifecycleEvent(serviceSpaceName, ReplicaStorage.NAME, peer4, LifecycleState.STARTED));
-        serviceListener.receive(
-                new ServiceLifecycleEvent(serviceSpaceName, ReplicaStorage.NAME, peer3, LifecycleState.STOPPING));
-        serviceListener.receive(
-                new ServiceLifecycleEvent(serviceSpaceName, ReplicaStorage.NAME, peer4, LifecycleState.FAILED));
+        receiveEvent(peer3, LifecycleState.AVAILABLE);
+        receiveEvent(peer4, LifecycleState.STARTED);
+        receiveEvent(peer3, LifecycleState.STOPPING);
+        receiveEvent(peer4, LifecycleState.FAILED);
     }
 
-    private ReplicaInfo recordCreateReplica(Object key, Object payload) {
-        InvocationMetaData invocationMetaData =
-            (InvocationMetaData) intercept(InvocationMetaData.class, "CreateInvocationMetaData");
-        
-        beginSection(s.ordered("Create Replica"));
-        Peer[] electedSecondaries = new Peer[] {peer2, peer3};
-        backingStrategy.electSecondaries(key);
-        modify().returnValue(electedSecondaries);
-        
-        replicaStorageServiceProxyFactory.getProxy();
-        
-        replicaStorageServiceProxyFactory.getInvocationMetaData();
-        modify().returnValue(invocationMetaData);
-        invocationMetaData.setTargets(electedSecondaries);
-        modify().forward();
-        ReplicaStorage replicaStorage = (ReplicaStorage) mock(ReplicaStorage.class);
-        modify().returnValue(replicaStorage);
-        
-        replicaStorage.mergeCreate(key, null);
-        modify().args(is.AS_RECORDED, is.NOT_NULL);
-        endSection();
-        
-        return new ReplicaInfo(localPeer, electedSecondaries, payload);
-    }
-
-    private void recordUpdate(Object key, ReplicaInfo replicaInfo) {
-        beginSection(s.ordered("Update replica"));
-
-        ServiceProxyFactory proxyFactory = serviceSpace.getServiceProxyFactory(
-                ReplicaStorage.NAME, new Class[] {ReplicaStorage.class});
-        proxyFactory.getInvocationMetaData().setTargets(replicaInfo.getSecondaries());
-        proxyFactory.getProxy();
-        ReplicaStorage replicaStorage = (ReplicaStorage) mock(ReplicaStorage.class);
-        modify().returnValue(replicaStorage);
-        
-        replicaStorage.mergeUpdate(key, null);
-        modify().args(is.AS_RECORDED, is.NOT_NULL);
-        endSection();
-    }
-
-
-    private void recordDestroy(Object key, ReplicaInfo expectedReplicaInfo) {
-        beginSection(s.ordered("Destroy replica"));
-        ReplicaStorage replicaStorage = (ReplicaStorage) mock(ReplicaStorage.class);
-
-        ServiceProxyFactory proxyFactory = serviceSpace.getServiceProxyFactory(
-                ReplicaStorage.NAME, new Class[] {ReplicaStorage.class});
-        proxyFactory.getInvocationMetaData().setTargets(expectedReplicaInfo.getSecondaries());
-        modify().returnValue(replicaStorage);
-        
-        replicaStorage.mergeDestroy(key);
-        endSection();
-    }
-
-    private void assertReplicaInfo(ReplicaInfo expected, ReplicaInfo actual) {
-        if (null == expected.getPrimary()) {
-            assertNull(actual.getPrimary());
-        } else {
-            assertSame(expected.getPrimary(), actual.getPrimary());
-        }
-        
-        Peer[] expectedSecondaries = expected.getSecondaries();
-        Peer[] actualSecondaries = actual.getSecondaries();
-        if (null == expectedSecondaries) {
-            assertNull(expectedSecondaries);
-        } else {
-            assertEquals(expectedSecondaries.length, actualSecondaries.length);
-            for (int i = 0; i < expectedSecondaries.length; i++) {
-                assertEquals(expectedSecondaries[i], actualSecondaries[i]);
-            }
-        }
-        
-        assertSame(expected.getReplica(), actual.getReplica());
+    private void receiveEvent(Peer peer, LifecycleState state) {
+        serviceListener.receive(new ServiceLifecycleEvent(serviceSpaceName, ReplicaStorage.NAME, peer, state), 
+                Collections.EMPTY_SET);
     }
     
     private void recordCreateProxies() {
@@ -218,9 +145,20 @@ public class BasicReplicationManagerTest extends RMockTestCase {
         beginSection(s.ordered("Create ReplicaStorage proxy"));
         replicaStorageServiceProxyFactory = serviceSpace.getServiceProxyFactory(ReplicaStorage.NAME, new Class[] {ReplicaStorage.class});
         replicaStorageServiceProxyFactory.getProxy();
-        replicaStorageProxy = (ReplicaStorage) mock(ReplicaStorage.class);
+        replicaStorageProxy = (ReplicaStorageMixInServiceProxy) mock(ReplicaStorageMixInServiceProxy.class);
         modify().returnValue(replicaStorageProxy);
+        
+        InvocationMetaData invMetaData = 
+            (InvocationMetaData) intercept(InvocationMetaData.class, "replicaStorageProxyInvMetaData");
+        replicaStorageProxy.getInvocationMetaData();
+        modify().returnValue(invMetaData);
+        invMetaData.setReplyAssessor(DoNotReplyWithNull.ASSESSOR);
+        modify().forward();
+
         endSection();
     }
 
+    public interface ReplicaStorageMixInServiceProxy extends ReplicaStorage, ServiceProxy {
+    }
+    
 }

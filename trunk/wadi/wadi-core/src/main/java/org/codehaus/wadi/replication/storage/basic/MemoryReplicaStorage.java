@@ -52,7 +52,10 @@ public class MemoryReplicaStorage implements ReplicaStorage {
 
     public void mergeUpdate(Object key, ReplicaInfo replicaInfo) {
         synchronized (keyToReplica) {
-            ReplicaInfo curReplicaInfo = getRequiredReplicaInfo(key);
+            ReplicaInfo curReplicaInfo = (ReplicaInfo) keyToReplica.get(key);
+            if (null == curReplicaInfo) {
+                throw new IllegalArgumentException("Key [" + key + "] is not defined");
+            }
             replicaInfo = new ReplicaInfo(curReplicaInfo, replicaInfo);
             keyToReplica.put(key, replicaInfo);
         }
@@ -69,7 +72,7 @@ public class MemoryReplicaStorage implements ReplicaStorage {
     
     public ReplicaInfo retrieveReplicaInfo(Object key) {
         synchronized (keyToReplica) {
-            return getRequiredReplicaInfo(key);
+            return (ReplicaInfo) keyToReplica.get(key);
         }
     }
 
@@ -77,14 +80,6 @@ public class MemoryReplicaStorage implements ReplicaStorage {
         synchronized (keyToReplica) {
             return keyToReplica.containsKey(key);
         }
-    }
-    
-    private ReplicaInfo getRequiredReplicaInfo(Object key) {
-        ReplicaInfo replicaInfo = (ReplicaInfo) keyToReplica.get(key);
-        if (null == replicaInfo) {
-            throw new IllegalArgumentException("Key [" + key + "] is not defined");
-        }
-        return replicaInfo;
     }
     
 }

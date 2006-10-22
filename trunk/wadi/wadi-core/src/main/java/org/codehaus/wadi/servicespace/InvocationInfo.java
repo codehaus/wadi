@@ -62,4 +62,8 @@ public class InvocationInfo implements Serializable {
         return metaData;
     }
 
+    public String toString() {
+        return "InvocationInfo method [" + methodName + "]; parameters [" + params + "]; metaData [" + metaData + "]";
+    }
+    
 }

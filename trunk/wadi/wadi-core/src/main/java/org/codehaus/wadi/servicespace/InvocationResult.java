@@ -34,6 +34,9 @@ public class InvocationResult implements Serializable {
     }
 
     public InvocationResult(Throwable throwable) {
+        if (null == throwable) {
+            throw new IllegalArgumentException("throwable is required");
+        }
         this.throwable = throwable;
         
         success = false;
@@ -56,6 +59,10 @@ public class InvocationResult implements Serializable {
             throw new IllegalStateException("No throwable as it is a result success");
         }
         return throwable;
+    }
+    
+    public String toString() {
+        return "InvocationResult " + (success ? "success [" + result + "]" : "failure [" + throwable + "]");
     }
     
 }

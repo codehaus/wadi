@@ -13,15 +13,28 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.servicespace;
+package org.codehaus.wadi.servicespace.replyaccessor;
 
-import java.util.Set;
+import org.codehaus.wadi.servicespace.InvocationResult;
 
+import junit.framework.TestCase;
 
 /**
  * 
  * @version $Revision: 1538 $
  */
-public interface ServiceListener {
-    void receive(ServiceLifecycleEvent event, Set newHostingPeers);
+public class DoNotReplyWithNullTest extends TestCase {
+
+    public void testResultIsNotNull() {
+        assertTrue(DoNotReplyWithNull.ASSESSOR.isReplyRequired(new InvocationResult(new Object())));
+    }
+
+    public void testResultIsNull() {
+        assertFalse(DoNotReplyWithNull.ASSESSOR.isReplyRequired(new InvocationResult((Object) null)));
+    }
+
+    public void testResultIsException() {
+        assertTrue(DoNotReplyWithNull.ASSESSOR.isReplyRequired(new InvocationResult(new Exception())));
+    }
+
 }
