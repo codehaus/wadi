@@ -25,10 +25,12 @@ import org.codehaus.wadi.group.ServiceEndpoint;
  */
 class ServiceEndpointWrapper implements ServiceEndpoint {
     private final ServiceEndpoint delegate;
-
-    private int count;
+    private volatile int count;
     
     public ServiceEndpointWrapper(ServiceEndpoint delegate) {
+        if (null == delegate) {
+            throw new IllegalArgumentException("delegate is required");
+        }
         this.delegate = delegate;
     }
 
@@ -40,7 +42,7 @@ class ServiceEndpointWrapper implements ServiceEndpoint {
         count--;
     }
 
-    public synchronized int getNumberOfCurrentDispatch() {
+    public int getNumberOfCurrentDispatch() {
         return count;
     }
 
@@ -55,4 +57,5 @@ class ServiceEndpointWrapper implements ServiceEndpoint {
     public boolean testDispatchMessage(Envelope om) {
         return delegate.testDispatchMessage(om);
     }
+    
 }

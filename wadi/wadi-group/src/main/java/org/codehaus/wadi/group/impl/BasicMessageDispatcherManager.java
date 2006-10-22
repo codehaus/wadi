@@ -89,11 +89,9 @@ class BasicMessageDispatcherManager implements MessageDispatcherManager {
                             "/" +
                             message.getSourceCorrelationId());
                     }
-                    synchronized (dispatcher) {
-                        dispatchAtLeastOnce = true;
-                        _executor.execute(new DispatchRunner(dispatcher, message));
-                        dispatcher.beforeDispatch();
-                    }
+                    dispatchAtLeastOnce = true;
+                    dispatcher.beforeDispatch();
+                    _executor.execute(new DispatchRunner(dispatcher, message));
                 }
             }
             
@@ -118,9 +116,7 @@ class BasicMessageDispatcherManager implements MessageDispatcherManager {
             try {
                 _dispatcher.hook();
                 _msgDispatcher.dispatch(_message);
-                synchronized (_msgDispatcher) {
-                    _msgDispatcher.afterDispatch();
-                }
+                _msgDispatcher.afterDispatch();
             } catch (Exception e) {
                 _log.error("problem dispatching message", e);
             }
