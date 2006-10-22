@@ -18,6 +18,7 @@ package org.codehaus.wadi.servicespace;
 import java.io.Serializable;
 
 import org.codehaus.wadi.group.Peer;
+import org.codehaus.wadi.servicespace.replyaccessor.TwoWay;
 import org.codehaus.wadi.servicespace.resultcombiner.ReturnFirstSuccessThenFailure;
 
 
@@ -31,6 +32,7 @@ public class InvocationMetaData implements Serializable {
     private transient Peer[] targets;
     private transient long timeout = DEFAULT_TIMEOUT;
     private boolean oneWay;
+    private ReplyRequiredAssessor replyAssessor = TwoWay.ASSESSOR;
     private transient InvocationResultCombiner invocationResultCombiner = ReturnFirstSuccessThenFailure.COMBINER;
 
     public InvocationMetaData() {
@@ -42,6 +44,7 @@ public class InvocationMetaData implements Serializable {
         }
         targets = prototype.targets;
         timeout = prototype.timeout;
+        replyAssessor = prototype.replyAssessor;
         oneWay = prototype.oneWay;
         invocationResultCombiner = prototype.invocationResultCombiner;
     }
@@ -92,6 +95,17 @@ public class InvocationMetaData implements Serializable {
     
     public boolean isClusterTargeted() {
         return null == targets;
+    }
+
+    public ReplyRequiredAssessor getReplyAssessor() {
+        return replyAssessor;
+    }
+
+    public void setReplyAssessor(ReplyRequiredAssessor replyAssessor) {
+        if (null == replyAssessor) {
+            throw new IllegalArgumentException("replyAssessor is required");
+        }
+        this.replyAssessor = replyAssessor;
     }
 
 }

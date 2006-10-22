@@ -27,12 +27,9 @@ import org.codehaus.wadi.servicespace.ServiceSpace;
  */
 public class BasicReplicationManagerFactory implements ReplicationManagerFactory {
 
-    public ReplicationManager factory(ServiceSpace serviceSpace, 
-            BackingStrategyFactory backingStrategyFactory,
-            boolean syncReplication) {
+    public ReplicationManager factory(ServiceSpace serviceSpace, BackingStrategyFactory backingStrategyFactory) {
         BackingStrategy backingStrategy = backingStrategyFactory.factory();
-        
-        return new BasicReplicationManager(serviceSpace, backingStrategy, syncReplication);
+        return new BasicReplicationManager(serviceSpace, backingStrategy);
     }
 
 }

@@ -206,7 +206,7 @@ public abstract class AbstractReplicationContextualiserTest extends TestCase {
     private ReplicationManager createReplicationManager(BasicServiceSpace serviceSpace) {
         BasicReplicationManagerFactory managerFactory = new BasicReplicationManagerFactory();
         ReplicationManager replicationManager = managerFactory.factory(serviceSpace,
-                new RoundRobinBackingStrategyFactory(1), true);
+                new RoundRobinBackingStrategyFactory(1));
         return replicationManager;
     }
     

@@ -77,8 +77,7 @@ public class ServiceInvocationListener implements MessageListener {
         } catch (ServiceException e) {
             result = new InvocationResult(e);
         }
-        
-        if (!metaData.isOneWay()) {
+        if (!metaData.isOneWay() && metaData.getReplyAssessor().isReplyRequired(result)) {
             Envelope reply = dispatcher.createMessage();
             EnvelopeServiceHelper.tagAsServiceReply(reply);
             reply.setPayload(result);

@@ -34,7 +34,7 @@ import org.codehaus.wadi.servicespace.basic.BasicServiceSpace;
 
 public abstract class AbstractReplicationManagerTest extends TestCase {
     private static final String CLUSTER_NAME = "CLUSTER";
-    private static final int TEMPO = 500;
+    private static final long TEMPO = 1000;
 
     private BasicServiceSpace serviceSpace1;
     private Peer peer1;
@@ -55,74 +55,50 @@ public abstract class AbstractReplicationManagerTest extends TestCase {
 
     public void testSmoke() throws Exception {
         serviceSpace1.start();
-
-        Thread.sleep(TEMPO);
-
         serviceSpace2.start();
-
-        Thread.sleep(TEMPO);
 
         String key = "key1";
         String value = "value1";
         manager1.create(key, value);
-
         Thread.sleep(TEMPO);
-
         assertNotDefinedByStorage(key, replicaStorage1);
         assertDefinedByStorage(key, replicaStorage2, new ReplicaInfo(peer1, new Peer[] {peer2}));
 
         serviceSpace3.start();
-
         Thread.sleep(TEMPO);
-
         assertNotDefinedByStorage(key, replicaStorage1);
         assertDefinedByStorage(key, replicaStorage2, new ReplicaInfo(peer1, new Peer[] {peer2, peer3}));
         assertDefinedByStorage(key, replicaStorage3, new ReplicaInfo(peer1, new Peer[] {peer2, peer3}));
 
         manager2.acquirePrimary(key);
-
-        Thread.sleep(TEMPO);
-
         assertDefinedByStorage(key, replicaStorage1, new ReplicaInfo(peer2, new Peer[] {peer1, peer3}));
         assertNotDefinedByStorage(key, replicaStorage2);
         assertDefinedByStorage(key, replicaStorage3, new ReplicaInfo(peer2, new Peer[] {peer1, peer3}));
 
         manager1.acquirePrimary(key);
-
-        Thread.sleep(TEMPO);
-
         assertNotDefinedByStorage(key, replicaStorage1);
         assertDefinedByStorage(key, replicaStorage2, new ReplicaInfo(peer1, new Peer[] {peer2, peer3}));
         assertDefinedByStorage(key, replicaStorage3, new ReplicaInfo(peer1, new Peer[] {peer2, peer3}));
 
         serviceSpace3.stop();
-
         Thread.sleep(TEMPO);
-
         assertNotDefinedByStorage(key, replicaStorage1);
         assertDefinedByStorage(key, replicaStorage2, new ReplicaInfo(peer1, new Peer[] {peer2}));
         assertNotDefinedByStorage(key, replicaStorage3);
 
         serviceSpace2.stop();
-
-        Thread.sleep(TEMPO);
-
         assertNotDefinedByStorage(key, replicaStorage1);
         assertNotDefinedByStorage(key, replicaStorage2);
         assertNotDefinedByStorage(key, replicaStorage3);
 
         serviceSpace3.start();
-
         Thread.sleep(TEMPO);
-
         assertNotDefinedByStorage(key, replicaStorage1);
         assertNotDefinedByStorage(key, replicaStorage2);
         assertDefinedByStorage(key, replicaStorage3, new ReplicaInfo(peer1, new Peer[] {peer3}));
 
         serviceSpace2.start();
-
         Thread.sleep(TEMPO);
-
         assertNotDefinedByStorage(key, replicaStorage1);
         assertDefinedByStorage(key, replicaStorage2, new ReplicaInfo(peer1, new Peer[] {peer3, peer2}));
         assertDefinedByStorage(key, replicaStorage3, new ReplicaInfo(peer1, new Peer[] {peer3, peer2}));
@@ -155,7 +131,7 @@ public abstract class AbstractReplicationManagerTest extends TestCase {
         serviceSpace1 = buildServiceSpace("peer1");
         dispatcher1 = serviceSpace1.getDispatcher();
         peer1 = dispatcher1.getCluster().getLocalPeer();
-        manager1 = managerFactory.factory(serviceSpace1, backingStrategy, true);
+        manager1 = managerFactory.factory(serviceSpace1, backingStrategy);
         replicaStorage1 = storageFactory.factory(serviceSpace1);
         ServiceRegistry serviceRegistry = serviceSpace1.getServiceRegistry();
         serviceRegistry.register(ReplicationManager.NAME, manager1);
@@ -164,7 +140,7 @@ public abstract class AbstractReplicationManagerTest extends TestCase {
         serviceSpace2 = buildServiceSpace("peer2");
         dispatcher2 = serviceSpace2.getDispatcher();
         peer2 = dispatcher2.getCluster().getLocalPeer();
-        manager2 = managerFactory.factory(serviceSpace2, backingStrategy, true);
+        manager2 = managerFactory.factory(serviceSpace2, backingStrategy);
         replicaStorage2 = storageFactory.factory(serviceSpace2);
         serviceRegistry = serviceSpace2.getServiceRegistry();
         serviceRegistry.register(ReplicationManager.NAME, manager2);

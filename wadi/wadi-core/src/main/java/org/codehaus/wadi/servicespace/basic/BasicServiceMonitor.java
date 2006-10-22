@@ -16,7 +16,6 @@
 package org.codehaus.wadi.servicespace.basic;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -26,8 +25,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Lifecycle;
 import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.Envelope;
+import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.ServiceEndpoint;
@@ -40,6 +39,8 @@ import org.codehaus.wadi.servicespace.ServiceSpace;
 import org.codehaus.wadi.servicespace.ServiceSpaceLifecycleEvent;
 import org.codehaus.wadi.servicespace.ServiceSpaceListener;
 
+import EDU.oswego.cs.dl.util.concurrent.CopyOnWriteArrayList;
+
 /**
  * 
  * @version $Revision: $
@@ -51,7 +52,7 @@ public class BasicServiceMonitor implements ServiceMonitor, Lifecycle {
     private final LocalPeer localPeer;
     private final ServiceSpace serviceSpace;
     private final ServiceName serviceName;
-    private final Collection listeners;
+    private final CopyOnWriteArrayList listeners;
     private final Set hostingPeers;
     private final ServiceLifecycleEndpoint lifecycleEndpoint;
     private final ServiceSpaceListener hostingServiceSpaceFailure;
@@ -68,16 +69,14 @@ public class BasicServiceMonitor implements ServiceMonitor, Lifecycle {
 
         dispatcher = serviceSpace.getDispatcher();
         localPeer = dispatcher.getCluster().getLocalPeer();
-        listeners = new ArrayList();
+        listeners = new CopyOnWriteArrayList();
         hostingPeers = new HashSet();
         lifecycleEndpoint = new ServiceLifecycleEndpoint();
         hostingServiceSpaceFailure = new HostingServiceSpaceFailure();
     }
 
     public void addServiceLifecycleListener(ServiceListener listener) {
-        synchronized (listeners) {
-            listeners.add(listener);
-        }
+        listeners.add(listener);
     }
 
     public Set getHostingPeers() {
@@ -87,10 +86,7 @@ public class BasicServiceMonitor implements ServiceMonitor, Lifecycle {
     }
 
     public void removeServiceLifecycleListener(ServiceListener listener) {
-        boolean removed;
-        synchronized (listeners) {
-            removed = listeners.remove(listener);
-        }
+        boolean removed = listeners.remove(listener);
         if (!removed) {
             throw new IllegalArgumentException("[" + listener + "] was not a registered listener");
         }
@@ -124,18 +120,17 @@ public class BasicServiceMonitor implements ServiceMonitor, Lifecycle {
         started = false;
     }
     
-    protected void notifyListeners(ServiceLifecycleEvent event) {
-        synchronized (listeners) {
-            for (Iterator iter = listeners.iterator(); iter.hasNext();) {
-                ServiceListener listener = (ServiceListener) iter.next();
-                listener.receive(event);
-            }
-        }        
+    protected void notifyListeners(ServiceLifecycleEvent event, Set newHostingPeers) {
+        for (Iterator iter = listeners.iterator(); iter.hasNext();) {
+            ServiceListener listener = (ServiceListener) iter.next();
+            listener.receive(event, newHostingPeers);
+        }
     }
 
     protected void processLifecycleEvent(ServiceLifecycleEvent event) {
-        log.info("Processing event [" + event + "]");
+        log.debug("Processing event [" + event + "]");
         
+        Set newHostingPeers;
         LifecycleState state = event.getState();
         synchronized (hostingPeers) {
             if (state == LifecycleState.STARTED || state == LifecycleState.AVAILABLE) {
@@ -143,8 +138,9 @@ public class BasicServiceMonitor implements ServiceMonitor, Lifecycle {
             } else if (state == LifecycleState.STOPPED || state == LifecycleState.FAILED) {
                 hostingPeers.remove(event.getHostingPeer());
             }
-            notifyListeners(event);
+            newHostingPeers = new HashSet(hostingPeers);
         }
+        notifyListeners(event, newHostingPeers);
     }
     
     protected class ServiceLifecycleEndpoint implements ServiceEndpoint {
@@ -181,7 +177,8 @@ public class BasicServiceMonitor implements ServiceMonitor, Lifecycle {
                                 new ServiceLifecycleEvent(serviceSpace.getServiceSpaceName(), 
                                         serviceName, 
                                         failingPeer, 
-                                        LifecycleState.FAILED));
+                                        LifecycleState.FAILED),
+                                new HashSet(hostingPeers));
                     }
                 }
             }

@@ -13,16 +13,14 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.replication.manager;
+package org.codehaus.wadi.servicespace;
 
-import org.codehaus.wadi.replication.strategy.BackingStrategyFactory;
-import org.codehaus.wadi.servicespace.ServiceSpace;
-
+import java.io.Serializable;
 
 /**
  * 
- * @version $Revision$
+ * @version $Revision: 1538 $
  */
-public interface ReplicationManagerFactory {
-    ReplicationManager factory(ServiceSpace serviceSpace, BackingStrategyFactory backingStrategyFactory);
+public interface ReplyRequiredAssessor extends Serializable {
+    boolean isReplyRequired(InvocationResult result);
 }
