@@ -58,6 +58,9 @@ public class Quipu extends WaitableInt {
 
     public void putResult(Object result) {
         synchronized (lock_) {
+            if (value_ == 0) {
+                return;
+            }
             _results.add(result);
             if (_log.isTraceEnabled()) {
                 _log.trace("result arrived: " + result);
@@ -77,7 +80,7 @@ public class Quipu extends WaitableInt {
     }
     
     public String toString() {
-        return "Quipu [" + correlationId + "]";
+        return "Quipu [" + correlationId + "]; results [" + _results + "]";
     }
     
 }
