@@ -1,6 +1,5 @@
 /**
- *
- * Copyright 2003-2005 Core Developers Network Ltd.
+ * Copyright 2006 The Apache Software Foundation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,18 +13,24 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.servicespace;
+
+import org.codehaus.wadi.group.MessageExchangeException;
+
+
 
 /**
- * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
+ * 
+ * @version $Revision: 1538 $
  */
-public interface Replicater {
-	void create(Object tmp) throws ReplicaterException;
+public class ServiceInvocationException extends RuntimeException {
 
-    void update(Object tmp) throws ReplicaterException;
-	
-    void destroy(Object tmp);
-
-	void acquireFromOtherReplicater(Object tmp) throws ReplicaterException;
+    public ServiceInvocationException(Throwable cause) {
+        super(cause);
+    }
+    
+    public boolean isMessageExchangeException() {
+        return getCause() instanceof MessageExchangeException;
+    }
+    
 }

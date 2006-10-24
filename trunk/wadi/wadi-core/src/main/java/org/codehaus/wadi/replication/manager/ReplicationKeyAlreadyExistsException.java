@@ -1,6 +1,5 @@
 /**
- *
- * Copyright 2003-2005 Core Developers Network Ltd.
+ * Copyright 2006 The Apache Software Foundation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,18 +13,25 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.replication.manager;
 
 /**
- * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
+ * 
+ * @version $Revision: 2078 $
  */
-public interface Replicater {
-	void create(Object tmp) throws ReplicaterException;
+public class ReplicationKeyAlreadyExistsException extends ReplicationException {
+    private final Object key;
 
-    void update(Object tmp) throws ReplicaterException;
-	
-    void destroy(Object tmp);
+    public ReplicationKeyAlreadyExistsException(Object key) {
+        if (null == key) {
+            throw new IllegalArgumentException("key is required");
+        }
+        this.key = key;
+    }
 
-	void acquireFromOtherReplicater(Object tmp) throws ReplicaterException;
+    public Object getKey() {
+        return key;
+    }
+    
+    
 }

@@ -23,6 +23,7 @@ import org.codehaus.wadi.servicespace.InvocationInfo;
 import org.codehaus.wadi.servicespace.InvocationMetaData;
 import org.codehaus.wadi.servicespace.InvocationResult;
 import org.codehaus.wadi.servicespace.InvocationResultCombiner;
+import org.codehaus.wadi.servicespace.ServiceInvocationException;
 import org.codehaus.wadi.servicespace.ServiceName;
 import org.codehaus.wadi.servicespace.ServiceProxy;
 
@@ -148,7 +149,29 @@ public class CGLIBServiceProxyFactoryTest extends RMockTestCase {
     }
 
 
-    public void testRequestReplyExceptionInvocation() {
+    public void testThrowDeclaredException() {
+        proxyFactory = new CGLIBServiceProxyFactory(name, interfaces, serviceInvoker);
+        
+        serviceInvoker.invoke(null);
+        modify().args(is.NOT_NULL);
+        IllegalStateException exception = new IllegalStateException();
+        InvocationResult invocationResult = new InvocationResult(exception);
+        modify().returnValue(invocationResult);
+        
+        startVerification();
+        
+        Object proxy = proxyFactory.getProxy();
+        
+        ServiceInterface1 interface1 = (ServiceInterface1) proxy;
+        try {
+            interface1.sayHello("Hello");
+            fail();
+        } catch (IllegalStateException e) {
+            assertSame(invocationResult.getThrowable(), e);
+        }
+    }
+
+    public void testThrowUndeclaredException() {
         proxyFactory = new CGLIBServiceProxyFactory(name, interfaces, serviceInvoker);
         
         serviceInvoker.invoke(null);
@@ -165,13 +188,13 @@ public class CGLIBServiceProxyFactoryTest extends RMockTestCase {
         try {
             interface1.sayHello("Hello");
             fail();
-        } catch (Exception e) {
-            assertSame(invocationResult.getThrowable(), e);
+        } catch (ServiceInvocationException e) {
+            assertSame(invocationResult.getThrowable(), e.getCause());
         }
     }
-
+    
     public interface ServiceInterface1 {
-        String sayHello(String arg);
+        String sayHello(String arg) throws IllegalStateException;
     }
     
     public interface ServiceInterface2 {

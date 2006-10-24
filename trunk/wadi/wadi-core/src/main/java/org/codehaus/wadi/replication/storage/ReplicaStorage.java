@@ -27,9 +27,9 @@ import org.codehaus.wadi.servicespace.ServiceName;
 public interface ReplicaStorage extends Lifecycle {
     ServiceName NAME = new ServiceName("ReplicaStorage");
     
-    void mergeCreate(Object key, ReplicaInfo replicaInfo);
+    void mergeCreate(Object key, ReplicaInfo replicaInfo) throws ReplicaKeyAlreadyExistsException;
     
-    void mergeUpdate(Object key, ReplicaInfo replicaInfo);
+    void mergeUpdate(Object key, ReplicaInfo replicaInfo) throws ReplicaKeyNotFoundException;
     
     void mergeDestroy(Object key);
     

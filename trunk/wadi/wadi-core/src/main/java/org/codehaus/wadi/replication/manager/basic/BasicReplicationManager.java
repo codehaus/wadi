@@ -20,13 +20,19 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.replication.common.ReplicaInfo;
+import org.codehaus.wadi.replication.manager.InternalReplicationManagerException;
+import org.codehaus.wadi.replication.manager.ReplicationKeyAlreadyExistsException;
+import org.codehaus.wadi.replication.manager.ReplicationKeyNotFoundException;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
 import org.codehaus.wadi.replication.storage.ReplicaStorage;
 import org.codehaus.wadi.replication.strategy.BackingStrategy;
 import org.codehaus.wadi.servicespace.LifecycleState;
+import org.codehaus.wadi.servicespace.ServiceInvocationException;
 import org.codehaus.wadi.servicespace.ServiceLifecycleEvent;
 import org.codehaus.wadi.servicespace.ServiceListener;
 import org.codehaus.wadi.servicespace.ServiceMonitor;
@@ -40,6 +46,8 @@ import org.codehaus.wadi.servicespace.replyaccessor.DoNotReplyWithNull;
  * @version $Revision$
  */
 public class BasicReplicationManager implements ReplicationManager {
+    private static final Log log = LogFactory.getLog(BasicReplicationManager.class);
+    
     private final ServiceSpace serviceSpace;
     private final LocalPeer localPeer;
     private final Map keyToReplicaInfo;
@@ -49,8 +57,7 @@ public class BasicReplicationManager implements ReplicationManager {
     private final ReplicaStorage replicaStorageProxy;
     private final ServiceProxyFactory replicaStorageServiceProxy;
     
-    public BasicReplicationManager(ServiceSpace serviceSpace,
-            BackingStrategy backingStrategy) {
+    public BasicReplicationManager(ServiceSpace serviceSpace, BackingStrategy backingStrategy) {
         if (null == serviceSpace) {
             throw new IllegalArgumentException("serviceSpace is required");
         } else if (null == backingStrategy) {
@@ -74,13 +81,6 @@ public class BasicReplicationManager implements ReplicationManager {
         keyToReplicaInfo = new HashMap();
     }
 
-    private ReplicationManager newReplicationManagerProxy(ServiceSpace serviceSpace) {
-        ServiceProxyFactory repManagerProxyFactory = serviceSpace.getServiceProxyFactory(ReplicationManager.NAME, 
-                new Class[] {ReplicationManager.class});
-        repManagerProxyFactory.getInvocationMetaData().setOneWay(true);
-        return (ReplicationManager) repManagerProxyFactory.getProxy();
-    }
-
     public void start() throws Exception {
         startStorageMonitoring();
     }
@@ -93,89 +93,119 @@ public class BasicReplicationManager implements ReplicationManager {
         stopStorageMonitoring();
     }
     
-    public void create(Object key, Object tmp) {
-        Peer secondaries[] = backingStrategy.electSecondaries(key);
-        ReplicaInfo replicaInfo = new ReplicaInfo(localPeer, secondaries, tmp);
-
-        if (secondaries.length != 0) {
-            ReplicaStorage storage = newReplicaStorageStub(secondaries);
-            storage.mergeCreate(key, replicaInfo);
-        }
-        
+    public void create(final Object key, final Object tmp) {
         synchronized (keyToReplicaInfo) {
             if (keyToReplicaInfo.containsKey(key)) {
-                throw new IllegalArgumentException("Key [" + key + "] is already defined.");
+                throw new ReplicationKeyAlreadyExistsException(key);
             }
-            keyToReplicaInfo.put(key, replicaInfo);
         }
+
+        CreateReplicaTask backOffCapableTask = new CreateReplicaTask(tmp, key);
+        backOffCapableTask.attempt();
     }
 
     public void update(Object key, Object tmp) {
         ReplicaInfo replicaInfo;
         synchronized (keyToReplicaInfo) {
-            replicaInfo = (ReplicaInfo) keyToReplicaInfo.remove(key);
+            replicaInfo = (ReplicaInfo) keyToReplicaInfo.get(key);
             if (null == replicaInfo) {
-                throw new IllegalStateException("Key [" + key + "] is not defined.");
+                throw new ReplicationKeyNotFoundException(key);
             }
-            if (replicaInfo.getSecondaries().length != 0) {
-                ReplicaStorage storage = newReplicaStorageStub(replicaInfo.getSecondaries());
-                storage.mergeUpdate(key, new ReplicaInfo(tmp));
-            }
-            replicaInfo = new ReplicaInfo(replicaInfo, tmp);
-            keyToReplicaInfo.put(key, replicaInfo);
         }
+        replicaInfo = new ReplicaInfo(replicaInfo, tmp);
+
+        UpdateReplicaTask backOffCapableTask = new UpdateReplicaTask(replicaInfo, key);
+        backOffCapableTask.attempt();
     }
 
     public void destroy(Object key) {
         ReplicaInfo replicaInfo;
         synchronized (keyToReplicaInfo) {
             replicaInfo = (ReplicaInfo) keyToReplicaInfo.remove(key);
-            if (null == replicaInfo) {
-                throw new IllegalStateException("Key [" + key + "] is not defined.");
-            }
+        }
+        if (null == replicaInfo) {
+            log.warn("Key [" + key + "] is not defined; cannot destroy it.");
+            return;
         }
         
         if (replicaInfo.getSecondaries().length != 0) {
-            ReplicaStorage storage = newReplicaStorageStub(replicaInfo.getSecondaries());
-            storage.mergeDestroy(key);
+            cascadeDestroy(key, replicaInfo);
         }
     }
 
     public Object acquirePrimary(Object key) {
         replicationManagerProxy.releasePrimary(key);
 
-        ReplicaInfo replicaInfo = replicaStorageProxy.retrieveReplicaInfo(key);
-        if (null == replicaInfo) {
-            throw new IllegalStateException("Cannot acquire primary");
+        ReplicaInfo replicaInfo;
+        try {
+            replicaInfo = replicaStorageProxy.retrieveReplicaInfo(key);
+        } catch (ServiceInvocationException e) {
+            throw new ReplicationKeyNotFoundException(key);
         }
         
         replicaInfo = reOrganizeSecondaries(key, replicaInfo);
         return replicaInfo.getReplica();
     }
 
-    public void releasePrimary(Object key) {
+    public boolean releasePrimary(Object key) {
+        Object object;
         synchronized (keyToReplicaInfo) {
-            keyToReplicaInfo.remove(key);
+            object = keyToReplicaInfo.remove(key);
         }
         // we do not need to inform the secondaries that this manager is
         // no more owning the primary. The manager acquiring the primary
         // will re-organize the secondaries itself.
+        return object != null;
     }
     
     public ReplicaInfo retrieveReplicaInfo(Object key) {
+        ReplicaInfo replicaInfo;
         synchronized (keyToReplicaInfo) {
-            ReplicaInfo replicaInfo = (ReplicaInfo) keyToReplicaInfo.get(key);
-            if (null == replicaInfo) {
-                throw new IllegalArgumentException("Key [" + key + "] is not defined.");
-            }
-            return replicaInfo;
+            replicaInfo = (ReplicaInfo) keyToReplicaInfo.get(key);
         }
+        if (null == replicaInfo) {
+            throw new ReplicationKeyNotFoundException(key);
+        }
+        return replicaInfo;
     }
     
     public boolean managePrimary(Object key) {
         synchronized (keyToReplicaInfo) {
             return keyToReplicaInfo.containsKey(key);
         }
+    }
+
+    protected void cascadeCreate(Object key, ReplicaInfo replicaInfo, BackOffCapableTask task) {
+        ReplicaStorage storage = newReplicaStorageStub(replicaInfo.getSecondaries());
+        try {
+            storage.mergeCreate(key, replicaInfo);
+            task.complete();
+        } catch (ServiceInvocationException e) {
+            if (e.isMessageExchangeException()) {
+                task.backoff();
+            } else {
+                throw e;
+            }
+        }
+    }
+    
+    protected void cascadeUpdate(Object key, ReplicaInfo replicaInfo, BackOffCapableTask task) {
+        ReplicaStorage storage = newReplicaStorageStub(replicaInfo.getSecondaries());
+        try {
+            storage.mergeUpdate(key, new ReplicaInfo(replicaInfo.getReplica()));
+            task.complete();
+        } catch (ServiceInvocationException e) {
+            if (e.isMessageExchangeException()) {
+                task.backoff();
+            } else {
+                throw e;
+            }
+        }
+    }
+    
+    protected void cascadeDestroy(Object key, ReplicaInfo replicaInfo) {
+        ReplicaStorage storage = newReplicaStorageStub(replicaInfo.getSecondaries());
+        storage.mergeDestroy(key);
     }
 
     protected void reOrganizeSecondaries() {
@@ -194,14 +224,13 @@ public class BasicReplicationManager implements ReplicationManager {
     protected ReplicaInfo reOrganizeSecondaries(Object key, ReplicaInfo replicaInfo) {
         Peer oldSecondaries[] = replicaInfo.getSecondaries();
         Peer newSecondaries[] = backingStrategy.reElectSecondaries(key, replicaInfo.getPrimary(), oldSecondaries);
-
         replicaInfo = new ReplicaInfo(replicaInfo, localPeer, newSecondaries);
+
+        updateReplicaStorages(key, replicaInfo, oldSecondaries);
 
         synchronized (keyToReplicaInfo) {
             keyToReplicaInfo.put(key, replicaInfo);
         }
-
-        updateReplicaStorages(key, replicaInfo, oldSecondaries);
         return replicaInfo;
     }
 
@@ -233,6 +262,13 @@ public class BasicReplicationManager implements ReplicationManager {
         backingStrategy.reset();
     }
     
+    protected ReplicationManager newReplicationManagerProxy(ServiceSpace serviceSpace) {
+        ServiceProxyFactory repManagerProxyFactory = serviceSpace.getServiceProxyFactory(ReplicationManager.NAME, 
+                new Class[] {ReplicationManager.class});
+        repManagerProxyFactory.getInvocationMetaData().setOneWay(true);
+        return (ReplicationManager) repManagerProxyFactory.getProxy();
+    }
+
     protected class UpdateBackingStrategyListener implements ServiceListener {
         private final BackingStrategy backingStrategy;
         
@@ -252,4 +288,90 @@ public class BasicReplicationManager implements ReplicationManager {
         }
     }
     
+    protected interface BackOffCapableTask {
+        void attempt();
+        
+        void backoff();
+        
+        void complete();
+    }
+    
+    protected abstract class AbstractTask implements BackOffCapableTask {
+        private static final int NB_ATTEMPT = 4;
+        private static final long BACK_OFF_PERIOD = 1000;
+
+        protected final Object key;
+        private volatile int currentAttempt;
+
+        public AbstractTask(Object key) {
+            this.key = key;
+        }
+
+        public void backoff() {
+            if (currentAttempt == NB_ATTEMPT) {
+                throw new InternalReplicationManagerException("Backoff failure for key [" + key + "]");
+            }
+            try {
+                Thread.sleep(BACK_OFF_PERIOD);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new InternalReplicationManagerException("Backoff cancelled");
+            }
+            attempt();
+        }
+        
+        public void attempt() {
+            currentAttempt++;
+            doAttempt();
+        }
+
+        protected abstract void doAttempt();
+
+    }
+    
+    protected final class CreateReplicaTask extends AbstractTask {
+        private final Object tmp;
+        private volatile ReplicaInfo replicaInfo;
+
+        private CreateReplicaTask(Object tmp, Object key) {
+            super(key);
+            this.tmp = tmp;
+        }
+
+        public void doAttempt() {
+            Peer secondaries[] = backingStrategy.electSecondaries(key);
+            replicaInfo = new ReplicaInfo(localPeer, secondaries, tmp);
+            if (secondaries.length != 0) {
+                cascadeCreate(key, replicaInfo, this);
+            }
+        }
+
+        public void complete() {
+            synchronized (keyToReplicaInfo) {
+                keyToReplicaInfo.put(key, replicaInfo);
+            }
+        }
+    }
+
+    protected final class UpdateReplicaTask extends AbstractTask {
+        private final ReplicaInfo replicaInfo;
+
+        private UpdateReplicaTask(ReplicaInfo replicaInfo, Object key) {
+            super(key);
+            this.replicaInfo = replicaInfo;
+        }
+
+        public void doAttempt() {
+            if (replicaInfo.getSecondaries().length != 0) {
+                cascadeUpdate(key, replicaInfo, this);
+            }
+        }
+
+        public void complete() {
+            synchronized (keyToReplicaInfo) {
+                keyToReplicaInfo.put(key, replicaInfo);
+            }
+        }
+    }
+
 }

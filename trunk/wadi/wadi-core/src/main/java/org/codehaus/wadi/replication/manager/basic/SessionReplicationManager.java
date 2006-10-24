@@ -15,9 +15,8 @@
  */
 package org.codehaus.wadi.replication.manager.basic;
 
-import org.codehaus.wadi.RehydrationException;
-import org.codehaus.wadi.replication.ReplicationException;
 import org.codehaus.wadi.replication.common.ReplicaInfo;
+import org.codehaus.wadi.replication.manager.InternalReplicationManagerException;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
 import org.codehaus.wadi.web.WebSession;
 import org.codehaus.wadi.web.WebSessionPool;
@@ -44,20 +43,24 @@ public class SessionReplicationManager implements ReplicationManager {
 
     public void create(Object key, Object tmp) {
         WebSession session = castAndEnsureType(tmp);
+        byte[] body;
         try {
-            replicationManager.create(key, session.getBodyAsByteArray());
+            body = session.getBodyAsByteArray();
         } catch (Exception e) {
-            throw new ReplicationException(e);
+            throw new InternalReplicationManagerException(e);
         }
+        replicationManager.create(key, body);
     }
 
     public void update(Object key, Object tmp) {
         WebSession session = castAndEnsureType(tmp);
+        byte[] body;
         try {
-            replicationManager.update(key, session.getBodyAsByteArray());
+            body = session.getBodyAsByteArray();
         } catch (Exception e) {
-            throw new ReplicationException(e);
+            throw new InternalReplicationManagerException(e);
         }
+        replicationManager.update(key, body);
     }
 
     public void destroy(Object key) {
@@ -70,22 +73,20 @@ public class SessionReplicationManager implements ReplicationManager {
         }
         
         byte[] body = (byte[]) replicationManager.acquirePrimary(key);
-        if (null == body) {
-            return null;
-        }
         
         WebSession session = sessionPool.take();
         long time = System.currentTimeMillis();
+        session.init(time, time, maxInactiveInterval, (String) key);
         try {
-            session.rehydrate(time, time, maxInactiveInterval, (String) key, body);
-        } catch (RehydrationException e) {
-            throw (IllegalStateException) new IllegalStateException().initCause(e);
+            session.setBodyAsByteArray(body);
+        } catch (Exception e) {
+            throw new InternalReplicationManagerException(e);
         }
         return session;
     }
 
-    public void releasePrimary(Object key) {
-        replicationManager.releasePrimary(key);
+    public boolean releasePrimary(Object key) {
+        return replicationManager.releasePrimary(key);
     }
 
     public ReplicaInfo retrieveReplicaInfo(Object key) {

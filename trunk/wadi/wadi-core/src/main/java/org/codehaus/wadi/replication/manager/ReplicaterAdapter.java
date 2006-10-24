@@ -16,6 +16,7 @@
 package org.codehaus.wadi.replication.manager;
 
 import org.codehaus.wadi.Replicater;
+import org.codehaus.wadi.ReplicaterException;
 import org.codehaus.wadi.web.WebSession;
 
 /**
@@ -26,17 +27,28 @@ public class ReplicaterAdapter implements Replicater {
     private final ReplicationManager replicationManager;
     
     public ReplicaterAdapter(ReplicationManager replicationManager) {
+        if (null == replicationManager) {
+            throw new IllegalArgumentException("replicationManager is required");
+        }
         this.replicationManager = replicationManager;
     }
 
     public void create(Object tmp) {
         WebSession session = castAndEnsureType(tmp);
-        replicationManager.create(session.getName(), session);
+        try {
+            replicationManager.create(session.getName(), session);
+        } catch (ReplicationException e) {
+            throw new ReplicaterException(e);
+        }
     }
 
     public void update(Object tmp) {
         WebSession session = castAndEnsureType(tmp);
-        replicationManager.update(session.getName(), session);
+        try {
+            replicationManager.update(session.getName(), session);
+        } catch (ReplicationException e) {
+            throw new ReplicaterException(e);
+        }
     }
 
     public void destroy(Object tmp) {
@@ -50,7 +62,7 @@ public class ReplicaterAdapter implements Replicater {
         try {
             session.setBodyAsByteArray(acquiredSession.getBodyAsByteArray());
         } catch (Exception e) {
-            throw (IllegalStateException) new IllegalStateException().initCause(e);
+            throw new ReplicaterException(e);
         }
     }
     

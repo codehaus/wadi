@@ -18,7 +18,11 @@ package org.codehaus.wadi.replication.storage.basic;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.replication.common.ReplicaInfo;
+import org.codehaus.wadi.replication.storage.ReplicaKeyAlreadyExistsException;
+import org.codehaus.wadi.replication.storage.ReplicaKeyNotFoundException;
 import org.codehaus.wadi.replication.storage.ReplicaStorage;
 
 /**
@@ -26,6 +30,8 @@ import org.codehaus.wadi.replication.storage.ReplicaStorage;
  * @version $Revision$
  */
 public class MemoryReplicaStorage implements ReplicaStorage {
+    private static final Log log = LogFactory.getLog(MemoryReplicaStorage.class);
+    
     private final Map keyToReplica;
     
     public MemoryReplicaStorage() {
@@ -44,7 +50,7 @@ public class MemoryReplicaStorage implements ReplicaStorage {
     public void mergeCreate(Object key, ReplicaInfo replicaInfo) {
         synchronized (keyToReplica) {
             if (keyToReplica.containsKey(key)) {
-                throw new IllegalArgumentException("Key [" + key + "] is already defined");
+                throw new ReplicaKeyAlreadyExistsException(key);
             }
             keyToReplica.put(key, replicaInfo);
         }
@@ -54,7 +60,7 @@ public class MemoryReplicaStorage implements ReplicaStorage {
         synchronized (keyToReplica) {
             ReplicaInfo curReplicaInfo = (ReplicaInfo) keyToReplica.get(key);
             if (null == curReplicaInfo) {
-                throw new IllegalArgumentException("Key [" + key + "] is not defined");
+                throw new ReplicaKeyNotFoundException(key);
             }
             replicaInfo = new ReplicaInfo(curReplicaInfo, replicaInfo);
             keyToReplica.put(key, replicaInfo);
@@ -65,7 +71,7 @@ public class MemoryReplicaStorage implements ReplicaStorage {
         synchronized (keyToReplica) {
             Object object = keyToReplica.remove(key);
             if (null == object) {
-                throw new IllegalArgumentException("Key [" + key + "] is not defined");
+                log.warn("Key [" + key + "] is not defined; no replica to be removed.");
             }
         }
     }

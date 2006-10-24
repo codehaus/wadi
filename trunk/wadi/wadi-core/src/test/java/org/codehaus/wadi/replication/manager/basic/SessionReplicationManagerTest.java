@@ -76,8 +76,10 @@ public class SessionReplicationManagerTest extends RMockTestCase {
         modify().returnValue(session.getBodyAsByteArray());
 
         WebSession webSession = sessionPool.take();
-        webSession.rehydrate(0, 0, 0, key, session.getBodyAsByteArray());
-        modify().args(new Expression[] {is.ANYTHING, is.ANYTHING, is.ANYTHING, is.AS_RECORDED, is.AS_RECORDED});
+        webSession.init(0, 0, 0, key);
+        modify().args(new Expression[] {is.ANYTHING, is.ANYTHING, is.ANYTHING, is.AS_RECORDED});
+        webSession.setBodyAsByteArray(session.getBodyAsByteArray());
+        modify().args(is.AS_RECORDED);
         startVerification();
         
         SessionReplicationManager manager = new SessionReplicationManager(repManager, sessionPool);
@@ -95,7 +97,7 @@ public class SessionReplicationManagerTest extends RMockTestCase {
         manager.releasePrimary(key);
     }
 
-    public void testRetrieveReplicaInfo() {
+    public void testRetrieveReplicaInfo() throws Exception {
         ReplicaInfo replicaInfo = new ReplicaInfo(new Object());
         
         repManager.retrieveReplicaInfo(key);

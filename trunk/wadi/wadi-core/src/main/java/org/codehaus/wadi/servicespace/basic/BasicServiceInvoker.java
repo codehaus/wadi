@@ -79,7 +79,11 @@ public class BasicServiceInvoker implements ServiceInvoker {
             envelope.setSourceCorrelationId(quipu.getCorrelationId());
         }
 
-        sendInvocation(envelope, targetPeers);
+        try {
+            sendInvocation(envelope, targetPeers);
+        } catch (MessageExchangeException e) {
+            return new InvocationResult(e);
+        }
         
         if (metaData.isOneWay()) {
             return null;
@@ -95,15 +99,11 @@ public class BasicServiceInvoker implements ServiceInvoker {
         return combineResults(metaData, messages);
     }
 
-    protected void sendInvocation(Envelope envelope, Peer[] targetPeers) {
+    protected void sendInvocation(Envelope envelope, Peer[] targetPeers) throws MessageExchangeException {
         for (int i = 0; i < targetPeers.length; i++) {
             Address address = targetPeers[i].getAddress();
             envelope.setAddress(address);
-            try {
-                dispatcher.send(address, envelope);
-            } catch (MessageExchangeException e) {
-                log.warn(e);
-            }
+            dispatcher.send(address, envelope);
         }
     }
 
@@ -134,9 +134,6 @@ public class BasicServiceInvoker implements ServiceInvoker {
                 replyMessage = dispatcher.exchangeSend(target, message, metaData.getTimeout());
             } catch (MessageExchangeException e) {
                 return new InvocationResult(e);
-            }
-            if (null == replyMessage) {
-                return new InvocationResult(new MessageExchangeException("Timeout"));
             }
             return (InvocationResult) replyMessage.getPayload();
         }
