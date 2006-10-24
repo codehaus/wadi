@@ -115,7 +115,7 @@ public class BasicReplicationManagerTest extends RMockTestCase {
         receiveEvent(peer3, LifecycleState.STOPPING);
         receiveEvent(peer4, LifecycleState.FAILED);
     }
-
+    
     private void receiveEvent(Peer peer, LifecycleState state) {
         serviceListener.receive(new ServiceLifecycleEvent(serviceSpaceName, ReplicaStorage.NAME, peer, state), 
                 Collections.EMPTY_SET);

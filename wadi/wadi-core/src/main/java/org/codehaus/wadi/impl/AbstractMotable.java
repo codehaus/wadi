@@ -34,68 +34,52 @@ import org.codehaus.wadi.RehydrationException;
  */
 
 public abstract class AbstractMotable extends SimpleEvictable implements Motable, Serializable {
- 
     protected static Log _log = LogFactory.getLog(AbstractMotable.class);
 
     protected String _name;
+    protected boolean newSession = true;
 
     public void init(long creationTime, long lastAccessedTime, int maxInactiveInterval, String name) {
         init(creationTime, lastAccessedTime, maxInactiveInterval);
-        _name=name;
+        _name = name;
     }
 
-    public void rehydrate(long creationTime, long lastAccessedTime, int maxInactiveInterval, String name, byte[] body) throws RehydrationException {
-        throw new UnsupportedOperationException();
-    }
-    
-    public void destroy() throws Exception {
-        super.destroy();
+    public void rehydrate(long creationTime, long lastAccessedTime, int maxInactiveInterval, String name, byte[] body)
+            throws RehydrationException {
+        newSession = false;
+        init(creationTime, lastAccessedTime, maxInactiveInterval, name);
+        try {
+            setBodyAsByteArray(body);
+        } catch (Exception e) {
+            throw new RehydrationException(e);
+        }
     }
 
-	public void copy(Motable motable) throws Exception {
-		super.copy(motable);
-		_name=motable.getName();
-		// how do we avoid doing this if motable is already replicated ?
-		setBodyAsByteArray(motable.getBodyAsByteArray());
-	}
+    public void copy(Motable motable) throws Exception {
+        super.copy(motable);
+        _name = motable.getName();
+        setBodyAsByteArray(motable.getBodyAsByteArray());
+    }
 
     public void mote(Motable recipient) throws Exception {
-    	recipient.copy(this);
-    	destroy();
+        recipient.copy(this);
+        destroy();
     }
-    
-	public String getName() {
-		return _name;
-	}
 
-	// N.B. implementation of Bytes field is left abstract...
+    public String getName() {
+        return _name;
+    }
 
     public void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
         super.readContent(oi);
-        _name=(String)oi.readObject();
-//        int length=oi.readInt();
-//        byte[] bytes=new byte[length];
-//        int actualLength=oi.read(bytes);
-//        if (actualLength!=length)
-//            if (_log.isErrorEnabled()) _log.error("serialized session truncated - "+(length-actualLength)+" bytes lost");
-//        try {
-//            setBytes(bytes);
-//        } catch (Exception e) {
-//            _log.error("unexpected problem deserializing session - data lost", e);
-//        }
+        _name = (String) oi.readObject();
     }
 
     public void writeContent(ObjectOutput oo) throws IOException {
         super.writeContent(oo);
         oo.writeObject(_name);
-//        try {
-//            byte[] bytes=getBytes();
-//            oo.writeInt(bytes.length);
-//            oo.write(bytes);
-//        } catch (Exception e) {
-//            _log.error("unexpected problem serializing session - data lost", e);
-//        }
     }
+
 }
 
 

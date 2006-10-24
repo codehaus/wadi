@@ -38,7 +38,7 @@ public class ReplicaAwareContextualiserTest extends RMockTestCase {
         assertEquals(attrValue, immotable.getAttribute(attrKey));
     }
 
-    public void testGet() {
+    public void testGet() throws Exception {
         WebSession motable = new DistributableSession(new DummyDistributableSessionConfig());
         String key = "id";
         

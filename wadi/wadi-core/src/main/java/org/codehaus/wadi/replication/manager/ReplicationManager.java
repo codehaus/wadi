@@ -26,17 +26,17 @@ import org.codehaus.wadi.servicespace.ServiceName;
 public interface ReplicationManager extends Lifecycle {
     ServiceName NAME = new ServiceName("ReplicationManager");
     
-    void create(Object key, Object tmp);
+    void create(Object key, Object tmp) throws ReplicationKeyAlreadyExistsException, InternalReplicationManagerException;
     
-    void update(Object key, Object tmp);
+    void update(Object key, Object tmp) throws ReplicationKeyNotFoundException, InternalReplicationManagerException;
     
     void destroy(Object key);
 
-    Object acquirePrimary(Object key);
+    Object acquirePrimary(Object key) throws ReplicationKeyNotFoundException, InternalReplicationManagerException;
 
-    void releasePrimary(Object key);
+    boolean releasePrimary(Object key);
 
-    ReplicaInfo retrieveReplicaInfo(Object key);
+    ReplicaInfo retrieveReplicaInfo(Object key) throws ReplicationKeyNotFoundException;
 
     boolean managePrimary(Object key);
 }

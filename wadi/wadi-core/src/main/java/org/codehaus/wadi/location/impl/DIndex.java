@@ -254,15 +254,13 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 
         public boolean prepare(String name, Motable emotable, Motable immotable) {
             try {
-                // Sync _stateLock=((Context)emotable).getExclusiveLock();
-                // if (_lockLog.isTraceEnabled()) _lockLog.trace("State -
-                // (excl.): "+name+ " ["+Thread.currentThread().getName()+"]");
-                // Utils.acquireUninterrupted(_stateLock);
-                // if (_lockLog.isTraceEnabled()) _lockLog.trace("State -
-                // (excl.): "+name+ " ["+Thread.currentThread().getName()+"]");
-                immotable.copy(emotable);
+                immotable.rehydrate(emotable.getCreationTime(),
+                        emotable.getLastAccessedTime(),
+                        emotable.getMaxInactiveInterval(),
+                        name,
+                        emotable.getBodyAsByteArray());
             } catch (Exception e) {
-                _log.warn("oops", e);
+                _log.warn(e);
                 return false;
             }
 
@@ -276,14 +274,6 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
                 _dispatcher.reply(_message, response);
 
                 emotable.destroy(); // remove copy in store
-                // if (_lockLog.isTraceEnabled()) _lockLog.trace("State (excl.)
-                // - releasing: "+name+ "
-                // ["+Thread.currentThread().getName()+"]");
-                // _stateLock.release();
-                // if (_lockLog.isTraceEnabled()) _lockLog.trace("State (excl.)
-                // - released: "+name+ "
-                // ["+Thread.currentThread().getName()+"]");
-
             } catch (Exception e) {
                 throw new UnsupportedOperationException("NYI"); // NYI
             }
@@ -318,9 +308,9 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
                 _log.warn("failed relocation - 0 bytes arrived: " + sessionName);
                 return null;
             } else {
-                if (!emotable.checkTimeframe(System.currentTimeMillis()))
-                    if (_log.isWarnEnabled())
-                        _log.warn("immigrating session has come from the future!: " + emotable.getName());
+                if (!emotable.checkTimeframe(System.currentTimeMillis())) {
+                    _log.warn("immigrating session has come from the future!: " + emotable.getName());
+                }
                 Emoter emoter = new SMToIMEmoter(_config.getPeerName(message.getReplyTo()), message);
                 Motable immotable = Utils.mote(emoter, immoter, emotable, sessionName);
                 return immotable;

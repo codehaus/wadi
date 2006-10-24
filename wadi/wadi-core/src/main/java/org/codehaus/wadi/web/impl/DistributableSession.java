@@ -21,7 +21,6 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Set;
 
-import org.codehaus.wadi.RehydrationException;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValueHelper;
 import org.codehaus.wadi.impl.Utils;
@@ -69,14 +68,4 @@ public class DistributableSession extends StandardSession implements Distributab
     // Lazy
     public boolean getHttpSessionAttributeListenersRegistered(){return ((DistributableSessionConfig)_config).getHttpSessionAttributeListenersRegistered();}
 
-    public void rehydrate(long creationTime, long lastAccessedTime, int maxInactiveInterval, String name, byte[] body) throws RehydrationException {
-        super.init(creationTime, lastAccessedTime, maxInactiveInterval, name);
-        try {
-            setBodyAsByteArray(body);
-        } catch (IOException e) {
-            throw new RehydrationException(e);
-        } catch (ClassNotFoundException e) {
-            throw new RehydrationException(e);
-        }
-    }
 }

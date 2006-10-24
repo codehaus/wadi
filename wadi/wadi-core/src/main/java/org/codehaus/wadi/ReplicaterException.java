@@ -1,6 +1,5 @@
 /**
- *
- * Copyright 2003-2005 Core Developers Network Ltd.
+ * Copyright 2006 The Apache Software Foundation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,15 +16,13 @@
 package org.codehaus.wadi;
 
 /**
- * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
+ * 
+ * @version $Revision: 2067 $
  */
-public interface Replicater {
-	void create(Object tmp) throws ReplicaterException;
+public class ReplicaterException extends RuntimeException {
 
-    void update(Object tmp) throws ReplicaterException;
-	
-    void destroy(Object tmp);
-
-	void acquireFromOtherReplicater(Object tmp) throws ReplicaterException;
+    public ReplicaterException(Throwable throwable) {
+        super(throwable);
+    }
+    
 }

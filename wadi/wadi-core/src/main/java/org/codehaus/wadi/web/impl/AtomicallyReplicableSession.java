@@ -45,38 +45,35 @@ public class AtomicallyReplicableSession extends AbstractReplicableSession {
     }
 
     protected transient boolean _dirty;
-    protected transient boolean newSession;
     protected transient Semantics _semantics = new ByReferenceSemantics();
     protected transient Replicater _replicater;
 
     public AtomicallyReplicableSession(ReplicableSessionConfig config) {
         super(config);
         _dirty = false;
-        newSession = true;
         // take ownership of the Replicater - it may carry per-Session state
         _replicater = ((ReplicableSessionConfig) _config).getReplicater();
     }
 
+    public void rehydrate(long creationTime, long lastAccessedTime, int maxInactiveInterval, String name, byte[] body)
+            throws RehydrationException {
+        super.rehydrate(creationTime, lastAccessedTime, maxInactiveInterval, name, body);
+        _replicater.acquireFromOtherReplicater(this);
+    }
+    
     public void readEnded() {
-        // N.B. this is called from our RWLock inside an implicit exclusive
-        // lock, so we should not need to worry
-        // about synchronisation...
+        // N.B. this is called from our RWLock inside an implicit exclusive lock, so we should not need to worry
+        // about synchronisation.
         if (newSession) {
             _replicater.create(this);
             newSession = false;
             _dirty = false;
         }
         if (_dirty) {
-            // checks for dirtiness and replicates
             _replicater.update(this);
             _dirty = false;
         }
     }
-
-    // TODO - abstract use of _dirty flag into an AtomicDirtier...
-    // could be done with aspects or method chaining - lets try method chaining,
-    // it's simpler...
-    // other session mutators...
 
     /**
      * if MII changes - dirties the session metadata - might this be distributed
@@ -120,10 +117,4 @@ public class AtomicallyReplicableSession extends AbstractReplicableSession {
         return _attributes.get(name);
     }
     
-    public void rehydrate(long creationTime, long lastAccessedTime, int maxInactiveInterval, String name, byte[] body)
-            throws RehydrationException {
-        super.rehydrate(creationTime, lastAccessedTime, maxInactiveInterval, name, body);
-        newSession = false;
-    }        
-
 }

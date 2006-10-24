@@ -64,15 +64,9 @@ public abstract class AbstractReplicableSession extends DistributableSession imp
     }
 
     /**
-     * destruction as our data is transferred to another storage medium. if this
-     * is the same medium as we are using for replication, we do not want to
-     * remove our replicated copies...
+     * destruction as our data is transferred to another storage medium.
      */
     public void destroy(Motable recipient) throws Exception {
-//        Replicater replicater = getReplicater();
-//        if (!replicater.getReusingStore()) {
-//            replicater.destroy(this);
-//        }
         super.destroy();
     }
 

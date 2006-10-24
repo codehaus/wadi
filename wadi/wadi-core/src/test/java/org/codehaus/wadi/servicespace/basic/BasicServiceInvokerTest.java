@@ -35,6 +35,7 @@ import org.codehaus.wadi.servicespace.ServiceName;
 import org.codehaus.wadi.servicespace.ServiceSpace;
 
 import com.agical.rmock.core.describe.ExpressionDescriber;
+import com.agical.rmock.core.match.Multiplicity;
 import com.agical.rmock.core.match.operator.AbstractExpression;
 import com.agical.rmock.extension.junit.RMockTestCase;
 
@@ -66,8 +67,11 @@ public class BasicServiceInvokerTest extends RMockTestCase {
         
         peer1 = (Peer) mock(Peer.class);
         address1 = peer1.getAddress();
+        modify().multiplicity(expect.from(0));
+
         peer2 = (Peer) mock(Peer.class);
         address2 = peer2.getAddress();
+        modify().multiplicity(expect.from(0));
     }
     
     public void testOneWayInvoke() throws Exception {
@@ -112,6 +116,29 @@ public class BasicServiceInvokerTest extends RMockTestCase {
         serviceInvoker.invoke(invocInfo);
     }
 
+    public void testExceptionWhenSendingInvocation() throws Exception {
+        InvocationMetaData invocationMetaData = new InvocationMetaData();
+        invocationMetaData.setTargets(new Peer[] {peer1});
+        invocationMetaData.setOneWay(true);
+        InvocationInfo invocInfo = new InvocationInfo("name", new Class[0], new Object[0], invocationMetaData);
+        
+        beginSection(s.ordered("Prepare and send invocation"));
+        Envelope envelope = recordPrepareOneWayMessage(invocInfo);
+        
+        envelope.setAddress(address1);
+        dispatcher.send(address1, envelope);
+        MessageExchangeException expectedException = new MessageExchangeException("");
+        modify().throwException(expectedException);
+        endSection();
+        
+        startVerification();
+        
+        BasicServiceInvoker serviceInvoker = new BasicServiceInvoker(serviceSpace, serviceName);
+        InvocationResult result = serviceInvoker.invoke(invocInfo);
+        assertFalse(result.isSuccess());
+        assertSame(expectedException, result.getThrowable());
+    }
+    
     private void recordProcessResults(InvocationResultCombiner resultCombiner, InvocationMetaData invocationMetaData, Quipu quipu) throws MessageExchangeException {
         Envelope replyEnvelope = (Envelope) mock(Envelope.class);
         dispatcher.attemptMultiRendezVous(quipu, invocationMetaData.getTimeout());

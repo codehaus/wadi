@@ -30,6 +30,7 @@ import net.sf.cglib.reflect.FastClass;
 import org.codehaus.wadi.servicespace.InvocationInfo;
 import org.codehaus.wadi.servicespace.InvocationMetaData;
 import org.codehaus.wadi.servicespace.InvocationResult;
+import org.codehaus.wadi.servicespace.ServiceInvocationException;
 import org.codehaus.wadi.servicespace.ServiceName;
 import org.codehaus.wadi.servicespace.ServiceProxy;
 import org.codehaus.wadi.servicespace.ServiceProxyFactory;
@@ -175,8 +176,16 @@ public class CGLIBServiceProxyFactory implements ServiceProxyFactory {
             if (result.isSuccess()) {
                 return result.getResult();
             } else {
-                // TODO - this throwable must be declared by Method.
-                throw result.getThrowable();
+                Throwable throwable = result.getThrowable();
+                Class throwableType = throwable.getClass();
+                Class[] exceptionTypes = method.getExceptionTypes();
+                for (int i = 0; i < exceptionTypes.length; i++) {
+                    Class exceptionType = exceptionTypes[i];
+                    if (exceptionType.isAssignableFrom(throwableType)) {
+                        throw throwable;
+                    }
+                }
+                throw new ServiceInvocationException(throwable);
             }
         }
         

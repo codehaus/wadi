@@ -21,6 +21,7 @@ import javax.servlet.FilterChain;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.codehaus.wadi.RWLockListener;
 import org.codehaus.wadi.Session;
 import org.codehaus.wadi.EndPoint;
 import org.codehaus.wadi.Invocation;
@@ -45,6 +46,8 @@ public class WebInvocation implements Invocation {
 	private HttpServletResponse hres;
 	private FilterChain chain;
 	private boolean proxiedInvocation=true;
+
+    private Session session;
     
     /**
      * Initialise this WebInvocation for action after being taken from a Pool
@@ -102,6 +105,10 @@ public class WebInvocation implements Invocation {
 			chain.doFilter(actualWrapper, hres);
 		} catch (Exception e) {
 			throw new InvocationException(e);
+        } finally {
+            if (null != session) {
+                ((RWLockListener) session).readEnded();
+            }
 		}
 	}
 	
@@ -110,7 +117,11 @@ public class WebInvocation implements Invocation {
 			chain.doFilter(hreq, hres);
 		} catch (Exception e) {
 			throw new InvocationException(e);
-		}
+		} finally {
+            if (null != session) {
+                ((RWLockListener) session).readEnded();
+            }
+        }
 	}
 
     // 'org.codehaus.wadi.web.WebInvocation' API
@@ -128,7 +139,7 @@ public class WebInvocation implements Invocation {
     }
 
     public void setSession(Session session) {
-        // not used at the moment - the session is retrieved via the request, from the Manager - not cached on the Invocation - we could improve things...
+        this.session = session;
     }
     
 }
