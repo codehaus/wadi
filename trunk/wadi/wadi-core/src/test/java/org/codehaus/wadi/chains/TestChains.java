@@ -16,21 +16,13 @@
  */
 package org.codehaus.wadi.chains;
 
-import junit.framework.TestCase;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Message;
-import org.codehaus.wadi.group.Address;
-import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.ServiceEndpoint;
 import org.codehaus.wadi.group.impl.AbstractMsgDispatcher;
 import org.codehaus.wadi.group.impl.RendezVousMsgDispatcher;
-import org.codehaus.wadi.group.vm.VMBroker;
-import org.codehaus.wadi.group.vm.VMDispatcher;
 import org.codehaus.wadi.location.session.MoveIMToPM;
 import org.codehaus.wadi.location.session.MovePMToIM;
 
@@ -59,63 +51,84 @@ import org.codehaus.wadi.location.session.MovePMToIM;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class TestChains extends TestCase {
-
-	protected Log _log=LogFactory.getLog(getClass());
+public class TestChains extends ChainTestCase {
 
 	public TestChains(String name) {
 		super(name);
 	}
+	
+	/* If a message is not answered within a given timeframe, it may be repeated
+	 * until answered (giving time for a service fail-over to complete) or until
+	 * a failure condition is recognised.
+	 * All messages that correspond to the same Link in a MessageChain
+	 * must carry the same source correlationId, so that a reply to the e.g. the
+	 * the first, may be taken as a reply to the second etc...
+	 * The recipient of such a message needs to remember which Links are currently
+	 * being processed, so that they can avoid starting a second attempt at e.g.
+	 * an upstream Chain because the sender downstream is getting impatient.
+	 * 
+	 */
 
-	long _inactiveTime=2500;
-	Dispatcher _dispatcher1;
-	Cluster _cluster1;
-	Dispatcher _dispatcher2;
-	Cluster _cluster2;
+	//-----------------------------------------------------------------
+	// TODO - this stuff should be in wadi-group
+	
+    static class MyEndpoint extends AbstractMsgDispatcher {
 
-	protected void setUp() throws Exception {
-		super.setUp();
-		// TODO - use unique names
-		VMBroker broker=new VMBroker("TestBroker");
-		_dispatcher1=new VMDispatcher(broker, "dispatcher1", _inactiveTime);
-		_cluster1=_dispatcher1.getCluster();
-		_dispatcher1.start();
-		_cluster1.waitOnMembershipCount(1, _inactiveTime);
-		_log.info("1 peer...");
-		_dispatcher2=new VMDispatcher(broker, "dispatcher2", _inactiveTime);
-		_cluster2=_dispatcher2.getCluster();
-		_dispatcher2.start();
-		_cluster1.waitOnMembershipCount(2, _inactiveTime);
-		_cluster2.waitOnMembershipCount(2, _inactiveTime);
-		_log.info("2 peers...");
+    	protected int _count;
+    	protected String _correlationId;
+    	
+        MyEndpoint(Dispatcher dispatcher, Class type) {
+            super(dispatcher, type);
+        }
+
+        public int getCount() {
+        	return _count;
+        }
+        
+        public void dispatch(Envelope om) throws Exception {
+        	_count++;
+        	
+        	if (_correlationId==null)
+        		_correlationId=om.getSourceCorrelationId();
+        	else {
+        		assertTrue(_correlationId.equals(om.getSourceCorrelationId()));
+        		_dispatcher.reply(om, new MyMessage());
+        	}
+        }
+        
+    }
+
+    static class MyMessage implements Message {
+    };
+    
+    /**
+	 * Test that Messages corresponding to the same 'Link' in a MessageChain, carry
+	 * the same source correlation Id.
+	 */
+	public void testLinkSourceCorrelationId() throws Exception {
+		_dispatcher1.register(new RendezVousMsgDispatcher(_dispatcher1, MyMessage.class));
+		MyEndpoint endpoint=new MyEndpoint(_dispatcher2, MyMessage.class);
+		_dispatcher2.register(endpoint);
+		Envelope response=_dispatcher1.exchangeSendLink(_cluster2.getLocalPeer().getAddress(), new MyMessage(), 100, 2);
+		assertTrue(endpoint.getCount()==2);
+		assertTrue(response.getPayload().getClass()==MyMessage.class);
+	}
+	
+	//-----------------------------------------------------------------
+
+	/**
+	 * Test that duplicate Link Messages arriving are ignored, to avoid creating duplicate
+	 * downstream processes unnecessarily.
+	 */
+	public void testMergeSourceCorrelationId() {
+		assertTrue(true);
+		// TODO..
 	}
 
-	protected void tearDown() throws Exception {
-		super.tearDown();
-		_cluster1.waitOnMembershipCount(2, _inactiveTime);
-		_cluster2.waitOnMembershipCount(2, _inactiveTime);
-		_log.info("2 peers...");
-		_dispatcher2.stop();
-		_dispatcher2=null;
-		_cluster1.waitOnMembershipCount(1, _inactiveTime); // TODO: this is probably not stricly working
-		_log.info("1 peer...");
-		_dispatcher1.stop();
-		_dispatcher1=null;
-		_log.info("0 peers...");
-	}
-
-	protected Envelope exchangeSendLoop(Dispatcher dispatcher, Address address, Message message, long timeout, int retries) throws MessageExchangeException {
-		for (int attempts=0; attempts<retries; attempts++) {
-			try {
-				return dispatcher.exchangeSend(address, message, timeout);
-			} catch (MessageExchangeException e) {
-				_log.warn("no reply to message within timeframe - retrying ("+attempts+"/"+retries+")", e);
-			}
-		}
-		throw new MessageExchangeException("no reply to repeated message");
-	}
-
-    class IMToPMEndpoint extends AbstractMsgDispatcher {
+	//-----------------------------------------------------------------
+	// this stuff should probably move out to a specific IM->PM testsuite
+	
+	class IMToPMEndpoint extends AbstractMsgDispatcher {
         
         IMToPMEndpoint(Dispatcher dispatcher, Class type) {
             super(dispatcher, type);
@@ -129,7 +142,11 @@ public class TestChains extends TestCase {
         
     }
     
-	public void testIMToPM() throws Exception {
+    // client sends message to remote Partition
+    // Partition receives it and quits without answering - mimicking failure
+    // client continues trying until Partition is reincarnated (upon itself) and chain completes
+	
+    public void testIMToPM() throws Exception {
 		ServiceEndpoint sync=new IMToPMEndpoint(_dispatcher2, MoveIMToPM.class);
 		_dispatcher2.register(sync);
 		ServiceEndpoint rv=new RendezVousMsgDispatcher(_dispatcher1, MovePMToIM.class);
@@ -141,9 +158,11 @@ public class TestChains extends TestCase {
 		boolean relocateInvocation=false;
 		Message message=new MoveIMToPM(sessionName, peerName, relocateSession, relocateInvocation);
 		long timeout=10000;
+		// If PM fails - wait for Partition reincarnation and then address new PM...
 		try {
 			_log.info("sending request...");
-			Envelope envelope=exchangeSendLoop(_dispatcher1, _dispatcher2.getCluster().getLocalPeer().getAddress(), message, timeout, 3);
+			Envelope envelope=_dispatcher1.exchangeSendLink(_dispatcher2.getCluster().getLocalPeer().getAddress(), message, timeout, 3);
+			assertTrue(envelope.getPayload().getClass()==MovePMToIM.class);
 			_log.info("...response received");
 		} catch (MessageExchangeException e) {
 			// ok - for the moment...
@@ -165,12 +184,4 @@ public class TestChains extends TestCase {
 		// we need an exchangeSend() that does not throw Exception on timeout to loop efficiently...
 	}
 
-	public void testPMToSM() throws Exception {
-		assertTrue(true);
-	}
-
-	public void testSMToIM() throws Exception {
-		assertTrue(true);
-	}
-    
 }

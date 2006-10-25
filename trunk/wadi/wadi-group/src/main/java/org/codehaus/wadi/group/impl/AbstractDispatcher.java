@@ -157,6 +157,22 @@ public abstract class AbstractDispatcher implements Dispatcher {
 		return exchangeSend(to, body, timeout, null);
 	}
 	
+	public Envelope exchangeSendLink(Address address, Serializable pojo, long timeout, int retries) throws MessageExchangeException {
+		String sourceCorrelationId=_factory.create();
+		for (int attempts=0; attempts<retries; attempts++) {
+			Envelope response=exchangeSend(address, sourceCorrelationId, pojo, timeout);
+			// FIXME:
+			// There is a chance that a response will arrive whilst we are resetting the rendez-vous
+			// and be missed. At the best this will be less efficient than it might. At the worst we
+			// may end up missing out on a response.
+			// Consider how we might leave the rendezvous in place and extend its life for the period
+			// period of the exchange.
+			if (response!=null)
+				return response;
+		}
+		throw new MessageExchangeException("no reply to repeated message");
+	}
+
 	public void reply(Envelope message, Serializable body) throws MessageExchangeException {
         Envelope reply = createMessage();
         reply.setPayload(body);
@@ -211,9 +227,9 @@ public abstract class AbstractDispatcher implements Dispatcher {
         send(target, om);
 	}
 	
-	public Envelope exchangeSend(Address target, Serializable body, long timeout, String targetCorrelationId) throws MessageExchangeException {
+	public Envelope exchangeSend(Address target, Serializable pojo, long timeout, String targetCorrelationId) throws MessageExchangeException {
 	    Envelope message = createMessage();
-        message.setPayload(body);
+        message.setPayload(pojo);
         return exchangeSend(target, message, timeout, targetCorrelationId);
 	}
     
