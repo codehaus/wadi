@@ -51,7 +51,8 @@ public class MemoryReplicaStorageTest extends TestCase {
         storage.mergeCreate(key, replicaInfo);
 
         replica = new Object();
-        storage.mergeUpdate(key, new ReplicaInfo(replica));
+        replicaInfo = new ReplicaInfo(node1, new Peer[] {node2}, replica);
+        storage.mergeUpdate(key, new ReplicaInfo(node1, new Peer[] {node2}, replica));
         
         assertTrue(storage.storeReplicaInfo(key));
         ReplicaInfo actualReplicaInfo = storage.retrieveReplicaInfo(key);

@@ -70,8 +70,7 @@ class StorageCommandBuilder {
 
         if (0 != updateSecondariesSet.size()) {
             Peer targets[] = (Peer[]) updateSecondariesSet.toArray(new Peer[0]);
-            ReplicaInfo updateReplicaInfo = new ReplicaInfo(replicaInfo.getPrimary(), newSecondaries);
-            commands.add(new UpdateStorageCommand(targets, key, updateReplicaInfo));
+            commands.add(new UpdateStorageCommand(targets, key, replicaInfo));
         }
 
         if (0 != destroySecondariesSet.size()) {

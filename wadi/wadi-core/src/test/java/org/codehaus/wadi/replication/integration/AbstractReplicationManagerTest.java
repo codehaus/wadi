@@ -62,28 +62,28 @@ public abstract class AbstractReplicationManagerTest extends TestCase {
         manager1.create(key, value);
         Thread.sleep(TEMPO);
         assertNotDefinedByStorage(key, replicaStorage1);
-        assertDefinedByStorage(key, replicaStorage2, new ReplicaInfo(peer1, new Peer[] {peer2}));
+        assertDefinedByStorage(key, 0, replicaStorage2, new ReplicaInfo(peer1, new Peer[] {peer2}, new Object()));
 
         serviceSpace3.start();
         Thread.sleep(TEMPO);
         assertNotDefinedByStorage(key, replicaStorage1);
-        assertDefinedByStorage(key, replicaStorage2, new ReplicaInfo(peer1, new Peer[] {peer2, peer3}));
-        assertDefinedByStorage(key, replicaStorage3, new ReplicaInfo(peer1, new Peer[] {peer2, peer3}));
+        assertDefinedByStorage(key, 1, replicaStorage2, new ReplicaInfo(peer1, new Peer[] {peer2, peer3}, new Object()));
+        assertDefinedByStorage(key, 1, replicaStorage3, new ReplicaInfo(peer1, new Peer[] {peer2, peer3}, new Object()));
 
         manager2.acquirePrimary(key);
-        assertDefinedByStorage(key, replicaStorage1, new ReplicaInfo(peer2, new Peer[] {peer1, peer3}));
+        assertDefinedByStorage(key, 2, replicaStorage1, new ReplicaInfo(peer2, new Peer[] {peer1, peer3}, new Object()));
         assertNotDefinedByStorage(key, replicaStorage2);
-        assertDefinedByStorage(key, replicaStorage3, new ReplicaInfo(peer2, new Peer[] {peer1, peer3}));
+        assertDefinedByStorage(key, 2, replicaStorage3, new ReplicaInfo(peer2, new Peer[] {peer1, peer3}, new Object()));
 
         manager1.acquirePrimary(key);
         assertNotDefinedByStorage(key, replicaStorage1);
-        assertDefinedByStorage(key, replicaStorage2, new ReplicaInfo(peer1, new Peer[] {peer2, peer3}));
-        assertDefinedByStorage(key, replicaStorage3, new ReplicaInfo(peer1, new Peer[] {peer2, peer3}));
+        assertDefinedByStorage(key, 3, replicaStorage2, new ReplicaInfo(peer1, new Peer[] {peer2, peer3}, new Object()));
+        assertDefinedByStorage(key, 3, replicaStorage3, new ReplicaInfo(peer1, new Peer[] {peer2, peer3}, new Object()));
 
         serviceSpace3.stop();
         Thread.sleep(TEMPO);
         assertNotDefinedByStorage(key, replicaStorage1);
-        assertDefinedByStorage(key, replicaStorage2, new ReplicaInfo(peer1, new Peer[] {peer2}));
+        assertDefinedByStorage(key, 4, replicaStorage2, new ReplicaInfo(peer1, new Peer[] {peer2}, new Object()));
         assertNotDefinedByStorage(key, replicaStorage3);
 
         serviceSpace2.stop();
@@ -95,24 +95,26 @@ public abstract class AbstractReplicationManagerTest extends TestCase {
         Thread.sleep(TEMPO);
         assertNotDefinedByStorage(key, replicaStorage1);
         assertNotDefinedByStorage(key, replicaStorage2);
-        assertDefinedByStorage(key, replicaStorage3, new ReplicaInfo(peer1, new Peer[] {peer3}));
+        assertDefinedByStorage(key, 5, replicaStorage3, new ReplicaInfo(peer1, new Peer[] {peer3}, new Object()));
 
         serviceSpace2.start();
         Thread.sleep(TEMPO);
         assertNotDefinedByStorage(key, replicaStorage1);
-        assertDefinedByStorage(key, replicaStorage2, new ReplicaInfo(peer1, new Peer[] {peer3, peer2}));
-        assertDefinedByStorage(key, replicaStorage3, new ReplicaInfo(peer1, new Peer[] {peer3, peer2}));
+        assertDefinedByStorage(key, 6, replicaStorage2, new ReplicaInfo(peer1, new Peer[] {peer3, peer2}, new Object()));
+        assertDefinedByStorage(key, 6, replicaStorage3, new ReplicaInfo(peer1, new Peer[] {peer3, peer2}, new Object()));
     }
 
     private void assertNotDefinedByStorage(String key, ReplicaStorage storage) {
         assertFalse(storage.storeReplicaInfo(key));
     }
 
-    private void assertDefinedByStorage(String key, ReplicaStorage storage, ReplicaInfo expected) {
+    private void assertDefinedByStorage(String key, int version, ReplicaStorage storage, ReplicaInfo expected) {
         assertTrue(storage.storeReplicaInfo(key));
 
         ReplicaInfo replicaInfo = storage.retrieveReplicaInfo(key);
 
+        assertEquals(version, replicaInfo.getVersion());
+        
         assertEquals(expected.getPrimary(), replicaInfo.getPrimary());
 
         Peer[] actualSecondaries = replicaInfo.getSecondaries();
