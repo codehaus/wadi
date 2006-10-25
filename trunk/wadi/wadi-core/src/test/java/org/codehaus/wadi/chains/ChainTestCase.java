@@ -45,6 +45,10 @@ public class ChainTestCase extends TestCase {
 	Dispatcher _dispatcher2;
 	Cluster _cluster2;
 
+    public void testEmpty() {
+        
+    }
+    
 	protected void setUp() throws Exception {
 		super.setUp();
 		// TODO - use unique names
