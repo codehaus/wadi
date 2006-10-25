@@ -16,10 +16,6 @@
  */
 package org.codehaus.wadi.impl;
 
-import org.codehaus.wadi.Lease.Handle;
-import org.codehaus.wadi.impl.SimpleLease.Releaser;
-import org.codehaus.wadi.impl.SimpleLease.SimpleHandle;
-
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**

@@ -24,6 +24,7 @@ import java.util.Collection;
  * @version $Revision: 1563 $
  */
 public interface Dispatcher extends MessageListener {
+	
     void register(ServiceEndpoint internalDispatcher);
 
     void unregister(ServiceEndpoint internalDispatcher, int nbAttemp, long delayMillis);
@@ -105,6 +106,8 @@ public interface Dispatcher extends MessageListener {
      */
     Envelope exchangeSend(Address target, Serializable pojo, long timeout) throws MessageExchangeException;
 
+    Envelope exchangeSendLink(Address address, Serializable pojo, long timeout, int retries) throws MessageExchangeException;
+    
     /**
      * Send a Serializable 'pojo' to a 'target' Address - sync - and wait for a
      * reply. This message will be accompanied by a 'targetCorrelationId' which
@@ -123,7 +126,7 @@ public interface Dispatcher extends MessageListener {
      * @return a response in the form of a Message
      * @throws MessageExchangeException
      */
-    Envelope exchangeSend(Address target, Serializable body, long timeout, String targetCorrelationId) throws MessageExchangeException;
+    Envelope exchangeSend(Address target, Serializable pojo, long timeout, String targetCorrelationId) throws MessageExchangeException;
 
     /**
      * Send a Serializable 'pojo' to a 'target' Address - sync - and wait for a
@@ -185,4 +188,6 @@ public interface Dispatcher extends MessageListener {
 
     // needed by BasicReplicaStorage stuff - can we lose it ?
     Address getAddress(String name);
+    
+
 }

@@ -52,8 +52,8 @@ public class DispatcherWrapper implements Dispatcher {
         return _delegate.exchangeSend(target, pojo, timeout);
     }
 
-    public Envelope exchangeSend(Address target, Serializable body, long timeout, String targetCorrelationId) throws MessageExchangeException {
-        return _delegate.exchangeSend(target, body, timeout, targetCorrelationId);
+    public Envelope exchangeSend(Address target, Serializable pojo, long timeout, String targetCorrelationId) throws MessageExchangeException {
+        return _delegate.exchangeSend(target, pojo, timeout, targetCorrelationId);
     }
 
     public Envelope exchangeSend(Address target, String sourceCorrelationId, Serializable pojo, long timeout) throws MessageExchangeException {
@@ -131,6 +131,10 @@ public class DispatcherWrapper implements Dispatcher {
     public Envelope exchangeSend(Address target, Envelope om, long timeout) throws MessageExchangeException {
         return _delegate.exchangeSend(target, om, timeout);
     }
+
+	public Envelope exchangeSendLink(Address address, Serializable pojo, long timeout, int retries) throws MessageExchangeException {
+		return _delegate.exchangeSendLink(address, pojo, timeout, retries);
+	}
 
     public void reply(Envelope request, Envelope reply) throws MessageExchangeException {
         _delegate.reply(request, reply);

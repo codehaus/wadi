@@ -22,7 +22,6 @@ import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.MessageExchangeException;
-import org.codehaus.wadi.impl.Utils;
 import org.codehaus.wadi.location.PartitionConfig;
 import org.codehaus.wadi.location.SessionRequestMessage;
 import org.codehaus.wadi.location.session.DeleteIMToPM;
