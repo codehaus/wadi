@@ -62,7 +62,7 @@ public class StorageCommandBuilderTest extends RMockTestCase {
         invMetaData.setTargets(new Peer[] {peer3});
         serviceProxy.getProxy();
         modify().returnValue(storage);
-        storage.mergeUpdate(expectedKey, new ReplicaInfo(peer1, expectedReplicaInfo.getSecondaries()));
+        storage.mergeUpdate(expectedKey, new ReplicaInfo(peer1, expectedReplicaInfo.getSecondaries(), payload));
         modify().args(is.AS_RECORDED, is.NOT_NULL);
 
         serviceProxy.getInvocationMetaData();

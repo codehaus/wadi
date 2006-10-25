@@ -25,6 +25,17 @@ public class ReplicaInfoTest extends TestCase {
     private static final Peer peer2 = new VMPeer("PEER2");
     private static final Peer peer3 = new VMPeer("PEER3");
     
+    public void testCreateWithPrototpye() {
+        Object replica = new Object();
+        ReplicaInfo info = new ReplicaInfo(peer1, new Peer[] {peer2}, replica);
+        info = new ReplicaInfo(info);
+        assertSame(peer1, info.getPrimary());
+        assertEquals(1, info.getSecondaries().length);
+        assertSame(peer2, info.getSecondaries()[0]);
+        assertSame(replica, info.getReplica());
+        assertEquals(1, info.getVersion());
+    }
+
     public void testCreateWithReplica() {
         ReplicaInfo info = new ReplicaInfo(peer1, new Peer[] {peer2}, new Object());
         Object replica = new Object();
@@ -33,6 +44,7 @@ public class ReplicaInfoTest extends TestCase {
         assertEquals(1, info.getSecondaries().length);
         assertSame(peer2, info.getSecondaries()[0]);
         assertSame(replica, info.getReplica());
+        assertEquals(1, info.getVersion());
     }
 
     public void testCreateWithPrimaryAndSecondaries() {
@@ -43,16 +55,7 @@ public class ReplicaInfoTest extends TestCase {
         assertEquals(1, info.getSecondaries().length);
         assertSame(peer3, info.getSecondaries()[0]);
         assertSame(replica, info.getReplica());
+        assertEquals(1, info.getVersion());
     }
 
-    public void testCreateWithOverride() {
-        ReplicaInfo info = new ReplicaInfo(peer1, new Peer[] {peer2}, new Object());
-        Object replica = new Object();
-        info = new ReplicaInfo(info, new ReplicaInfo(peer2, new Peer[] {peer3}, replica));
-        assertSame(peer2, info.getPrimary());
-        assertEquals(1, info.getSecondaries().length);
-        assertSame(peer3, info.getSecondaries()[0]);
-        assertSame(replica, info.getReplica());
-    }
-    
 }

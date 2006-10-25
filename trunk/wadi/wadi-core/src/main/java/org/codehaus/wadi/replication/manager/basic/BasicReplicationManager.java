@@ -111,11 +111,13 @@ public class BasicReplicationManager implements ReplicationManager {
             if (null == replicaInfo) {
                 throw new ReplicationKeyNotFoundException(key);
             }
+            replicaInfo = new ReplicaInfo(replicaInfo, tmp);
+            keyToReplicaInfo.put(key, replicaInfo);
         }
-        replicaInfo = new ReplicaInfo(replicaInfo, tmp);
 
-        UpdateReplicaTask backOffCapableTask = new UpdateReplicaTask(replicaInfo, key);
-        backOffCapableTask.attempt();
+        if (replicaInfo.getSecondaries().length != 0) {
+            cascadeUpdate(key, replicaInfo);
+        }
     }
 
     public void destroy(Object key) {
@@ -134,13 +136,16 @@ public class BasicReplicationManager implements ReplicationManager {
     }
 
     public Object acquirePrimary(Object key) {
-        replicationManagerProxy.releasePrimary(key);
-
         ReplicaInfo replicaInfo;
         try {
+            replicationManagerProxy.releasePrimary(key);
             replicaInfo = replicaStorageProxy.retrieveReplicaInfo(key);
         } catch (ServiceInvocationException e) {
-            throw new ReplicationKeyNotFoundException(key);
+            if (e.isMessageExchangeException()) {
+                throw new InternalReplicationManagerException(e);
+            } else {
+                throw new ReplicationKeyNotFoundException(key, e);
+            }
         }
         
         replicaInfo = reOrganizeSecondaries(key, replicaInfo);
@@ -189,22 +194,25 @@ public class BasicReplicationManager implements ReplicationManager {
         }
     }
     
-    protected void cascadeUpdate(Object key, ReplicaInfo replicaInfo, BackOffCapableTask task) {
+    protected void cascadeUpdate(Object key, ReplicaInfo replicaInfo) {
         ReplicaStorage storage = newReplicaStorageStub(replicaInfo.getSecondaries());
         try {
-            storage.mergeUpdate(key, new ReplicaInfo(replicaInfo.getReplica()));
-            task.complete();
+            storage.mergeUpdate(key, replicaInfo);
         } catch (ServiceInvocationException e) {
             if (e.isMessageExchangeException()) {
-                task.backoff();
+                log.warn("Update has not been properly cascaded due to a communication failure. If a targeted node " +
+                        "has been lost, state will be re-balance automatically.", e);
             } else {
-                throw e;
+                throw new InternalReplicationManagerException(e);
             }
         }
     }
     
     protected void cascadeDestroy(Object key, ReplicaInfo replicaInfo) {
         ReplicaStorage storage = newReplicaStorageStub(replicaInfo.getSecondaries());
+        ServiceProxy serviceProxy = (ServiceProxy) storage;
+        serviceProxy.getInvocationMetaData().setOneWay(true);
+        serviceProxy.getInvocationMetaData().setIgnoreMessageExchangeExceptionOnSend(true);
         storage.mergeDestroy(key);
     }
 
@@ -296,15 +304,18 @@ public class BasicReplicationManager implements ReplicationManager {
         void complete();
     }
     
-    protected abstract class AbstractTask implements BackOffCapableTask {
+    protected class CreateReplicaTask implements BackOffCapableTask {
         private static final int NB_ATTEMPT = 4;
         private static final long BACK_OFF_PERIOD = 1000;
 
         protected final Object key;
+        private final Object tmp;
         private volatile int currentAttempt;
+        private volatile ReplicaInfo replicaInfo;
 
-        public AbstractTask(Object key) {
+        private CreateReplicaTask(Object tmp, Object key) {
             this.key = key;
+            this.tmp = tmp;
         }
 
         public void backoff() {
@@ -325,22 +336,13 @@ public class BasicReplicationManager implements ReplicationManager {
             doAttempt();
         }
 
-        protected abstract void doAttempt();
-
-    }
-    
-    protected final class CreateReplicaTask extends AbstractTask {
-        private final Object tmp;
-        private volatile ReplicaInfo replicaInfo;
-
-        private CreateReplicaTask(Object tmp, Object key) {
-            super(key);
-            this.tmp = tmp;
-        }
-
         public void doAttempt() {
             Peer secondaries[] = backingStrategy.electSecondaries(key);
-            replicaInfo = new ReplicaInfo(localPeer, secondaries, tmp);
+            if (null == replicaInfo) {
+                replicaInfo = new ReplicaInfo(localPeer, secondaries, tmp);
+            } else {
+                replicaInfo = new ReplicaInfo(replicaInfo);
+            }
             if (secondaries.length != 0) {
                 cascadeCreate(key, replicaInfo, this);
             }
@@ -351,27 +353,7 @@ public class BasicReplicationManager implements ReplicationManager {
                 keyToReplicaInfo.put(key, replicaInfo);
             }
         }
+
     }
-
-    protected final class UpdateReplicaTask extends AbstractTask {
-        private final ReplicaInfo replicaInfo;
-
-        private UpdateReplicaTask(ReplicaInfo replicaInfo, Object key) {
-            super(key);
-            this.replicaInfo = replicaInfo;
-        }
-
-        public void doAttempt() {
-            if (replicaInfo.getSecondaries().length != 0) {
-                cascadeUpdate(key, replicaInfo, this);
-            }
-        }
-
-        public void complete() {
-            synchronized (keyToReplicaInfo) {
-                keyToReplicaInfo.put(key, replicaInfo);
-            }
-        }
-    }
-
+    
 }

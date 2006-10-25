@@ -32,6 +32,7 @@ public class InvocationMetaData implements Serializable {
     private transient Peer[] targets;
     private transient long timeout = DEFAULT_TIMEOUT;
     private boolean oneWay;
+    private boolean ignoreMessageExchangeExceptionOnSend;
     private ReplyRequiredAssessor replyAssessor = TwoWay.ASSESSOR;
     private transient InvocationResultCombiner invocationResultCombiner = ReturnFirstSuccessThenFailure.COMBINER;
 
@@ -106,6 +107,14 @@ public class InvocationMetaData implements Serializable {
             throw new IllegalArgumentException("replyAssessor is required");
         }
         this.replyAssessor = replyAssessor;
+    }
+
+    public boolean isIgnoreMessageExchangeExceptionOnSend() {
+        return ignoreMessageExchangeExceptionOnSend;
+    }
+
+    public void setIgnoreMessageExchangeExceptionOnSend(boolean ignoreMessageExchangeExceptionOnSend) {
+        this.ignoreMessageExchangeExceptionOnSend = ignoreMessageExchangeExceptionOnSend;
     }
 
 }

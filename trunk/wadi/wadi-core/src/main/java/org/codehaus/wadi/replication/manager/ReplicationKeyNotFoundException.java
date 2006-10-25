@@ -15,6 +15,7 @@
  */
 package org.codehaus.wadi.replication.manager;
 
+
 /**
  * 
  * @version $Revision: 2078 $
@@ -24,6 +25,14 @@ public class ReplicationKeyNotFoundException extends ReplicationException {
     private final Object key;
 
     public ReplicationKeyNotFoundException(Object key) {
+        if (null == key) {
+            throw new IllegalArgumentException("key is required");
+        }
+        this.key = key;
+    }
+
+    public ReplicationKeyNotFoundException(Object key, Throwable cause) {
+        super(cause);
         if (null == key) {
             throw new IllegalArgumentException("key is required");
         }

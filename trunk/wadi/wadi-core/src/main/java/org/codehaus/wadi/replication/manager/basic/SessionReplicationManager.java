@@ -17,6 +17,7 @@ package org.codehaus.wadi.replication.manager.basic;
 
 import org.codehaus.wadi.replication.common.ReplicaInfo;
 import org.codehaus.wadi.replication.manager.InternalReplicationManagerException;
+import org.codehaus.wadi.replication.manager.ReplicationKeyNotFoundException;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
 import org.codehaus.wadi.web.WebSession;
 import org.codehaus.wadi.web.WebSessionPool;
@@ -67,7 +68,7 @@ public class SessionReplicationManager implements ReplicationManager {
         replicationManager.destroy(key);
     }
 
-    public Object acquirePrimary(Object key) {
+    public Object acquirePrimary(Object key) throws ReplicationKeyNotFoundException, InternalReplicationManagerException {
         if (false == key instanceof String) {
             throw new IllegalArgumentException("key must be a string. Was [" + key.getClass().getName() + "]");
         }

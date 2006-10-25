@@ -49,8 +49,11 @@ public class MemoryReplicaStorage implements ReplicaStorage {
     
     public void mergeCreate(Object key, ReplicaInfo replicaInfo) {
         synchronized (keyToReplica) {
-            if (keyToReplica.containsKey(key)) {
-                throw new ReplicaKeyAlreadyExistsException(key);
+            ReplicaInfo currentReplicaInfo = (ReplicaInfo) keyToReplica.get(key);
+            if (null != currentReplicaInfo) {
+                if (currentReplicaInfo.getVersion() > replicaInfo.getVersion()) {
+                    throw new ReplicaKeyAlreadyExistsException(key);
+                }
             }
             keyToReplica.put(key, replicaInfo);
         }
@@ -58,11 +61,13 @@ public class MemoryReplicaStorage implements ReplicaStorage {
 
     public void mergeUpdate(Object key, ReplicaInfo replicaInfo) {
         synchronized (keyToReplica) {
-            ReplicaInfo curReplicaInfo = (ReplicaInfo) keyToReplica.get(key);
-            if (null == curReplicaInfo) {
+            ReplicaInfo currentReplicaInfo = (ReplicaInfo) keyToReplica.get(key);
+            if (null == currentReplicaInfo) {
                 throw new ReplicaKeyNotFoundException(key);
             }
-            replicaInfo = new ReplicaInfo(curReplicaInfo, replicaInfo);
+            if (currentReplicaInfo.getVersion() > replicaInfo.getVersion()) {
+                throw new ReplicaKeyAlreadyExistsException(key);
+            }
             keyToReplica.put(key, replicaInfo);
         }
     }
@@ -83,9 +88,7 @@ public class MemoryReplicaStorage implements ReplicaStorage {
     }
 
     public boolean storeReplicaInfo(Object key) {
-        synchronized (keyToReplica) {
-            return keyToReplica.containsKey(key);
-        }
+        return null != retrieveReplicaInfo(key);
     }
     
 }

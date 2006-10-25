@@ -80,7 +80,7 @@ public class BasicServiceInvoker implements ServiceInvoker {
         }
 
         try {
-            sendInvocation(envelope, targetPeers);
+            sendInvocation(invInfo, envelope, targetPeers);
         } catch (MessageExchangeException e) {
             return new InvocationResult(e);
         }
@@ -99,11 +99,19 @@ public class BasicServiceInvoker implements ServiceInvoker {
         return combineResults(metaData, messages);
     }
 
-    protected void sendInvocation(Envelope envelope, Peer[] targetPeers) throws MessageExchangeException {
+    protected void sendInvocation(InvocationInfo invInfo, Envelope envelope, Peer[] targetPeers) throws MessageExchangeException {
         for (int i = 0; i < targetPeers.length; i++) {
             Address address = targetPeers[i].getAddress();
             envelope.setAddress(address);
-            dispatcher.send(address, envelope);
+            try {
+                dispatcher.send(address, envelope);
+            } catch (MessageExchangeException e) {
+                if (invInfo.getMetaData().isIgnoreMessageExchangeExceptionOnSend()) {
+                    log.warn("Ignoring exception", e);
+                } else {
+                    throw e;
+                }
+            }
         }
     }
 

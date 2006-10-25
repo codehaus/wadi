@@ -15,6 +15,8 @@
  */
 package org.codehaus.wadi.replication.manager.basic;
 
+import org.codehaus.wadi.group.Peer;
+import org.codehaus.wadi.group.vm.VMPeer;
 import org.codehaus.wadi.replication.common.ReplicaInfo;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
 import org.codehaus.wadi.test.DummyDistributableSessionConfig;
@@ -88,8 +90,6 @@ public class SessionReplicationManagerTest extends RMockTestCase {
     }
 
     public void testReleasePrimary() {
-        ReplicaInfo replicaInfo = new ReplicaInfo(new Object());
-        
         repManager.releasePrimary(key);
         startVerification();
 
@@ -98,7 +98,7 @@ public class SessionReplicationManagerTest extends RMockTestCase {
     }
 
     public void testRetrieveReplicaInfo() throws Exception {
-        ReplicaInfo replicaInfo = new ReplicaInfo(new Object());
+        ReplicaInfo replicaInfo = new ReplicaInfo(new VMPeer("peer1"), new Peer[0], new Object());
         
         repManager.retrieveReplicaInfo(key);
         modify().returnValue(replicaInfo);
