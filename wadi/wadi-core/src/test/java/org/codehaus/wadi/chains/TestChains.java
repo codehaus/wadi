@@ -39,6 +39,8 @@ import org.codehaus.wadi.location.session.MovePMToIM;
 //PM fails - we will be asked to aid in reconstitution of reincarnated Partition's content - so we needn't do anymore.
 
 
+THIS WON'T COMPILE
+
 //IDEAS
 //use leases and async callbacks instead of locks/timeouts and waiting threads.
 //at the end a Lease, within it's scope, we need to receive a callback, run some logic and decide to renew the lease or allow it to lapse. (See ExtendableLease)
@@ -56,7 +58,7 @@ public class TestChains extends ChainTestCase {
 	public TestChains(String name) {
 		super(name);
 	}
-	
+
 	/* If a message is not answered within a given timeframe, it may be repeated
 	 * until answered (giving time for a service fail-over to complete) or until
 	 * a failure condition is recognised.
@@ -66,17 +68,17 @@ public class TestChains extends ChainTestCase {
 	 * The recipient of such a message needs to remember which Links are currently
 	 * being processed, so that they can avoid starting a second attempt at e.g.
 	 * an upstream Chain because the sender downstream is getting impatient.
-	 * 
+	 *
 	 */
 
 	//-----------------------------------------------------------------
 	// TODO - this stuff should be in wadi-group
-	
+
     static class MyEndpoint extends AbstractMsgDispatcher {
 
     	protected int _count;
     	protected String _correlationId;
-    	
+
         MyEndpoint(Dispatcher dispatcher, Class type) {
             super(dispatcher, type);
         }
@@ -84,10 +86,10 @@ public class TestChains extends ChainTestCase {
         public int getCount() {
         	return _count;
         }
-        
+
         public void dispatch(Envelope om) throws Exception {
         	_count++;
-        	
+
         	if (_correlationId==null)
         		_correlationId=om.getSourceCorrelationId();
         	else {
@@ -95,12 +97,15 @@ public class TestChains extends ChainTestCase {
         		_dispatcher.reply(om, new MyMessage());
         	}
         }
-        
+
     }
 
     static class MyMessage implements Message {
     };
-    
+
+    // TODO: no stacktrace if everything works ok
+    // TODO: count failed rvs
+
     /**
 	 * Test that Messages corresponding to the same 'Link' in a MessageChain, carry
 	 * the same source correlation Id.
@@ -113,45 +118,56 @@ public class TestChains extends ChainTestCase {
 		assertTrue(endpoint.getCount()==2);
 		assertTrue(response.getPayload().getClass()==MyMessage.class);
 	}
-	
+
 	//-----------------------------------------------------------------
+
+	// I guess that we will have to maintain a list of running message handlers,
+	// keyed by sourceCorrelationId on each recipient. If a message with the same id
+	// as a currently running message handler arrives, it should be logged (trace?)
+	// and discarded. Maintenance of this table will have ramifications for the
+	// concurrency of message handling....
 
 	/**
 	 * Test that duplicate Link Messages arriving are ignored, to avoid creating duplicate
 	 * downstream processes unnecessarily.
 	 */
-	public void testMergeSourceCorrelationId() {
-		assertTrue(true);
+	public void testMergeSourceCorrelationId() throws Exception {
+		_dispatcher1.register(new RendezVousMsgDispatcher(_dispatcher1, MyMessage.class));
+		MyEndpoint endpoint=new MyEndpoint(_dispatcher2, MyMessage.class);
+		_dispatcher2.register(endpoint);
+		Envelope response=_dispatcher1.exchangeSendLink(_cluster2.getLocalPeer().getAddress(), new MyMessage(), 100, 2);
+		assertTrue(endpoint.getCount()==2);
+		assertTrue(response.getPayload().getClass()==MyMessage.class);
 		// TODO..
 	}
 
 	//-----------------------------------------------------------------
 	// this stuff should probably move out to a specific IM->PM testsuite
-	
+
 	class IMToPMEndpoint extends AbstractMsgDispatcher {
-        
+
         IMToPMEndpoint(Dispatcher dispatcher, Class type) {
             super(dispatcher, type);
         }
-        
+
         public void dispatch(Envelope om) throws Exception {
 			_log.info("replying...");
 			_dispatcher.reply(om, new MovePMToIM());
 			_log.info("...replied");
         }
-        
+
     }
-    
+
     // client sends message to remote Partition
     // Partition receives it and quits without answering - mimicking failure
     // client continues trying until Partition is reincarnated (upon itself) and chain completes
-	
+
     public void testIMToPM() throws Exception {
 		ServiceEndpoint sync=new IMToPMEndpoint(_dispatcher2, MoveIMToPM.class);
 		_dispatcher2.register(sync);
 		ServiceEndpoint rv=new RendezVousMsgDispatcher(_dispatcher1, MovePMToIM.class);
 		_dispatcher1.register(rv);
-		
+
 		String sessionName="xxx";
 		String peerName=_dispatcher1.getCluster().getLocalPeer().getName();
 		boolean relocateSession=true;
