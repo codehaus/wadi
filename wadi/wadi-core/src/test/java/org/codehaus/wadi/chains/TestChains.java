@@ -38,9 +38,6 @@ import org.codehaus.wadi.location.session.MovePMToIM;
 //SM->PM
 //PM fails - we will be asked to aid in reconstitution of reincarnated Partition's content - so we needn't do anymore.
 
-
-THIS WON'T COMPILE
-
 //IDEAS
 //use leases and async callbacks instead of locks/timeouts and waiting threads.
 //at the end a Lease, within it's scope, we need to receive a callback, run some logic and decide to renew the lease or allow it to lapse. (See ExtendableLease)
