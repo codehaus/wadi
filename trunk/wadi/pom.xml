@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 
+BREAK BUILD
+
 <!--
+
  TODO:
 
-<<<<<<< .mine
- reference xsd
- use a staging website ?
-=======
->>>>>>> .r2072
  merge in pom-clover.xml
  scope collisions for junit/commons-httpclient ?
 
