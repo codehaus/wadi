@@ -103,18 +103,21 @@ PROPS="-e $PROPS"
 case $target in
     compile)
     mvn $PROPS clean:clean compiler:compile
+    status=$?
     ;;
     test)
     mvn $PROPS clean:clean install
+    status=$?
     ;;
     site)
     mvn $PROPS -Dmaven.test.failure.ignore=true clean:clean install site && mvn $PROPS -f pom.clover.xml clover:aggregate clover:clover
+    status=$?
     ;;
     eclipse)
     mvn $PROPS -DdownloadSources=$downloadSources -Dmaven.test.failure.ignore=true clean:clean install eclipse:eclipse
+    status=$?
     ;;
 esac
-status=$?
 
 ## gather all test results together for BJ
 mkdir ./testresults
