@@ -51,7 +51,7 @@
       <item name="List" href="mailto:dev@wadi.codehaus.org"/>
       <item name="#WADI" href="irc://irc.codehaus.org/wadi"/>
       <item name="Jira" href="http://jira.codehaus.org/browse/WADI"/>
-      <item name="Beetlejuice" href="http://ci.codehaus.org/beetlejuice/viewProjectSummary.action?projectName=WADI"/>
+      <item name="Continuum" href="http://ouroboros.dnsalias.net:8080/continuum/servlet/continuum/target/View.vm/fid/shellProject/id/1"/>
       <item name="FishEye" href="http://svn.wadi.codehaus.org/viewrep/wadi/trunk/wadi"/>
       <item name="Release Repository" href="https://dav.codehaus.org/repository/wadi/org/codehaus/wadi/"/>
       <item name="Release Distributions" href="https://dav.codehaus.org/dist/wadi/"/>
