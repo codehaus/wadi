@@ -96,6 +96,7 @@ echo
 ## cleanup
 rm -fr ./testresults
 
+PROPS="$PROPS -Djava.awt.headless=true"
 PROPS="-e $PROPS"
 
 ## execute build, recording status
