@@ -113,6 +113,7 @@ case $target in
     mvn $PROPS -DdownloadSources=$downloadSources -Dmaven.test.failure.ignore=true clean:clean install eclipse:eclipse
     ;;
 esac
+status=$?
 
 ## gather all test results together for BJ
 mkdir ./testresults
