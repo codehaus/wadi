@@ -446,23 +446,40 @@
 	</configuration>
       </plugin>
       <plugin>
-	<groupId>org.apache.maven.plugins</groupId>
-	<artifactId>maven-clover-plugin</artifactId>
-	<version>2.0</version>
-	<configuration>
+        <artifactId>maven-clover-plugin</artifactId>
+	<version>2.3</version>
+        <configuration>
 	  <jdk>${jse.version}</jdk>
-	  <licenseFile>./etc/clover.license</licenseFile>
-	</configuration>
-	<!--
+	  <licenseLocation>./etc/clover.license</licenseLocation>
+	  <aggregate>true</aggregate>
+          <flushPolicy>threaded</flushPolicy>
+          <flushInterval>100</flushInterval>
+          <targetPercentage>0%</targetPercentage>
+        </configuration>
         <executions>
           <execution>
+            <id>main</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>instrument</goal>
+              <goal>aggregate</goal>
+              <goal>check</goal>
+              <goal>log</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>site</id>
             <phase>pre-site</phase>
             <goals>
               <goal>instrument</goal>
+              <goal>aggregate</goal>
+
+              <!-- We save a history point in order to have data to generate a historical report -->
+              <goal>save-history</goal>
+
             </goals>
           </execution>
         </executions>
-	-->
       </plugin>
       <plugin>
 	<groupId>org.apache.maven.plugins</groupId>
@@ -478,6 +495,9 @@
 	    <exclude implementation="java.lang.String">**/TestTribesEvacuation.java</exclude>
 	    <exclude implementation="java.lang.String">**/TestTribesRelocation.java</exclude>
 	    <exclude implementation="java.lang.String">**/TestWadiTribesSuite.java</exclude>
+	    <!-- JGroups -->
+	    <exclude implementation="java.lang.String">**/TestJGEvacuation.java</exclude>
+	    <exclude implementation="java.lang.String">**/TestJGRelocation.java</exclude>
 	    <!--
 	    Peer group tests fail when executed with
 	    maven. TestACPeerGroup: when the two testMETHOD are
@@ -553,7 +573,10 @@
 	</configuration>
       </plugin>
       <plugin>
-	<artifactId>maven-clover-plugin</artifactId>
+        <artifactId>maven-clover-plugin</artifactId>
+        <configuration>
+          <generateHistorical>true</generateHistorical>
+        </configuration>
       </plugin>
       <!-- tags -->
       <plugin>
