@@ -250,8 +250,8 @@
     <site>
       <id>codehaus.org</id>
       <name>WADI Website</name>
-      <!-- <url>dav:https://dav.codehaus.org/wadi/</url> -->
-      <url>file:///tmp/WADI/${project.version}/</url>
+      <url>dav:https://dav.codehaus.org/wadi/</url>
+      <!-- <url>file:///tmp/WADI/${project.version}/</url> -->
     </site>
   </distributionManagement>
 
