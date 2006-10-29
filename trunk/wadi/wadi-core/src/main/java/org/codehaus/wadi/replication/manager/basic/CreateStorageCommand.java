@@ -18,6 +18,7 @@ package org.codehaus.wadi.replication.manager.basic;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.replication.common.ReplicaInfo;
 import org.codehaus.wadi.replication.storage.ReplicaStorage;
+import org.codehaus.wadi.servicespace.ServiceProxy;
 import org.codehaus.wadi.servicespace.ServiceProxyFactory;
 
 
@@ -28,8 +29,8 @@ class CreateStorageCommand extends AbstractStorageCommand {
     }
     
     public void execute(ServiceProxyFactory serviceProxy) {
-        serviceProxy.getInvocationMetaData().setTargets(targets);
         ReplicaStorage storage = (ReplicaStorage) serviceProxy.getProxy();
+        ((ServiceProxy) storage).getInvocationMetaData().setTargets(targets);
         storage.mergeCreate(key, replicaInfo);
     }
     
