@@ -251,11 +251,9 @@ public class BasicReplicationManager implements ReplicationManager {
     protected void updateReplicaStorages(Object key, ReplicaInfo replicaInfo, Peer[] oldSecondaries) {
         StorageCommandBuilder commandBuilder = new StorageCommandBuilder(key, replicaInfo, oldSecondaries);
         StorageCommand[] commands = commandBuilder.build();
-        ServiceProxyFactory proxyFactory = serviceSpace.getServiceProxyFactory(
-                ReplicaStorage.NAME, new Class[] {ReplicaStorage.class});
         for (int i = 0; i < commands.length; i++) {
             StorageCommand command = commands[i];
-            command.execute(proxyFactory);
+            command.execute(replicaStorageServiceProxy);
         }
     }
     

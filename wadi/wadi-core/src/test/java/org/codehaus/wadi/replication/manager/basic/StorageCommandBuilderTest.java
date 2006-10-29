@@ -20,6 +20,7 @@ import org.codehaus.wadi.group.vm.VMPeer;
 import org.codehaus.wadi.replication.common.ReplicaInfo;
 import org.codehaus.wadi.replication.storage.ReplicaStorage;
 import org.codehaus.wadi.servicespace.InvocationMetaData;
+import org.codehaus.wadi.servicespace.ServiceProxy;
 import org.codehaus.wadi.servicespace.ServiceProxyFactory;
 
 import com.agical.rmock.extension.junit.RMockTestCase;
@@ -45,31 +46,31 @@ public class StorageCommandBuilderTest extends RMockTestCase {
         Object payload = new Object();
         ReplicaInfo expectedReplicaInfo = new ReplicaInfo(peer1, new Peer[] {peer2, peer3}, payload);
 
-        ReplicaStorage storage = (ReplicaStorage) mock(ReplicaStorage.class);
+        ReplicaStorageMixInServiceProxy storage = (ReplicaStorageMixInServiceProxy) mock(ReplicaStorageMixInServiceProxy.class);
 
         ServiceProxyFactory serviceProxy = (ServiceProxyFactory) mock(ServiceProxyFactory.class);
         beginSection(s.ordered("create - update - destroy"));
-        serviceProxy.getInvocationMetaData();
-        modify().returnValue(invMetaData);
-        invMetaData.setTargets(new Peer[] {peer2});
         serviceProxy.getProxy();
         modify().returnValue(storage);
+        storage.getInvocationMetaData();
+        modify().returnValue(invMetaData);
+        invMetaData.setTargets(new Peer[] {peer2});
         storage.mergeCreate(expectedKey, expectedReplicaInfo);
         modify().args(is.AS_RECORDED, is.NOT_NULL);
 
-        serviceProxy.getInvocationMetaData();
-        modify().returnValue(invMetaData);
-        invMetaData.setTargets(new Peer[] {peer3});
         serviceProxy.getProxy();
         modify().returnValue(storage);
+        storage.getInvocationMetaData();
+        modify().returnValue(invMetaData);
+        invMetaData.setTargets(new Peer[] {peer3});
         storage.mergeUpdate(expectedKey, new ReplicaInfo(peer1, expectedReplicaInfo.getSecondaries(), payload));
         modify().args(is.AS_RECORDED, is.NOT_NULL);
 
-        serviceProxy.getInvocationMetaData();
-        modify().returnValue(invMetaData);
-        invMetaData.setTargets(new Peer[] {peer4});
         serviceProxy.getProxy();
         modify().returnValue(storage);
+        storage.getInvocationMetaData();
+        modify().returnValue(invMetaData);
+        invMetaData.setTargets(new Peer[] {peer4});
         storage.mergeDestroy(expectedKey);
         endSection();
 
@@ -86,4 +87,6 @@ public class StorageCommandBuilderTest extends RMockTestCase {
         commands[2].execute(serviceProxy);
     }
     
+    public interface ReplicaStorageMixInServiceProxy extends ReplicaStorage, ServiceProxy {
+    }
 }
