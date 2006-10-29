@@ -90,7 +90,9 @@ public abstract class AbstractDispatcher implements Dispatcher {
         }
         Quipu rv= (Quipu) _rvMap.get(targetCorrelationId);
         if (null == rv) {
-            _log.warn("no one waiting for [" + targetCorrelationId + "]");
+            if (_log.isTraceEnabled()) {
+                _log.warn("no one waiting for [" + targetCorrelationId + "]");
+            }            
         } else {
             if (_log.isTraceEnabled()) {
                 _log.trace("successful correlation [" + targetCorrelationId + "]");
@@ -141,7 +143,7 @@ public abstract class AbstractDispatcher implements Dispatcher {
                 }
             } while (Thread.interrupted());
         } finally {
-            _rvMap.remove(rv);
+            _rvMap.remove(rv.getCorrelationId());
         }
         if (null == response) {
             throw new MessageExchangeException("No correlated messages received within [" + timeout + "]ms");
