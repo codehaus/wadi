@@ -16,6 +16,8 @@
  */
 package org.codehaus.wadi.chains;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Message;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Envelope;
@@ -25,6 +27,8 @@ import org.codehaus.wadi.group.impl.AbstractMsgDispatcher;
 import org.codehaus.wadi.group.impl.RendezVousMsgDispatcher;
 import org.codehaus.wadi.location.session.MoveIMToPM;
 import org.codehaus.wadi.location.session.MovePMToIM;
+
+import EDU.oswego.cs.dl.util.concurrent.Latch;
 
 //IM fails - give up, we have lost the invocation
 //IM->PM
@@ -43,6 +47,7 @@ import org.codehaus.wadi.location.session.MovePMToIM;
 //at the end a Lease, within it's scope, we need to receive a callback, run some logic and decide to renew the lease or allow it to lapse. (See ExtendableLease)
 
 //as each node takes responsibility for downstream actions, it must remember the chain id, so that if anyone upstream tries to restart the same chain, we do not get two identical chains competing.
+
 /**
  *
  * I'm going to isolate and test various links in various message chains here...whilst refactoring the whole area...
@@ -118,24 +123,89 @@ public class TestChains extends ChainTestCase {
 
 	//-----------------------------------------------------------------
 
-	// I guess that we will have to maintain a list of running message handlers,
+    static class LatchedEndPoint extends AbstractMsgDispatcher {
+
+    	static protected Log _log=LogFactory.getLog(LatchedEndPoint.class);
+
+    	protected Latch _entryLatch;
+    	protected Latch _exitLatch;
+    	protected int _count;
+
+        LatchedEndPoint(Dispatcher dispatcher, Class type, Latch entryLatch, Latch exitLatch) {
+            super(dispatcher, type);
+            _entryLatch=entryLatch;
+            _exitLatch=exitLatch;
+        }
+
+        public int getCount() {
+        	return _count;
+        }
+
+        public void dispatch(Envelope om) throws Exception {
+        	_count++;
+        	_log.trace("LatchedEndPoint entered: "+_count);
+        	_entryLatch.release();
+        	_exitLatch.acquire();
+        }
+
+    }
+
+    static class SimpleEndPoint extends AbstractMsgDispatcher {
+
+    	SimpleEndPoint(Dispatcher dispatcher, Class type) {
+            super(dispatcher, type);
+        }
+
+        public void dispatch(Envelope om) throws Exception {
+        	_dispatcher.reply(om, new SecondMessage());
+        }
+
+    }
+
+    // I guess that we will have to maintain a list of running message handlers,
 	// keyed by sourceCorrelationId on each recipient. If a message with the same id
 	// as a currently running message handler arrives, it should be logged (trace?)
 	// and discarded. Maintenance of this table will have ramifications for the
 	// concurrency of message handling....
 
-	/**
+    static class FirstMessage implements Message {
+    };
+
+    static class SecondMessage implements Message {
+    };
+
+    /**
 	 * Test that duplicate Link Messages arriving are ignored, to avoid creating duplicate
 	 * downstream processes unnecessarily.
 	 */
-	public void testMergeSourceCorrelationId() throws Exception {
-		_dispatcher1.register(new RendezVousMsgDispatcher(_dispatcher1, MyMessage.class));
-		MyEndpoint endpoint=new MyEndpoint(_dispatcher2, MyMessage.class);
+	public void donottestMergeSourceCorrelationId() throws Exception {
+		// first exchange
+		Latch entryLatch=new Latch();
+		Latch exitLatch=new Latch();
+		LatchedEndPoint endpoint=new LatchedEndPoint(_dispatcher2, FirstMessage.class, entryLatch, exitLatch);
 		_dispatcher2.register(endpoint);
-		Envelope response=_dispatcher1.exchangeSendLink(_cluster2.getLocalPeer().getAddress(), new MyMessage(), 100, 2);
-		assertTrue(endpoint.getCount()==2);
-		assertTrue(response.getPayload().getClass()==MyMessage.class);
-		// TODO..
+		// second exchange - to make sure that first has begun processing
+		_dispatcher1.register(new RendezVousMsgDispatcher(_dispatcher1, SecondMessage.class));
+		_dispatcher2.register(new SimpleEndPoint(_dispatcher2, SecondMessage.class));
+
+		try {
+			// we will never get a reply to this message...
+			_dispatcher1.exchangeSendLink(_cluster2.getLocalPeer().getAddress(), new FirstMessage(), 1, 5);
+			assertTrue(false);
+		} catch (MessageExchangeException e) {
+			assertTrue(true);
+		}
+		// 5 messages should all have been sent by now, only one should have been allowed into
+		// the endpoint, the others should have been discarded. We have been holding up the endpoint
+		// so that the message that won the race cannot complete execution of the endpoint.
+		entryLatch.acquire(); // wait until we are sure that a Message has entered EndPoint
+
+		// round-trip another Message through the same Dispatcher, to ensure all FirstMessages have been
+		// consumed
+		_dispatcher1.exchangeSendLink(_cluster2.getLocalPeer().getAddress(), new SecondMessage(), 1, 5);
+
+		assertTrue(endpoint.getCount()==1); // check that only one FirstMessage made it into EndPoint
+		exitLatch.release(); // allow it to continue
 	}
 
 	//-----------------------------------------------------------------
