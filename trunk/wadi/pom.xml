@@ -454,10 +454,11 @@
 	  <aggregate>true</aggregate>
           <flushPolicy>threaded</flushPolicy>
           <flushInterval>100</flushInterval>
-          <targetPercentage>0%</targetPercentage>
+	  <!-- <targetPercentage>0%</targetPercentage> -->  <!-- adds clover to std build, too slow -->
         </configuration>
         <executions>
-          <execution>
+          <!--
+	  <execution>
             <id>main</id>
             <phase>verify</phase>
             <goals>
@@ -467,6 +468,7 @@
               <goal>log</goal>
             </goals>
           </execution>
+	  -->
           <execution>
             <id>site</id>
             <phase>pre-site</phase>
