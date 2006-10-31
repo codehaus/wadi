@@ -110,7 +110,7 @@ case $target in
     status=$?
     ;;
     site)
-    mvn $PROPS -Dmaven.test.failure.ignore=true clean:clean install site && mvn $PROPS -f pom.clover.xml clover:aggregate site:deploy
+    mvn $PROPS -Dmaven.test.failure.ignore=true clean:clean install site && mvn $PROPS -f pom.clover.xml clover:aggregate && mvn $PROPS site:deploy
     status=$?
     ;;
     eclipse)
