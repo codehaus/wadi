@@ -110,11 +110,15 @@ case $target in
     status=$?
     ;;
     site)
-    mvn $PROPS -Dmaven.test.failure.ignore=true clean:clean install site && mvn $PROPS -f pom.clover.xml clover:aggregate && mvn $PROPS site:deploy
+    PROPS="$PROPS -Dmaven.test.failure.ignore=true"
+    mvn $PROPS clean:clean install site && \
+    mvn $PROPS -f pom.clover.xml clover:aggregate && \
+    mvn $PROPS site:deploy
     status=$?
     ;;
     eclipse)
-    mvn $PROPS -DdownloadSources=$downloadSources -Dmaven.test.failure.ignore=true clean:clean install eclipse:eclipse
+    PROPS="$PROPS -DdownloadSources=$downloadSources -Dmaven.test.failure.ignore=true"
+    mvn $PROPS clean:clean install eclipse:eclipse
     status=$?
     ;;
 esac
