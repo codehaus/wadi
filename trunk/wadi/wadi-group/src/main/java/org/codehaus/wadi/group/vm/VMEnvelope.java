@@ -31,8 +31,8 @@ public class VMEnvelope implements Envelope {
     private Serializable payload;
     private Address replyTo;
     private Address address;
-    private String incomingCorrelationId;
-    private String outgoingCorrelationId;
+    private String targetCorrelationId;
+    private String sourceCorrelationId;
     private Map properties;
 
     public VMEnvelope() {
@@ -43,25 +43,25 @@ public class VMEnvelope implements Envelope {
         this.payload = prototype.payload;
         this.replyTo = prototype.replyTo;
         this.address = prototype.address;
-        this.incomingCorrelationId = prototype.incomingCorrelationId;
-        this.outgoingCorrelationId = prototype.outgoingCorrelationId;
+        this.targetCorrelationId = prototype.targetCorrelationId;
+        this.sourceCorrelationId = prototype.sourceCorrelationId;
         this.properties = prototype.properties;
     }
     
     public String getTargetCorrelationId() {
-        return incomingCorrelationId;
+        return targetCorrelationId;
     }
 
     public void setTargetCorrelationId(String correlationId) {
-        this.incomingCorrelationId = correlationId;
+        this.targetCorrelationId = correlationId;
     }
 
     public String getSourceCorrelationId() {
-        return outgoingCorrelationId;
+        return sourceCorrelationId;
     }
 
     public void setSourceCorrelationId(String correlationId) {
-        this.outgoingCorrelationId = correlationId;
+        this.sourceCorrelationId = correlationId;
     }
 
     public Address getReplyTo() {
@@ -101,8 +101,8 @@ public class VMEnvelope implements Envelope {
     }
 
     public String toString() {
-        return "VMMessage: payload=[" + payload + "], incomingCorrelationId [" + incomingCorrelationId + 
-            "], outgoingCorrelationId [" + outgoingCorrelationId + "";
+        return "Envelope: payload=[" + payload + "], targetCorrelationId [" + targetCorrelationId + 
+            "], sourceCorrelationId [" + sourceCorrelationId + "";
     }
 
 }

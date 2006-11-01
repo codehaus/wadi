@@ -129,12 +129,10 @@ public abstract class AbstractDispatcher implements Dispatcher {
                         response = rv.getResults();
                         long elapsedTime = System.currentTimeMillis()-startTime;
                         if (_log.isTraceEnabled()) {
-                            _log.trace("successful message exchange within timeframe (" + elapsedTime + 
-                                    "<" + timeout + " millis) {" + rv + "}");
+                            _log.trace("successful message exchange within timeframe (" + elapsedTime + "<" + timeout + " millis) {" + rv + "}");
                         }
                     } else {
-                        _log.warn("unsuccessful message exchange within timeframe (" + timeout + 
-                                " millis) {" + rv + "}", new Exception());
+                        _log.warn("unsuccessful message exchange within timeframe (" + timeout +" millis) {" + rv + "}", new Exception());
                     }
                 } catch (TimeoutException e) {
                     _log.warn("no response to request within timeout ("+timeout+" millis)");
