@@ -178,7 +178,7 @@ public class TestChains extends ChainTestCase {
 	 * Test that duplicate Link Messages arriving are ignored, to avoid creating duplicate
 	 * downstream processes unnecessarily.
 	 */
-	public void donottestMergeSourceCorrelationId() throws Exception {
+	public void testMergeSourceCorrelationId() throws Exception {
 		// first exchange
 		Latch entryLatch=new Latch();
 		Latch exitLatch=new Latch();

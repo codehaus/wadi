@@ -25,6 +25,7 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.ServiceEndpoint;
 
@@ -40,8 +41,8 @@ class BasicMessageDispatcherManager implements MessageDispatcherManager {
     private final AbstractDispatcher _dispatcher;
     private final Log _log = LogFactory.getLog(getClass());
     private final IdentityHashMap _msgDispatchers = new IdentityHashMap();
-//    private final Map _runningLinks = new HashMap();
     private final ThreadPool _executor;
+    private final Map _activeLinks = new HashMap();
 	
 	public BasicMessageDispatcherManager(AbstractDispatcher dispatcher, ThreadPool executor) {
         _dispatcher = dispatcher;
@@ -88,22 +89,11 @@ class BasicMessageDispatcherManager implements MessageDispatcherManager {
 
     	// we have a dispatchable message - but is it simply a reiteration of a task/Link that
     	// we are already performing ?
-//    	boolean duplicate=false;
-//		SynchronizedInt young=new SynchronizedInt(targetDispatchers.size());
-//    	synchronized (_runningLinks) {
-//    		// ugly, but in the usual case, the message will not be a duplicate and this will only perform
-//    		// a single synched operation on th Map...
-//    		SynchronizedInt old=(SynchronizedInt)_runningLinks.put(message.getSourceCorrelationId(), young);
-//    		if (old!=null) {
-//    			duplicate=true;
-//    			_runningLinks.put(message.getSourceCorrelationId(), old); // put it back !
-//    		}
-//    	}
-//    	if (duplicate) {
-//    		if (_log.isTraceEnabled())
-//    			_log.trace("Link already active, duplicate message ignored: "+message);
-//    		return;
-//    	}
+    	if (!addLink(message, targetDispatchers.size())) {
+    		if (_log.isTraceEnabled())
+    			_log.trace("Link already active, duplicate message ignored: "+message);
+    		return;
+    	}
 
     	try {
     		for (Iterator iter = targetDispatchers.iterator(); iter.hasNext();) {
@@ -145,19 +135,79 @@ class BasicMessageDispatcherManager implements MessageDispatcherManager {
     		} catch (Exception e) {
     			_log.error("problem dispatching message", e);
     		} finally {
-    			// ensure that we remove this Link from the list of those being run...
-    			// clumsy, because we have to reference count it down to 0 as there may
-    			// be more than one dispatcher thread running on its behalf...
-//    			SynchronizedInt _count;
-//    			synchronized (_runningLinks) {
-//    				_count=(SynchronizedInt)_runningLinks.get(_message.getSourceCorrelationId());
-//    			}
-//				if (_count.decrement()==0) {
-//					synchronized (_runningLinks) {
-//						_runningLinks.remove(_message.getSourceCorrelationId());
-//					}
-//				}
+    			removeLink(_message);
     		}
     	}
     }
+    
+    static class CompoundKey {
+    	
+    	protected Address _address;
+    	protected String _sourceCorrelationId;
+    	
+    	public CompoundKey(Address peer, String sourceCorrelationId) {
+    		_address=peer;
+    		_sourceCorrelationId=sourceCorrelationId;
+    	}
+    	
+    	public int hashCode() {
+    		return _address.hashCode()+_sourceCorrelationId.hashCode();
+    	}
+    	
+    	public boolean equals(Object object) {
+    		CompoundKey that=(CompoundKey)object;
+    		return _address.equals(that._address) && _sourceCorrelationId.equals(that._sourceCorrelationId);
+    	}
+    	
+    }
+    
+    /**
+     * Add a Link to the list of active Links.
+     * 
+     * @param envelope
+     * @return true, if Link is not already active, i.e. was added successfully
+     */
+    protected boolean addLink(Envelope envelope, int count) {
+    	String sourceCorrelationId=envelope.getSourceCorrelationId();
+
+    	if (sourceCorrelationId==null)
+    		return true;
+    	
+		SynchronizedInt young=new SynchronizedInt(count); // TODO: an allocation :-(
+		Object key=new CompoundKey(envelope.getReplyTo(), sourceCorrelationId); // TODO: aargh! - another allocation :-(
+		synchronized (_activeLinks) {
+			SynchronizedInt old=(SynchronizedInt)_activeLinks.put(key, young);
+			if (old==null) {
+				// usual case - Link inactive - no further cost
+				return true;
+			} else {
+				// unusual case - Link already active - rollback !
+				_activeLinks.put(key, old);
+				return false;
+			}
+		}
+    }
+
+    /**
+     * Remove a Link from the list of active Links.
+     * 
+     * @param envelope
+     */
+    protected void removeLink(Envelope envelope) {
+    	String sourceCorrelationId=envelope.getSourceCorrelationId();
+    	
+    	if (sourceCorrelationId==null)
+    		return;
+
+    	// clumsy, because we have to reference count it down to 0 as there may
+    	// be more than one dispatcher thread running on its behalf...
+    	Object key=new CompoundKey(envelope.getReplyTo(), sourceCorrelationId); // TODO: allocation :-(
+    	SynchronizedInt _count;
+    	synchronized (_activeLinks) {
+    		_count=(SynchronizedInt)_activeLinks.get(key);
+    		if (_count.decrement()==0)
+    			_activeLinks.remove(key);
+    	}
+    }
+
 }
