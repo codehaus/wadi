@@ -33,4 +33,5 @@ public class TestInVMRelocation extends AbstractTestRelocation {
 		long timeout=5000;
 		testSessionRelocation(new VMDispatcher(cluster, "red", timeout), new VMDispatcher(cluster, "green", timeout));
 	}
+    
 }

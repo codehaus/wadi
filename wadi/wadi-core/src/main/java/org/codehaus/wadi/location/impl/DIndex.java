@@ -232,7 +232,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 
     public void relocate(String name) {
         try {
-            EvacuateIMToPM request = new EvacuateIMToPM(name);
+            EvacuateIMToPM request = new EvacuateIMToPM(name, _localPeer);
             getPartition(name).exchange(request, _inactiveTime);
         } catch (Exception e) {
             _log.info("oops...", e);
@@ -288,9 +288,9 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
         }
     }
 
-    public Motable relocate(Invocation invocation, String sessionName, String peerName, boolean shuttingDown,
+    public Motable relocate(Invocation invocation, String sessionName, boolean shuttingDown,
             long timeout, Immoter immoter) throws Exception {
-        MoveIMToPM request = new MoveIMToPM(sessionName, peerName, shuttingDown, invocation.getRelocatable());
+        MoveIMToPM request = new MoveIMToPM(_localPeer, sessionName, !shuttingDown, invocation.getRelocatable());
         Envelope message = getPartition(sessionName).exchange(request, timeout);
 
         if (message == null) {
@@ -328,7 +328,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
             return null;
         } else if (dm instanceof MovePMToIMInvocation) {
             // we are going to relocate our Invocation to the PM...
-            Address sm = ((MovePMToIMInvocation) dm).getStateMaster();
+            Peer smPeer = ((MovePMToIMInvocation) dm).getStateMaster();
             // TODO - I (Gianny) broke this code path. Need to be reviewed by Jules.
 //            EndPoint endPoint = (EndPoint) sm.getState().get("endPoint");
 //            invocation.relocate(endPoint);
@@ -355,17 +355,8 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
     }
 
     // StateManagerConfig API
-    public PartitionFacade getPartition(int key) {
-        return _partitionManager.getPartition(key);
-    }
-
     public StateManager getStateManager() {
         return _stateManager;
-    }
-
-    // StateManagerConfig API
-    public String getLocalPeerName() {
-        return _localPeerName;
     }
 
     public boolean contextualise(Invocation invocation, String id, Immoter immoter, Sync motionLock,

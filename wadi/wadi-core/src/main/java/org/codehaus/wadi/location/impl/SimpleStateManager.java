@@ -27,7 +27,9 @@ import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Envelope;
+import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.MessageExchangeException;
+import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.impl.ServiceEndpointBuilder;
 import org.codehaus.wadi.impl.AbstractMotable;
 import org.codehaus.wadi.impl.RankedRWLock;
@@ -76,7 +78,7 @@ public class SimpleStateManager implements StateManager, StateManagerMessageList
 
 	public void init(StateManagerConfig config) {
 		_config = config;
-        _log = LogFactory.getLog(getClass().getName() + "#" + _config.getLocalPeerName());
+        _log = LogFactory.getLog(getClass().getName() + "#" + _dispatcher.getCluster().getLocalPeer().getName());
 	}
 
 	public void start() throws Exception {
@@ -141,14 +143,16 @@ public class SimpleStateManager implements StateManager, StateManagerMessageList
 			immotable.init(_creationTime, _lastAccessedTime, _maxInactiveInterval, _name);
 			immotable.setBodyAsByteArray(bytes);
 
-			Dispatcher dispatcher=_config.getDispatcher();
 			long timeout=_config.getInactiveTime();
-			Address sm=dispatcher.getCluster().getLocalPeer().getAddress();
-			Address im=_get.getIM();
+			LocalPeer smPeer = _dispatcher.getCluster().getLocalPeer();
+            Address sm=smPeer.getAddress();
+			Peer imPeer=_get.getIMPeer();
 			MoveSMToIM request=new MoveSMToIM(immotable);
 			// send on state from StateMaster to InvocationMaster...
-			if (_log.isTraceEnabled()) _log.trace("exchanging MoveSMToIM between: "+_config.getPeerName(sm)+"->"+_config.getPeerName(im));
-			Envelope message2=dispatcher.exchangeSend(im, request, timeout, _get.getIMCorrelationId());
+			if (_log.isTraceEnabled()) {
+                _log.trace("exchanging MoveSMToIM between [" + smPeer + "]->[" +imPeer + "]");
+            }
+			Envelope message2=_dispatcher.exchangeSend(imPeer.getAddress(), request, timeout, _get.getIMCorrelationId());
 			// should receive response from IM confirming safe receipt...
 			if (message2==null) {
                 // TODO throw exception
@@ -157,7 +161,7 @@ public class SimpleStateManager implements StateManager, StateManagerMessageList
 				MoveIMToSM response=(MoveIMToSM)message2.getPayload();
                 assert(response!=null && response.getSuccess()); // FIXME - we should keep trying til we get an answer or give up...
                 // acknowledge transfer completed to PartitionMaster, so it may unlock resource...
-                dispatcher.reply(_message1,new MoveSMToPM(true));
+                _dispatcher.reply(_message1,new MoveSMToPM(true));
 			}
 		}
 
@@ -253,9 +257,8 @@ public class SimpleStateManager implements StateManager, StateManagerMessageList
 			// Tricky - we need to call a Moter at this point and start removal of State to other node...
             Sync invocationLock = null;
 			try {
-				Address im=request.getIM();
-				String imName=_config.getPeerName(im);
-				RelocationImmoter promoter=new RelocationImmoter(imName, message1, request);
+				Peer imPeer=request.getIMPeer();
+				RelocationImmoter promoter=new RelocationImmoter(imPeer.getName(), message1, request);
 				//boolean found=
 
 				// acquire invocation lock here... - we need it - not sure why...
@@ -273,8 +276,8 @@ public class SimpleStateManager implements StateManager, StateManagerMessageList
 					// send on null state from StateMaster to InvocationMaster...
 					Address sm=_dispatcher.getCluster().getLocalPeer().getAddress();
 					long timeout=_config.getInactiveTime();
-					_log.info("sending 0 bytes to : "+imName);
-					Envelope ignore=_dispatcher.exchangeSend(im, req, timeout, request.getIMCorrelationId());
+					_log.info("sending 0 bytes to : "+imPeer);
+					Envelope ignore=_dispatcher.exchangeSend(imPeer.getAddress(), req, timeout, request.getIMCorrelationId());
 					_log.info("received: "+ignore);
 					// StateMaster replies to PartitionMaster indicating failure...
 					_log.info("reporting failure to PM");

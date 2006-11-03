@@ -16,23 +16,21 @@
  */
 package org.codehaus.wadi.location.impl;
 
-import java.io.Serializable;
-
 import org.codehaus.wadi.location.Partition;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision:1815 $
  */
-public abstract class AbstractPartition implements Partition, Serializable {
-
+public abstract class AbstractPartition implements Partition {
     protected final int _key;
 
     public AbstractPartition(int key) {
-        _key=key;
+        if (0 > key) {
+            throw new IllegalArgumentException("key must be greater than 0");
+        }
+        _key = key;
     }
-
-    // 'Partition' API
 
     public int getKey() {
         return _key;

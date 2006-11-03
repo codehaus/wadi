@@ -59,17 +59,24 @@ public class BasicServiceSpace implements ServiceSpace, Lifecycle {
     private final StartableServiceRegistry serviceRegistry;
     private final ServiceSpaceName name;
     private final Dispatcher underlyingDispatcher;
+    private final long waitTimeToBootServiceSpace;
     private final Dispatcher dispatcher;
     private final ServiceEndpoint serviceSpaceEndpoint;
     private final ServiceEndpoint lifecycleEndpoint;
     private final ClusterListener underlyingClusterListener;
     private final ServiceSpaceMessageHelper messageHelper;
-    
+
     public BasicServiceSpace(ServiceSpaceName name, Dispatcher underlyingDispatcher) {
+        this(name, underlyingDispatcher, 5000);
+    }
+    
+    public BasicServiceSpace(ServiceSpaceName name, Dispatcher underlyingDispatcher, long waitTimeToBootServiceSpace) {
         if (null == name) {
             throw new IllegalArgumentException("name is required");
         } else if (null == underlyingDispatcher) {
             throw new IllegalArgumentException("underlyingDispatcher is required");
+        } else if (0 > waitTimeToBootServiceSpace) {
+            throw new IllegalArgumentException("waitTimeToBootServiceSpace must be greater than 0");
         }
         monitors = new ArrayList();
         hostingPeers = new HashSet();
@@ -77,6 +84,7 @@ public class BasicServiceSpace implements ServiceSpace, Lifecycle {
 
         this.name = name;
         this.underlyingDispatcher = underlyingDispatcher;
+        this.waitTimeToBootServiceSpace = waitTimeToBootServiceSpace;
         this.dispatcher = newDispatcher();
 
         localPeer = dispatcher.getCluster().getLocalPeer();
@@ -202,7 +210,7 @@ public class BasicServiceSpace implements ServiceSpace, Lifecycle {
     }
 
     protected Dispatcher newDispatcher() {
-        return new BasicServiceSpaceDispatcher(this);
+        return new BasicServiceSpaceDispatcher(this, waitTimeToBootServiceSpace);
     }
     
     protected ServiceMonitor newServiceMonitor(ServiceName serviceName) {
@@ -313,5 +321,5 @@ public class BasicServiceSpace implements ServiceSpace, Lifecycle {
     public String toString() {
         return "ServiceSpace [" + name + "]";
     }
-    
+
 }

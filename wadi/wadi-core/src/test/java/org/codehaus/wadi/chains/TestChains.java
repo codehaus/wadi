@@ -21,6 +21,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Message;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Envelope;
+import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.ServiceEndpoint;
 import org.codehaus.wadi.group.impl.AbstractMsgDispatcher;
@@ -236,10 +237,10 @@ public class TestChains extends ChainTestCase {
 		_dispatcher1.register(rv);
 
 		String sessionName="xxx";
-		String peerName=_dispatcher1.getCluster().getLocalPeer().getName();
+		LocalPeer localPeer = _dispatcher1.getCluster().getLocalPeer();
 		boolean relocateSession=true;
 		boolean relocateInvocation=false;
-		Message message=new MoveIMToPM(sessionName, peerName, relocateSession, relocateInvocation);
+		Message message=new MoveIMToPM(localPeer, sessionName, relocateSession, relocateInvocation);
 		long timeout=10000;
 		// If PM fails - wait for Partition reincarnation and then address new PM...
 		try {

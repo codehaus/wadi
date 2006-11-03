@@ -25,16 +25,21 @@ import org.codehaus.wadi.web.WebSessionPool;
  * @version $Revision$
  */
 public interface ContextualiserConfig extends Config {
-
     int getMaxInactiveInterval();
+
     void expire(Motable motable);
+    
     Immoter getEvictionImmoter();
+    
     Timer getTimer();
+    
     WebSessionPool getSessionPool();
+    
     Router getRouter();
 
     void notifySessionInsertion(String name);
+    
     void notifySessionDeletion(String name);
+    
     void notifySessionRelocation(String name);
-
 }
