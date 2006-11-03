@@ -91,7 +91,7 @@ public abstract class AbstractDispatcher implements Dispatcher {
         Quipu rv= (Quipu) _rvMap.get(targetCorrelationId);
         if (null == rv) {
             if (_log.isTraceEnabled()) {
-                _log.warn("no one waiting for [" + targetCorrelationId + "]");
+                _log.trace("no one waiting for [" + targetCorrelationId + "]");
             }            
         } else {
             if (_log.isTraceEnabled()) {
@@ -132,12 +132,12 @@ public abstract class AbstractDispatcher implements Dispatcher {
                             _log.trace("successful message exchange within timeframe (" + elapsedTime + "<" + timeout + " millis) {" + rv + "}");
                         }
                     } else {
-                        _log.warn("unsuccessful message exchange within timeframe (" + timeout +" millis) {" + rv + "}", new Exception());
+                        _log.debug("unsuccessful message exchange within timeframe (" + timeout +" millis) {" + rv + "}", new Exception());
                     }
                 } catch (TimeoutException e) {
-                    _log.warn("no response to request within timeout ("+timeout+" millis)");
+                    _log.debug("no response to request within timeout ("+timeout+" millis)");
                 } catch (InterruptedException e) {
-                    _log.warn("waiting for response - interruption ignored");
+                    _log.debug("waiting for response - interruption ignored");
                 }
             } while (Thread.interrupted());
         } finally {
@@ -200,7 +200,7 @@ public abstract class AbstractDispatcher implements Dispatcher {
             om.setPayload(body);
             send(to, om);
         } catch (Exception e) {
-            if (_log.isErrorEnabled()) _log.error("problem sending " + body, e);
+            _log.error("problem sending " + body, e);
         }
     }
 	
@@ -213,7 +213,7 @@ public abstract class AbstractDispatcher implements Dispatcher {
             om.setSourceCorrelationId(sourceCorrelationId);
             send(target, om);
         } catch (Exception e) {
-            if (_log.isErrorEnabled()) _log.error("problem sending " + pojo, e);
+            _log.error("problem sending " + pojo, e);
         }
     }
 
@@ -223,7 +223,9 @@ public abstract class AbstractDispatcher implements Dispatcher {
         om.setAddress(target);
         om.setSourceCorrelationId(sourceCorrelationId);
         om.setPayload(pojo);
-        if (_log.isTraceEnabled()) _log.trace("send {" + sourceCorrelationId + "}: " + getPeerName(source) + " -> " + getPeerName(target) + " : " + pojo);
+        if (_log.isTraceEnabled()) {
+            _log.trace("send {" + sourceCorrelationId + "}: " + getPeerName(source) + " -> " + getPeerName(target) + " : " + pojo);
+        }
         send(target, om);
 	}
 	
@@ -272,7 +274,9 @@ public abstract class AbstractDispatcher implements Dispatcher {
         om.setAddress(to);
         om.setTargetCorrelationId(incomingCorrelationId);
         om.setPayload(body);
-        if (_log.isTraceEnabled()) _log.trace("reply: " + getPeerName(from) + " -> " + getPeerName(to) + " {" + incomingCorrelationId + "} : " + body);
+        if (_log.isTraceEnabled()) {
+            _log.trace("reply: " + getPeerName(from) + " -> " + getPeerName(to) + " {" + incomingCorrelationId + "} : " + body);
+        }
         send(to, om);
 	}
 	
