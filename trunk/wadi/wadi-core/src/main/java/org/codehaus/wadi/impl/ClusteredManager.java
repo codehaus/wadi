@@ -90,6 +90,7 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
 	}
 
 	public void start() throws Exception {
+        _shuttingDown.set(false);
 		_dindex.start();
 		super.start();
 	}
@@ -182,7 +183,6 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
 		return _dindex.insert(name, getInactiveTime());
 	}
 
-	// DIndexConfig
 	public void findRelevantSessionNames(int numPartitions, Collection[] resultSet) {
 		_contextualiser.findRelevantSessionNames(numPartitions, resultSet);
 	}
@@ -195,7 +195,6 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
 		return _endPoint;
 	}
 
-	// 'PartitionManagerConfig' API
 	public boolean contextualise(Invocation invocation, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws InvocationException {
 		return _contextualiser.contextualise(invocation, id, immoter, motionLock, exclusiveOnly);
 	}

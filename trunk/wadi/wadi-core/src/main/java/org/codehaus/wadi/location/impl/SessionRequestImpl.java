@@ -25,16 +25,13 @@ import org.codehaus.wadi.location.SessionRequestMessage;
  * @version $Revision: 1924 $
  */
 public class SessionRequestImpl implements SessionRequestMessage, Serializable {
-
-    protected Object _key;
+    protected final Object _key;
 
     public SessionRequestImpl(Object key) {
-        super();
-        _key=key;
-    }
-
-    protected SessionRequestImpl() {
-        // for deserialisation...
+        if (null == key) {
+            throw new IllegalArgumentException("key is required");
+        }
+        _key = key;
     }
 
     public Object getKey() {

@@ -17,8 +17,9 @@
 package org.codehaus.wadi.location.session;
 
 import java.io.Serializable;
+
 import org.codehaus.wadi.Lease;
-import org.codehaus.wadi.group.Address;
+import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.location.SessionResponseMessage;
 
 /**
@@ -30,30 +31,35 @@ import org.codehaus.wadi.location.SessionResponseMessage;
  */
 public class MovePMToIMInvocation implements SessionResponseMessage, Serializable {
 
-    protected Lease.Handle _leaseHandle;
-    protected long _leasePeriod;
-    protected Address _stateMaster;
-    
-    public MovePMToIMInvocation(Lease.Handle leaseHandle, long leasePeriod, Address stateMaster) {
-        _leaseHandle=leaseHandle;
-        _leasePeriod=leasePeriod;
-        _stateMaster=stateMaster;
+    protected final Lease.Handle _leaseHandle;
+    protected final long _leasePeriod;
+    protected final Peer _stateMaster;
+
+    public MovePMToIMInvocation(Lease.Handle leaseHandle, long leasePeriod, Peer stateMaster) {
+        if (null == leaseHandle) {
+            throw new IllegalArgumentException("leaseHandle is required");
+        } else if (null == stateMaster) {
+            throw new IllegalArgumentException("stateMaster is required");
+        }
+        _leaseHandle = leaseHandle;
+        _leasePeriod = leasePeriod;
+        _stateMaster = stateMaster;
     }
-    
+
     public String toString() {
-        return "<MovePMToIMInvocation:"+_stateMaster+">";
+        return "<MovePMToIMInvocation:" + _stateMaster + ">";
     }
-    
-    public Address getStateMaster() {
+
+    public Peer getStateMaster() {
         return _stateMaster;
     }
-    
+
     public Lease.Handle getLeaseHandle() {
         return _leaseHandle;
     }
-    
+
     public long getLeasePeriod() {
         return _leasePeriod;
     }
-    
+
 }

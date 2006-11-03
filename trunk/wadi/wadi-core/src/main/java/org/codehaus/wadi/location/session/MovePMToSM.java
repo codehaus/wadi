@@ -18,7 +18,7 @@ package org.codehaus.wadi.location.session;
 
 import java.io.Serializable;
 
-import org.codehaus.wadi.group.Address;
+import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.location.impl.SessionRequestImpl;
 
 /**
@@ -27,31 +27,38 @@ import org.codehaus.wadi.location.impl.SessionRequestImpl;
  */
 public class MovePMToSM extends SessionRequestImpl implements Serializable {
 
-	protected Address _im;
-	protected Address _pm;
-	protected String _imCorrelationId;
+	protected final Peer _im;
+    protected final Peer _pm;
+    protected final String _imCorrelationId;
 
-	public MovePMToSM(Object key, Address im, Address pm, String imCorrelationId) {
-	    super(key);
-		_im=im;
-		_pm=im;
-		_imCorrelationId=imCorrelationId;
-	}
+    public MovePMToSM(Object key, Peer im, Peer pm, String imCorrelationId) {
+        super(key);
+        if (null == im) {
+            throw new IllegalArgumentException("im is required");
+        } else if (null == pm) {
+            throw new IllegalArgumentException("pm is required");
+        } else if (null == imCorrelationId) {
+            throw new IllegalArgumentException("imCorrelationId is required");
+        }
+        _im = im;
+        _pm = im;
+        _imCorrelationId = imCorrelationId;
+    }
 
-	public Address getIM() {
-		return _im;
-	}
+    public Peer getIMPeer() {
+        return _im;
+    }
 
-	public Address getPM() {
-		return _pm;
-	}
+    public Peer getPMPeer() {
+        return _pm;
+    }
 
-	public String getIMCorrelationId() {
-		return _imCorrelationId;
-	}
+    public String getIMCorrelationId() {
+        return _imCorrelationId;
+    }
 
-	public String toString() {
-		return "<MovePMToSM:"+_key+">";
-	}
+    public String toString() {
+        return "<MovePMToSM:" + _key + ">";
+    }
 
 }

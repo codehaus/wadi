@@ -26,14 +26,15 @@ import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
  * @version $Revision$
  */
 public interface RelocaterConfig extends Config {
-
     Collapser getCollapser();
+
     Dispatcher getDispatcher();
+    
     Contextualiser getContextualiser();
-    String getNodeName();
+    
     SynchronizedBoolean getShuttingDown();
 
     DIndex getDIndex();
+    
     void notifySessionRelocation(String name);
-
 }

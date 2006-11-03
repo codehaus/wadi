@@ -18,6 +18,7 @@ package org.codehaus.wadi.location.session;
 
 import java.io.Serializable;
 
+import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.location.impl.SessionRequestImpl;
 
 /**
@@ -25,13 +26,22 @@ import org.codehaus.wadi.location.impl.SessionRequestImpl;
  * @version $Revision:1815 $
  */
 public class EvacuateIMToPM extends SessionRequestImpl implements Serializable {
-  
-  public EvacuateIMToPM(String name) {
-    super(name);
-  }
-  
-  public String toString() {
-    return "<EvacuateIMToPM: "+_key+">";
-  }
-  
+    private final Peer peer;
+    
+    public EvacuateIMToPM(String name, Peer peer) {
+        super(name);
+        if (null == peer) {
+            throw new IllegalArgumentException("peer is required");
+        }
+        this.peer = peer;
+    }
+
+    public Peer getPeer() {
+        return peer;
+    }
+
+    public String toString() {
+        return "<EvacuateIMToPM: " + _key + ">";
+    }
+
 }

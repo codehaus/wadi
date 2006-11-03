@@ -124,8 +124,8 @@ public class DistributableManager extends StandardManager implements ReplicableS
 		return _streamer;
 	}
 
-	// ReplicableSessionConfig
 	public Replicater getReplicater() {
 		return _replicaterFactory.create(this);
 	}
+
 }

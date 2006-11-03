@@ -20,33 +20,43 @@ import java.io.Serializable;
 import java.util.Collection;
 
 import org.codehaus.wadi.PartitionResponseMessage;
+import org.codehaus.wadi.group.Peer;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision:1815 $
  */
 public class PartitionRepopulateResponse implements PartitionResponseMessage, Serializable {
+    protected final Peer peer;
+    protected final Collection[] _keys;
 
-    protected Collection[] _keys;
+    public PartitionRepopulateResponse(Peer peer, Collection[] keys) {
+        if (null == peer) {
+            throw new IllegalArgumentException("peer is required");
+        } else if (null == keys) {
+            throw new IllegalArgumentException("keys is required");            
+        }
+        this.peer = peer;
+        _keys = keys;
+    }
 
-    public PartitionRepopulateResponse(Collection[] keys) {
-        super();
-        _keys=keys;
+    public Peer getPeer() {
+        return peer;
     }
 
     public Collection[] getKeys() {
         return _keys;
     }
 
-
     public String toString() {
-    	StringBuffer buffer=new StringBuffer("<PartitionRepopulateResponse: ");
-    	for (int i=0; i<_keys.length; i++) {
-    		Collection c=_keys[i];
-    		if (c!=null)
-    			buffer.append(""+i+":"+c.toString()+", ");
-    	}
-    	buffer.append(">");
-    	return buffer.toString();
+        StringBuffer buffer = new StringBuffer("<PartitionRepopulateResponse: ");
+        for (int i = 0; i < _keys.length; i++) {
+            Collection c = _keys[i];
+            if (c != null)
+                buffer.append("" + i + ":" + c.toString() + ", ");
+        }
+        buffer.append(">");
+        return buffer.toString();
     }
+
 }

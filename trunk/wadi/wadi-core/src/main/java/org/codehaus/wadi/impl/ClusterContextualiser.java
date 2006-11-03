@@ -49,36 +49,31 @@ import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
  * @version $Revision$
  */
 public class ClusterContextualiser extends AbstractSharedContextualiser implements RelocaterConfig, ClusterListener, StateManager.ImmigrationListener {
-
-	protected final static String _nodeNameKey="name";
-	protected final static String _shuttingDownKey="shuttingDown";
-
-	protected final Collapser _collapser;
+    protected final Collapser _collapser;
 	protected final Relocater _relocater;
 	protected final Immoter _immoter;
 	protected final Emoter _emoter;
 	protected final int _resTimeout = 5000; // TODO - parameterise
-	protected final Log _lockLog=LogFactory.getLog("org.codehaus.wadi.LOCKS");
-
-
-	public ClusterContextualiser(Contextualiser next, Collapser collapser, Relocater relocater) {
-		super(next, new CollapsingLocker(collapser), false);
-		_collapser=collapser;
-		_relocater=relocater;
-		_immoter=new EmigrationImmoter();
-		_emoter=null; // TODO - I think this should be something like the ImmigrationEmoter
-		// it pulls a named Session out of the cluster and emotes it from this Contextualiser...
-		// this makes it awkward to split session and request relocation into different strategies,
-		// so session relocation should be the basic strategy, with request relocation as a pluggable
-		// optimisation...
-	}
-
+	protected final Log _lockLog = LogFactory.getLog("org.codehaus.wadi.LOCKS");
 	protected SynchronizedBoolean _shuttingDown;
 	protected String _nodeName;
 	protected Dispatcher _dispatcher;
 	protected Cluster _cluster;
 	protected DIndex _dindex;
 	protected Contextualiser _top;
+
+	public ClusterContextualiser(Contextualiser next, Collapser collapser, Relocater relocater) {
+		super(next, new CollapsingLocker(collapser), false);
+		_collapser = collapser;
+        _relocater = relocater;
+        _immoter = new EmigrationImmoter();
+        _emoter = null;
+        // TODO - I think this should be something like the ImmigrationEmoter
+		// it pulls a named Session out of the cluster and emotes it from this Contextualiser...
+		// this makes it awkward to split session and request relocation into different strategies,
+		// so session relocation should be the basic strategy, with request relocation as a pluggable
+		// optimisation...
+	}
 
 	public void init(ContextualiserConfig config) {
 		super.init(config);
@@ -243,9 +238,6 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 		// i.e. on startup, take ownership of a number of active sessions - affinity implications etc...
 	}
 
-	// AbstractMotingContextualiser
-
-	// ClusterListener
     public void onListenerRegistration(Cluster cluster, Set existing, Peer coordinator) {
     }
 	

@@ -23,9 +23,9 @@ import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
  * @version $Revision$
  */
 public interface DistributableContextualiserConfig extends ContextualiserConfig {
-
     boolean getAccessOnLoad();
-    SynchronizedBoolean getShuttingDown();
-    Contextualiser getContextualiser();
 
+    SynchronizedBoolean getShuttingDown();
+    
+    Contextualiser getContextualiser();
 }

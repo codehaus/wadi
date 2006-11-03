@@ -215,7 +215,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
             _log.warn("ERROR", t);
         }
         try {
-            _dispatcher.reply(om, new PartitionRepopulateResponse(c));
+            _dispatcher.reply(om, new PartitionRepopulateResponse(_localPeer, c));
         } catch (MessageExchangeException e) {
             _log.warn("unexpected problem responding to partition repopulation request", e);
         }
@@ -240,6 +240,8 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
         balancingInfo = infoUpdate.buildNewPartitionInfo(_localPeer);
         
         if (infoUpdate.isPartitionManagerAlone()) {
+            // This case happens when this PartitionManager is shutting down and is the last one. In this scenario,
+            // its partitions are not evacuated.
             if (infoUpdate.isPartitionEvacuationAck()) {
                 evacuationCompletionLatch.release();
             } else {
@@ -268,6 +270,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
         }
 
         redefineRemotePartitions(newPartitionInfos);
+        waitForPartitionTranserOrTimeout(newPartitionInfos);
     }
 
     protected void repopulatePartition(int[] partitionIndicesToRepopulate) {
@@ -287,23 +290,21 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
         // we are carrying ourselves...
         Collection[] c = partitionRepopulateRequest.createPartitionIndexToSessionNames(_numPartitions);
         _config.findRelevantSessionNames(_numPartitions, c);
-        repopulate(_localPeer.getAddress(), c);
+        repopulate(_localPeer, c);
 
-        // boolean success=false;
         try {
-            // TODO - I, Gianny, think this is incorrect.
-            /* success= */rv.waitFor(_inactiveTime);
+            rv.waitFor(_inactiveTime);
         } catch (InterruptedException e) {
-            _log.warn("unexpected interruption", e);
+            _log.warn("Unexpected interruption", e);
         }
         
         Collection results = rv.getResults();
         for (Iterator i = results.iterator(); i.hasNext();) {
             Envelope message = (Envelope) i.next();
-            Address from = message.getReplyTo();
             PartitionRepopulateResponse response = (PartitionRepopulateResponse) message.getPayload();
             Collection[] relevantKeys = response.getKeys();
-            repopulate(from, relevantKeys);
+            Peer peer = response.getPeer();
+            repopulate(peer, relevantKeys);
         }
 
         _log.info("...PARTITIONS REPOPULATED: " + partitionIndicesToRepopulate);
@@ -320,12 +321,11 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
             if (newOwner.equals(_localPeer)) {
                 continue;
             }
-            if (facade.isUnknown()) {
-                facade.setContentRemote(newOwner.getAddress());
-            } else {
-                facade.release(newOwner.getAddress());
-            }
+            facade.release(newOwner);
         }
+    }
+    
+    protected void waitForPartitionTranserOrTimeout(PartitionInfo[] newPartitionInfos) {
     }
 
     protected void transferPartitionToPeers(Peer peer, List facades) {
@@ -345,7 +345,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
             if (null != replyMsg && ((PartitionTransferResponse) replyMsg.getPayload()).getSuccess()) {
                 for (int i = 0; i < acquired.length; i++) {
                     PartitionFacade facade = _partitions[acquired[i].getKey()];
-                    facade.release(peer.getAddress());
+                    facade.release(peer);
                 }
                 _log.info("Released " + acquired.length + " partition[s] to " + peer);
             } else {
@@ -386,10 +386,9 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
     public void onPartitionTransferRequest(Envelope om, PartitionTransferRequest request) {
         LocalPartition[] partitions = request.getPartitions();
         for (int i = 0; i < partitions.length; i++) {
-            LocalPartition partition = partitions[i];
-            partition.init(this);
-            PartitionFacade facade = getPartition(partition.getKey());
-            facade.setContent(partition);
+            LocalPartition local = new LocalPartition(_dispatcher, partitions[i]);
+            PartitionFacade facade = getPartition(local.getKey());
+            facade.setContent(local);
         }
 
         // acknowledge safe receipt to donor
@@ -411,15 +410,18 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
         return balancingInfo;
     }
     
-    protected void repopulate(Address location, Collection[] partitionIndexToSessionNames) {
+    protected void repopulate(Peer peer, Collection[] partitionIndexToSessionNames) {
         for (int i = 0; i < _numPartitions; i++) {
             Collection sessionNames = partitionIndexToSessionNames[i];
             if (sessionNames != null) {
                 PartitionFacade facade = _partitions[i];
-                LocalPartition local = (LocalPartition) facade.getContent();
+
+                LocalPartition local = new LocalPartition(_dispatcher, i, _inactiveTime);
+                facade.setContent(local);
+
                 for (Iterator j = sessionNames.iterator(); j.hasNext();) {
                     String name = (String) j.next();
-                    local.put(name, location);
+                    local.put(name, peer);
                 }
             }
         }
@@ -431,9 +433,8 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
         }
         for (int i = 0; i < _numPartitions; i++) {
             PartitionFacade facade = _partitions[i];
-            LocalPartition partition = new LocalPartition(i);
-            partition.init(this);
-            facade.setContent(partition);
+            LocalPartition local = new LocalPartition(_dispatcher, i, _inactiveTime);
+            facade.setContent(local);
         }
     }
 

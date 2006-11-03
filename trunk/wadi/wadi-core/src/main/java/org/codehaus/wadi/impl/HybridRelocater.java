@@ -52,25 +52,22 @@ public class HybridRelocater extends AbstractRelocater {
 
 	protected SynchronizedBoolean _shuttingDown;
 	protected Dispatcher _dispatcher;
-	protected String _nodeName;
 	protected Contextualiser _contextualiser;
 
 	public void init(RelocaterConfig config) {
 		super.init(config);
 		_shuttingDown=_config.getShuttingDown();
 		_dispatcher=_config.getDispatcher();
-		_nodeName=_config.getNodeName();
 		_contextualiser=_config.getContextualiser();
 	}
 
 	public boolean relocate(Invocation invocation, String name, Immoter immoter, Sync motionLock) throws InvocationException {
 	  String sessionName=name;
-	  String nodeName=_config.getNodeName();
 	  boolean shuttingDown=_shuttingDown.get();
 	  
 	  Motable immotable=null;
 	  try {
-	    immotable=_config.getDIndex().relocate(invocation, sessionName, nodeName, shuttingDown, _resTimeout, immoter);
+	    immotable=_config.getDIndex().relocate(invocation, sessionName, shuttingDown, _resTimeout, immoter);
 	  } catch (Exception e) {
 	    _log.error("unexpected error", e);
 	  }

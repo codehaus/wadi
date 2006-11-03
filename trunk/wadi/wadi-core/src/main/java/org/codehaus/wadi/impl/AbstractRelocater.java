@@ -24,7 +24,6 @@ import org.codehaus.wadi.RelocaterConfig;
  * @version $Revision$
  */
 public abstract class AbstractRelocater implements Relocater {
-
     protected RelocaterConfig _config;
 
     public void init(RelocaterConfig config) {
@@ -34,4 +33,5 @@ public abstract class AbstractRelocater implements Relocater {
     public void destroy() {
         _config=null;
     }
+
 }

@@ -18,6 +18,7 @@ package org.codehaus.wadi.location.session;
 
 import java.io.Serializable;
 
+import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.location.impl.SessionRequestImpl;
 
 /**
@@ -26,31 +27,34 @@ import org.codehaus.wadi.location.impl.SessionRequestImpl;
  */
 public class MoveIMToPM extends SessionRequestImpl implements Serializable {
 
-    protected String _peerName;
-    protected boolean _relocateSession;
-    protected boolean _relocateInvocation;
+    protected final Peer peer;
+    protected final boolean _relocateSession;
+    protected final boolean _relocateInvocation;
 
-    public MoveIMToPM(String sessionName, String peerName, boolean relocateSession, boolean relocateInvocation) {
+    public MoveIMToPM(Peer peer, String sessionName, boolean relocateSession, boolean relocateInvocation) {
         super(sessionName);
-        _peerName=peerName;
-        _relocateSession=relocateSession;
-        _relocateInvocation=relocateInvocation;
+        if (null == peer) {
+            throw new IllegalArgumentException("peer is required");
+        }
+        this.peer = peer;
+        _relocateSession = relocateSession;
+        _relocateInvocation = relocateInvocation;
     }
 
-    public String getNodeName() {
-    	return _peerName;
-    }
-
-    public boolean getRelocateSession() {
+    public boolean isRelocateSession() {
         return _relocateSession;
     }
 
-    public boolean getRelocateInvocation() {
+    public boolean isRelocateInvocation() {
         return _relocateInvocation;
     }
-    
+
+    public Peer getIMPeer() {
+        return peer;
+    }
+
     public String toString() {
-        return "<MoveIMToPM:"+_key+"->"+_peerName+">";
+        return "MoveIMToPM [" + _key + "]->[" + peer + "]";
     }
 
 }

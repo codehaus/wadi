@@ -48,13 +48,17 @@ public class BasicServiceSpaceDispatcher extends AbstractDispatcher {
     private final Dispatcher underlyingDispatcher;
     private final ServiceSpaceMessageHelper messageHelper;
     private final BasicServiceSpaceCluster serviceSpaceCluster;
+    private final long waitTimeToBootServiceSpace;
 
-    public BasicServiceSpaceDispatcher(BasicServiceSpace serviceSpace) {
+    public BasicServiceSpaceDispatcher(BasicServiceSpace serviceSpace, long waitTimeToBootServiceSpace) {
         super(new ExecuteInThread());
         if (null == serviceSpace) {
             throw new IllegalArgumentException("serviceSpace is required");
+        } else if (0 > waitTimeToBootServiceSpace) {
+            throw new IllegalArgumentException("waitTimeToBootServiceSpace must be greater than 0");
         }
         this.serviceSpace = serviceSpace;
+        this.waitTimeToBootServiceSpace = waitTimeToBootServiceSpace;
         this.underlyingDispatcher = serviceSpace.getUnderlyingDispatcher();
 
         messageHelper = new ServiceSpaceMessageHelper(serviceSpace);
@@ -167,7 +171,7 @@ public class BasicServiceSpaceDispatcher extends AbstractDispatcher {
             
             boolean isFirstPeer;
             try {
-                isFirstPeer = !startLatch.attempt(_inactiveTime);
+                isFirstPeer = !startLatch.attempt(waitTimeToBootServiceSpace);
             } catch (InterruptedException e) {
                 throw (IllegalStateException) new IllegalStateException().initCause(e);
             }

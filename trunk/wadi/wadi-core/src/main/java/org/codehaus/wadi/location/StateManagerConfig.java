@@ -21,8 +21,8 @@ import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.group.Address;
-import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.location.impl.PartitionFacade;
+
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
@@ -30,21 +30,14 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * @version $Revision$
  */
 public interface StateManagerConfig {
-  PartitionFacade getPartition(int key);
+    PartitionFacade getPartition(Object key);
 
-  PartitionFacade getPartition(Object key);
-  
-  int getNumPartitions();
+    String getPeerName(Address address);
 
-  String getLocalPeerName();
-  
-  String getPeerName(Address address);
+    boolean contextualise(Invocation invocation, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly)
+            throws InvocationException;
 
-  Dispatcher getDispatcher();
+    long getInactiveTime();
 
-  boolean contextualise(Invocation invocation, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws InvocationException;
-  
-  long getInactiveTime();
-
-  Sync getInvocationLock(String name);
+    Sync getInvocationLock(String name);
 }

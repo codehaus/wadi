@@ -83,7 +83,6 @@ public class Coordinator implements Runnable {
                 rebalanceClusterState();
             }
         } catch (InterruptedException e) {
-            Thread.interrupted();
             _log.warn("Coordinator thread interrupted - Restarting Coordinator thread");
             startCoordinatorThread();
         }

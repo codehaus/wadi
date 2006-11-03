@@ -30,6 +30,9 @@ public class InsertIMToPM extends SessionRequestImpl implements Serializable {
     
     public InsertIMToPM(String name, Peer peer) {
         super(name);
+        if (null == peer) {
+            throw new IllegalArgumentException("peer is required");
+        }
         this.peer = peer;
     }
 
@@ -38,7 +41,7 @@ public class InsertIMToPM extends SessionRequestImpl implements Serializable {
     }
 
     public String toString() {
-        return "<InsertIMToPM:"+_key+">";
+        return "InsertIMToPM [" + _key + "]";
     }
     
 }
