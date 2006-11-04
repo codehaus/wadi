@@ -183,8 +183,8 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
 		return _dindex.insert(name, getInactiveTime());
 	}
 
-	public void findRelevantSessionNames(int numPartitions, Collection[] resultSet) {
-		_contextualiser.findRelevantSessionNames(numPartitions, resultSet);
+    public void findRelevantSessionNames(PartitionMapper mapper, Collection[] resultSet) {
+		_contextualiser.findRelevantSessionNames(mapper, resultSet);
 	}
 
 	public InvocationProxy getInvocationProxy() {

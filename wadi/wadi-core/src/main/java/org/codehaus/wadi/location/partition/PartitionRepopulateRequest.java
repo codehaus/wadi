@@ -36,10 +36,6 @@ public class PartitionRepopulateRequest implements PartitionRequestMessage, Seri
         this.keys = keys;
     }
 
-    public int[] getKeys() {
-        return keys;
-    }
-
     public Collection[] createPartitionIndexToSessionNames(int numPartitions) {
         Collection[] partitionIndexToSessionNames = new Collection[numPartitions];
         for (int i = 0; i < keys.length; i++) {

@@ -106,7 +106,7 @@ public interface Contextualiser extends Lifecycle {
     
 	void load(Emoter emoter, Immoter immoter);
 	
-	void findRelevantSessionNames(int numPartitions, Collection[] resultSet);
+	void findRelevantSessionNames(PartitionMapper mapper, Collection[] resultSet);
 	
 	int getLocalSessionCount();
 

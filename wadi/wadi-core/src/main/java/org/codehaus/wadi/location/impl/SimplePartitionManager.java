@@ -115,7 +115,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
         _config = config;
     }
 
-    public synchronized void start() throws Exception {
+    public void start() throws Exception {
         _endpointBuilder.addSEI(_dispatcher, PartitionManagerMessageListener.class, this);
         _endpointBuilder.addCallback(_dispatcher, PartitionTransferAcknowledgement.class);
         _endpointBuilder.addCallback(_dispatcher, PartitionTransferResponse.class);
@@ -127,7 +127,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
         waitUntilUseable(WAIT_DEFINED_PARTITION_MANAGER);
     }
     
-    public synchronized void stop() throws Exception {
+    public void stop() throws Exception {
         _endpointBuilder.dispose(10, 500);
     }
 
@@ -156,7 +156,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
         Peer localPeer = _localPeer;
         Peer coordPeer = _config.getCoordinator();
         if (_log.isTraceEnabled()) {
-            _log.trace("evacuating partitions...: " + localPeer.getName() + " -> " + coordPeer.getName());
+            _log.trace("evacuating partitions...: " + localPeer + " -> " + coordPeer);
         }
 
         int failures = 0;
@@ -206,11 +206,9 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
     }
 
     public void onPartitionRepopulateRequest(Envelope om, PartitionRepopulateRequest request) {
-        int keys[] = request.getKeys();
-        _log.info("PartitionRepopulateRequest ARRIVED: " + keys);
         Collection[] c = request.createPartitionIndexToSessionNames(_numPartitions);
         try {
-            _config.findRelevantSessionNames(_numPartitions, c);
+            _config.findRelevantSessionNames(_mapper, c);
         } catch (Throwable t) {
             _log.warn("ERROR", t);
         }
@@ -289,7 +287,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
         // whilst we are waiting for the other nodes to get back to us, figure out which relevant sessions 
         // we are carrying ourselves...
         Collection[] c = partitionRepopulateRequest.createPartitionIndexToSessionNames(_numPartitions);
-        _config.findRelevantSessionNames(_numPartitions, c);
+        _config.findRelevantSessionNames(_mapper, c);
         repopulate(_localPeer, c);
 
         try {
