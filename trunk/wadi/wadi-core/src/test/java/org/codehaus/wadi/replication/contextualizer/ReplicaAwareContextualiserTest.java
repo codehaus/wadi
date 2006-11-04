@@ -2,6 +2,7 @@ package org.codehaus.wadi.replication.contextualizer;
 
 import org.codehaus.wadi.Emoter;
 import org.codehaus.wadi.Motable;
+import org.codehaus.wadi.impl.DummyContextualiser;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
 import org.codehaus.wadi.test.DummyDistributableSessionConfig;
 import org.codehaus.wadi.web.WebSession;
@@ -18,7 +19,7 @@ public class ReplicaAwareContextualiserTest extends RMockTestCase {
     }
     
     public void testEmoter() throws Exception {
-        ReplicaAwareContextualiser contextualiser = new ReplicaAwareContextualiser(null, manager);
+        ReplicaAwareContextualiser contextualiser = new ReplicaAwareContextualiser(new DummyContextualiser(), manager);
         
         startVerification();
         
@@ -47,7 +48,7 @@ public class ReplicaAwareContextualiserTest extends RMockTestCase {
         
         startVerification();
         
-        ReplicaAwareContextualiser contextualiser = new ReplicaAwareContextualiser(null, manager);
+        ReplicaAwareContextualiser contextualiser = new ReplicaAwareContextualiser(new DummyContextualiser(), manager);
         Motable actualMotable = contextualiser.get(key);
         assertSame(motable, actualMotable);
     }

@@ -59,7 +59,6 @@ public class PartitionFacade extends AbstractPartition {
         }
     }
 
-    // 'Partition' API
     public boolean isLocal() { // locking ?
         return _content.isLocal();
     }
@@ -136,7 +135,7 @@ public class PartitionFacade extends AbstractPartition {
      * @throws InterruptedException
      */
     public Partition acquire() {
-        Utils.acquireWithoutTimeout("Partition [exclusive]", _keyString, _lock.writeLock()); // EXCLUSIVE
+        Utils.acquireWithoutTimeout("Partition [exclusive]", _keyString, _lock.writeLock());
         return _content;
     }
 

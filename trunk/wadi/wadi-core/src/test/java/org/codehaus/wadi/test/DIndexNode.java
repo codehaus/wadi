@@ -113,9 +113,7 @@ public class DIndexNode implements PartitionManagerConfig {
 		return _entries.get(key);
 	}
 
-	// PartitionManagerConfig API
-
-	public void findRelevantSessionNames(int numPartitions, Collection[] resultSet) {
+    public void findRelevantSessionNames(PartitionMapper mapper, Collection[] resultSet) {
 		_log.warn("findRelevantSessionNames() - NYI");
 	}
 

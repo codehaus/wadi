@@ -24,6 +24,7 @@ import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.Motable;
+import org.codehaus.wadi.PartitionMapper;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.ClusterEvent;
 import org.codehaus.wadi.group.Dispatcher;
@@ -89,7 +90,7 @@ public abstract class AbstractTestPartitionManager extends TestCase {
 
 			protected long _birthTime=System.currentTimeMillis();
 			
-			public void findRelevantSessionNames(int numPartitions, Collection[] resultSet) {
+            public void findRelevantSessionNames(PartitionMapper mapper, Collection[] resultSet) {
 			}
 
             public Peer getCoordinator() {

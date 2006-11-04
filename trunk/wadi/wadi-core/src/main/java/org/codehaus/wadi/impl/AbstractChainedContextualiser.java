@@ -21,16 +21,19 @@ import java.util.Collection;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.ContextualiserConfig;
 import org.codehaus.wadi.Evictable;
+import org.codehaus.wadi.PartitionMapper;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
 public abstract class AbstractChainedContextualiser extends AbstractContextualiser {
-
     protected final Contextualiser _next;
 
     public AbstractChainedContextualiser(Contextualiser next) {
+        if (null == next) {
+            throw new IllegalArgumentException("next is required");
+        }
         _next = next;
     }
 
@@ -60,10 +63,10 @@ public abstract class AbstractChainedContextualiser extends AbstractContextualis
     public void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newTime) {
     }
 
-    public void findRelevantSessionNames(int numPartitions, Collection[] resultSet) {
-        super.findRelevantSessionNames(numPartitions, resultSet);
+    public void findRelevantSessionNames(PartitionMapper mapper, Collection[] resultSet) {
+        super.findRelevantSessionNames(mapper, resultSet);
         if (_next.isExclusive()) {
-            _next.findRelevantSessionNames(numPartitions, resultSet);
+            _next.findRelevantSessionNames(mapper, resultSet);
         }
     }
 }

@@ -35,6 +35,7 @@ import javax.sql.DataSource;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Collapser;
+import org.codehaus.wadi.PartitionMapper;
 import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.ContextualiserConfig;
@@ -179,9 +180,9 @@ public class SimpleContextualiserStack implements Contextualiser {
 
 	public Contextualiser getTop() {return _memory;}
 
-	public void findRelevantSessionNames(int numPartitions, Collection[] resultSet) {
+    public void findRelevantSessionNames(PartitionMapper mapper, Collection[] resultSet) {
 		_log.info("findRelevantSessionNames");
-		_memory.findRelevantSessionNames(numPartitions, resultSet);
+		_memory.findRelevantSessionNames(mapper, resultSet);
 	}
 
 	public int getLocalSessionCount() {

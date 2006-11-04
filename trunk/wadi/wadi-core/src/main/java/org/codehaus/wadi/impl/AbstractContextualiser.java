@@ -22,6 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.ContextualiserConfig;
+import org.codehaus.wadi.PartitionMapper;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -50,6 +51,7 @@ public abstract class AbstractContextualiser implements Contextualiser {
     public void destroy() {
     }
 
-    public void findRelevantSessionNames(int numPartitions, Collection[] resultSet) {
+    public void findRelevantSessionNames(PartitionMapper mapper, Collection[] resultSet) {
     }
+    
 }

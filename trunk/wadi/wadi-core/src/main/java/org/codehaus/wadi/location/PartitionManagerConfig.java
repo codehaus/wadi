@@ -21,6 +21,7 @@ import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.Motable;
+import org.codehaus.wadi.PartitionMapper;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Peer;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
@@ -30,7 +31,7 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * @version $Revision$
  */
 public interface PartitionManagerConfig {
-    void findRelevantSessionNames(int numPartitions, Collection[] resultSet);
+    void findRelevantSessionNames(PartitionMapper mapper, Collection[] resultSet);
 
     Peer getCoordinator();
     
