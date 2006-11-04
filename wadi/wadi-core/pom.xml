@@ -91,29 +91,18 @@
       <artifactId>mysql-connector-java</artifactId>
       <version>3.1.11-bin</version>
     </dependency>
+
     <!-- test -->
+    <!-- axion -->
     <dependency>
       <groupId>axion</groupId><!-- for a number of tests -->
       <artifactId>axion</artifactId>
-      <version>1.0-M3-dev</version>
-      <scope>test</scope>
-      <exclusions>
-	<exclusion>
-	  <groupId>javacc</groupId>
-	  <artifactId>javacc</artifactId>
-	</exclusion>
-	<exclusion>
-	  <groupId>commons-logging</groupId>
-	  <artifactId>commons-logging</artifactId>
-	</exclusion>
-      </exclusions>
     </dependency>
     <dependency>
       <groupId>commons-primitives</groupId><!-- for axion -->
       <artifactId>commons-primitives</artifactId>
-      <version>1.0</version>
-      <scope>test</scope>
     </dependency>
+    <!-- derby -->
     <dependency><!-- for TestGianni -->
       <groupId>org.apache.derby</groupId>
       <artifactId>derby</artifactId>
@@ -121,6 +110,7 @@
       <scope>test</scope>
     </dependency>
     <!--  -->
+
   </dependencies>
 
   <build>
