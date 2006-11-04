@@ -101,26 +101,30 @@ PROPS="-e $PROPS"
 
 ## execute build, recording status
 case $target in
+
     compile)
-    mvn $PROPS clean:clean compiler:compile
+    mvn $PROPS clean:clean && \
+    mvn $PROPS compiler:compile
     status=$?
     ;;
     test)
-    mvn $PROPS clean:clean install
+    mvn $PROPS clean:clean && \
+    mvn $PROPS install
     status=$?
     ;;
     site)
     PROPS="$PROPS -Dmaven.test.failure.ignore=true"
-    mvn $PROPS clean:clean install site && \
-    mvn $PROPS -f pom.clover.xml clover:aggregate && \
-    mvn $PROPS site:deploy
+    mvn $PROPS clean:clean && \
+    mvn $PROPS install clover:instrument clover:clover site clover:aggregate site:deploy
     status=$?
     ;;
     eclipse)
     PROPS="$PROPS -DdownloadSources=$downloadSources -Dmaven.test.failure.ignore=true"
-    mvn $PROPS clean:clean install eclipse:eclipse
+    mvn $PROPS clean:clean && \
+    mvn $PROPS install eclipse:clean eclipse:eclipse
     status=$?
     ;;
+
 esac
 
 ## gather all test results together for BJ

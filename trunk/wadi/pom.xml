@@ -338,6 +338,29 @@
 	<version>${geronimo-spec-servlet.version}</version>
 	<scope>provided</scope>
       </dependency>
+      <!-- axion -->
+      <dependency>
+	<groupId>axion</groupId><!-- for a number of tests -->
+	<artifactId>axion</artifactId>
+	<version>1.0-M3-dev</version>
+	<scope>test</scope>
+	<exclusions>
+	  <exclusion>
+	    <groupId>javacc</groupId>
+	    <artifactId>javacc</artifactId>
+	  </exclusion>
+	  <exclusion>
+	    <groupId>commons-logging</groupId>
+	    <artifactId>commons-logging</artifactId>
+	  </exclusion>
+	</exclusions>
+      </dependency>
+      <dependency>
+	<groupId>commons-primitives</groupId><!-- for axion -->
+	<artifactId>commons-primitives</artifactId>
+	<version>1.0</version>
+	<scope>test</scope>
+      </dependency>
       <!--  -->
     </dependencies>
   </dependencyManagement>
@@ -456,32 +479,6 @@
           <flushInterval>100</flushInterval>
 	  <!-- <targetPercentage>0%</targetPercentage> -->  <!-- adds clover to std build, too slow -->
         </configuration>
-        <executions>
-          <!--
-	  <execution>
-            <id>main</id>
-            <phase>verify</phase>
-            <goals>
-              <goal>instrument</goal>
-              <goal>aggregate</goal>
-              <goal>check</goal>
-              <goal>log</goal>
-            </goals>
-          </execution>
-	  -->
-          <execution>
-            <id>site</id>
-            <phase>pre-site</phase>
-            <goals>
-              <goal>instrument</goal>
-              <goal>aggregate</goal>
-
-              <!-- We save a history point in order to have data to generate a historical report -->
-              <goal>save-history</goal>
-
-            </goals>
-          </execution>
-        </executions>
       </plugin>
       <plugin>
 	<groupId>org.apache.maven.plugins</groupId>
@@ -491,12 +488,13 @@
 	    <exclude implementation="java.lang.String">**/*$*.java</exclude><!-- do not run nested classes -->
 	    <exclude implementation="java.lang.String">**/Abstract*.java</exclude><!-- do not run abstract classes -->
 	    <exclude implementation="java.lang.String">**/*TestCase.java</exclude><!-- do not run TestCase base classes -->
+	    <exclude implementation="java.lang.String">**/TestLease.java</exclude>
 	    <!-- InVM -->
 	    <exclude implementation="java.lang.String">**/TestInVMReplication*.java</exclude>
 	    <!-- Tribes -->
 	    <exclude implementation="java.lang.String">**/TestTribesEvacuation.java</exclude>
 	    <exclude implementation="java.lang.String">**/TestTribesRelocation.java</exclude>
-	    <exclude implementation="java.lang.String">**/TestWadiTribesSuite.java</exclude>
+
 	    <!--
 	    Peer group tests fail when executed with
 	    maven. TestACPeerGroup: when the two testMETHOD are
