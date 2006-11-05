@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -x
 
 ## an integration script for various ci systems.
 
@@ -9,7 +9,7 @@ downloadSources=false
 help=false
 site=false
 target=compile
-JAVA_HOME=/usr/local/java/sun-j2sdk1.4.2_08
+JAVA_HOME=/usr/local/java/j2sdk1.4.2_13
 
 while [ -n "$1" ]
 do
@@ -19,10 +19,10 @@ do
       echo "selecting jdk $1"
       case $1 in
 	  1.4)
-	  export JAVA_HOME=/usr/local/java/sun-j2sdk1.4.2_08
+	  export JAVA_HOME=/usr/local/java/j2sdk1.4.2_13
 	  ;;
 	  1.5|5|5.0)
-	  export JAVA_HOME=/usr/local/java/sun-jdk1.5.0_07
+	  export JAVA_HOME=/usr/local/java/jdk1.5.0_09
 	  ;;
 	  *)
 	  echo "parameter not recognised: $1"
@@ -95,6 +95,7 @@ echo
 
 ## cleanup
 rm -fr ./testresults
+rm -fr ~/.m2/repository/org/codehaus/wadi
 
 PROPS="$PROPS -Djava.awt.headless=true"
 PROPS="-e $PROPS"
