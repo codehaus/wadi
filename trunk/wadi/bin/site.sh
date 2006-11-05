@@ -10,11 +10,11 @@ mvn $@ \
  install \
  clover:instrument \
  clover:aggregate \
- site \
-
+ site:site \
+ site:deploy
 
 status=$?
 
-firefox `pwd`/target/site/index.html
+firefox http://wadi.codehaus.org
 
 exit $status
