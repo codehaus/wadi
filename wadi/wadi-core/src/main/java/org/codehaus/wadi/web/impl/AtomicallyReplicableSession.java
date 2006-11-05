@@ -79,7 +79,7 @@ public class AtomicallyReplicableSession extends AbstractReplicableSession {
      * if MII changes - dirties the session metadata - might this be distributed
      * separately ? we could probably distribute this as a delta, since there
      * are no object reference issues - it would be crazy to send the whole
-     * session to update this...
+     * session to update this.
      */
     public void setMaxInactiveInterval(int maxInactiveInterval) {
         if (maxInactiveInterval != maxInactiveInterval) {
