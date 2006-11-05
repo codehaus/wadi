@@ -1,5 +1,7 @@
 #!/bin/sh
 
+rm -fr ~/.m2/repository/org/codehaus/wadi
+
 mvn $@ clean && \
 mvn $@ \
  -fn \
@@ -15,6 +17,6 @@ mvn $@ \
 
 status=$?
 
-firefox file:///home/jules/scm/wadi/target/stage/
+firefox file://`pwd`/target/stage/https/odehaus.org/wadi/index.html
 
 exit $status
