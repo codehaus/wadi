@@ -60,7 +60,7 @@ public class AtomicallyReplicableSession extends AbstractReplicableSession {
         super.rehydrate(creationTime, lastAccessedTime, maxInactiveInterval, name, body);
         _replicater.acquireFromOtherReplicater(this);
     }
-    
+
     public void readEnded() {
         // N.B. this is called from our RWLock inside an implicit exclusive lock, so we should not need to worry
         // about synchronisation.
@@ -78,7 +78,7 @@ public class AtomicallyReplicableSession extends AbstractReplicableSession {
     /**
      * if MII changes - dirties the session metadata - might this be distributed
      * separately ? we could probably distribute this as a delta, since there
-     * are no object reference issues... it would be crazy to send the whole
+     * are no object reference issues - it would be crazy to send the whole
      * session to update this...
      */
     public void setMaxInactiveInterval(int maxInactiveInterval) {
@@ -106,15 +106,16 @@ public class AtomicallyReplicableSession extends AbstractReplicableSession {
     }
 
     /**
-     * this will sometimes dirty the session, since we are giving away a ref to
-     * something inside the session // which may then be modified without our
-     * knowledge... - strictly speaking, if we are using ByReference semantics,
-     * this dirties. If we are using ByValue semantics, it does not.
+     * this will sometimes dirty the session, since we are giving away
+     * a ref to something inside the session which may then be
+     * modified without our knowledge - strictly speaking, if we are
+     * using ByReference semantics, this dirties. If we are using
+     * ByValue semantics, it does not.
      */
     public Object getAttribute(String name) {
         Object tmp = super.getAttribute(name);
         _dirty = (tmp != null) && _semantics.getAttributeDirties();
         return _attributes.get(name);
     }
-    
+
 }

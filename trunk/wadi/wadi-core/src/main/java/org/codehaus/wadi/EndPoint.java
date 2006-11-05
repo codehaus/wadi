@@ -19,8 +19,9 @@ package org.codehaus.wadi;
 import java.io.Serializable;
 
 /**
- * EndPoint - an opaque type encapsulating the EndPoint for an Invocation. e.g. a WebEndPoint
- * might encapsulate the IP address and port of a Web Server...
+ * EndPoint - an opaque type encapsulating the EndPoint for an
+ * Invocation. For example a WebEndPoint might encapsulate the IP
+ * address and port of a Web Server...
  *
  * @author jules
  * @version $Revision$
