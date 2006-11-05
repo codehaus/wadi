@@ -1,13 +1,20 @@
 #!/bin/sh
 
-##rm -fr $HOME/.m2
+rm -fr ~/.m2/repository/org/codehaus/wadi
 
-mvn clean:clean && \
-mvn -Dmaven.test.failure.ignore=true site clover::aggregate site:deploy &&
-firefox file:///tmp/WADI/2.0M2-SNAPSHOT/index.html
+mvn $@ clean && \
+mvn $@ \
+ -fn \
+ -Dmaven.test.failure.ignore=true \
+ clean \
+ install \
+ clover:instrument \
+ clover:aggregate \
+ site \
+
+
 status=$?
 
-##mvn site:stage -DstagingDirectory=target/stage
-##firefox file:///home/jules/scm/wadi/target/stage/index.html
+firefox `pwd`/target/site/index.html
 
 exit $status

@@ -115,7 +115,7 @@ case $target in
     site)
     PROPS="$PROPS -Dmaven.test.failure.ignore=true"
     mvn $PROPS clean:clean && \
-    mvn $PROPS install clover:instrument clover:clover site clover:aggregate site:deploy
+    mvn $PROPS install clover:instrument clover:aggregate site:site site:deploy
     status=$?
     ;;
     eclipse)
