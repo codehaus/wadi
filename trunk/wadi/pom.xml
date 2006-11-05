@@ -554,6 +554,8 @@
 	  -->
 	  <aggregate>false</aggregate>
 	  <source>${jse.version}</source>
+	  <minMemory>512m</minMemory>
+	  <maxMemory>512m</maxMemory>
 	  <links>
 <!--
 	    <link>http://java.sun.com/j2se/${jse.version}/docs/api</link>
