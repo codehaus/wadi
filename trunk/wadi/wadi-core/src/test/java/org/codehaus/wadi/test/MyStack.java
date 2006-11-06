@@ -84,7 +84,7 @@ public class MyStack {
         // case of ActiveCluster, 
         Thread.sleep(1000);
 
-        serviceSpace = new BasicServiceSpace(new ServiceSpaceName(new URI("Space")), dispatcher, 500);
+        serviceSpace = new BasicServiceSpace(new ServiceSpaceName(new URI("Space")), dispatcher, 2000);
         dispatcher = serviceSpace.getDispatcher();
 
         int sweepInterval = 1000 * 60 * 60 * 24;
