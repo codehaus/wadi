@@ -19,6 +19,7 @@ package org.codehaus.wadi.location.session;
 import java.io.Serializable;
 
 import org.codehaus.wadi.group.Peer;
+import org.codehaus.wadi.location.SessionResponseMessage;
 import org.codehaus.wadi.location.impl.SessionRequestImpl;
 
 /**
@@ -57,6 +58,10 @@ public class MovePMToSM extends SessionRequestImpl implements Serializable {
         return _imCorrelationId;
     }
 
+    public SessionResponseMessage newResponseFailure() {
+        throw new UnsupportedOperationException();
+    }
+    
     public String toString() {
         return "<MovePMToSM:" + _key + ">";
     }

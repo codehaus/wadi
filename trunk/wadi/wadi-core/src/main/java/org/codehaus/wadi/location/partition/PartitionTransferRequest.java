@@ -16,10 +16,9 @@
  */
 package org.codehaus.wadi.location.partition;
 
-import java.io.Serializable;
+import java.util.Map;
 
 import org.codehaus.wadi.PartitionRequestMessage;
-import org.codehaus.wadi.location.impl.LocalPartition;
 
 /**
  * Sent from one peer to another, requesting that it take over ownership of a number of Partitions (enclosed).
@@ -27,23 +26,22 @@ import org.codehaus.wadi.location.impl.LocalPartition;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision:1815 $
  */
-public class PartitionTransferRequest implements PartitionRequestMessage, Serializable {
-	protected LocalPartition[] _partitions;
+public class PartitionTransferRequest implements PartitionRequestMessage {
+	protected final Map partitionInfoToLocalPartition;
 
-	public PartitionTransferRequest(LocalPartition[] partitions) {
-		_partitions=partitions;
-	}
+    public PartitionTransferRequest(Map partitionInfoToLocalPartition) {
+        if (null == partitionInfoToLocalPartition) {
+            throw new IllegalArgumentException("partitionInfoToLocalPartition is required");
+        }
+        this.partitionInfoToLocalPartition = partitionInfoToLocalPartition;
+    }
 
-	public LocalPartition[] getPartitions() {
-		return _partitions;
-	}
+    public Map getPartitionInfoToLocalPartition() {
+        return partitionInfoToLocalPartition;
+    }
 
     public String toString() {
-    	StringBuffer buffer=new StringBuffer("<PartitionTransferRequest: ");
-    	for (int i=0; i<_partitions.length; i++) {
-    	    buffer.append((i==0?"":",")+_partitions[i]);
-        }
-    	buffer.append(">");
-        return buffer.toString();
+        return "PartitionTransferRequest [" + partitionInfoToLocalPartition + "]";
     }
+
 }

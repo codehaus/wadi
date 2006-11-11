@@ -27,17 +27,22 @@ import org.codehaus.wadi.group.Peer;
  * @version $Revision: 1538 $
  */
 public class PartitionInfoUpdateBuilder {
-    private final PartitionInfoUpdate[] partitionInfoUpdates;
+    private final PartitionInfoUpdate[] partitionUpdates;
+    private final int version;
     private Collection deferredAdditions;
     private BitSet lostPartitions;
     
-    public PartitionInfoUpdateBuilder(int nbPartitions) {
+    public PartitionInfoUpdateBuilder(int nbPartitions, int version) {
         if (1 > nbPartitions) {
             throw new IllegalArgumentException("nbPartitions must be greater than 0");
+        } else if (0 > version) {
+            throw new IllegalArgumentException("balacingVersion must be positive");
         }
-        partitionInfoUpdates = new PartitionInfoUpdate[nbPartitions];
-        for (int i = 0; i < partitionInfoUpdates.length; i++) {
-            partitionInfoUpdates[i] = new PartitionInfoUpdate(false, new PartitionInfo(i));
+        this.version = version;
+        
+        partitionUpdates = new PartitionInfoUpdate[nbPartitions];
+        for (int i = 0; i < partitionUpdates.length; i++) {
+            partitionUpdates[i] = new PartitionInfoUpdate(false, new PartitionInfo(version, i));
         }
         
         deferredAdditions = new ArrayList();
@@ -62,11 +67,11 @@ public class PartitionInfoUpdateBuilder {
         for (int i = 0; i < localPartitionInfos.length; i++) {
             PartitionInfo localPartitionInfo = localPartitionInfos[i];
             int index = localPartitionInfo.getIndex();
-            PartitionInfoUpdate partitionInfoUpdate = partitionInfoUpdates[index];
+            PartitionInfoUpdate partitionInfoUpdate = partitionUpdates[index];
             if (partitionInfoUpdate.getPartitionInfo().isOwned()) {
                 throw new IllegalStateException("partition [" + partitionInfoUpdate + "] cannot be redefined");
             } else {
-                partitionInfoUpdates[index] = new PartitionInfoUpdate(lostPartitions.get(index), localPartitionInfo);
+                partitionUpdates[index] = new PartitionInfoUpdate(lostPartitions.get(index), localPartitionInfo);
             }
         }
     }
@@ -84,11 +89,11 @@ public class PartitionInfoUpdateBuilder {
                 nbPartitionToRemove--;
             } else {
                 int index = localPartitionInfo.getIndex();
-                PartitionInfoUpdate partitionInfoUpdate = partitionInfoUpdates[index];
+                PartitionInfoUpdate partitionInfoUpdate = partitionUpdates[index];
                 if (partitionInfoUpdate.getPartitionInfo().isOwned()) {
                     throw new IllegalStateException("partition [" + partitionInfoUpdate + "] cannot be redefined");
                 } else {
-                    partitionInfoUpdates[index] = new PartitionInfoUpdate(lostPartitions.get(index), localPartitionInfo);
+                    partitionUpdates[index] = new PartitionInfoUpdate(lostPartitions.get(index), localPartitionInfo);
                 }
             }
         }
@@ -104,33 +109,34 @@ public class PartitionInfoUpdateBuilder {
         deferredAdditions.add(new DeferredAdditionCommand(peer, nbPartitionToAdd));
     }
 
-    public PartitionInfoUpdate[] build() {
+    public PartitionInfoUpdates build() {
         for (Iterator iter = deferredAdditions.iterator(); iter.hasNext();) {
             DeferredAdditionCommand additionCommand = (DeferredAdditionCommand) iter.next();
-            
-            int nbPartitionToAdd = additionCommand.nbPartitionToAdd;
-            for (int i = 0; i < partitionInfoUpdates.length; i++) {
-                PartitionInfoUpdate partitionInfoUpdate = partitionInfoUpdates[i];
-                if (partitionInfoUpdate.getPartitionInfo().isOwned()) {
-                    continue;
-                }
-                partitionInfoUpdates[i] = 
-                    new PartitionInfoUpdate(lostPartitions.get(i), new PartitionInfo(i, additionCommand.peer));
-                nbPartitionToAdd--;
-                if (0 == nbPartitionToAdd) {
-                    break;
-                }
-            }
-            if (0 != nbPartitionToAdd) {
-                throw new IllegalStateException("[" + nbPartitionToAdd + "] still need to be added");
-            }
+            allocatePartitionToPeer(additionCommand.peer, additionCommand.nbPartitionToAdd);
         }
         
         if (!areAllPartitionInfoOwned()) {
             throw new IllegalStateException("All partitions are not owned");
         }
         
-        return partitionInfoUpdates;
+        return new PartitionInfoUpdates(version, partitionUpdates);
+    }
+
+    protected void allocatePartitionToPeer(Peer peer, int nbPartitionToAdd) {
+        for (int i = 0; i < partitionUpdates.length; i++) {
+            PartitionInfoUpdate partitionInfoUpdate = partitionUpdates[i];
+            if (partitionInfoUpdate.getPartitionInfo().isOwned()) {
+                continue;
+            }
+            partitionUpdates[i] = new PartitionInfoUpdate(lostPartitions.get(i), new PartitionInfo(version, i, peer));
+            nbPartitionToAdd--;
+            if (0 == nbPartitionToAdd) {
+                break;
+            }
+        }
+        if (0 != nbPartitionToAdd) {
+            throw new IllegalStateException("[" + nbPartitionToAdd + "] still need to be added");
+        }
     }
 
     public int getNumberOfPartitionsOwnedBy(Peer peer) {
@@ -138,8 +144,8 @@ public class PartitionInfoUpdateBuilder {
             throw new IllegalArgumentException("peer is required");
         }
         int owned = 0;
-        for (int i = 0; i < partitionInfoUpdates.length; i++) {
-            PartitionInfoUpdate partitionInfoUpdate = partitionInfoUpdates[i];
+        for (int i = 0; i < partitionUpdates.length; i++) {
+            PartitionInfoUpdate partitionInfoUpdate = partitionUpdates[i];
             if (peer.equals(partitionInfoUpdate.getPartitionInfo().getOwner())) {
                 owned++;
             }
@@ -161,8 +167,8 @@ public class PartitionInfoUpdateBuilder {
     }
     
     private boolean areAllPartitionInfoOwned() {
-        for (int i = 0; i < partitionInfoUpdates.length; i++) {
-            PartitionInfoUpdate partitionInfoUpdate = partitionInfoUpdates[i];
+        for (int i = 0; i < partitionUpdates.length; i++) {
+            PartitionInfoUpdate partitionInfoUpdate = partitionUpdates[i];
             if (!partitionInfoUpdate.getPartitionInfo().isOwned()) {
                 return false;
             }
@@ -175,10 +181,10 @@ public class PartitionInfoUpdateBuilder {
             throw new IllegalArgumentException("baseline is required");
         } else if (null == baseline.getDefiningPeer()) {
             throw new IllegalArgumentException("baseline does not define a definingPeer");
-        } else if (partitionInfoUpdates.length != baseline.getPartitionInfos().length) {
+        } else if (partitionUpdates.length != baseline.getPartitionInfos().length) {
             throw new IllegalArgumentException("Cannot merge partition balancing info as its size [" + 
                     baseline.getPartitionInfos().length + "] does not equal the size of the target partition balancing " +
-                    "info [" + partitionInfoUpdates.length + "]");
+                    "info [" + partitionUpdates.length + "]");
         }
     }
     

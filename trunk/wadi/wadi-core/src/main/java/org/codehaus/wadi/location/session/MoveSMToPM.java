@@ -16,27 +16,24 @@
  */
 package org.codehaus.wadi.location.session;
 
-import java.io.Serializable;
-import org.codehaus.wadi.location.SessionResponseMessage;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision:1815 $
  */
-public class MoveSMToPM implements SessionResponseMessage, Serializable {
+public class MoveSMToPM extends AbstractSessionResponseMessage {
+    private final boolean _success;
 
-	boolean _success;
+    public MoveSMToPM(boolean success) {
+        _success = success;
+    }
 
-	public MoveSMToPM(boolean success) {
-		_success=success;
-	}
+    public boolean getSuccess() {
+        return _success;
+    }
 
-	public boolean getSuccess() {
-		return _success;
-	}
-
-	public String toString() {
-		return "<MoveSMToPM:"+_success+">";
-	}
+    public String toString() {
+        return "<MoveSMToPM:" + _success + ">";
+    }
 
 }

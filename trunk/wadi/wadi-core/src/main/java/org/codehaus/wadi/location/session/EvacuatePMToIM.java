@@ -16,25 +16,20 @@
  */
 package org.codehaus.wadi.location.session;
 
-import java.io.Serializable;
-
-import org.codehaus.wadi.location.SessionResponseMessage;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision:1815 $
  */
-public class EvacuatePMToIM implements SessionResponseMessage, Serializable {
-  
-  protected boolean _success;
-  
-  public EvacuatePMToIM(boolean success) {
-    super();
-    _success=success;
-  }
-  
-  public String toString() {
-    return "<EvacuatePMToIM: "+_success+">";
-  }
-  
+public class EvacuatePMToIM extends AbstractSessionResponseMessage {
+    protected final boolean _success;
+
+    public EvacuatePMToIM(boolean success) {
+        _success = success;
+    }
+
+    public String toString() {
+        return "<EvacuatePMToIM: " + _success + ">";
+    }
+
 }

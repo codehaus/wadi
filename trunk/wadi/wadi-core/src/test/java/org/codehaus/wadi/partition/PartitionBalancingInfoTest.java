@@ -31,8 +31,8 @@ public class PartitionBalancingInfoTest extends TestCase {
     private PartitionBalancingInfo balancingInfo;
     
     protected void setUp() throws Exception {
-        PartitionInfo[] partitionInfos = newPartitionInfo(new Peer[] {PEER1, PEER2, PEER2});
-        balancingInfo = new PartitionBalancingInfo(partitionInfos);
+        PartitionInfo[] partitionInfos = newPartitionInfo(1, new Peer[] {PEER1, PEER2, PEER2});
+        balancingInfo = new PartitionBalancingInfo(1, partitionInfos);
         balancingInfo = new PartitionBalancingInfo(PEER1, balancingInfo);
     }
     
@@ -63,10 +63,10 @@ public class PartitionBalancingInfoTest extends TestCase {
         assertEquals(2, partitionInfo.getIndex());
     }
     
-    private PartitionInfo[] newPartitionInfo(Peer[] peers) {
+    private PartitionInfo[] newPartitionInfo(int version, Peer[] peers) {
         PartitionInfo[] partitionInfos = new PartitionInfo[peers.length];
         for (int i = 0; i < peers.length; i++) {
-            partitionInfos[i] = new PartitionInfo(i, peers[i]);
+            partitionInfos[i] = new PartitionInfo(version, i, peers[i]);
         }
         return partitionInfos;
     }

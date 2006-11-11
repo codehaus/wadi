@@ -1,6 +1,5 @@
 /**
- *
- * Copyright 2003-2005 Core Developers Network Ltd.
+ * Copyright 2006 The Apache Software Foundation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,26 +13,17 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.location.session;
+package org.codehaus.wadi.location.impl;
 
+import org.codehaus.wadi.location.PartitionFacadeException;
 
 /**
- * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision:1815 $
  */
-public class MoveIMToSM extends AbstractSessionResponseMessage {
-	protected final boolean _success;
+public class PartitionFacadeVersionTooLowException  extends PartitionFacadeException {
 
-	public MoveIMToSM(boolean success) {
-        _success = success;
-    }
-
-    public boolean getSuccess() {
-        return _success;
-    }
-
-    public String toString() {
-        return "<MoveIMToSM:" + _success + ">";
+    public PartitionFacadeVersionTooLowException(String message) {
+        super(message);
     }
 
 }

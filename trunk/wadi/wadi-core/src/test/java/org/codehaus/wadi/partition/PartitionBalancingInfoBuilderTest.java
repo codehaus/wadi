@@ -29,14 +29,14 @@ public class PartitionBalancingInfoBuilderTest extends TestCase {
     private static final VMPeer PEER2 = new VMPeer("peer2");
     
     public void testMergePartitionInfos() {
-        PartitionInfoUpdateBuilder builder = new PartitionInfoUpdateBuilder(3);
-        PartitionInfo[] partitionInfos = newPartitionInfo(new Peer[] {PEER1, PEER2, PEER2});
-        PartitionBalancingInfo toMerge = new PartitionBalancingInfo(partitionInfos);
+        PartitionInfoUpdateBuilder builder = new PartitionInfoUpdateBuilder(3, 2);
+        PartitionInfo[] partitionInfos = newPartitionInfo(1, new Peer[] {PEER1, PEER2, PEER2});
+        PartitionBalancingInfo toMerge = new PartitionBalancingInfo(1, partitionInfos);
         toMerge = new PartitionBalancingInfo(PEER1, toMerge);
         builder.mergePartitionInfos(toMerge);
         
-        partitionInfos = newPartitionInfo(new Peer[] {PEER1, PEER2, PEER2});
-        toMerge = new PartitionBalancingInfo(partitionInfos);
+        partitionInfos = newPartitionInfo(1, new Peer[] {PEER1, PEER2, PEER2});
+        toMerge = new PartitionBalancingInfo(1, partitionInfos);
         toMerge = new PartitionBalancingInfo(PEER2, toMerge);
         builder.mergePartitionInfos(toMerge);
 
@@ -46,14 +46,14 @@ public class PartitionBalancingInfoBuilderTest extends TestCase {
     }
 
     public void testConflictMerge() {
-        PartitionInfoUpdateBuilder builder = new PartitionInfoUpdateBuilder(3);
-        PartitionInfo[] partitionInfos = newPartitionInfo(new Peer[] {PEER1, PEER1, PEER2});
-        PartitionBalancingInfo toMerge = new PartitionBalancingInfo(partitionInfos);
+        PartitionInfoUpdateBuilder builder = new PartitionInfoUpdateBuilder(3, 2);
+        PartitionInfo[] partitionInfos = newPartitionInfo(1, new Peer[] {PEER1, PEER1, PEER2});
+        PartitionBalancingInfo toMerge = new PartitionBalancingInfo(1, partitionInfos);
         toMerge = new PartitionBalancingInfo(PEER1, toMerge);
         builder.mergePartitionInfos(toMerge);
         
-        partitionInfos = newPartitionInfo(new Peer[] {PEER1, PEER2, PEER2});
-        toMerge = new PartitionBalancingInfo(partitionInfos);
+        partitionInfos = newPartitionInfo(1, new Peer[] {PEER1, PEER2, PEER2});
+        toMerge = new PartitionBalancingInfo(1, partitionInfos);
         toMerge = new PartitionBalancingInfo(PEER2, toMerge);
         
         try {
@@ -64,7 +64,7 @@ public class PartitionBalancingInfoBuilderTest extends TestCase {
     }
     
     public void testAddPartitionInfos() {
-        PartitionInfoUpdateBuilder builder = new PartitionInfoUpdateBuilder(3);
+        PartitionInfoUpdateBuilder builder = new PartitionInfoUpdateBuilder(3, 2);
         builder.addPartitionInfos(PEER1, 1);
         builder.addPartitionInfos(PEER2, 2);
         
@@ -74,7 +74,7 @@ public class PartitionBalancingInfoBuilderTest extends TestCase {
     }
 
     public void testCannotAddTooManyPartition() {
-        PartitionInfoUpdateBuilder builder = new PartitionInfoUpdateBuilder(3);
+        PartitionInfoUpdateBuilder builder = new PartitionInfoUpdateBuilder(3, 2);
         builder.addPartitionInfos(PEER1, 2);
         builder.addPartitionInfos(PEER2, 2);
         
@@ -86,9 +86,9 @@ public class PartitionBalancingInfoBuilderTest extends TestCase {
     }
 
     public void testRemovePartitions() {
-        PartitionInfoUpdateBuilder builder = new PartitionInfoUpdateBuilder(3);
-        PartitionInfo[] partitionInfos = newPartitionInfo(new Peer[] {PEER1, PEER1, PEER1});
-        PartitionBalancingInfo toRemove = new PartitionBalancingInfo(partitionInfos);
+        PartitionInfoUpdateBuilder builder = new PartitionInfoUpdateBuilder(3, 2);
+        PartitionInfo[] partitionInfos = newPartitionInfo(1, new Peer[] {PEER1, PEER1, PEER1});
+        PartitionBalancingInfo toRemove = new PartitionBalancingInfo(1, partitionInfos);
         toRemove = new PartitionBalancingInfo(PEER1, toRemove);
         builder.removePartitions(toRemove, 1);
 
@@ -100,9 +100,9 @@ public class PartitionBalancingInfoBuilderTest extends TestCase {
     }
     
     public void testCannotRemoveTooManyPartitions() {
-        PartitionInfoUpdateBuilder builder = new PartitionInfoUpdateBuilder(3);
-        PartitionInfo[] partitionInfos = newPartitionInfo(new Peer[] {PEER1, PEER2, PEER2});
-        PartitionBalancingInfo toRemove = new PartitionBalancingInfo(partitionInfos);
+        PartitionInfoUpdateBuilder builder = new PartitionInfoUpdateBuilder(3, 2);
+        PartitionInfo[] partitionInfos = newPartitionInfo(1, new Peer[] {PEER1, PEER2, PEER2});
+        PartitionBalancingInfo toRemove = new PartitionBalancingInfo(1, partitionInfos);
         toRemove = new PartitionBalancingInfo(PEER1, toRemove);
         try {
             builder.removePartitions(toRemove, 2);
@@ -119,20 +119,21 @@ public class PartitionBalancingInfoBuilderTest extends TestCase {
         }
     }
     
-    private PartitionInfo[] newPartitionInfo(Peer[] peers) {
+    private PartitionInfo[] newPartitionInfo(int version, Peer[] peers) {
         PartitionInfo[] partitionInfos = new PartitionInfo[peers.length];
         for (int i = 0; i < peers.length; i++) {
-            partitionInfos[i] = new PartitionInfo(i, peers[i]);
+            partitionInfos[i] = new PartitionInfo(version, i, peers[i]);
         }
         return partitionInfos;
     }
     
     private PartitionBalancingInfo build(PartitionInfoUpdateBuilder builder) {
-        PartitionInfoUpdate[] partitionInfoUpdates = builder.build();
-        PartitionInfo[] partitionInfos = new PartitionInfo[partitionInfoUpdates.length];
-        for (int i = 0; i < partitionInfoUpdates.length; i++) {
-            partitionInfos[i] = partitionInfoUpdates[i].getPartitionInfo();
+        PartitionInfoUpdates infoUpdates = builder.build();
+        PartitionInfoUpdate[] updates = infoUpdates.getPartitionUpdates();
+        PartitionInfo[] partitionInfos = new PartitionInfo[updates.length];
+        for (int i = 0; i < updates.length; i++) {
+            partitionInfos[i] = updates[i].getPartitionInfo();
         }
-        return new PartitionBalancingInfo(partitionInfos);
+        return new PartitionBalancingInfo(infoUpdates.getVersion(), partitionInfos);
     }
 }

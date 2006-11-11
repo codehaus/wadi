@@ -16,29 +16,24 @@
  */
 package org.codehaus.wadi.location.session;
 
-import java.io.Serializable;
-
-import org.codehaus.wadi.location.SessionResponseMessage;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision:1815 $
  */
-public class InsertPMToIM implements SessionResponseMessage, Serializable {
-
-	protected boolean _success;
+public class InsertPMToIM extends AbstractSessionResponseMessage {
+	protected final boolean _success;
 
     public InsertPMToIM(boolean success) {
-        super();
-        _success=success;
+        _success = success;
     }
 
     public boolean getSuccess() {
-    	return _success;
+        return _success;
     }
 
     public String toString() {
-        return "<InsertPMToIM:"+_success+">";
+        return "<InsertPMToIM:" + _success + ">";
     }
 
 }

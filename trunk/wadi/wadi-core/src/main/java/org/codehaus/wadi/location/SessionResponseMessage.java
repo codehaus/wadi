@@ -21,7 +21,11 @@ package org.codehaus.wadi.location;
  * @version $Revision$
  */
 public interface SessionResponseMessage extends SessionMessage {
+    boolean isVersionTooLow();
 
-    // just a marker i/f - at the moment
+    void setVersionTooLow(boolean versionTooLow);
 
+    boolean isVersionTooHigh();
+
+    void setVersionTooHigh(boolean versionTooHigh);
 }

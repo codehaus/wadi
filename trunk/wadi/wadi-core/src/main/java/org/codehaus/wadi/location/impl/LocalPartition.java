@@ -92,6 +92,8 @@ public class LocalPartition implements Partition, Serializable {
     public LocalPartition(Dispatcher dispatcher, LocalPartition prototype) {
         if (null == dispatcher) {
             throw new IllegalArgumentException("dispatcher is required");
+        } else if (null == prototype) {
+            throw new IllegalArgumentException("prototype is required");
         }
         this.dispatcher = dispatcher;
         
@@ -359,7 +361,7 @@ public class LocalPartition implements Partition, Serializable {
         }
     }
 
-    public Envelope exchange(SessionRequestMessage request, long timeout) throws Exception {
+    public Envelope exchange(SessionRequestMessage request, long timeout) throws MessageExchangeException {
         Address target = dispatcher.getCluster().getLocalPeer().getAddress();
         return dispatcher.exchangeSend(target, request, timeout);
     }

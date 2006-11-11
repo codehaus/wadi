@@ -21,7 +21,11 @@ package org.codehaus.wadi.location;
  * @version $Revision$
  */
 public interface SessionRequestMessage extends SessionMessage {
-
     Object getKey();
 
+    int getVersion();
+
+    void setVersion(int version);
+    
+    SessionResponseMessage newResponseFailure();
 }

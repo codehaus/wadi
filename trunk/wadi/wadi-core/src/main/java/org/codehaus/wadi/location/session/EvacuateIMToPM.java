@@ -19,6 +19,7 @@ package org.codehaus.wadi.location.session;
 import java.io.Serializable;
 
 import org.codehaus.wadi.group.Peer;
+import org.codehaus.wadi.location.SessionResponseMessage;
 import org.codehaus.wadi.location.impl.SessionRequestImpl;
 
 /**
@@ -38,6 +39,10 @@ public class EvacuateIMToPM extends SessionRequestImpl implements Serializable {
 
     public Peer getPeer() {
         return peer;
+    }
+
+    public SessionResponseMessage newResponseFailure() {
+        return new EvacuatePMToIM(false);
     }
 
     public String toString() {

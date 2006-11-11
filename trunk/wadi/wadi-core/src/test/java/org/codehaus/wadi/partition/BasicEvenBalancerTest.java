@@ -125,24 +125,27 @@ public class BasicEvenBalancerTest extends TestCase {
     }
 
     public void testRepopulatePartitions() throws Exception {
+        int version = 3;
+        
         Map peerToBalancingInfo = new HashMap();
         PartitionInfo[] partitionInfos = new PartitionInfo[NB_PARTITIONS];
         for (int i = 0; i < 4; i++) {
-            partitionInfos[i] = new PartitionInfo(i, PEER1);
+            partitionInfos[i] = new PartitionInfo(version, i, PEER1);
         }
         for (int i = 4; i < 8; i++) {
-            partitionInfos[i] = new PartitionInfo(i, PEER2);
+            partitionInfos[i] = new PartitionInfo(version, i, PEER2);
         }
         for (int i = 8; i < 12; i++) {
-            partitionInfos[i] = new PartitionInfo(i, PEER3);
+            partitionInfos[i] = new PartitionInfo(version, i, PEER3);
         }
-        PartitionBalancingInfo partitionBalancingInfo = new PartitionBalancingInfo(partitionInfos);
+        PartitionBalancingInfo partitionBalancingInfo = new PartitionBalancingInfo(version, partitionInfos);
 
         peerToBalancingInfo.put(PEER1, basicState(new PartitionBalancingInfo(PEER1, partitionBalancingInfo)));
         peerToBalancingInfo.put(PEER2, basicState(new PartitionBalancingInfo(PEER2, partitionBalancingInfo)));
  
         BasicEvenBalancer balancer = new BasicEvenBalancer(NB_PARTITIONS, peerToBalancingInfo);
-        PartitionInfoUpdate[] updates = balancer.computePartitionInfoUpdate();
+        PartitionInfoUpdates infoUpdates = balancer.computePartitionInfoUpdates();
+        PartitionInfoUpdate[] updates = infoUpdates.getPartitionUpdates();
 
         for (int i = 0; i < 8; i++) {
             assertFalse(updates[i].isRepopulate());
@@ -157,11 +160,13 @@ public class BasicEvenBalancerTest extends TestCase {
     }
     
     private PartitionBalancingInfo balance(BasicEvenBalancer balancer) throws MessageExchangeException {
-        PartitionInfoUpdate[] partitionInfoUpdates = balancer.computePartitionInfoUpdate();
-        PartitionInfo[] partitionInfos = new PartitionInfo[partitionInfoUpdates.length];
-        for (int i = 0; i < partitionInfoUpdates.length; i++) {
-            partitionInfos[i] = partitionInfoUpdates[i].getPartitionInfo();
+        PartitionInfoUpdates infoUpdates = balancer.computePartitionInfoUpdates();
+        PartitionInfoUpdate[] updates = infoUpdates.getPartitionUpdates();
+        PartitionInfo[] partitionInfos = new PartitionInfo[updates.length];
+        for (int i = 0; i < updates.length; i++) {
+            partitionInfos[i] = updates[i].getPartitionInfo();
         }
-        return new PartitionBalancingInfo(partitionInfos);
+        return new PartitionBalancingInfo(infoUpdates.getVersion(), partitionInfos);
     }
+    
 }

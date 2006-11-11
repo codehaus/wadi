@@ -16,9 +16,6 @@
  */
 package org.codehaus.wadi.location.session;
 
-import java.io.Serializable;
-
-import org.codehaus.wadi.location.SessionResponseMessage;
 
 /**
  * A query for the location of the session with the enclosed ID - The response
@@ -27,20 +24,19 @@ import org.codehaus.wadi.location.SessionResponseMessage;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision:1815 $
  */
-public class ReleaseEntryResponse implements SessionResponseMessage, Serializable {
+public class ReleaseEntryResponse extends AbstractSessionResponseMessage {
+    private final boolean success;
 
-	protected String _name;
+	public ReleaseEntryResponse(boolean success) {
+        this.success = success;
+    }
 
-	public ReleaseEntryResponse(String name) {
-		_name=name;
-	}
+    public boolean isSuccess() {
+        return success;
+    }
 
-	public String getId() {
-		return _name;
-	}
-
-	public String toString() {
-		return "<ReleaseEntryResponse: "+_name+">";
-	}
+    public String toString() {
+        return "ReleaseEntryResponse [" + success + "]";
+    }
 
 }
