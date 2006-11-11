@@ -65,7 +65,7 @@ import EDU.oswego.cs.dl.util.concurrent.Latch;
  */
 public class SimplePartitionManager implements PartitionManager, PartitionConfig, PartitionManagerMessageListener {
 	private static final int WAIT_DEFINED_PARTITION_MANAGER = 60 * 1000;
-	private static final long PARTITION_UPDATE_WAIT_TIME = 10;
+	private static final long PARTITION_UPDATE_WAIT_TIME = 5000;
 	private static final long PARTITION_LOCALIZATION_WAIT_TIME = 5000;
 
     public interface Callback {
