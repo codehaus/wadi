@@ -48,4 +48,5 @@ public class PartitionBalancingInfoState implements Serializable {
     public Peer getDefiningPeer() {
         return balancingInfo.getDefiningPeer();
     }
+
 }

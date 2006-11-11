@@ -16,11 +16,8 @@
  */
 package org.codehaus.wadi.location.session;
 
-import java.io.Serializable;
-
 import org.codehaus.wadi.Lease;
 import org.codehaus.wadi.group.Peer;
-import org.codehaus.wadi.location.SessionResponseMessage;
 
 /**
  * Response from PartitionMaster to InvocationMaster, indicating that it should relocate its Invocation to the given Address
@@ -29,8 +26,7 @@ import org.codehaus.wadi.location.SessionResponseMessage;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision:1815 $
  */
-public class MovePMToIMInvocation implements SessionResponseMessage, Serializable {
-
+public class MovePMToIMInvocation extends AbstractSessionResponseMessage {
     protected final Lease.Handle _leaseHandle;
     protected final long _leasePeriod;
     protected final Peer _stateMaster;

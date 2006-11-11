@@ -58,34 +58,23 @@ public class RemotePartition extends AbstractPartition {
         return false;
     }
 
-    protected void forward(Envelope message) {
-        if (_log.isTraceEnabled()) {
-            _log.trace("indirecting: " + message + " via " + _peer);
-        }
-        try {
-            dispatcher.forward(message, _peer.getAddress());
-        } catch (MessageExchangeException e) {
-            _log.warn("could not forward message", e);
-        }
-    }
-
     public void onMessage(Envelope message, InsertIMToPM request) {
-        forward(message);
+        throw new UnsupportedOperationException();
     }
 
     public void onMessage(Envelope message, DeleteIMToPM request) {
-        forward(message);
+        throw new UnsupportedOperationException();
     }
 
     public void onMessage(Envelope message, EvacuateIMToPM request) {
-        forward(message);
+        throw new UnsupportedOperationException();
     }
 
     public void onMessage(Envelope message, MoveIMToPM request) {
-        forward(message);
+        throw new UnsupportedOperationException();
     }
 
-    public Envelope exchange(SessionRequestMessage request, long timeout) throws Exception {
+    public Envelope exchange(SessionRequestMessage request, long timeout) throws MessageExchangeException {
         if (_log.isTraceEnabled()) {
             _log.trace("exchanging message (" + request + ") with node: " + _peer);
         }

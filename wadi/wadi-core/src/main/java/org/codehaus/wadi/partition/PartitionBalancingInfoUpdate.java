@@ -26,19 +26,24 @@ import org.codehaus.wadi.group.Peer;
  * @version $Revision: 1538 $
  */
 public class PartitionBalancingInfoUpdate implements Serializable {
-    private final boolean isPartitionManagerAlone;
+    private final int version;
     private final PartitionInfoUpdate[] balancingInfoUpdates;
+    private final boolean isPartitionManagerAlone;
     private final boolean partitionEvacuationAck;
 
-    public PartitionBalancingInfoUpdate(boolean isPartitionManagerAlone,
-            boolean partitionEvacuationAck, 
-            PartitionInfoUpdate[] balancingInfoUpdates) {
-        if (null == balancingInfoUpdates) {
+    public PartitionBalancingInfoUpdate(int version,
+            PartitionInfoUpdate[] balancingInfoUpdates,
+            boolean isPartitionManagerAlone,
+            boolean partitionEvacuationAck) {
+        if (0 > version) {
+            throw new IllegalArgumentException("version must be >= 0");
+        } else if (null == balancingInfoUpdates) {
             throw new IllegalArgumentException("balancingInfoUpdates is required");
         }
+        this.version = version;
+        this.balancingInfoUpdates = balancingInfoUpdates;
         this.isPartitionManagerAlone = isPartitionManagerAlone;
         this.partitionEvacuationAck = partitionEvacuationAck;
-        this.balancingInfoUpdates = balancingInfoUpdates;
     }
 
     public PartitionInfoUpdate[] getBalancingInfoUpdates() {
@@ -58,16 +63,16 @@ public class PartitionBalancingInfoUpdate implements Serializable {
         for (int i = 0; i < balancingInfoUpdates.length; i++) {
             partitionInfos[i] = balancingInfoUpdates[i].getPartitionInfo();
         }
-        PartitionBalancingInfo newBalancingInfo = new PartitionBalancingInfo(partitionInfos);
+        PartitionBalancingInfo newBalancingInfo = new PartitionBalancingInfo(version, partitionInfos);
         newBalancingInfo = new PartitionBalancingInfo(peer, newBalancingInfo);
         return newBalancingInfo;
     }
     
     public boolean isRepopulationRequested() {
-        return getPartitionIndicesToRepopulate().length > 0;
+        return getIndicesToRepopulate().length > 0;
     }
     
-    public int[] getPartitionIndicesToRepopulate() {
+    public int[] getIndicesToRepopulate() {
         List indexOfPartitionsToRepopulate = new ArrayList();
         for (int i = 0; i < balancingInfoUpdates.length; i++) {
             PartitionInfoUpdate partitionInfoUpdate = balancingInfoUpdates[i];
@@ -82,4 +87,5 @@ public class PartitionBalancingInfoUpdate implements Serializable {
         }
         return returnedIndexes;
     }
+    
 }

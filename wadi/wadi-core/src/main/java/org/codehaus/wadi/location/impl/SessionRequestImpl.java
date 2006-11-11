@@ -24,8 +24,9 @@ import org.codehaus.wadi.location.SessionRequestMessage;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision: 1924 $
  */
-public class SessionRequestImpl implements SessionRequestMessage, Serializable {
+public abstract class SessionRequestImpl implements SessionRequestMessage, Serializable {
     protected final Object _key;
+    private int version;
 
     public SessionRequestImpl(Object key) {
         if (null == key) {
@@ -38,4 +39,12 @@ public class SessionRequestImpl implements SessionRequestMessage, Serializable {
         return _key;
     }
 
+    public void setVersion(int version) {
+        this.version = version;
+    }
+
+    public int getVersion() {
+        return version;
+    }
+    
 }

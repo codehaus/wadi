@@ -25,17 +25,27 @@ import org.codehaus.wadi.group.Envelope;
  * @version $Revision$
  */
 public interface StateManager {
-
 	void init(StateManagerConfig config);
-	void start() throws Exception;
-	void stop() throws Exception;
 
-	interface ImmigrationListener { void onImmigration(Envelope message, Motable immigrant); }
+    void start() throws Exception;
 
-	boolean offerEmigrant(String key, Motable emotable, long timeout);
-	void acceptImmigrant(Envelope message, String name, Motable immotable);
+    void stop() throws Exception;
 
-	void setImmigrationListener(ImmigrationListener listener);
-	void unsetImmigrationListener(ImmigrationListener listener);
+    interface ImmigrationListener {
+        void onImmigration(Envelope message, Motable immigrant);
+    }
 
+    boolean offerEmigrant(String key, Motable emotable, long timeout);
+
+    void acceptImmigrant(Envelope message, String name, Motable immotable);
+
+    void setImmigrationListener(ImmigrationListener listener);
+
+    void unsetImmigrationListener(ImmigrationListener listener);
+
+    boolean insert(String name, long timeout);
+
+    void remove(String name);
+
+    void relocate(String name);
 }

@@ -51,11 +51,11 @@ import org.codehaus.wadi.partition.PartitionBalancingInfo;
 import org.codehaus.wadi.partition.PartitionBalancingInfoState;
 import org.codehaus.wadi.partition.PartitionBalancingInfoUpdate;
 import org.codehaus.wadi.partition.PartitionInfo;
+import org.codehaus.wadi.partition.PartitionInfoUpdate;
 import org.codehaus.wadi.partition.RetrieveBalancingInfoEvent;
 import org.codehaus.wadi.partition.UnknownPartitionBalancingInfo;
 
 import EDU.oswego.cs.dl.util.concurrent.Latch;
-import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
  * A Simple PartitionManager.
@@ -65,6 +65,8 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  */
 public class SimplePartitionManager implements PartitionManager, PartitionConfig, PartitionManagerMessageListener {
 	private static final int WAIT_DEFINED_PARTITION_MANAGER = 60 * 1000;
+	private static final long PARTITION_UPDATE_WAIT_TIME = 10;
+	private static final long PARTITION_LOCALIZATION_WAIT_TIME = 5000;
 
     public interface Callback {
         void onPartitionEvacuationRequest(ClusterEvent event);
@@ -72,6 +74,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
         void onPartitionManagerJoiningEvent(PartitionManagerJoiningEvent joiningEvent);
     }
 
+    private final Object balancingUpdateLock = new Object();
     protected final String _nodeName;
     protected final Log _log;
     protected final int _numPartitions;
@@ -85,6 +88,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
     protected final LockManager _pmSyncs;
     private final ServiceEndpointBuilder _endpointBuilder;
 
+    private final Object balancingInfoLock = new Object();
     private PartitionBalancingInfo balancingInfo;
     private volatile boolean evacuatingPartitions;
     private Latch evacuationCompletionLatch;
@@ -100,7 +104,9 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
         _numPartitions = numPartitions;
         _partitions = new PartitionFacade[_numPartitions];
         for (int i = 0; i < _numPartitions; i++) {
-            _partitions[i] = new PartitionFacade(i, new UnknownPartition(i), true, this);
+            _partitions[i] = new VersionAwarePartitionFacade(dispatcher, 
+                    new PartitionFacadeDelegate(i, dispatcher),
+                    PARTITION_UPDATE_WAIT_TIME);
         }
         balancingInfo = new UnknownPartitionBalancingInfo(_localPeer, numPartitions);
 
@@ -139,12 +145,10 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 
     protected void waitUntilUseable(long attemptPeriod) throws InterruptedException, PartitionManagerException {
         for (int i = 0; i < _partitions.length; i++) {
-            Sync sync = _partitions[i]._lock.writeLock();
-            boolean success = sync.attempt(attemptPeriod);
+            boolean success = _partitions[i].waitForBoot(attemptPeriod);
             if (!success) {
                 throw new PartitionManagerException("Partition [" + i + "] is unknown.");
             }
-            sync.release();
         }
     }
 
@@ -161,6 +165,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 
         int failures = 0;
         boolean success = false;
+        boolean interruptFlag = false;
         while (!success && failures < 5) {
             // reinitialise in case coordinator has changed...
             coordPeer = _config.getCoordinator();
@@ -177,6 +182,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
                 try {
                     Thread.sleep(_config.getInactiveTime());
                 } catch (InterruptedException e) {
+                    interruptFlag = true;
                     // ignore;
                 }
             } else {
@@ -184,6 +190,10 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
             }
         }
 
+        if (interruptFlag) {
+            Thread.currentThread().interrupt();
+        }
+        
         _log.info("...evacuated");
     }
 
@@ -207,11 +217,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 
     public void onPartitionRepopulateRequest(Envelope om, PartitionRepopulateRequest request) {
         Collection[] c = request.createPartitionIndexToSessionNames(_numPartitions);
-        try {
-            _config.findRelevantSessionNames(_mapper, c);
-        } catch (Throwable t) {
-            _log.warn("ERROR", t);
-        }
+        _config.findRelevantSessionNames(_mapper, c);
         try {
             _dispatcher.reply(om, new PartitionRepopulateResponse(_localPeer, c));
         } catch (MessageExchangeException e) {
@@ -224,18 +230,30 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
     }
 
     public void onRetrieveBalancingInfoEvent(Envelope om, RetrieveBalancingInfoEvent infoEvent) {
+        PartitionBalancingInfoState state;
+        synchronized (balancingInfoLock) {
+            state = new PartitionBalancingInfoState(evacuatingPartitions, balancingInfo);
+        }
         try {
-            _dispatcher.reply(om, new PartitionBalancingInfoState(evacuatingPartitions, balancingInfo));
+            _dispatcher.reply(om, state);
         } catch (MessageExchangeException e) {
             _log.error("Cannot reply with current partition balancing info", e);
         }
     }
 
-    /**
-     * TODO lock partition manager as a whole. Properly handle exceptions.
-     */
     public void onPartitionBalancingInfoUpdate(Envelope om, PartitionBalancingInfoUpdate infoUpdate) {
-        balancingInfo = infoUpdate.buildNewPartitionInfo(_localPeer);
+        synchronized (balancingUpdateLock) {
+            try {
+                doOnPartitionBalancingInfoUpdate(om, infoUpdate);
+            } catch (Exception e) {
+                _log.error("See nested", e);
+                throw new RuntimeException(e);
+            }
+        }
+    }
+    
+    protected void doOnPartitionBalancingInfoUpdate(Envelope om, PartitionBalancingInfoUpdate infoUpdate) throws MessageExchangeException, PartitionBalancingException {
+        PartitionBalancingInfo newBalancingInfo = infoUpdate.buildNewPartitionInfo(_localPeer);
         
         if (infoUpdate.isPartitionManagerAlone()) {
             // This case happens when this PartitionManager is shutting down and is the last one. In this scenario,
@@ -243,57 +261,69 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
             if (infoUpdate.isPartitionEvacuationAck()) {
                 evacuationCompletionLatch.release();
             } else {
-                localise();
+                localise(newBalancingInfo);
             }
-            return;
+        } else {
+            transferPartitions(newBalancingInfo);
+            if (infoUpdate.isPartitionEvacuationAck()) {
+                evacuationCompletionLatch.release();
+            } else {
+                PartitionInfo[] newPartitionInfos = newBalancingInfo.getPartitionInfos();
+                if (infoUpdate.isRepopulationRequested()) {
+                    repopulatePartition(infoUpdate);
+                }
+                updateUnchangedPartitionFacades(newPartitionInfos);
+                redefineRemotePartitions(newPartitionInfos);
+                waitForPartitionTranserOrTimeout(newPartitionInfos);
+            }
         }
+        
+        synchronized (balancingInfoLock) {
+            balancingInfo = newBalancingInfo;
+        }
+    }
 
-        PartitionInfo[] newPartitionInfos = balancingInfo.getPartitionInfos();
-        Map peerToFacadeToTransfer = identifyPartitionsToTransfers(newPartitionInfos);
-
+    protected void transferPartitions(PartitionBalancingInfo newBalancingInfo) throws MessageExchangeException, PartitionBalancingException {
+        PartitionInfo[] newPartitionInfos = newBalancingInfo.getPartitionInfos();
+        Map peerToFacadeToTransfer = identifyTransfers(newPartitionInfos);
         for (Iterator iter = peerToFacadeToTransfer.entrySet().iterator(); iter.hasNext();) {
             Map.Entry entry = (Map.Entry) iter.next();
             Peer peer = (Peer) entry.getKey();
-            List facades = (List) entry.getValue();
-            transferPartitionToPeers(peer, facades);
+            List partitionInfos = (List) entry.getValue();
+            transferPartitionToPeers(peer, partitionInfos);
         }
-
-        if (infoUpdate.isRepopulationRequested()) {
-            int[] partitionIndicesToRepopulate = infoUpdate.getPartitionIndicesToRepopulate();
-            repopulatePartition(partitionIndicesToRepopulate);
-        }
-        
-        if (infoUpdate.isPartitionEvacuationAck()) {
-            evacuationCompletionLatch.release();
-        }
-
-        redefineRemotePartitions(newPartitionInfos);
-        waitForPartitionTranserOrTimeout(newPartitionInfos);
     }
 
-    protected void repopulatePartition(int[] partitionIndicesToRepopulate) {
-        _log.info("REPOPULATING PARTITIONS...: " + partitionIndicesToRepopulate);
-
-        Quipu rv = _dispatcher.newRendezVous(_dispatcher.getCluster().getPeerCount() - 1);
-        PartitionRepopulateRequest partitionRepopulateRequest = 
-            new PartitionRepopulateRequest(partitionIndicesToRepopulate);
-        try {
-            _dispatcher.send(_localPeer.getAddress(), _dispatcher.getCluster().getAddress(), rv.getCorrelationId(),
-                    partitionRepopulateRequest);
-        } catch (MessageExchangeException e) {
-            _log.error("unexpected problem repopulating lost index");
+    protected void repopulatePartition(PartitionBalancingInfoUpdate infoUpdate) throws MessageExchangeException, PartitionBalancingException {
+        int[] indicesToRepopulate = infoUpdate.getIndicesToRepopulate();
+        _log.info("Repopulating partitions");
+        
+        LocalPartition[] toBePopulated = new LocalPartition[_partitions.length];
+        for (int i = 0; i < indicesToRepopulate.length; i++) {
+            int key = indicesToRepopulate[i];
+            toBePopulated[key] = new LocalPartition(_dispatcher, key, _inactiveTime);
         }
 
-        // whilst we are waiting for the other nodes to get back to us, figure out which relevant sessions 
-        // we are carrying ourselves...
-        Collection[] c = partitionRepopulateRequest.createPartitionIndexToSessionNames(_numPartitions);
-        _config.findRelevantSessionNames(_mapper, c);
-        repopulate(_localPeer, c);
+        repopulatePartitions(indicesToRepopulate, toBePopulated);
+
+        PartitionInfoUpdate[] balancingInfoUpdates = infoUpdate.getBalancingInfoUpdates();
+        for (int i = 0; i < indicesToRepopulate.length; i++) {
+            int key = indicesToRepopulate[i];
+            PartitionFacade facade = _partitions[key];
+            facade.setContent(balancingInfoUpdates[key].getPartitionInfo(), toBePopulated[key]);
+        }
+        
+        _log.info("Partitions repopulated");
+    }
+
+    private void repopulatePartitions(int[] indicesToRepopulate, LocalPartition[] toBePopulated) throws MessageExchangeException, PartitionBalancingException {
+        Quipu rv = sendRepopulateRequest(indicesToRepopulate);
 
         try {
             rv.waitFor(_inactiveTime);
         } catch (InterruptedException e) {
-            _log.warn("Unexpected interruption", e);
+            Thread.currentThread().interrupt();
+            throw new PartitionBalancingException(e);
         }
         
         Collection results = rv.getResults();
@@ -302,137 +332,172 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
             PartitionRepopulateResponse response = (PartitionRepopulateResponse) message.getPayload();
             Collection[] relevantKeys = response.getKeys();
             Peer peer = response.getPeer();
-            repopulate(peer, relevantKeys);
+            repopulate(toBePopulated, peer, relevantKeys);
         }
+    }
 
-        _log.info("...PARTITIONS REPOPULATED: " + partitionIndicesToRepopulate);
+    protected Quipu sendRepopulateRequest(int[] indicesToRepopulate) throws MessageExchangeException {
+        Quipu rv = _dispatcher.newRendezVous(_dispatcher.getCluster().getPeerCount());
+        PartitionRepopulateRequest repopulateRequest = new PartitionRepopulateRequest(indicesToRepopulate);
+        _dispatcher.send(_localPeer.getAddress(), _dispatcher.getCluster().getAddress(), rv.getCorrelationId(),
+                repopulateRequest);
+        return rv;
     }
 
     protected void redefineRemotePartitions(PartitionInfo[] newPartitionInfos) {
         for (int i = 0; i < newPartitionInfos.length; i++) {
+            PartitionInfo newPartitionInfo = newPartitionInfos[i];
+            Peer newOwner = newPartitionInfo.getOwner();
+            if (newOwner.equals(_localPeer)) {
+                continue;
+            }
             PartitionFacade facade = _partitions[i];
             if (facade.isLocal()) {
                 continue;
             }
-            PartitionInfo newPartitionInfo = newPartitionInfos[i];
-            Peer newOwner = newPartitionInfo.getOwner();
-            if (newOwner.equals(_localPeer)) {
-                continue;
-            }
-            facade.release(newOwner);
+            facade.setContentRemote(newPartitionInfo, newOwner);
         }
     }
     
-    protected void waitForPartitionTranserOrTimeout(PartitionInfo[] newPartitionInfos) {
-    }
-
-    protected void transferPartitionToPeers(Peer peer, List facades) {
-        LocalPartition[] acquired = new LocalPartition[facades.size()];
-        Envelope replyMsg = null;
-        try {
-            for (int i = 0; i < acquired.length; i++) {
-                PartitionFacade facade = (PartitionFacade) facades.get(i);
-                LocalPartition partition = (LocalPartition) facade.acquire();
-                acquired[i] = partition;
+    protected void updateUnchangedPartitionFacades(PartitionInfo[] newPartitionInfos) {
+        for (int i = 0; i < newPartitionInfos.length; i++) {
+            PartitionInfo newPartitionInfo = newPartitionInfos[i];
+            Peer newOwner = newPartitionInfo.getOwner();
+            if (!newOwner.equals(_localPeer)) {
+                continue;
             }
-            PartitionTransferRequest request = new PartitionTransferRequest(acquired);
-            replyMsg = _dispatcher.exchangeSend(peer.getAddress(), request, _inactiveTime);
-        } catch (MessageExchangeException e) {
-            throw (UnsupportedOperationException) new UnsupportedOperationException().initCause(e);
-        } finally {
-            if (null != replyMsg && ((PartitionTransferResponse) replyMsg.getPayload()).getSuccess()) {
-                for (int i = 0; i < acquired.length; i++) {
-                    PartitionFacade facade = _partitions[acquired[i].getKey()];
-                    facade.release(peer);
-                }
-                _log.info("Released " + acquired.length + " partition[s] to " + peer);
-            } else {
-                for (int i = 0; i < acquired.length; i++) {
-                    if (null == acquired[i]) {
-                        break;
-                    }
-                    PartitionFacade facade = _partitions[acquired[i].getKey()];
-                    facade.release();
-                }
-                _log.warn("Transfer unsuccessful");
-            }
-        }
-    }
-
-    protected Map identifyPartitionsToTransfers(PartitionInfo[] newPartitionInfos) {
-        Map peerToFacadeToTransfer = new HashMap();
-        for (int i = 0; i < _partitions.length; i++) {
             PartitionFacade facade = _partitions[i];
             if (!facade.isLocal()) {
                 continue;
             }
+            facade.setPartitionInfo(newPartitionInfo);
+        }
+    }
+
+    protected void waitForPartitionTranserOrTimeout(PartitionInfo[] newPartitionInfos) throws PartitionBalancingException {
+        for (int i = 0; i < newPartitionInfos.length; i++) {
             PartitionInfo newPartitionInfo = newPartitionInfos[i];
             Peer newOwner = newPartitionInfo.getOwner();
-            if (newOwner.equals(_localPeer)) {
+            if (!newOwner.equals(_localPeer)) {
                 continue;
             }
-            List facades = (List) peerToFacadeToTransfer.get(newOwner);
-            if (null == facades) {
-                facades = new ArrayList();
-                peerToFacadeToTransfer.put(newOwner, facades);
+            PartitionFacade facade = _partitions[i];
+            if (facade.isLocal()) {
+                continue;
             }
-            facades.add(facade);
+            try {
+                facade.waitForLocalization(newPartitionInfo, PARTITION_LOCALIZATION_WAIT_TIME);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new PartitionBalancingException(e);
+            }
         }
-        return peerToFacadeToTransfer;
+    }
+
+    protected void transferPartitionToPeers(Peer peer, List partitionInfos) throws MessageExchangeException, PartitionBalancingException {
+        Map partitionInfoToLocalPartition = new HashMap();
+        Envelope responseEnv;
+        try {
+            for (Iterator iter = partitionInfos.iterator(); iter.hasNext();) {
+                PartitionInfo partitionInfo = (PartitionInfo) iter.next();
+                PartitionFacade facade = _partitions[partitionInfo.getIndex()];
+                LocalPartition localPartition = (LocalPartition) facade.setContentRemote(partitionInfo, peer);
+                partitionInfoToLocalPartition.put(partitionInfo, localPartition);
+            }
+            PartitionTransferRequest request = new PartitionTransferRequest(partitionInfoToLocalPartition);
+            responseEnv = _dispatcher.exchangeSend(peer.getAddress(), request, _inactiveTime);
+        } catch (MessageExchangeException e) {
+            _log.error("Cannot transfer partitions to [" + peer + "]", e);
+            throw e;
+        }
+        
+        PartitionTransferResponse response = (PartitionTransferResponse) responseEnv.getPayload();
+        if (response.isSuccess()) {
+            for (Iterator iter = partitionInfoToLocalPartition.keySet().iterator(); iter.hasNext();) {
+                PartitionInfo partitionInfo = (PartitionInfo) iter.next();
+                PartitionFacade facade = _partitions[partitionInfo.getIndex()];
+                facade.setContentRemote(partitionInfo, peer);
+            }
+            _log.info("Released " + partitionInfoToLocalPartition.size() + " partition[s] to " + peer);
+        } else {
+            _log.error("Cannot transfer partitions to [" + peer + "]");
+            throw new PartitionBalancingException("Cannot transfer partitions to [" + peer + "]");
+        }
+    }
+
+    protected Map identifyTransfers(PartitionInfo[] newPartitionInfos) {
+        Map peerToPartitionInfos = new HashMap();
+        for (int i = 0; i < _partitions.length; i++) {
+            PartitionInfo newPartitionInfo = newPartitionInfos[i];
+            Peer newOwner = newPartitionInfo.getOwner();
+            if (newOwner.equals( _localPeer)) {
+                continue;
+            }
+            PartitionFacade facade = _partitions[i];
+            if (!facade.isLocal()) {
+                continue;
+            }
+            List partitionInfos = (List) peerToPartitionInfos.get(newOwner);
+            if (null == partitionInfos) {
+                partitionInfos = new ArrayList();
+                peerToPartitionInfos.put(newOwner, partitionInfos);
+            }
+            partitionInfos.add(newPartitionInfo);
+        }
+        return peerToPartitionInfos;
     }
 
     public void onPartitionTransferRequest(Envelope om, PartitionTransferRequest request) {
-        LocalPartition[] partitions = request.getPartitions();
-        for (int i = 0; i < partitions.length; i++) {
-            LocalPartition local = new LocalPartition(_dispatcher, partitions[i]);
-            PartitionFacade facade = getPartition(local.getKey());
-            facade.setContent(local);
+        Map partitionInfoToLocalPartition = request.getPartitionInfoToLocalPartition();
+        for (Iterator iter = partitionInfoToLocalPartition.entrySet().iterator(); iter.hasNext();) {
+            Map.Entry entry = (Map.Entry) iter.next();
+            PartitionInfo partitionInfo = (PartitionInfo) entry.getKey();
+            LocalPartition partition = (LocalPartition) entry.getValue();
+            partition = new LocalPartition(_dispatcher, partition);
+            PartitionFacade facade = _partitions[partitionInfo.getIndex()];
+            facade.setContent(partitionInfo, partition);
         }
 
         // acknowledge safe receipt to donor
         try {
             _dispatcher.reply(om, new PartitionTransferResponse(true));
-            // unlock Partitions here... - TODO
-            if (_log.isDebugEnabled()) {
-                _log.debug("acquired " + partitions.length + " partition[s] from "
-                        + _dispatcher.getPeerName(om.getReplyTo()));
-            }
+            _log.info("acquired " + partitionInfoToLocalPartition.size() + " partition[s] from "
+                    + _dispatcher.getPeerName(om.getReplyTo()));
         } catch (MessageExchangeException e) {
-            _log.warn("problem acknowledging reciept of IndexPartitions - donor may have died");
-            // chuck them... - TODO
+            _log.error("problem acknowledging reciept of IndexPartitions - donor may have died", e);
         }
     }
 
-    // ClusterListener
     public PartitionBalancingInfo getBalancingInfo() {
-        return balancingInfo;
+        synchronized (balancingInfoLock) {
+            return balancingInfo;
+        }
     }
     
-    protected void repopulate(Peer peer, Collection[] partitionIndexToSessionNames) {
+    protected void repopulate(LocalPartition[] toBePopulated, Peer peer, Collection[] partitionIndexToSessionNames) {
         for (int i = 0; i < _numPartitions; i++) {
             Collection sessionNames = partitionIndexToSessionNames[i];
             if (sessionNames != null) {
-                PartitionFacade facade = _partitions[i];
-
-                LocalPartition local = new LocalPartition(_dispatcher, i, _inactiveTime);
-                facade.setContent(local);
-
+                LocalPartition partition = toBePopulated[i];
                 for (Iterator j = sessionNames.iterator(); j.hasNext();) {
                     String name = (String) j.next();
-                    local.put(name, peer);
+                    partition.put(name, peer);
                 }
             }
         }
     }
 
-    protected void localise() {
-        if (_log.isDebugEnabled()) {
-            _log.debug("allocating " + _numPartitions + " partitions");
-        }
+    protected void localise(PartitionBalancingInfo newBalancingInfo) {
+        _log.info("Allocating " + _numPartitions + " partitions");
+        PartitionInfo[] partitionInfos = newBalancingInfo.getPartitionInfos();
         for (int i = 0; i < _numPartitions; i++) {
             PartitionFacade facade = _partitions[i];
-            LocalPartition local = new LocalPartition(_dispatcher, i, _inactiveTime);
-            facade.setContent(local);
+            if (facade.isLocal()) {
+                facade.setPartitionInfo(partitionInfos[i]);
+            } else {
+                LocalPartition local = new LocalPartition(_dispatcher, i, _inactiveTime);
+                facade.setContent(partitionInfos[i], local);
+            }
         }
     }
 
@@ -444,7 +509,6 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
         return _partitions[_mapper.map(key)];
     }
 
-    // PartitionConfig API
     public Dispatcher getDispatcher() {
         return _dispatcher;
     }
@@ -461,8 +525,8 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
         return _inactiveTime;
     }
 
-    // PartitionConfig API
     public String getLocalPeerName() {
         return _nodeName;
     }
+    
 }

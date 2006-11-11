@@ -16,153 +16,22 @@
  */
 package org.codehaus.wadi.location.impl;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.Peer;
-import org.codehaus.wadi.impl.Utils;
 import org.codehaus.wadi.location.Partition;
-import org.codehaus.wadi.location.PartitionConfig;
-import org.codehaus.wadi.location.SessionRequestMessage;
-import org.codehaus.wadi.location.session.DeleteIMToPM;
-import org.codehaus.wadi.location.session.EvacuateIMToPM;
-import org.codehaus.wadi.location.session.InsertIMToPM;
-import org.codehaus.wadi.location.session.MoveIMToPM;
-
-import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
-import EDU.oswego.cs.dl.util.concurrent.Sync;
-import EDU.oswego.cs.dl.util.concurrent.WriterPreferenceReadWriteLock;
+import org.codehaus.wadi.partition.PartitionInfo;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision:1815 $
  */
-public class PartitionFacade extends AbstractPartition {
-    protected final ReadWriteLock _lock = new WriterPreferenceReadWriteLock();
-    protected final PartitionConfig _config;
-    protected final Log _log;
-    protected final String _keyString;
-    protected Partition _content;
+public interface PartitionFacade extends Partition {
+    boolean waitForBoot(long attemptPeriod) throws InterruptedException;
 
-    public PartitionFacade(int key, Partition content, boolean queueing, PartitionConfig config) {
-        super(key);
-        // saves creating a new String every time we print the key...
-        _keyString = "" + key; 
-        _config = config;
-        _log = LogFactory.getLog(getClass().getName() + "#" + _key + "@" + _config.getLocalPeerName());
-        if (content instanceof UnknownPartition) {
-            Utils.acquireWithoutTimeout("Partition [exclusive]", _keyString, _lock.writeLock());
-        }
-        _content = content;
-        if (_log.isTraceEnabled()) {
-            _log.trace("initialising location to: " + _content);
-        }
-    }
+    void waitForLocalization(PartitionInfo newPartitionInfo, long attemptPeriod) throws InterruptedException;
 
-    public boolean isLocal() { // locking ?
-        return _content.isLocal();
-    }
-    
-    public void onMessage(Envelope message, InsertIMToPM request) {
-        Sync sync = _lock.readLock();
-        try {
-            Utils.acquireWithoutTimeout("Partition [shared]", _keyString, sync);
-            _content.onMessage(message, request);
-        } finally {
-            Utils.release("Partition [shared]", _keyString, sync);
-        }
-    }
+    void setPartitionInfo(PartitionInfo partitionInfo);
 
-    public void onMessage(Envelope message, DeleteIMToPM request) {
-        Sync sync = _lock.readLock();
-        try {
-            Utils.acquireWithoutTimeout("Partition [shared]", _keyString, sync);
-            _content.onMessage(message, request);
-        } finally {
-            Utils.release("Partition [shared]", _keyString, sync);
-        }
-    }
+    Partition setContent(PartitionInfo partitionInfo, LocalPartition content);
 
-    public void onMessage(Envelope message, EvacuateIMToPM request) {
-        Sync sync = _lock.readLock();
-        try {
-            Utils.acquireWithoutTimeout("Partition [shared]", _keyString, sync);
-            _content.onMessage(message, request);
-        } finally {
-            Utils.release("Partition [shared]", _keyString, sync);
-        }
-    }
-
-    public void onMessage(Envelope message, MoveIMToPM request) {
-        Sync sync = _lock.readLock();
-        try {
-            Utils.acquireWithoutTimeout("Partition [shared]", _keyString, sync);
-            _content.onMessage(message, request);
-        } finally {
-            Utils.release("Partition [shared]", _keyString, sync);
-        }
-    }
-
-    public Envelope exchange(SessionRequestMessage request, long timeout) throws Exception {
-        Sync sync = _lock.readLock();
-        try {
-            Utils.acquireWithoutTimeout("Partition [shared]", _keyString, sync);
-            return _content.exchange(request, timeout);
-        } finally {
-            Utils.release("Partition [shared]", _keyString, sync);
-        }
-    }
-
-    public void setContent(LocalPartition content) {
-        Sync sync = _lock.writeLock();
-        try {
-            if (!(_content instanceof UnknownPartition)) {
-                Utils.acquireWithoutTimeout("Partition [exclusive]", _keyString, sync);
-            }
-            _content = content;
-        } finally {
-            if (!(_content instanceof UnknownPartition)) {
-                Utils.release("Partition [exclusive]", _keyString, sync);
-            }
-        }
-    }
-
-    /**
-     * Acquire an exclusive lock around the Partition which we encapsulate and
-     * return it.
-     * 
-     * @return The encapsulated Partition
-     * @throws InterruptedException
-     */
-    public Partition acquire() {
-        Utils.acquireWithoutTimeout("Partition [exclusive]", _keyString, _lock.writeLock());
-        return _content;
-    }
-
-    /**
-     * Release the exclusive lock around the Partition which we encapsulate.
-     */
-    public void release() {
-        Utils.release("Partition [exclusive]", _keyString, _lock.writeLock());
-    }
-
-    /**
-     * Set the address of Partition which we encasulate to that given and then
-     * release the exclusive lock held around it.
-     * 
-     * @param address
-     *            The new address of the Partition owner
-     */
-    public void release(Peer peer) {
-        if (_log.isTraceEnabled()) {
-            _log.trace("[" + _key + "] changing location from [" + _content + "] to [" + peer + "]");
-        }
-        _content = new RemotePartition(_key, _config.getDispatcher(), peer);
-        release();
-    }
-    
-    public String toString() {
-        return "PartitionFacade for [" + _content + "]";
-    }
-    
+    Partition setContentRemote(PartitionInfo partitionInfo, Peer peer);
 }

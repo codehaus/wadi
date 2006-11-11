@@ -1,6 +1,5 @@
 /**
- *
- * Copyright 2003-2005 Core Developers Network Ltd.
+ * Copyright 2006 The Apache Software Foundation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -18,35 +17,30 @@ package org.codehaus.wadi.location.session;
 
 import java.io.Serializable;
 
-import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.location.SessionResponseMessage;
-import org.codehaus.wadi.location.impl.SessionRequestImpl;
 
 /**
- * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ *
  * @version $Revision:1815 $
  */
-public class InsertIMToPM extends SessionRequestImpl implements Serializable {
-    private final Peer peer;
+public abstract class AbstractSessionResponseMessage implements SessionResponseMessage, Serializable {
+    private boolean versionTooHigh;
+    private boolean versionTooLow;
     
-    public InsertIMToPM(String name, Peer peer) {
-        super(name);
-        if (null == peer) {
-            throw new IllegalArgumentException("peer is required");
-        }
-        this.peer = peer;
-    }
-
-    public Peer getPeer() {
-        return peer;
+    public boolean isVersionTooHigh() {
+        return versionTooHigh;
     }
     
-    public SessionResponseMessage newResponseFailure() {
-        return new InsertPMToIM(false);
+    public void setVersionTooHigh(boolean versionTooHigh) {
+        this.versionTooHigh = versionTooHigh;
     }
     
-    public String toString() {
-        return "InsertIMToPM [" + _key + "]";
+    public boolean isVersionTooLow() {
+        return versionTooLow;
+    }
+    
+    public void setVersionTooLow(boolean versionTooLow) {
+        this.versionTooLow = versionTooLow;
     }
     
 }

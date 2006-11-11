@@ -18,6 +18,7 @@ package org.codehaus.wadi.location.session;
 
 import java.io.Serializable;
 
+import org.codehaus.wadi.location.SessionResponseMessage;
 import org.codehaus.wadi.location.impl.SessionRequestImpl;
 
 /**
@@ -30,6 +31,10 @@ public class DeleteIMToPM extends SessionRequestImpl implements Serializable {
 
     public DeleteIMToPM(String name) {
         super(name);
+    }
+
+    public SessionResponseMessage newResponseFailure() {
+        return new DeletePMToIM(false);
     }
 
     public String toString() {

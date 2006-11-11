@@ -17,6 +17,7 @@
 package org.codehaus.wadi.location;
 
 import org.codehaus.wadi.group.Envelope;
+import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.location.session.DeleteIMToPM;
 import org.codehaus.wadi.location.session.EvacuateIMToPM;
 import org.codehaus.wadi.location.session.InsertIMToPM;
@@ -80,8 +81,7 @@ public interface Partition {
      * @param request The request
      * @param timeout The number of milliseconds to wait for a response
      * @return the response
-     * @throws Exception
+     * @throws MessageExchangeException
      */
-    Envelope exchange(SessionRequestMessage request, long timeout) throws Exception;
-
+    Envelope exchange(SessionRequestMessage request, long timeout) throws MessageExchangeException, PartitionFacadeException;
 }

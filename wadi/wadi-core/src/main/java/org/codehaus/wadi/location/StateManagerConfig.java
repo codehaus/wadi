@@ -21,7 +21,6 @@ import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.group.Address;
-import org.codehaus.wadi.location.impl.PartitionFacade;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
@@ -30,8 +29,6 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * @version $Revision$
  */
 public interface StateManagerConfig {
-    PartitionFacade getPartition(Object key);
-
     String getPeerName(Address address);
 
     boolean contextualise(Invocation invocation, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly)

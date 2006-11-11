@@ -38,7 +38,7 @@ public class PartitionTransferResponse implements PartitionResponseMessage, Seri
         // used during deserialisation...
     }
 
-    public boolean getSuccess() {
+    public boolean isSuccess() {
         return _success;
     }
 

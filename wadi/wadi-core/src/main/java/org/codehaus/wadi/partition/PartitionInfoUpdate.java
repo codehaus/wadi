@@ -40,4 +40,5 @@ public class PartitionInfoUpdate implements Serializable {
     public boolean isRepopulate() {
         return repopulate;
     }
+    
 }

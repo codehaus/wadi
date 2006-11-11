@@ -70,7 +70,7 @@ public class BasicPartitionBalancer implements PartitionBalancer {
         Map peerToBalancingState = fetchBalancingInfoState(peers);
         
         PartitionBalancingStrategy balancingStrategy = newBalancingStrategy(nbPartitions, peerToBalancingState);
-        PartitionInfoUpdate[] balancingInfoUpdates = balancingStrategy.computePartitionInfoUpdate();
+        PartitionInfoUpdates balancingInfoUpdates = balancingStrategy.computePartitionInfoUpdates();
         
         publishBalancingInfoUpdate(peerToBalancingState, balancingInfoUpdates);
     }
@@ -94,7 +94,7 @@ public class BasicPartitionBalancer implements PartitionBalancer {
         return peerToBalancingInfoState;
     }
 
-    protected void publishBalancingInfoUpdate(Map peerToBalancingState, PartitionInfoUpdate[] partitionInfoUpdates) 
+    protected void publishBalancingInfoUpdate(Map peerToBalancingState, PartitionInfoUpdates partitionInfoUpdates) 
         throws MessageExchangeException {
         boolean isPartitionManagerAlone = peerToBalancingState.size() == 1;
         for (Iterator iter = peerToBalancingState.entrySet().iterator(); iter.hasNext();) {
@@ -103,7 +103,8 @@ public class BasicPartitionBalancer implements PartitionBalancer {
             PartitionBalancingInfoState balancingInfoState = (PartitionBalancingInfoState) entry.getValue();
             boolean evacuatingPartitions = balancingInfoState.isEvacuatingPartitions();
             PartitionBalancingInfoUpdate infoUpdate = 
-                new PartitionBalancingInfoUpdate(isPartitionManagerAlone, evacuatingPartitions, partitionInfoUpdates);
+                new PartitionBalancingInfoUpdate(partitionInfoUpdates.getVersion(),
+                        partitionInfoUpdates.getPartitionUpdates(), isPartitionManagerAlone, evacuatingPartitions);
             dispatcher.send(peer.getAddress(), infoUpdate);
         }
     }

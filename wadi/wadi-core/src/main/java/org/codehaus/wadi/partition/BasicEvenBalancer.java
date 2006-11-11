@@ -34,11 +34,13 @@ class BasicEvenBalancer implements PartitionBalancingStrategy {
     private final int nbPartitionPerPeer;
     private final int nbPartitions;
     private final BitSet lostPartitions;
+    private final int version;
     private int nbSparePartitions;
     
     public BasicEvenBalancer(int nbPartitions, Map peerToBalancingInfoState) {
         this.nbPartitions = nbPartitions;
 
+        version = newBalancingVersion(peerToBalancingInfoState.values());
         lostPartitions = identifyLostPartitions(peerToBalancingInfoState.values());
         
         peerToBalancingInfo = new HashMap();
@@ -61,12 +63,24 @@ class BasicEvenBalancer implements PartitionBalancingStrategy {
         }
     }
     
-    public PartitionInfoUpdate[] computePartitionInfoUpdate() throws MessageExchangeException {
+    protected int newBalancingVersion(Collection balancingStates) {
+        int highestBalancingVersion = 0;
+        for (Iterator iter = balancingStates.iterator(); iter.hasNext();) {
+            PartitionBalancingInfoState balancingInfoState = (PartitionBalancingInfoState) iter.next();
+            int version = balancingInfoState.getBalancingInfo().getVersion();
+            if (version > highestBalancingVersion) {
+                highestBalancingVersion = version;
+            }
+        }
+        return ++highestBalancingVersion;
+    }
+
+    public PartitionInfoUpdates computePartitionInfoUpdates() throws MessageExchangeException {
         if (0 == nbPeers) {
-            return new PartitionInfoUpdate[0];
+            return new PartitionInfoUpdates(version, new PartitionInfoUpdate[0]);
         }
         
-        PartitionInfoUpdateBuilder balancingInfoBuilder = new PartitionInfoUpdateBuilder(nbPartitions);
+        PartitionInfoUpdateBuilder balancingInfoBuilder = new PartitionInfoUpdateBuilder(nbPartitions, version);
         balancingInfoBuilder.setLostPartitions(lostPartitions);
 
         for (Iterator iter = peerToBalancingInfo.entrySet().iterator(); iter.hasNext();) {

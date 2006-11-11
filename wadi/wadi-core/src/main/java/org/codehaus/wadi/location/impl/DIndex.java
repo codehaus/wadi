@@ -83,7 +83,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
         _localPeerName = _localPeer.getName();
         _log = LogFactory.getLog(getClass().getName() + "#" + _localPeerName);
         _partitionManager = new SimplePartitionManager(_dispatcher, numPartitions, this, mapper);
-        _stateManager = new SimpleStateManager(_dispatcher, _inactiveTime);
+        _stateManager = new SimpleStateManager(_dispatcher, _partitionManager, _inactiveTime);
     }
 
     public void init(PartitionManagerConfig config) {
@@ -208,35 +208,16 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
         return _partitionManager.getNumPartitions();
     }
 
-    // temporary test methods...
     public boolean insert(String name, long timeout) {
-        try {
-            InsertIMToPM request = new InsertIMToPM(name, _localPeer);
-            PartitionFacade pf = getPartition(name);
-            Envelope reply = pf.exchange(request, timeout);
-            return ((InsertPMToIM) reply.getPayload()).getSuccess();
-        } catch (Exception e) {
-            _log.warn("problem inserting session key into DHT", e);
-            return false;
-        }
+        return _stateManager.insert(name, timeout);
     }
 
     public void remove(String name) {
-        try {
-            DeleteIMToPM request = new DeleteIMToPM(name);
-            getPartition(name).exchange(request, _inactiveTime);
-        } catch (Exception e) {
-            _log.info("oops...", e);
-        }
+        _stateManager.remove(name);
     }
 
     public void relocate(String name) {
-        try {
-            EvacuateIMToPM request = new EvacuateIMToPM(name, _localPeer);
-            getPartition(name).exchange(request, _inactiveTime);
-        } catch (Exception e) {
-            _log.info("oops...", e);
-        }
+        _stateManager.relocate(name);
     }
 
     class SMToIMEmoter extends AbstractChainedEmoter {
@@ -291,7 +272,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
     public Motable relocate(Invocation invocation, String sessionName, boolean shuttingDown,
             long timeout, Immoter immoter) throws Exception {
         MoveIMToPM request = new MoveIMToPM(_localPeer, sessionName, !shuttingDown, invocation.getRelocatable());
-        Envelope message = getPartition(sessionName).exchange(request, timeout);
+        Envelope message = _partitionManager.getPartition(sessionName).exchange(request, timeout);
 
         if (message == null) {
             _log.error("something went wrong - what should we do?"); // TODO
@@ -340,10 +321,6 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
         }
     }
 
-    public PartitionFacade getPartition(Object key) {
-        return _partitionManager.getPartition(key);
-    }
-
     public String getPeerName(Address address) {
         Peer local = _localPeer;
         Peer node = address.equals(local.getAddress()) ? local : (Peer) _cluster.getRemotePeers().get(address);
@@ -354,7 +331,6 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
         return _inactiveTime;
     }
 
-    // StateManagerConfig API
     public StateManager getStateManager() {
         return _stateManager;
     }

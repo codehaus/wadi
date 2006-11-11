@@ -15,12 +15,31 @@
  */
 package org.codehaus.wadi.partition;
 
-import org.codehaus.wadi.group.MessageExchangeException;
 
 /**
  * 
  * @version $Revision: 1538 $
  */
-public interface PartitionBalancingStrategy {
-    PartitionInfoUpdates computePartitionInfoUpdates() throws MessageExchangeException;
+public class PartitionInfoUpdates {
+    private final int version;
+    private final PartitionInfoUpdate[] partitionUpdates;
+
+    public PartitionInfoUpdates(int version, PartitionInfoUpdate[] partitionUpdates) {
+        if (0 > version) {
+            throw new IllegalArgumentException("version must be >= 0");
+        } else if (null == partitionUpdates) {
+                throw new IllegalArgumentException("partitionUpdates is required");
+        }
+        this.version = version;
+        this.partitionUpdates = partitionUpdates;
+    }
+
+    public PartitionInfoUpdate[] getPartitionUpdates() {
+        return partitionUpdates;
+    }
+
+    public int getVersion() {
+        return version;
+    }
+
 }

@@ -22,8 +22,6 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.sql.DataSource;
-
 import org.codehaus.wadi.Collapser;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.EndPoint;
@@ -40,7 +38,6 @@ import org.codehaus.wadi.impl.AbstractExclusiveContextualiser;
 import org.codehaus.wadi.impl.AlwaysEvicter;
 import org.codehaus.wadi.impl.ClusterContextualiser;
 import org.codehaus.wadi.impl.ClusteredManager;
-import org.codehaus.wadi.impl.DatabaseStore;
 import org.codehaus.wadi.impl.DummyContextualiser;
 import org.codehaus.wadi.impl.DummyManagerConfig;
 import org.codehaus.wadi.impl.ExclusiveStoreContextualiser;
@@ -49,7 +46,6 @@ import org.codehaus.wadi.impl.MemoryContextualiser;
 import org.codehaus.wadi.impl.MemoryReplicaterFactory;
 import org.codehaus.wadi.impl.NeverEvicter;
 import org.codehaus.wadi.impl.SerialContextualiser;
-import org.codehaus.wadi.impl.SharedStoreContextualiser;
 import org.codehaus.wadi.impl.SimpleSessionPool;
 import org.codehaus.wadi.impl.SimpleStreamer;
 import org.codehaus.wadi.impl.SimpleValuePool;
@@ -78,7 +74,7 @@ public class MyStack {
     protected AbstractExclusiveContextualiser _memory;
     private BasicServiceSpace serviceSpace;
 
-    public MyStack(String url, DataSource dataSource, Dispatcher dispatcher) throws Exception {
+    public MyStack(Dispatcher dispatcher) throws Exception {
         dispatcher.start();
         // Implementation note: we really need to wait some time to have a "stable" Dispatcher. For instance, in the
         // case of ActiveCluster, 
@@ -96,14 +92,8 @@ public class MyStack {
         Contextualiser terminator = new DummyContextualiser();
         Streamer sessionStreamer = new SimpleStreamer();
 
-        // DB
-        String storeTable = "SESSIONS";
-        DatabaseStore store = new DatabaseStore(url, dataSource, storeTable, false, true, true);
-        boolean clean = true;
-        Contextualiser db = new SharedStoreContextualiser(terminator, collapser, clean, store);
-
         // Cluster
-        Contextualiser cluster = new ClusterContextualiser(db, collapser, new WebHybridRelocater(5000, 5000, true));
+        Contextualiser cluster = new ClusterContextualiser(terminator, collapser, new WebHybridRelocater(5000, 5000, true));
 
         // Disc
         Evicter devicter = new NeverEvicter(sweepInterval, strictOrdering);
@@ -134,8 +124,6 @@ public class MyStack {
         _manager = new ClusteredManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, _memory,
                 _memory.getMap(), new DummyRouter(), true, streamer, true, replicaterfactory, location, proxy,
                 dispatcher, 4, collapser);
-        // manager.setSessionListeners(new HttpSessionListener[]{});
-        // manager.setAttributelisteners(new HttpSessionAttributeListener[]{});
         _manager.init(new DummyManagerConfig());
 
         serviceSpace.getServiceRegistry().register(new ServiceName("manager"), _manager);

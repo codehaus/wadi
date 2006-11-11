@@ -8,13 +8,11 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-import javax.sql.DataSource;
 
 import junit.framework.TestCase;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.axiondb.jdbc.AxionDataSource;
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.test.MockInvocation;
@@ -24,10 +22,7 @@ import org.codehaus.wadi.test.MyStack;
 import org.codehaus.wadi.test.TestUtil;
 
 public class AbstractTestEvacuation extends TestCase {
-	
 	protected Log _log = LogFactory.getLog(getClass());
-	protected String _url = "jdbc:axiondb:WADI";
-	protected DataSource _ds = new AxionDataSource(_url);
 	
 	public AbstractTestEvacuation(String arg0) {
 		super(arg0);
@@ -42,11 +37,11 @@ public class AbstractTestEvacuation extends TestCase {
 	}
 	
 	public void testEvacuation(Dispatcher redD, Dispatcher greenD) throws Exception {
-		MyStack red = new MyStack(_url, _ds, redD);
+		MyStack red = new MyStack(redD);
         red.start();
         redD = red.getServiceSpace().getDispatcher();
 
-        MyStack green = new MyStack(_url, _ds, greenD);
+        MyStack green = new MyStack(greenD);
         green.start();
         greenD = green.getServiceSpace().getDispatcher();
 

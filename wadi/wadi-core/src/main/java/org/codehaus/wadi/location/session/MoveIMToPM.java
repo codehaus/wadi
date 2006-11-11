@@ -19,6 +19,7 @@ package org.codehaus.wadi.location.session;
 import java.io.Serializable;
 
 import org.codehaus.wadi.group.Peer;
+import org.codehaus.wadi.location.SessionResponseMessage;
 import org.codehaus.wadi.location.impl.SessionRequestImpl;
 
 /**
@@ -53,6 +54,10 @@ public class MoveIMToPM extends SessionRequestImpl implements Serializable {
         return peer;
     }
 
+    public SessionResponseMessage newResponseFailure() {
+        return new MovePMToIM();
+    }
+    
     public String toString() {
         return "MoveIMToPM [" + _key + "]->[" + peer + "]";
     }
