@@ -43,6 +43,8 @@ public class SimplePartitionManagerSmokeTest extends TestCase {
     private Exception failureException;
     private Latch failureLatch;
     private int nbPartitions;
+    private volatile int nbOperations;
+    private volatile int nbRebalancing;
 
     protected void setUp() throws Exception {
         nbPartitions = 12;
@@ -54,7 +56,7 @@ public class SimplePartitionManagerSmokeTest extends TestCase {
         
         List managers = new ArrayList();
         Collection loadThreads = new ArrayList();
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < 6; i++) {
             SimplePartitionManager manager = newManager(broker, i);
             managers.add(manager);
             SimpleStateManager stateManager = new SimpleStateManager(manager.getDispatcher(), manager, EXCHANGE_TIMEOUT);
@@ -81,6 +83,8 @@ public class SimplePartitionManagerSmokeTest extends TestCase {
             failureException.printStackTrace();
             fail();
         }
+        System.out.println("[" + nbRebalancing + "] successful rebalancing.");
+        System.out.println("[" + nbOperations + "] successful invocations.");
     }
 
     private SimplePartitionManager newManager(VMBroker broker, int index) throws Exception {
@@ -111,8 +115,9 @@ public class SimplePartitionManagerSmokeTest extends TestCase {
         public void run() {
             while (!Thread.interrupted()) {
                 try {
-                    Thread.sleep(4000);
-                    doRun(); 
+                    Thread.sleep(3000);
+                    doRun();
+                    nbRebalancing++;
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
@@ -203,10 +208,12 @@ public class SimplePartitionManagerSmokeTest extends TestCase {
                 if (!success) {
                     throw new IllegalStateException();
                 }
+                nbOperations++;
             }
             
             for (int i = 0; i < nbInsert; i++) {
                 manager.remove(prefix + i);
+                nbOperations++;
             }
         }
     }
