@@ -20,6 +20,7 @@ import java.io.Serializable;
 
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.location.SessionRequestMessage;
+import org.codehaus.wadi.location.SessionResponseMessage;
 
 /**
  * A request for the emigration of the enclosed session - The response
@@ -29,14 +30,10 @@ import org.codehaus.wadi.location.SessionRequestMessage;
  * @version $Revision:1815 $
  */
 public class ReleaseEntryRequest implements SessionRequestMessage, Serializable {
-    
 	protected final Motable _motable;
+    private int version;
 
-	/**
-	 *
-	 */
 	public ReleaseEntryRequest(Motable motable) {
-		super();
 		_motable=motable;
 	}
 
@@ -44,17 +41,24 @@ public class ReleaseEntryRequest implements SessionRequestMessage, Serializable 
 		return _motable;
 	}
 
-	public String toString() {
-		return "<ReleaseEntryRequest: "+_motable.getName()+">";
-	}
-
-    // abstract this out as a strategy - TODO
-    public int getPartitionKey(int numPartitions) {
-        return Math.abs(getKey().hashCode()%numPartitions);
-    }
-
     public Object getKey() {
         return _motable.getName();
+    }
+
+    public int getVersion() {
+        return version;
+    }
+
+    public void setVersion(int version) {
+        this.version = version;
+    }
+
+    public SessionResponseMessage newResponseFailure() {
+        return new ReleaseEntryResponse(false);
+    }
+    
+    public String toString() {
+        return "<ReleaseEntryRequest: " + _motable.getName() + ">";
     }
 
 }
