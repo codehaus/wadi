@@ -180,6 +180,7 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
     public void findRelevantSessionNames(PartitionMapper mapper, Collection[] resultSet) {
         super.findRelevantSessionNames(mapper, resultSet);
         int matches = 0;
+        // TODO - this is broken as the API does not explicitly tell us about the synchronization policy of _map.
         for (Iterator i = _map.keySet().iterator(); i.hasNext();) {
             String name = (String) i.next();
             int key = mapper.map(name);
