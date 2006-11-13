@@ -78,10 +78,8 @@ public class SessionReplicationManagerTest extends RMockTestCase {
         modify().returnValue(session.getBodyAsByteArray());
 
         WebSession webSession = sessionPool.take();
-        webSession.init(0, 0, 0, key);
-        modify().args(new Expression[] {is.ANYTHING, is.ANYTHING, is.ANYTHING, is.AS_RECORDED});
-        webSession.setBodyAsByteArray(session.getBodyAsByteArray());
-        modify().args(is.AS_RECORDED);
+        webSession.restore(0, 0, 0, key, session.getBodyAsByteArray());
+        modify().args(new Expression[] {is.ANYTHING, is.ANYTHING, is.ANYTHING, is.AS_RECORDED, is.AS_RECORDED});
         startVerification();
         
         SessionReplicationManager manager = new SessionReplicationManager(repManager, sessionPool);

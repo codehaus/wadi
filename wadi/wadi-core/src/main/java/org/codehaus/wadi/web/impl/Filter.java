@@ -26,8 +26,6 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.Manager;
 import org.codehaus.wadi.impl.StandardManager;
@@ -37,31 +35,25 @@ import org.codehaus.wadi.impl.StandardManager;
  * @version $Revision$
  */
 public class Filter implements javax.servlet.Filter {
-    
-    protected final Log _log = LogFactory.getLog(getClass());
-    
     protected Manager _manager;
-    
-    // Filter
-    
+
     public void init(FilterConfig filterConfig) throws ServletException {
-        _manager=(Manager)filterConfig.getServletContext().getAttribute(Manager.class.getName());
-        if (_manager==null)
-            _log.fatal("Manager not found");
-        else
-            if (_log.isInfoEnabled())_log.info("Manager found: "+_manager);
-        
-        ((StandardManager)_manager).setFilter(this);
+        _manager = (Manager) filterConfig.getServletContext().getAttribute(Manager.class.getName());
+        if (_manager == null) {
+            throw new ServletException("Manager not found");
+        }
+        ((StandardManager) _manager).setFilter(this);
     }
-    
+
     public void destroy() {
-        _manager=null;
+        _manager = null;
     }
-    
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain) throws IOException, ServletException {
+
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain) throws IOException,
+            ServletException {
         if (request instanceof HttpServletRequest) {
-            WebInvocation invocation=WebInvocation.getThreadLocalInstance();
-            invocation.init((HttpServletRequest)request, (HttpServletResponse)response, filterChain);
+            WebInvocation invocation = new WebInvocation();
+            invocation.init((HttpServletRequest) request, (HttpServletResponse) response, filterChain);
             try {
                 _manager.contextualise(invocation);
             } catch (InvocationException e) {
@@ -74,8 +66,10 @@ public class Filter implements javax.servlet.Filter {
                     throw new ServletException(e);
                 }
             }
-        } else // this is not HTTP - therefore it is stateless - not for us...
+        } else {
+            // this is not HTTP - therefore it is stateless - not for us...
             filterChain.doFilter(request, response);
+        }
     }
-    
+
 }

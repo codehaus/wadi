@@ -52,10 +52,6 @@ public class AbstractTestRelocation extends TestCase {
             _key=key;
         }
         
-        public void clear() {
-            _key=null;
-        }
-
         public String getSessionKey() {
             return _key;
         }
