@@ -114,7 +114,12 @@ public abstract class AbstractCluster implements Cluster {
         synchronized (_addressToPeer) {
             existing = new HashSet(_addressToPeer.values());
         }
-        listener.onListenerRegistration(this, existing, _coordinator);
+        
+        Peer localCoordinator;
+        synchronized (membershipChangeLock) {
+            localCoordinator = _coordinator;
+        }
+        listener.onListenerRegistration(this, existing, localCoordinator);
     }
 
     public void removeClusterListener(ClusterListener listener) {
