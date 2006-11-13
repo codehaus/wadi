@@ -77,9 +77,8 @@ public class SessionReplicationManager implements ReplicationManager {
         
         WebSession session = sessionPool.take();
         long time = System.currentTimeMillis();
-        session.init(time, time, maxInactiveInterval, (String) key);
         try {
-            session.setBodyAsByteArray(body);
+            session.restore(time, time, maxInactiveInterval, (String) key, body);
         } catch (Exception e) {
             throw new InternalReplicationManagerException(e);
         }

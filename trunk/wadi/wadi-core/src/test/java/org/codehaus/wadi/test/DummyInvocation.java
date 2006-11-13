@@ -34,12 +34,6 @@ public class DummyInvocation implements Invocation {
         _key=key;
     }
     
-    // Invocation
-    
-    public void clear() {
-        _key=null;
-    }
-
     public String getSessionKey() {
         return _key;
     }

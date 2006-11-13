@@ -37,12 +37,6 @@ package org.codehaus.wadi;
  * @version $Revision$
  */
 public interface Invocation {
-
-    /**
-     * Prepare this Invocation for recycling via a Pool
-     */
-    void clear();
-    
     /**
      * Return the key carried by the Invocation associating it with server-side state - a Session
      * 
@@ -89,11 +83,8 @@ public interface Invocation {
 	 */
 	void invoke() throws InvocationException;
     
-    
 	// these two methods are left overs from web-specific time - on their way out...
-    
     void invoke(PoolableInvocationWrapper wrapper) throws InvocationException;
     
 	boolean isProxiedInvocation();
-
 }
