@@ -174,8 +174,6 @@ public class Axis2Manager implements SessionManager, ManagerConfig {
             _log.error(e);
         }
         
-        // tidy up:
-        invocation.clear();
         // then continue on out of the container...
     }
     
