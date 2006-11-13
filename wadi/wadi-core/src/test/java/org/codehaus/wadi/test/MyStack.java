@@ -123,7 +123,7 @@ public class MyStack {
         InvocationProxy proxy = new StandardHttpProxy("jsessionid");
         _manager = new ClusteredManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, _memory,
                 _memory.getMap(), new DummyRouter(), true, streamer, true, replicaterfactory, location, proxy,
-                dispatcher, 4, collapser);
+                serviceSpace, 4, collapser);
         _manager.init(new DummyManagerConfig());
 
         serviceSpace.getServiceRegistry().register(new ServiceName("manager"), _manager);

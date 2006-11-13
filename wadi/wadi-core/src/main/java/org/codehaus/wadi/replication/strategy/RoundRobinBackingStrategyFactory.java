@@ -34,4 +34,5 @@ public class RoundRobinBackingStrategyFactory implements BackingStrategyFactory 
     public BackingStrategy factory() {
         return new RoundRobinBackingStrategy(nbReplica);
     }
+
 }

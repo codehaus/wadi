@@ -52,6 +52,8 @@ public class VersionAwarePartitionFacade implements PartitionFacade {
             throw new IllegalArgumentException("dispatcher is required");
         } else if (null == delegate) {
             throw new IllegalArgumentException("delegate is required");
+        } else if (0 > partitionUpdateWaitTime) {
+            throw new IllegalArgumentException("partitionUpdateWaitTime must be >= 0");
         }
         this.dispatcher = dispatcher;
         this.delegate = delegate;
@@ -167,7 +169,7 @@ public class VersionAwarePartitionFacade implements PartitionFacade {
         onMessage(message, request, attemptAction, delegateAction);
     }
 
-    public void waitForLocalization(PartitionInfo newPartitionInfo, long attemptPeriod) throws InterruptedException {
+    public boolean waitForLocalization(PartitionInfo newPartitionInfo, long attemptPeriod) throws InterruptedException {
         PartitionInfo localPartitionInfo;
         Latch localPartitionInfoLatch;
         synchronized (partitionInfoLock) {
@@ -177,10 +179,11 @@ public class VersionAwarePartitionFacade implements PartitionFacade {
         if (null == localPartitionInfo || localPartitionInfo.getVersion() < newPartitionInfo.getVersion()) {
             boolean success = localPartitionInfoLatch.attempt(attemptPeriod);
             if (!success) {
-                throw new UnsupportedOperationException("trigger repopulation here");
+                return false;
             }
-            waitForLocalization(newPartitionInfo, attemptPeriod);
+            return waitForLocalization(newPartitionInfo, attemptPeriod);
         }
+        return true;
     }
     
     public Partition setContent(PartitionInfo partitionInfo, LocalPartition content) {

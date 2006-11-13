@@ -34,12 +34,12 @@ import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.Peer;
-import org.codehaus.wadi.group.Quipu;
 import org.codehaus.wadi.group.impl.ServiceEndpointBuilder;
 import org.codehaus.wadi.impl.StupidLockManager;
 import org.codehaus.wadi.location.PartitionConfig;
 import org.codehaus.wadi.location.PartitionManager;
 import org.codehaus.wadi.location.PartitionManagerConfig;
+import org.codehaus.wadi.location.partition.BasicPartitionRepopulateTask;
 import org.codehaus.wadi.location.partition.PartitionEvacuationRequest;
 import org.codehaus.wadi.location.partition.PartitionEvacuationResponse;
 import org.codehaus.wadi.location.partition.PartitionRepopulateRequest;
@@ -51,7 +51,6 @@ import org.codehaus.wadi.partition.PartitionBalancingInfo;
 import org.codehaus.wadi.partition.PartitionBalancingInfoState;
 import org.codehaus.wadi.partition.PartitionBalancingInfoUpdate;
 import org.codehaus.wadi.partition.PartitionInfo;
-import org.codehaus.wadi.partition.PartitionInfoUpdate;
 import org.codehaus.wadi.partition.RetrieveBalancingInfoEvent;
 import org.codehaus.wadi.partition.UnknownPartitionBalancingInfo;
 
@@ -103,13 +102,6 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
         _log = LogFactory.getLog(getClass().getName() + "#" + _nodeName);
         _numPartitions = numPartitions;
         _partitions = new PartitionFacade[_numPartitions];
-        for (int i = 0; i < _numPartitions; i++) {
-            _partitions[i] = new VersionAwarePartitionFacade(dispatcher, 
-                    new PartitionFacadeDelegate(i, dispatcher),
-                    PARTITION_UPDATE_WAIT_TIME);
-        }
-        balancingInfo = new UnknownPartitionBalancingInfo(_localPeer, numPartitions);
-
         _inactiveTime = _cluster.getInactiveTime();
         _callback = callback;
         _mapper = mapper;
@@ -117,11 +109,21 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
         _endpointBuilder = new ServiceEndpointBuilder();
     }
 
+    protected void initializePartitionFacades() {
+        for (int i = 0; i < _numPartitions; i++) {
+            _partitions[i] = new VersionAwarePartitionFacade(_dispatcher, 
+                    new PartitionFacadeDelegate(i, _dispatcher),
+                    PARTITION_UPDATE_WAIT_TIME);
+        }
+        balancingInfo = new UnknownPartitionBalancingInfo(_localPeer, _numPartitions);
+    }
+
     public void init(PartitionManagerConfig config) {
         _config = config;
     }
 
     public void start() throws Exception {
+        initializePartitionFacades();
         _endpointBuilder.addSEI(_dispatcher, PartitionManagerMessageListener.class, this);
         _endpointBuilder.addCallback(_dispatcher, PartitionTransferAcknowledgement.class);
         _endpointBuilder.addCallback(_dispatcher, PartitionTransferResponse.class);
@@ -183,12 +185,12 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
                     Thread.sleep(_config.getInactiveTime());
                 } catch (InterruptedException e) {
                     interruptFlag = true;
-                    // ignore;
                 }
             } else {
                 success = true;
             }
         }
+        evacuatingPartitions = false;
 
         if (interruptFlag) {
             Thread.currentThread().interrupt();
@@ -270,7 +272,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
             } else {
                 PartitionInfo[] newPartitionInfos = newBalancingInfo.getPartitionInfos();
                 if (infoUpdate.isRepopulationRequested()) {
-                    repopulatePartition(infoUpdate);
+                    repopulatePartition(newPartitionInfos);
                 }
                 updateUnchangedPartitionFacades(newPartitionInfos);
                 redefineRemotePartitions(newPartitionInfos);
@@ -294,54 +296,22 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
         }
     }
 
-    protected void repopulatePartition(PartitionBalancingInfoUpdate infoUpdate) throws MessageExchangeException, PartitionBalancingException {
-        int[] indicesToRepopulate = infoUpdate.getIndicesToRepopulate();
-        _log.info("Repopulating partitions");
+    protected void repopulatePartition(PartitionInfo[] partitionInfos) throws MessageExchangeException, PartitionBalancingException {
+        BasicPartitionRepopulateTask repopulateTask = new BasicPartitionRepopulateTask(_dispatcher, _inactiveTime);
         
-        LocalPartition[] toBePopulated = new LocalPartition[_partitions.length];
-        for (int i = 0; i < indicesToRepopulate.length; i++) {
-            int key = indicesToRepopulate[i];
-            toBePopulated[key] = new LocalPartition(_dispatcher, key, _inactiveTime);
-        }
-
-        repopulatePartitions(indicesToRepopulate, toBePopulated);
-
-        PartitionInfoUpdate[] balancingInfoUpdates = infoUpdate.getBalancingInfoUpdates();
-        for (int i = 0; i < indicesToRepopulate.length; i++) {
-            int key = indicesToRepopulate[i];
-            PartitionFacade facade = _partitions[key];
-            facade.setContent(balancingInfoUpdates[key].getPartitionInfo(), toBePopulated[key]);
+        LocalPartition[] toBePopulated = new LocalPartition[partitionInfos.length];
+        for (int i = 0; i < partitionInfos.length; i++) {
+            int key = partitionInfos[i].getIndex();
+            toBePopulated[i] = new LocalPartition(_dispatcher, key, _inactiveTime);
         }
         
-        _log.info("Partitions repopulated");
-    }
+        repopulateTask.repopulate(toBePopulated);
 
-    private void repopulatePartitions(int[] indicesToRepopulate, LocalPartition[] toBePopulated) throws MessageExchangeException, PartitionBalancingException {
-        Quipu rv = sendRepopulateRequest(indicesToRepopulate);
-
-        try {
-            rv.waitFor(_inactiveTime);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new PartitionBalancingException(e);
+        for (int i = 0; i < partitionInfos.length; i++) {
+            PartitionInfo partitionInfo = partitionInfos[i];
+            PartitionFacade facade = _partitions[partitionInfo.getIndex()];
+            facade.setContent(partitionInfo, toBePopulated[i]);
         }
-        
-        Collection results = rv.getResults();
-        for (Iterator i = results.iterator(); i.hasNext();) {
-            Envelope message = (Envelope) i.next();
-            PartitionRepopulateResponse response = (PartitionRepopulateResponse) message.getPayload();
-            Collection[] relevantKeys = response.getKeys();
-            Peer peer = response.getPeer();
-            repopulate(toBePopulated, peer, relevantKeys);
-        }
-    }
-
-    protected Quipu sendRepopulateRequest(int[] indicesToRepopulate) throws MessageExchangeException {
-        Quipu rv = _dispatcher.newRendezVous(_dispatcher.getCluster().getPeerCount());
-        PartitionRepopulateRequest repopulateRequest = new PartitionRepopulateRequest(indicesToRepopulate);
-        _dispatcher.send(_localPeer.getAddress(), _dispatcher.getCluster().getAddress(), rv.getCorrelationId(),
-                repopulateRequest);
-        return rv;
     }
 
     protected void redefineRemotePartitions(PartitionInfo[] newPartitionInfos) {
@@ -374,7 +344,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
         }
     }
 
-    protected void waitForPartitionTranserOrTimeout(PartitionInfo[] newPartitionInfos) throws PartitionBalancingException {
+    protected void waitForPartitionTranserOrTimeout(PartitionInfo[] newPartitionInfos) throws MessageExchangeException, PartitionBalancingException {
         for (int i = 0; i < newPartitionInfos.length; i++) {
             PartitionInfo newPartitionInfo = newPartitionInfos[i];
             Peer newOwner = newPartitionInfo.getOwner();
@@ -386,7 +356,10 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
                 continue;
             }
             try {
-                facade.waitForLocalization(newPartitionInfo, PARTITION_LOCALIZATION_WAIT_TIME);
+                boolean success = facade.waitForLocalization(newPartitionInfo, PARTITION_LOCALIZATION_WAIT_TIME);
+                if (!success) {
+                    repopulatePartition(new PartitionInfo[] {newPartitionInfo});
+                }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 throw new PartitionBalancingException(e);
@@ -474,19 +447,6 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
         }
     }
     
-    protected void repopulate(LocalPartition[] toBePopulated, Peer peer, Collection[] partitionIndexToSessionNames) {
-        for (int i = 0; i < _numPartitions; i++) {
-            Collection sessionNames = partitionIndexToSessionNames[i];
-            if (sessionNames != null) {
-                LocalPartition partition = toBePopulated[i];
-                for (Iterator j = sessionNames.iterator(); j.hasNext();) {
-                    String name = (String) j.next();
-                    partition.put(name, peer);
-                }
-            }
-        }
-    }
-
     protected void localise(PartitionBalancingInfo newBalancingInfo) {
         _log.info("Allocating " + _numPartitions + " partitions");
         PartitionInfo[] partitionInfos = newBalancingInfo.getPartitionInfos();

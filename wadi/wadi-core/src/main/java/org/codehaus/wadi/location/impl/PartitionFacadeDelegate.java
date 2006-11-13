@@ -55,7 +55,8 @@ public class PartitionFacadeDelegate extends AbstractPartition implements Partit
         return partitionDefinedLatch.attempt(attemptPeriod);
     }
     
-    public void waitForLocalization(PartitionInfo newPartitionInfo, long attemptPeriod) {
+    public boolean waitForLocalization(PartitionInfo newPartitionInfo, long attemptPeriod) {
+        return true;
     }
     
     public boolean isLocal() {

@@ -38,20 +38,18 @@ import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.impl.SeniorityElectionStrategy;
 import org.codehaus.wadi.impl.AbstractChainedEmoter;
 import org.codehaus.wadi.impl.Utils;
+import org.codehaus.wadi.impl.WADIRuntimeException;
 import org.codehaus.wadi.location.CoordinatorConfig;
 import org.codehaus.wadi.location.PartitionManager;
 import org.codehaus.wadi.location.PartitionManagerConfig;
 import org.codehaus.wadi.location.StateManager;
 import org.codehaus.wadi.location.StateManagerConfig;
-import org.codehaus.wadi.location.session.DeleteIMToPM;
-import org.codehaus.wadi.location.session.EvacuateIMToPM;
-import org.codehaus.wadi.location.session.InsertIMToPM;
-import org.codehaus.wadi.location.session.InsertPMToIM;
 import org.codehaus.wadi.location.session.MoveIMToPM;
 import org.codehaus.wadi.location.session.MoveIMToSM;
 import org.codehaus.wadi.location.session.MovePMToIM;
 import org.codehaus.wadi.location.session.MovePMToIMInvocation;
 import org.codehaus.wadi.location.session.MoveSMToIM;
+import org.codehaus.wadi.servicespace.ServiceSpace;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
@@ -60,23 +58,31 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * @version $Revision:1815 $
  */
 public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartitionManager.Callback, StateManagerConfig {
-    protected final Object _coordinatorLock = new Object();
-    protected final Dispatcher _dispatcher;
-    protected final Cluster _cluster;
-    protected final Peer _localPeer;
-    protected final String _localPeerName;
-    protected final Log _log;
-    protected final long _inactiveTime;
-    protected final PartitionManager _partitionManager;
-    protected final StateManager _stateManager;
-    protected final Log _lockLog = LogFactory.getLog("org.codehaus.wadi.LOCKS");
+    private final Object _coordinatorLock = new Object();
+    private final ServiceSpace serviceSpace;
+    private final Dispatcher _dispatcher;
+    private final Cluster _cluster;
+    private final Peer _localPeer;
+    private final String _localPeerName;
+    private final Log _log;
+    private final long _inactiveTime;
+    private final PartitionManager _partitionManager;
+    private final StateManager _stateManager;
 
-    protected Peer _coordinatorPeer;
-    protected Coordinator _coordinator;
-    protected PartitionManagerConfig _config;
+    private Peer _coordinatorPeer;
+    private Coordinator _coordinator;
+    private PartitionManagerConfig _config;
     
-    public DIndex(int numPartitions, Dispatcher dispatcher, PartitionMapper mapper) {
-        _dispatcher = dispatcher;
+    public DIndex(int numPartitions, ServiceSpace serviceSpace, PartitionMapper mapper) {
+        if (1 > numPartitions) {
+            throw new IllegalArgumentException("numPartitions must be > 0");
+        } else if (null == serviceSpace) {
+            throw new IllegalArgumentException("serviceSpace is required");
+        } else if (null == mapper) {
+            throw new IllegalArgumentException("mapper is required");
+        }
+        this.serviceSpace = serviceSpace;
+        _dispatcher = serviceSpace.getDispatcher();
         _cluster = _dispatcher.getCluster();
         _inactiveTime = _cluster.getInactiveTime();
         _localPeer = _cluster.getLocalPeer();
@@ -94,14 +100,14 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
         _cluster.setElectionStrategy(new SeniorityElectionStrategy());
     }
 
-    public synchronized void start() throws Exception {
+    public void start() throws Exception {
         _cluster.addClusterListener(this);
         
         _partitionManager.start();
         _stateManager.start();
     }
 
-    public synchronized void stop() throws Exception {
+    public void stop() throws Exception {
         _cluster.removeClusterListener(this);
         
         Thread.interrupted();
@@ -295,17 +301,11 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
                 Emoter emoter = new SMToIMEmoter(_config.getPeerName(message.getReplyTo()), message);
                 Motable immotable = Utils.mote(emoter, immoter, emotable, sessionName);
                 return immotable;
-                // if (null==immotable)
-                // return false;
-                // else {
-                // boolean answer=immoter.contextualise(null, null, null,
-                // sessionName, immotable, null);
-                // return answer;
-                // }
             }
         } else if (dm instanceof MovePMToIM) {
-            if (_log.isTraceEnabled())
+            if (_log.isTraceEnabled()) {
                 _log.trace("unknown session: " + sessionName);
+            }
             return null;
         } else if (dm instanceof MovePMToIMInvocation) {
             // we are going to relocate our Invocation to the PM...
@@ -316,8 +316,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 //            return null;
             throw new UnsupportedOperationException();
         } else {
-            _log.warn("unexpected response returned - what should I do? : " + dm);
-            return null;
+            throw new WADIRuntimeException("unexpected response returned - what should I do? : " + dm);
         }
     }
 

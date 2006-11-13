@@ -16,8 +16,6 @@
  */
 package org.codehaus.wadi.impl;
 
-import java.nio.ByteBuffer;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Session;
@@ -25,35 +23,26 @@ import org.codehaus.wadi.Session;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
- * TODO - JavaDoc this type
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision: 1533 $
  */
 
 public abstract class AbstractSession extends AbstractMotable implements Session {
-  
-  protected static Log _log = LogFactory.getLog(AbstractSession.class);
-  
-  protected final RankedRWLock _lock=new RankedRWLock(); // TODO - initially - we will pool the lock with the session - risky :-)
-  public Sync getSharedLock(){return _lock.readLock();}
-  public Sync getExclusiveLock(){return _lock.writeLock();}
-  
-  // Motable
-  public byte[] getBodyAsByteArray() throws Exception {
-    return Utils.getContent(this, new SimpleStreamer());
-  }
-  
-//public void setBodyAsByteArray(byte[] bytes) throws IOException, ClassNotFoundException {
-//Utils.setContent(this, bytes, new SimpleStreamer());
-//}
-  
-  public ByteBuffer getBodyAsByteBuffer() throws Exception {
-    throw new UnsupportedOperationException();
-  }
-  
-  public void setBodyAsByteBuffer(ByteBuffer body) throws Exception {
-    throw new UnsupportedOperationException();
-  }
-  
+    protected static Log _log = LogFactory.getLog(AbstractSession.class);
+
+    protected final RankedRWLock _lock = new RankedRWLock();
+
+    public Sync getSharedLock() {
+        return _lock.readLock();
+    }
+
+    public Sync getExclusiveLock() {
+        return _lock.writeLock();
+    }
+
+    public byte[] getBodyAsByteArray() throws Exception {
+        return Utils.getContent(this, new SimpleStreamer());
+    }
+
 }

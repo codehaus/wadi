@@ -119,7 +119,7 @@ public class ServiceSpaceSmokeTest extends TestCase {
     private static class ServiceSpaceTracker implements ServiceSpaceListener {
         private final List received = new ArrayList();
         
-        public void receive(ServiceSpaceLifecycleEvent event) {
+        public void receive(ServiceSpaceLifecycleEvent event, Set newHostingPeers) {
             received.add(event);
         }
         

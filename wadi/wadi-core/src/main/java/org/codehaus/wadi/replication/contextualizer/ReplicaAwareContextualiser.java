@@ -21,7 +21,6 @@ import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.impl.AbstractSharedContextualiser;
 import org.codehaus.wadi.impl.RWLocker;
-import org.codehaus.wadi.replication.manager.ReplicationException;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
 
 /**
@@ -46,13 +45,13 @@ public class ReplicaAwareContextualiser extends AbstractSharedContextualiser {
     public Immoter getImmoter() {
         return _next.getSharedDemoter();
     }
-
+    
     public Motable get(String id) {
         Object object;
         try {
             object = replicationManager.acquirePrimary(id);
-        } catch (ReplicationException e) {
-            throw (IllegalStateException) new IllegalStateException().initCause(e);
+        } catch (Exception e) {
+            return null;
         }
         return (Motable) object;
     }
@@ -62,12 +61,12 @@ public class ReplicaAwareContextualiser extends AbstractSharedContextualiser {
     
     private final class PromotionEmoter implements Emoter {
         public boolean prepare(String name, Motable emotable, Motable immotable) {
-            immotable.init(emotable.getCreationTime(), 
-                    emotable.getLastAccessedTime(),
-                    emotable.getMaxInactiveInterval(),
-                    name);
             try {
-                immotable.setBodyAsByteArray(emotable.getBodyAsByteArray());
+                immotable.restore(emotable.getCreationTime(), 
+                        emotable.getLastAccessedTime(),
+                        emotable.getMaxInactiveInterval(),
+                        name,
+                        emotable.getBodyAsByteArray());
             } catch (Exception e) {
                 _log.warn("Problem emoting " + name, e);
                 return false;

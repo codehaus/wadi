@@ -115,7 +115,8 @@ public class BasicServiceMonitorTest extends AbstractServiceSpaceTestCase {
 
         monitor.addServiceLifecycleListener(listener);
         
-        serviceSpaceListener.receive(new ServiceSpaceLifecycleEvent(serviceSpaceName, remote1, LifecycleState.FAILED));
+        serviceSpaceListener.receive(
+                new ServiceSpaceLifecycleEvent(serviceSpaceName, remote1, LifecycleState.FAILED), Collections.EMPTY_SET);
         
         hostingPeers = monitor.getHostingPeers();
         assertTrue(hostingPeers.isEmpty());
@@ -140,7 +141,8 @@ public class BasicServiceMonitorTest extends AbstractServiceSpaceTestCase {
         
         monitor.addServiceLifecycleListener(listener);
         
-        serviceSpaceListener.receive(new ServiceSpaceLifecycleEvent(serviceSpaceName, remote2, LifecycleState.FAILED));
+        serviceSpaceListener.receive(
+                new ServiceSpaceLifecycleEvent(serviceSpaceName, remote2, LifecycleState.FAILED), Collections.EMPTY_SET);
         
         hostingPeers = monitor.getHostingPeers();
         assertEquals(1, hostingPeers.size());

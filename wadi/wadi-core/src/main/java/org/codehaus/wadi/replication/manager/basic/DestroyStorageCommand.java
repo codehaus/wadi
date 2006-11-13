@@ -17,6 +17,7 @@ package org.codehaus.wadi.replication.manager.basic;
 
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.replication.storage.ReplicaStorage;
+import org.codehaus.wadi.servicespace.InvocationMetaData;
 import org.codehaus.wadi.servicespace.ServiceProxy;
 import org.codehaus.wadi.servicespace.ServiceProxyFactory;
 
@@ -29,7 +30,8 @@ class DestroyStorageCommand extends AbstractStorageCommand {
     
     public void execute(ServiceProxyFactory serviceProxy) {
         ReplicaStorage storage = (ReplicaStorage) serviceProxy.getProxy();
-        ((ServiceProxy) storage).getInvocationMetaData().setTargets(targets);
+        InvocationMetaData invocationMetaData = ((ServiceProxy) storage).getInvocationMetaData();
+        invocationMetaData.setTargets(targets);
         storage.mergeDestroy(key);
     }
     

@@ -13,15 +13,21 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.servicespace;
-
-import java.util.Set;
+package org.codehaus.wadi.impl;
 
 
 /**
  * 
  * @version $Revision: 1538 $
  */
-public interface ServiceSpaceListener {
-    void receive(ServiceSpaceLifecycleEvent event, Set newHostingPeers);
+public class WADIRuntimeException extends RuntimeException {
+
+    public WADIRuntimeException(Throwable cause) {
+        super(cause);
+    }
+
+    public WADIRuntimeException(String message) {
+        super(message);
+    }
+
 }

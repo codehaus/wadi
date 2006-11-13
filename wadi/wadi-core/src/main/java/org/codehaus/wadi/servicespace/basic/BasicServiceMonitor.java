@@ -56,7 +56,7 @@ public class BasicServiceMonitor implements ServiceMonitor, Lifecycle {
     private final Set hostingPeers;
     private final ServiceLifecycleEndpoint lifecycleEndpoint;
     private final ServiceSpaceListener hostingServiceSpaceFailure;
-    private boolean started;
+    private volatile boolean started;
     
     public BasicServiceMonitor(ServiceSpace serviceSpace, ServiceName serviceName) {
         if (null == serviceSpace) {
@@ -92,11 +92,11 @@ public class BasicServiceMonitor implements ServiceMonitor, Lifecycle {
         }
     }
 
-    public synchronized boolean isStarted() {
+    public boolean isStarted() {
         return started;
     }
     
-    public synchronized void start() throws Exception {
+    public void start() throws Exception {
         serviceSpace.addServiceSpaceListener(hostingServiceSpaceFailure);
         dispatcher.register(lifecycleEndpoint);
         started = true;
@@ -113,10 +113,9 @@ public class BasicServiceMonitor implements ServiceMonitor, Lifecycle {
         }
     }
     
-    public synchronized void stop() throws Exception {
+    public void stop() throws Exception {
         dispatcher.unregister(lifecycleEndpoint, 10, 500);
         serviceSpace.removeServiceSpaceListener(hostingServiceSpaceFailure);
-        
         started = false;
     }
     
@@ -167,19 +166,21 @@ public class BasicServiceMonitor implements ServiceMonitor, Lifecycle {
     
     protected class HostingServiceSpaceFailure implements ServiceSpaceListener {
 
-        public void receive(ServiceSpaceLifecycleEvent event) {
+        public void receive(ServiceSpaceLifecycleEvent event, Set newHostingPeers) {
             if (event.getState() == LifecycleState.FAILED) {
                 Peer failingPeer = event.getHostingPeer();
+                boolean removed;
+                Set copyHostingPeers;
                 synchronized (hostingPeers) {
-                    boolean removed = hostingPeers.remove(failingPeer);
-                    if (removed) {
-                        notifyListeners(
-                                new ServiceLifecycleEvent(serviceSpace.getServiceSpaceName(), 
-                                        serviceName, 
-                                        failingPeer, 
-                                        LifecycleState.FAILED),
-                                new HashSet(hostingPeers));
-                    }
+                    removed = hostingPeers.remove(failingPeer);
+                    copyHostingPeers = new HashSet(hostingPeers);
+                }
+                if (removed) {
+                    ServiceLifecycleEvent failedEvent = new ServiceLifecycleEvent(serviceSpace.getServiceSpaceName(), 
+                                                        serviceName, 
+                                                        failingPeer, 
+                                                        LifecycleState.FAILED);
+                    notifyListeners(failedEvent, copyHostingPeers);
                 }
             }
         }

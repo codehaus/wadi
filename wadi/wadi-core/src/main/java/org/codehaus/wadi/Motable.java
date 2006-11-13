@@ -16,7 +16,6 @@
  */
 package org.codehaus.wadi;
 
-import java.nio.ByteBuffer;
 
 
 /**
@@ -27,10 +26,11 @@ import java.nio.ByteBuffer;
  * @version $Revision$
  */
 public interface Motable extends Evictable {
-    
     void init(long creationTime, long lastAccessedTime, int maxInactiveInterval, String name);
 
     void rehydrate(long creationTime, long lastAccessedTime, int maxInactiveInterval, String name, byte[] body) throws RehydrationException;
+
+    void restore(long creationTime, long lastAccessedTime, int maxInactiveInterval, String name, byte[] body) throws RehydrationException;
 
     void copy(Motable motable) throws Exception;
 	
@@ -39,15 +39,7 @@ public interface Motable extends Evictable {
 
 	String getName();
 
-    // Motable has two parts :
-    // Head - metadata describing...
-    // Body - application data
-    
-    // Body may be represented in a number of ways...
-    
     byte[] getBodyAsByteArray() throws Exception;
-    void setBodyAsByteArray(byte[] bytes) throws Exception;
 
-    ByteBuffer getBodyAsByteBuffer() throws Exception;
-    void setBodyAsByteBuffer(ByteBuffer body) throws Exception;
+    void setBodyAsByteArray(byte[] bytes) throws Exception;
 }

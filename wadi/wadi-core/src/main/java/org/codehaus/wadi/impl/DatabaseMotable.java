@@ -16,7 +16,6 @@
  */
 package org.codehaus.wadi.impl;
 
-import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -61,16 +60,6 @@ public class DatabaseMotable extends AbstractMotable implements StoreMotable {
     
     public void setBodyAsByteArray(byte[] body) throws Exception {
         store(body);
-    }
-    
-    // is there a way to use direct ByteBuffers for DB access? - there must be ....
-    
-    public ByteBuffer getBodyAsByteBuffer() throws Exception {
-    	throw new UnsupportedOperationException("NYI");
-    }
-    
-    public void setBodyAsByteBuffer(ByteBuffer body) throws Exception {
-    	throw new UnsupportedOperationException("NYI");
     }
     
 	public void copy(Motable motable) throws Exception {
