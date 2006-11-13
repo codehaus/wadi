@@ -46,18 +46,12 @@ public abstract class AbstractMotable extends SimpleEvictable implements Motable
 
     public void rehydrate(long creationTime, long lastAccessedTime, int maxInactiveInterval, String name, byte[] body)
             throws RehydrationException {
-        newSession = false;
-        init(creationTime, lastAccessedTime, maxInactiveInterval, name);
-        try {
-            setBodyAsByteArray(body);
-        } catch (Exception e) {
-            throw new RehydrationException(e);
-        }
+        initExisting(creationTime, lastAccessedTime, maxInactiveInterval, name, body);
     }
 
     public void restore(long creationTime, long lastAccessedTime, int maxInactiveInterval, String name, byte[] body)
             throws RehydrationException {
-        rehydrate(creationTime, lastAccessedTime, maxInactiveInterval, name, body);
+        initExisting(creationTime, lastAccessedTime, maxInactiveInterval, name, body);
     }
 
     public void copy(Motable motable) throws Exception {
@@ -83,6 +77,16 @@ public abstract class AbstractMotable extends SimpleEvictable implements Motable
     public void writeContent(ObjectOutput oo) throws IOException {
         super.writeContent(oo);
         oo.writeObject(_name);
+    }
+
+    private void initExisting(long creationTime, long lastAccessedTime, int maxInactiveInterval, String name, byte[] body) throws RehydrationException {
+        newSession = false;
+        init(creationTime, lastAccessedTime, maxInactiveInterval, name);
+        try {
+            setBodyAsByteArray(body);
+        } catch (Exception e) {
+            throw new RehydrationException(e);
+        }
     }
 
 }
