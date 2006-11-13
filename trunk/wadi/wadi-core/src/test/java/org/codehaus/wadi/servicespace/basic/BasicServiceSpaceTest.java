@@ -172,7 +172,7 @@ public class BasicServiceSpaceTest extends AbstractServiceSpaceTestCase {
         serviceSpaceDispatcher.send(address1, new ServiceSpaceLifecycleEvent(serviceSpaceName, localPeer,
                 LifecycleState.AVAILABLE));
         
-        listener.receive(event);
+        listener.receive(event, Collections.EMPTY_SET);
         endSection();
         
         startVerification();
@@ -195,11 +195,11 @@ public class BasicServiceSpaceTest extends AbstractServiceSpaceTestCase {
         beginSection(s.ordered("STARTED "));
         ServiceSpaceLifecycleEvent startedEvent = new ServiceSpaceLifecycleEvent(serviceSpaceName, remote1, 
                 LifecycleState.STARTED);
-        Envelope startedMessage = recordReceiveEvent(startedEvent);
+        Envelope startedMessage = recordReceiveEvent(startedEvent, false);
         
         ServiceSpaceLifecycleEvent event = new ServiceSpaceLifecycleEvent(serviceSpaceName, remote1,
                 LifecycleState.FAILED);
-        listener.receive(event);
+        listener.receive(event, Collections.EMPTY_SET);
         endSection();
         
         startVerification();
@@ -227,10 +227,10 @@ public class BasicServiceSpaceTest extends AbstractServiceSpaceTestCase {
         beginSection(s.ordered("STARTED -> " + state));
         ServiceSpaceLifecycleEvent startedEvent = new ServiceSpaceLifecycleEvent(serviceSpaceName, remote1, 
                 LifecycleState.STARTED);
-        Envelope startedMessage = recordReceiveEvent(startedEvent);
+        Envelope startedMessage = recordReceiveEvent(startedEvent, false);
         
         ServiceSpaceLifecycleEvent event = new ServiceSpaceLifecycleEvent(serviceSpaceName, remote1, state);
-        Envelope message = recordReceiveEvent(event);
+        Envelope message = recordReceiveEvent(event, true);
         endSection();
         
         startVerification();
@@ -259,7 +259,7 @@ public class BasicServiceSpaceTest extends AbstractServiceSpaceTestCase {
         recordStartPhase();
         
         ServiceSpaceLifecycleEvent event = new ServiceSpaceLifecycleEvent(serviceSpaceName, remote1, state);
-        Envelope message = recordReceiveEvent(event);
+        Envelope message = recordReceiveEvent(event, false);
         
         startVerification();
         
@@ -276,9 +276,10 @@ public class BasicServiceSpaceTest extends AbstractServiceSpaceTestCase {
         assertTrue(hostingPeers.contains(remote1));
     }
     
-    private Envelope recordReceiveEvent(ServiceSpaceLifecycleEvent event) {
+    private Envelope recordReceiveEvent(ServiceSpaceLifecycleEvent event, boolean newHostingPeersEmpty) {
         Envelope message = recordMessage(event);
-        listener.receive(event);
+        listener.receive(event, 
+                newHostingPeersEmpty ? Collections.EMPTY_SET : Collections.singleton(event.getHostingPeer()));
         return message;
     }
 

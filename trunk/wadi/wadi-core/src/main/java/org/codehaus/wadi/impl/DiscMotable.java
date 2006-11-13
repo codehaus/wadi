@@ -68,18 +68,6 @@ public class DiscMotable extends AbstractMotable implements StoreMotable {
         store(false, body);
     }
 
-    public ByteBuffer getBodyAsByteBuffer() throws Exception {
-        ensureFile();
-        // we already know the body length...
-        return (ByteBuffer)loadBody(true);
-    }
-
-    public void setBodyAsByteBuffer(ByteBuffer body) throws Exception {
-        ensureFile();
-        _bodyLength=body.capacity(); // FIXME - this will work until we start reusing different sized ByteBuffers
-        store(true, body);
-    }
-
     // normal destruction - should remove corresponding row from db...
     public void destroy() throws Exception {
         super.destroy();

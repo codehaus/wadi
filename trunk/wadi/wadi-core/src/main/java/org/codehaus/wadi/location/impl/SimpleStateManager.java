@@ -16,8 +16,6 @@
  */
 package org.codehaus.wadi.location.impl;
 
-import java.nio.ByteBuffer;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Immoter;
@@ -34,6 +32,7 @@ import org.codehaus.wadi.impl.AbstractMotable;
 import org.codehaus.wadi.impl.RankedRWLock;
 import org.codehaus.wadi.impl.SimpleMotable;
 import org.codehaus.wadi.impl.Utils;
+import org.codehaus.wadi.impl.WADIRuntimeException;
 import org.codehaus.wadi.location.Partition;
 import org.codehaus.wadi.location.PartitionFacadeException;
 import org.codehaus.wadi.location.PartitionManager;
@@ -207,13 +206,6 @@ public class SimpleStateManager implements StateManager, StateManagerMessageList
             }
         }
 
-        public ByteBuffer getBodyAsByteBuffer() throws Exception {
-            throw new UnsupportedOperationException();
-        }
-
-        public void setBodyAsByteBuffer(ByteBuffer body) throws Exception {
-            throw new UnsupportedOperationException();
-        }
     }
 
     /**
@@ -243,31 +235,11 @@ public class SimpleStateManager implements StateManager, StateManagerMessageList
         }
 
         public boolean prepare(String name, Motable emotable, Motable immotable) {
-            // work is done in ClusterEmotable...
-            // take invocation lock
-            // boolean needsRelease=false;
-
-            // used to take an invocation lock whlist running, but, if we were
-            // already promoting a session from e.g. disc, this would cause a
-            // deadlock...
-            // do we need to take a lock to prevet anyone else trying to load a
-            // session as we emmmigrate it - I don't think so...
-
-            _invocationLock = _config.getInvocationLock(name);
-            // try {
-            // Utils.acquireUninterrupted("Invocation", name, _invocationLock);
-            // //needsRelease=true;
-            // } catch (TimeoutException e) {
-            // _log.error("unexpected timeout - proceding without lock", e);
-            // }
             return true;
         }
 
         public void commit(String name, Motable immotable) {
-            // do nothing
-            // release invocation lock
             _found = true;
-            // Utils.release("Invocation", name, _invocationLock);
         }
 
         public void rollback(String name, Motable immotable) {
@@ -289,32 +261,23 @@ public class SimpleStateManager implements StateManager, StateManagerMessageList
 
     }
 
-    // --------------------------------------------------------------------------------------
-
-    // called on State Master...
     public void onMessage(Envelope message1, MovePMToSM request) {
-        // DO NOT Dispatch onto Partition - deal with it here...
         Object key = request.getKey();
-        // String nodeName=_config.getLocalNodeName();
         try {
             RankedRWLock.setPriority(RankedRWLock.EMIGRATION_PRIORITY);
 
-            // Tricky - we need to call a Moter at this point and start removal
-            // of State to other node...
-            Sync invocationLock = null;
+            Sync invocationLock = _config.getInvocationLock((String) key);
             try {
+                Utils.acquireUninterrupted("Invocation", (String) key, invocationLock);
+            } catch (TimeoutException e) {
+                _log.error("unexpected timeout - proceding without lock", e);
+                throw new WADIRuntimeException(e);
+            }
+
+            try {
+                // Tricky - we need to call a Moter at this point and start removal of State to other node...
                 Peer imPeer = request.getIMPeer();
                 RelocationImmoter promoter = new RelocationImmoter(imPeer.getName(), message1, request);
-                // boolean found=
-
-                // acquire invocation lock here... - we need it - not sure
-                // why...
-                invocationLock = _config.getInvocationLock((String) key);
-                try {
-                    Utils.acquireUninterrupted("Invocation", (String) key, invocationLock);
-                } catch (TimeoutException e) {
-                    _log.error("unexpected timeout - proceding without lock", e);
-                }
 
                 // if we own session, this will send the correct response...
                 _config.contextualise(null, (String) key, promoter, invocationLock, true);
@@ -337,9 +300,7 @@ public class SimpleStateManager implements StateManager, StateManagerMessageList
                     _log.warn("problem handling relocation request: " + key, e);
             } finally {
                 RankedRWLock.setPriority(RankedRWLock.NO_PRIORITY);
-                if (null != invocationLock) {
-                    invocationLock.release();
-                }
+                invocationLock.release();
             }
         } finally {
         }

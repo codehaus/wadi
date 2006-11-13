@@ -187,7 +187,7 @@ public abstract class AbstractReplicationContextualiserTest extends TestCase {
                 new ReplicaterAdapterFactory(replicationManager, sessionPool),
                 new WebEndPoint(new InetSocketAddress("localhost", 8080)),
                 new StandardHttpProxy("jsessionid"),
-                dispatcher,
+                serviceSpace,
                 24,
                 collapser);
         

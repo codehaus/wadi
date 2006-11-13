@@ -65,5 +65,5 @@ public class ServiceSpaceLifecycleEvent implements Serializable {
     public String toString() {
         return "Service space [" + serviceSpaceName + "] hosted by [" + hostingPeer + "] is [" + state + "]";
     }
-    
+
 }

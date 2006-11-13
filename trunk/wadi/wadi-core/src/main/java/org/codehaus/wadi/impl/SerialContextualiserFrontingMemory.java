@@ -38,7 +38,15 @@ public class SerialContextualiserFrontingMemory extends AbstractDelegatingContex
 
     public boolean contextualise(Invocation invocation, String key, Immoter immoter, Sync invocationLock, 
             boolean exclusiveOnly) throws InvocationException {
-        
+        if (null != invocationLock) {
+            return _next.contextualise(invocation, key, immoter, invocationLock, exclusiveOnly);
+        } else {
+            return lockAndContextualise(invocation, key, immoter, invocationLock, exclusiveOnly);
+        }
+    }
+
+    protected boolean lockAndContextualise(Invocation invocation, String key, Immoter immoter, Sync invocationLock, 
+            boolean exclusiveOnly) throws InvocationException {
         Sync lock = collapser.getLock(key);
         boolean isLockAcquired = false;
         try {
@@ -53,5 +61,5 @@ public class SerialContextualiserFrontingMemory extends AbstractDelegatingContex
             }
         }
     }
-
+    
 }

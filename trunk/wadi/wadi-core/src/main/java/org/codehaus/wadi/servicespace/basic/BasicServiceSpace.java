@@ -45,6 +45,8 @@ import org.codehaus.wadi.servicespace.ServiceSpaceLifecycleEvent;
 import org.codehaus.wadi.servicespace.ServiceSpaceListener;
 import org.codehaus.wadi.servicespace.ServiceSpaceName;
 
+import EDU.oswego.cs.dl.util.concurrent.CopyOnWriteArrayList;
+
 /**
  * 
  * @version $Revision: $
@@ -52,7 +54,7 @@ import org.codehaus.wadi.servicespace.ServiceSpaceName;
 public class BasicServiceSpace implements ServiceSpace, Lifecycle {
     private static final Log log = LogFactory.getLog(BasicServiceSpace.class);
     
-    private final Collection listeners;
+    private final CopyOnWriteArrayList listeners;
     private final Set hostingPeers;
     private final Collection monitors;
     private final LocalPeer localPeer;
@@ -80,7 +82,7 @@ public class BasicServiceSpace implements ServiceSpace, Lifecycle {
         }
         monitors = new ArrayList();
         hostingPeers = new HashSet();
-        listeners = new ArrayList();
+        listeners = new CopyOnWriteArrayList();
 
         this.name = name;
         this.underlyingDispatcher = underlyingDispatcher;
@@ -105,9 +107,7 @@ public class BasicServiceSpace implements ServiceSpace, Lifecycle {
     }
     
     public void addServiceSpaceListener(ServiceSpaceListener listener) {
-        synchronized (listeners) {
-            listeners.add(listener);
-        }
+        listeners.add(listener);
     }
 
     public Dispatcher getDispatcher() {
@@ -137,16 +137,13 @@ public class BasicServiceSpace implements ServiceSpace, Lifecycle {
     }
 
     public void removeServiceSpaceListener(ServiceSpaceListener listener) {
-        boolean removed;
-        synchronized (listeners) {
-            removed = listeners.remove(listener);
-        }
+        boolean removed = listeners.remove(listener);
         if (!removed) {
             throw new IllegalArgumentException("[" + listener + "] is not registered");
         }
     }
 
-    public synchronized void start() throws Exception {
+    public void start() throws Exception {
         registerEndPoints();
 
         multicastLifecycleEvent(LifecycleState.STARTING);
@@ -162,7 +159,7 @@ public class BasicServiceSpace implements ServiceSpace, Lifecycle {
         serviceRegistry.start();
     }
 
-    public synchronized void stop() throws Exception {
+    public void stop() throws Exception {
         synchronized (hostingPeers) {
             hostingPeers.clear();
         }
@@ -247,13 +244,11 @@ public class BasicServiceSpace implements ServiceSpace, Lifecycle {
         }
     }
 
-    protected void notifyListeners(ServiceSpaceLifecycleEvent event) {
-        synchronized (listeners) {
-            for (Iterator iter = listeners.iterator(); iter.hasNext();) {
-                ServiceSpaceListener listener = (ServiceSpaceListener) iter.next();
-                listener.receive(event);
-            }
-        }        
+    protected void notifyListeners(ServiceSpaceLifecycleEvent event, Set newHostingPeers) {
+        for (Iterator iter = listeners.iterator(); iter.hasNext();) {
+            ServiceSpaceListener listener = (ServiceSpaceListener) iter.next();
+            listener.receive(event, newHostingPeers);
+        }
     }
     
     protected void processLifecycleEvent(ServiceSpaceLifecycleEvent event) {
@@ -261,6 +256,7 @@ public class BasicServiceSpace implements ServiceSpace, Lifecycle {
         
         Peer hostingPeer = event.getHostingPeer();
         LifecycleState state = event.getState();
+        Set copyHostingPeers;
         synchronized (hostingPeers) {
             if (state == LifecycleState.STARTING) {
                 try {
@@ -274,8 +270,9 @@ public class BasicServiceSpace implements ServiceSpace, Lifecycle {
             } else if (state == LifecycleState.STOPPING || state == LifecycleState.FAILED) {
                 hostingPeers.remove(hostingPeer);
             }
-            notifyListeners(event);
+            copyHostingPeers = new HashSet(hostingPeers);
         }
+        notifyListeners(event, copyHostingPeers);
     }
     
     protected class ServiceSpaceLifecycleEndpoint implements ServiceEndpoint {
@@ -308,10 +305,12 @@ public class BasicServiceSpace implements ServiceSpace, Lifecycle {
         public void onMembershipChanged(Cluster cluster, Set joiners, Set leavers, Peer coordinator) {
             for (Iterator iter = leavers.iterator(); iter.hasNext();) {
                 Peer leaver = (Peer) iter.next();
+                boolean leaverIsHostingPeer;
                 synchronized (hostingPeers) {
-                    if (hostingPeers.contains(leaver)) {
-                        processLifecycleEvent(new ServiceSpaceLifecycleEvent(name, leaver, LifecycleState.FAILED));
-                    }
+                    leaverIsHostingPeer = hostingPeers.contains(leaver);
+                }
+                if (leaverIsHostingPeer) {
+                    processLifecycleEvent(new ServiceSpaceLifecycleEvent(name, leaver, LifecycleState.FAILED));
                 }
             }
         }

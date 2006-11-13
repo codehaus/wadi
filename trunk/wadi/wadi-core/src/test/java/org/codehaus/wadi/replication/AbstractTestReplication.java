@@ -154,7 +154,7 @@ public abstract class AbstractTestReplication extends TestCase {
 		ReplicaterFactory replicaterfactory=new MemoryReplicaterFactory(numPartitions);
 		EndPoint location = new WebEndPoint(new InetSocketAddress("localhost", 8080));
 		InvocationProxy proxy=new StandardHttpProxy("jsessionid");
-		ClusteredManager manager=new ClusteredManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), new DummyRouter(), true, streamer, true, replicaterfactory, location, proxy, dispatcher, 24, collapser);
+		ClusteredManager manager=new ClusteredManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), new DummyRouter(), true, streamer, true, replicaterfactory, location, proxy, serviceSpace, 24, collapser);
 		manager.init(new DummyManagerConfig());
 
 		serviceSpace.getServiceRegistry().register(new ServiceName("manager"), manager);

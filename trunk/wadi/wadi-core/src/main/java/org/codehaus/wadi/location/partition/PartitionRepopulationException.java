@@ -13,15 +13,18 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.servicespace;
+package org.codehaus.wadi.location.partition;
 
-import java.util.Set;
-
+import org.codehaus.wadi.location.impl.PartitionBalancingException;
 
 /**
  * 
  * @version $Revision: 1538 $
  */
-public interface ServiceSpaceListener {
-    void receive(ServiceSpaceLifecycleEvent event, Set newHostingPeers);
+public class PartitionRepopulationException extends PartitionBalancingException {
+
+    public PartitionRepopulationException(Throwable cause) {
+        super(cause);
+    }
+
 }

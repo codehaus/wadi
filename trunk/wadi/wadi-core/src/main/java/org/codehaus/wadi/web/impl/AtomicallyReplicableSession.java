@@ -61,6 +61,11 @@ public class AtomicallyReplicableSession extends AbstractReplicableSession {
         _replicater.acquireFromOtherReplicater(this);
     }
 
+    public void restore(long creationTime, long lastAccessedTime, int maxInactiveInterval, String name, byte[] body)
+            throws RehydrationException {
+        super.restore(creationTime, lastAccessedTime, maxInactiveInterval, name, body);
+    }
+    
     public void readEnded() {
         // N.B. this is called from our RWLock inside an implicit exclusive lock, so we should not need to worry
         // about synchronisation.

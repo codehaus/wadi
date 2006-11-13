@@ -137,6 +137,13 @@ public class BasicReplicationManager implements ReplicationManager {
 
     public Object acquirePrimary(Object key) {
         ReplicaInfo replicaInfo;
+        synchronized (keyToReplicaInfo) {
+            replicaInfo = (ReplicaInfo) keyToReplicaInfo.get(key);
+        }
+        if (null != replicaInfo) {
+            return replicaInfo.getReplica();
+        }
+
         try {
             replicationManagerProxy.releasePrimary(key);
             replicaInfo = replicaStorageProxy.retrieveReplicaInfo(key);
@@ -233,12 +240,11 @@ public class BasicReplicationManager implements ReplicationManager {
         Peer oldSecondaries[] = replicaInfo.getSecondaries();
         Peer newSecondaries[] = backingStrategy.reElectSecondaries(key, replicaInfo.getPrimary(), oldSecondaries);
         replicaInfo = new ReplicaInfo(replicaInfo, localPeer, newSecondaries);
-
-        updateReplicaStorages(key, replicaInfo, oldSecondaries);
-
         synchronized (keyToReplicaInfo) {
             keyToReplicaInfo.put(key, replicaInfo);
         }
+        
+        updateReplicaStorages(key, replicaInfo, oldSecondaries);
         return replicaInfo;
     }
 
@@ -343,6 +349,8 @@ public class BasicReplicationManager implements ReplicationManager {
             }
             if (secondaries.length != 0) {
                 cascadeCreate(key, replicaInfo, this);
+            } else {
+                complete();
             }
         }
 

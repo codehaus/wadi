@@ -123,7 +123,7 @@ public class BasicServiceSpaceDispatcher extends AbstractDispatcher {
             startLatch = new Latch();
             listener = new ServiceSpaceListener() {
 
-                public void receive(ServiceSpaceLifecycleEvent event) {
+                public void receive(ServiceSpaceLifecycleEvent event, Set newHostingPeers) {
                     LifecycleState state = event.getState();
                     Peer hostingPeer = event.getHostingPeer();
                     Set joiners = Collections.EMPTY_SET;

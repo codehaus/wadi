@@ -173,15 +173,7 @@ public class LocalPartition implements Partition, Serializable {
     }
 
     public void onMessage(Envelope message, MoveIMToPM request) {
-        // TODO - whilst we are in here, we should have a SHARED lock on this
-        // Partition, so it cannot be moved
-        // The Partitions lock should be held in the Facade, so that it can swap
-        // Partitions in and out whilst holding an exclusive lock
-        // Partition may only be migrated when exclusive lock has been taken,
-        // this may only happen when all shared locks are released - this
-        // implies that no PM session locks will be in place...
         Object key = request.getKey();
-
         try {
             Location location;
             synchronized (_map) {
@@ -194,20 +186,16 @@ public class LocalPartition implements Partition, Serializable {
                 return;
             }
             
-            // we need to make a decision here - based on the info available
-            // to us...
-            // are we going to relocate the Session to the Invocation or the
-            // Invocation to the Session ?
+            // we need to make a decision here - based on the info available to us...
+            // are we going to relocate the Session to the Invocation or the Invocation to the Session ?
             // call out to a pluggable strategy...
             
-            // we need to know whether the IM's LBPolicy supports
-            // 'resticking' - otherwise relocating invocation is not such a
-            // smart thing to do...
+            // we need to know whether the IM's LBPolicy supports 'resticking' - otherwise relocating invocation is 
+            // not such a smart thing to do...
             
-            // if the InvocationMaster is shuttingDown, we know we should
-            // relocate the Invocation - lets go with that for now...
-            // if the StateMaster is shuttingDown, we know we should
-            // relocate the session - but how would we know ?
+            // if the InvocationMaster is shuttingDown, we know we should relocate the Invocation - lets go with that 
+            // for now...
+            // if the StateMaster is shuttingDown, we know we should relocate the session - but how would we know ?
             
             Peer imPeer = request.getIMPeer();
             Peer pmPeer = dispatcher.getCluster().getLocalPeer();
@@ -285,6 +273,7 @@ public class LocalPartition implements Partition, Serializable {
             }
         } catch (InterruptedException e) {
             _log.error("unexpected interruption waiting to perform Session relocation: " + key, e);
+            Thread.currentThread().interrupt();
         } finally {
             lock.release();
         }

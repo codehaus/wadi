@@ -55,6 +55,11 @@ public abstract class AbstractMotable extends SimpleEvictable implements Motable
         }
     }
 
+    public void restore(long creationTime, long lastAccessedTime, int maxInactiveInterval, String name, byte[] body)
+            throws RehydrationException {
+        rehydrate(creationTime, lastAccessedTime, maxInactiveInterval, name, body);
+    }
+
     public void copy(Motable motable) throws Exception {
         super.copy(motable);
         _name = motable.getName();

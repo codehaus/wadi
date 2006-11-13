@@ -31,29 +31,28 @@ import EDU.oswego.cs.dl.util.concurrent.TimeoutSync;
  * @version $Revision$
  */
 public class HashingCollapser implements Collapser {
-	protected final Log    _log = LogFactory.getLog(getClass());
-	protected final int    _numSyncs;
-	protected final Sync[] _syncs;
-	protected final long   _timeout;
+	private static final Log _log = LogFactory.getLog(HashingCollapser.class);
+    
+    private final int _numSyncs;
+    private final Sync[] _syncs;
+    private final long _timeout;
 
-	/**
-	 *
-	 */
-	public HashingCollapser(int numSyncs, long timeout) {
-		super();
-		_numSyncs=numSyncs;
-		_timeout=timeout;
-		_syncs=new Sync[_numSyncs];
-		for (int i=0; i<_numSyncs; i++)
-			_syncs[i]=new TimeoutSync(new Mutex(), _timeout);
-	}
+    public HashingCollapser(int numSyncs, long timeout) {
+        _numSyncs = numSyncs;
+        _timeout = timeout;
+        _syncs = new Sync[_numSyncs];
+        for (int i = 0; i < _numSyncs; i++) {
+            _syncs[i] = new TimeoutSync(new Mutex(), _timeout);
+        }
+    }
 
-	/* (non-Javadoc)
-	 * @see org.codehaus.wadi.sandbox.context.Collapser#getLock(java.lang.String)
-	 */
-	public Sync getLock(String id) {
-		int index=Math.abs(id.hashCode()%_numSyncs); // Jetty seems to generate negative session id hashcodes...
-		if (_log.isTraceEnabled()) _log.trace("collapsed "+id+" to index: "+index);
-		return _syncs[index];
-	}
+    public Sync getLock(String id) {
+        // Jetty seems to generate negative session id hashcodes...
+        int index = Math.abs(id.hashCode() % _numSyncs); 
+        if (_log.isTraceEnabled()) {
+            _log.trace("collapsed " + id + " to index: " + index);
+        }
+        return _syncs[index];
+    }
+    
 }
