@@ -21,13 +21,9 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Message;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Envelope;
-import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.MessageExchangeException;
-import org.codehaus.wadi.group.ServiceEndpoint;
 import org.codehaus.wadi.group.impl.AbstractMsgDispatcher;
 import org.codehaus.wadi.group.impl.RendezVousMsgDispatcher;
-import org.codehaus.wadi.location.session.MoveIMToPM;
-import org.codehaus.wadi.location.session.MovePMToIM;
 
 import EDU.oswego.cs.dl.util.concurrent.Latch;
 
@@ -56,9 +52,9 @@ import EDU.oswego.cs.dl.util.concurrent.Latch;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class TestChains extends ChainTestCase {
+public class TestLink extends ChainTestCase {
 
-	public TestChains(String name) {
+	public TestLink(String name) {
 		super(name);
 	}
 
@@ -117,7 +113,7 @@ public class TestChains extends ChainTestCase {
 		_dispatcher1.register(new RendezVousMsgDispatcher(_dispatcher1, MyMessage.class));
 		MyEndpoint endpoint=new MyEndpoint(_dispatcher2, MyMessage.class);
 		_dispatcher2.register(endpoint);
-		Envelope response=_dispatcher1.exchangeSendLink(_cluster2.getLocalPeer().getAddress(), new MyMessage(), 100, 2);
+		Envelope response=_dispatcher1.exchangeSendLink(_cluster2.getLocalPeer(), new MyMessage(), 100, 2);
 		assertTrue(endpoint.getCount()==2);
 		assertTrue(response.getPayload().getClass()==MyMessage.class);
 	}
@@ -191,7 +187,7 @@ public class TestChains extends ChainTestCase {
 
 		try {
 			// we will never get a reply to this message...
-			_dispatcher1.exchangeSendLink(_cluster2.getLocalPeer().getAddress(), new FirstMessage(), 1, 5);
+			_dispatcher1.exchangeSendLink(_cluster2.getLocalPeer(), new FirstMessage(), 1, 5);
 			assertTrue(false);
 		} catch (MessageExchangeException e) {
 			assertTrue(true);
@@ -203,69 +199,10 @@ public class TestChains extends ChainTestCase {
 
 		// round-trip another Message through the same Dispatcher, to ensure all FirstMessages have been
 		// consumed
-		_dispatcher1.exchangeSendLink(_cluster2.getLocalPeer().getAddress(), new SecondMessage(), 1, 5);
+		_dispatcher1.exchangeSendLink(_cluster2.getLocalPeer(), new SecondMessage(), 1, 5);
 
 		assertTrue(endpoint.getCount()==1); // check that only one FirstMessage made it into EndPoint
 		exitLatch.release(); // allow it to continue
-	}
-
-	//-----------------------------------------------------------------
-	// this stuff should probably move out to a specific IM->PM testsuite
-
-	class IMToPMEndpoint extends AbstractMsgDispatcher {
-
-        IMToPMEndpoint(Dispatcher dispatcher, Class type) {
-            super(dispatcher, type);
-        }
-
-        public void dispatch(Envelope om) throws Exception {
-			_log.info("replying...");
-			_dispatcher.reply(om, new MovePMToIM());
-			_log.info("...replied");
-        }
-
-    }
-
-    // client sends message to remote Partition
-    // Partition receives it and quits without answering - mimicking failure
-    // client continues trying until Partition is reincarnated (upon itself) and chain completes
-
-    public void testIMToPM() throws Exception {
-		ServiceEndpoint sync=new IMToPMEndpoint(_dispatcher2, MoveIMToPM.class);
-		_dispatcher2.register(sync);
-		ServiceEndpoint rv=new RendezVousMsgDispatcher(_dispatcher1, MovePMToIM.class);
-		_dispatcher1.register(rv);
-
-		String sessionName="xxx";
-		LocalPeer localPeer = _dispatcher1.getCluster().getLocalPeer();
-		boolean relocateSession=true;
-		boolean relocateInvocation=false;
-		Message message=new MoveIMToPM(localPeer, sessionName, relocateSession, relocateInvocation);
-		long timeout=10000;
-		// If PM fails - wait for Partition reincarnation and then address new PM...
-		try {
-			_log.info("sending request...");
-			Envelope envelope=_dispatcher1.exchangeSendLink(_dispatcher2.getCluster().getLocalPeer().getAddress(), message, timeout, 3);
-			assertTrue(envelope.getPayload().getClass()==MovePMToIM.class);
-			_log.info("...response received");
-		} catch (MessageExchangeException e) {
-			// ok - for the moment...
-			_log.error("no response - timed out");
-		}
-
-		_dispatcher2.unregister(sync, 10, 500); // what are these params for ?
-		_dispatcher1.unregister(rv, 10, 5000); // what are these params for ?
-
-		// TODO
-		// register a Listener on other Dispatcher
-		// Do not respond to e.g. first/second message
-		// Do respond to third message
-		// Use some shared code to resend request message
-		// figure out how to identify a resent message on receipt side (remember messages being processed?)
-		// etc...
-
-		// TODO
-		// we need an exchangeSend() that does not throw Exception on timeout to loop efficiently...
 	}
 
 }

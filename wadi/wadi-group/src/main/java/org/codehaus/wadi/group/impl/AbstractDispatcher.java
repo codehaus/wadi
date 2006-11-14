@@ -26,6 +26,7 @@ import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.MessageExchangeException;
+import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.Quipu;
 import org.codehaus.wadi.group.ServiceEndpoint;
 
@@ -157,10 +158,10 @@ public abstract class AbstractDispatcher implements Dispatcher {
 		return exchangeSend(to, body, timeout, null);
 	}
 	
-	public Envelope exchangeSendLink(Address address, Serializable pojo, long timeout, int retries) throws MessageExchangeException {
+	public Envelope exchangeSendLink(Peer peer, Serializable pojo, long timeout, int retries) throws MessageExchangeException {
 		String sourceCorrelationId=_factory.create();
 		for (int attempts=0; attempts<retries; attempts++) {
-			Envelope response=exchangeSend(address, sourceCorrelationId, pojo, timeout);
+			Envelope response=exchangeSend(peer.getAddress(), sourceCorrelationId, pojo, timeout);
 			// FIXME:
 			// There is a chance that a response will arrive whilst we are resetting the rendez-vous
 			// and be missed. At the best this will be less efficient than it might. At the worst we

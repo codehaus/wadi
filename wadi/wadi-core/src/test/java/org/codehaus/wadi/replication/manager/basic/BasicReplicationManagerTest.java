@@ -57,9 +57,9 @@ public class BasicReplicationManagerTest extends RMockTestCase {
 
     protected void setUp() throws Exception {
         localPeer = new VMLocalPeer("peer1");
-        peer2 = new VMPeer("peer2");
-        peer3 = new VMPeer("peer3");
-        peer4 = new VMPeer("peer4");
+        peer2 = new VMPeer("peer2", null);
+        peer3 = new VMPeer("peer3", null);
+        peer4 = new VMPeer("peer4", null);
         
         serviceSpace = (ServiceSpace) mock(ServiceSpace.class);
         serviceSpace.getLocalPeer();

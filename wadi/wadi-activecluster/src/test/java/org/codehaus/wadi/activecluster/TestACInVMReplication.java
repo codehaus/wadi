@@ -32,7 +32,7 @@ public class TestACInVMReplication extends AbstractTestReplication {
         long timeout = ACTestUtil.CLUSTER_INACTIVE_TIME;
         String peerName = "red";
 
-        testReplication(new ActiveClusterDispatcher(clusterName, peerName, clusterUri, timeout));
+        testReplication(new ActiveClusterDispatcher(clusterName, peerName, clusterUri, null, timeout));
     }
 
 }

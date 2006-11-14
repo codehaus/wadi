@@ -24,7 +24,6 @@ import java.util.Map;
 
 import org.codehaus.wadi.Collapser;
 import org.codehaus.wadi.Contextualiser;
-import org.codehaus.wadi.EndPoint;
 import org.codehaus.wadi.Evicter;
 import org.codehaus.wadi.InvocationProxy;
 import org.codehaus.wadi.PoolableInvocationWrapperPool;
@@ -34,6 +33,7 @@ import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.group.Dispatcher;
+import org.codehaus.wadi.group.EndPoint;
 import org.codehaus.wadi.impl.AbstractExclusiveContextualiser;
 import org.codehaus.wadi.impl.AlwaysEvicter;
 import org.codehaus.wadi.impl.ClusterContextualiser;

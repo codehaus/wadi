@@ -28,7 +28,7 @@ public class TestInVMReplication extends AbstractTestReplication {
 
     public void testReplication() throws Exception {
         VMBroker cluster = new VMBroker("TEST");
-        testReplication(new VMDispatcher(cluster, "red", 5000));
+        testReplication(new VMDispatcher(cluster, "red", null, 5000));
     }
 }
 

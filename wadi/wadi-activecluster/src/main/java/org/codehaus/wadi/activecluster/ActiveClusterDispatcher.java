@@ -30,6 +30,7 @@ import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.ClusterException;
 import org.codehaus.wadi.group.ClusterListener;
+import org.codehaus.wadi.group.EndPoint;
 import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.MessageExchangeException;
@@ -52,15 +53,14 @@ public class ActiveClusterDispatcher extends AbstractDispatcher implements javax
     private final ActiveClusterCluster _cluster;
     protected final LocalPeer _localPeer;
 
-    public ActiveClusterDispatcher(String clusterName, String localPeerName, String clusterUri, long inactiveTime)
-            throws Exception {
+    public ActiveClusterDispatcher(String clusterName, String localPeerName, String clusterUri, EndPoint endPoint, long inactiveTime) throws Exception {
         super(inactiveTime);
         _clusterName = clusterName;
         _localPeerName = localPeerName;
         _clusterUri = clusterUri;
         _log = LogFactory.getLog(getClass() + "#" + localPeerName);
         _inactiveTime = inactiveTime;
-        _cluster = new ActiveClusterCluster(_clusterName, _localPeerName, _clusterUri, this);
+        _cluster = new ActiveClusterCluster(_clusterName, _localPeerName, _clusterUri, endPoint, this);
         _localPeer = _cluster.getLocalPeer();
     }
 

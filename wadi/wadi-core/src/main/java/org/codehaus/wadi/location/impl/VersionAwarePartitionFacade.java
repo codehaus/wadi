@@ -19,10 +19,12 @@ import java.io.Serializable;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.Peer;
+import org.codehaus.wadi.group.PeerInfo;
 import org.codehaus.wadi.location.Partition;
 import org.codehaus.wadi.location.SessionRequestMessage;
 import org.codehaus.wadi.location.SessionResponseMessage;
@@ -286,5 +288,17 @@ public class VersionAwarePartitionFacade implements PartitionFacade {
             log.error("See nested", e);
         }
     }
+
+	public Address getAddress() {
+		return delegate.getAddress();
+	}
+
+	public String getName() {
+		return delegate.getName();
+	}
+
+	public PeerInfo getPeerInfo() {
+		return delegate.getPeerInfo();
+	}
 
 }

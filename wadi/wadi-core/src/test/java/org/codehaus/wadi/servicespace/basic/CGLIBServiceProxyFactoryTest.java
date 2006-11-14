@@ -69,8 +69,8 @@ public class CGLIBServiceProxyFactoryTest extends RMockTestCase {
 
     public void testProxyInvocation() {
         InvocationResultCombiner resultCombiner = (InvocationResultCombiner) mock(InvocationResultCombiner.class);
-        VMPeer peer1 = new VMPeer("peer1");
-        VMPeer peer2 = new VMPeer("peer2");
+        VMPeer peer1 = new VMPeer("peer1", null);
+        VMPeer peer2 = new VMPeer("peer2", null);
         
         proxyFactory = new CGLIBServiceProxyFactory(name, interfaces, serviceInvoker);
         final InvocationMetaData invocationMetaData = proxyFactory.getInvocationMetaData();

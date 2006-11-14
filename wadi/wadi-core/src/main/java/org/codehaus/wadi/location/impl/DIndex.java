@@ -33,6 +33,7 @@ import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.ClusterEvent;
 import org.codehaus.wadi.group.ClusterListener;
 import org.codehaus.wadi.group.Dispatcher;
+import org.codehaus.wadi.group.EndPoint;
 import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.impl.SeniorityElectionStrategy;
@@ -288,6 +289,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
         Serializable dm = message.getPayload();
         // the possibilities...
         if (dm instanceof MoveSMToIM) {
+        	// We are receiving an incoming state migration...
             MoveSMToIM req = (MoveSMToIM) dm;
             // insert motable into contextualiser stack...
             Motable emotable = req.getMotable();
@@ -303,18 +305,18 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
                 return immotable;
             }
         } else if (dm instanceof MovePMToIM) {
+        	// The Partition manager had no record of our session key - either the session
+        	// has already been destroyed, or never existed...
             if (_log.isTraceEnabled()) {
                 _log.trace("unknown session: " + sessionName);
             }
             return null;
         } else if (dm instanceof MovePMToIMInvocation) {
-            // we are going to relocate our Invocation to the PM...
+            // we are going to relocate our Invocation to the SM...
             Peer smPeer = ((MovePMToIMInvocation) dm).getStateMaster();
-            // TODO - I (Gianny) broke this code path. Need to be reviewed by Jules.
-//            EndPoint endPoint = (EndPoint) sm.getState().get("endPoint");
-//            invocation.relocate(endPoint);
-//            return null;
-            throw new UnsupportedOperationException();
+            EndPoint endPoint=smPeer.getPeerInfo().getEndPoint();
+            invocation.relocate(endPoint);
+            return null;
         } else {
             throw new WADIRuntimeException("unexpected response returned - what should I do? : " + dm);
         }

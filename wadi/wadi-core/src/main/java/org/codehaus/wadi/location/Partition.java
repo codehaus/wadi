@@ -18,16 +18,24 @@ package org.codehaus.wadi.location;
 
 import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.MessageExchangeException;
+import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.location.session.DeleteIMToPM;
 import org.codehaus.wadi.location.session.EvacuateIMToPM;
 import org.codehaus.wadi.location.session.InsertIMToPM;
 import org.codehaus.wadi.location.session.MoveIMToPM;
 
 /**
+ * A Partition represents a 'bucket' in the Key:Location that is shared between
+ * Cluster members. A Partition is also a Peer. In other words, a Partition may
+ * be used as a participant in message exchange. A Partition is an HA Peer - that
+ * is, if one incarnation fails, it will be replaced by a reincarnation of the
+ * same Partition. This is the basis for a number of the more advanced features
+ * of WADI.
+ * 
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public interface Partition {
+public interface Partition extends Peer {
 
     /**
      * @return whether or not this is a LocalPartition

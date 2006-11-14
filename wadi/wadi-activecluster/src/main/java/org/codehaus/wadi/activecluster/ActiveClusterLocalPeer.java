@@ -15,6 +15,7 @@
  */
 package org.codehaus.wadi.activecluster;
 
+import org.codehaus.wadi.group.EndPoint;
 import org.codehaus.wadi.group.LocalPeer;
 
 /**
@@ -23,8 +24,8 @@ import org.codehaus.wadi.group.LocalPeer;
  */
 class ActiveClusterLocalPeer extends ActiveClusterPeer implements LocalPeer {
     
-    public ActiveClusterLocalPeer(ActiveClusterCluster cluster, String name) {
-        super(cluster, name);
+    public ActiveClusterLocalPeer(ActiveClusterCluster cluster, String name, EndPoint endPoint) {
+        super(cluster, name, endPoint);
     }
 
     public String toString() {

@@ -17,6 +17,8 @@
 package org.codehaus.wadi;
 
 import java.io.Serializable;
+
+import org.codehaus.wadi.group.EndPoint;
 import org.codehaus.wadi.web.impl.ProxyingException;
 
 /**

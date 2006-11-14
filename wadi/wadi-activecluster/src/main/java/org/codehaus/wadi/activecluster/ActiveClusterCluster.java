@@ -29,6 +29,7 @@ import org.apache.activecluster.impl.DefaultClusterFactory;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.ClusterException;
+import org.codehaus.wadi.group.EndPoint;
 import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.command.BootRemotePeer;
@@ -49,11 +50,10 @@ class ActiveClusterCluster extends AbstractCluster {
     protected Destination _localACDestination;
     protected Latch _startLatch;
 
-    public ActiveClusterCluster(String clusterName, String localPeerName, String clusterUri,
-            ActiveClusterDispatcher dispatcher) throws JMSException {
+    public ActiveClusterCluster(String clusterName, String localPeerName, String clusterUri, EndPoint endPoint, ActiveClusterDispatcher dispatcher) throws JMSException {
         super(clusterName, localPeerName, dispatcher);
         _clusterPeer = new ActiveClusterClusterPeer(this, clusterName);
-        _localPeer = new ActiveClusterLocalPeer(this, localPeerName);
+        _localPeer = new ActiveClusterLocalPeer(this, localPeerName, endPoint);
 
         _connectionFactory = new ActiveMQConnectionFactory(clusterUri);
         DefaultClusterFactory tmp = new DefaultClusterFactory(_connectionFactory);
@@ -88,9 +88,10 @@ class ActiveClusterCluster extends AbstractCluster {
 
         public void run() {
             Node node = event.getNode();
+            EndPoint endPoint=(EndPoint)node.getState().get("EndPoint");
             _startLatch.release();
             _cluster.set(ActiveClusterCluster.this);
-            ActiveClusterPeer remotePeer = new ActiveClusterPeer(ActiveClusterCluster.this, node.getName());
+            ActiveClusterPeer remotePeer = new ActiveClusterPeer(ActiveClusterCluster.this, node.getName(), endPoint);
             remotePeer.init(node.getDestination());
             BootRemotePeer command = new BootRemotePeer(ActiveClusterCluster.this, remotePeer);
             Peer peer = command.getSerializedPeer();

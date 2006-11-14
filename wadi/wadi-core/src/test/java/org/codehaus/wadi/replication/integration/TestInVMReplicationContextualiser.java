@@ -34,6 +34,6 @@ public class TestInVMReplicationContextualiser extends AbstractReplicationContex
         if (null == cluster) {
             cluster = new VMBroker(clusterName);
         }
-        return new VMDispatcher(cluster, nodeName, timeout);
+        return new VMDispatcher(cluster, nodeName, null, timeout);
     }
 }

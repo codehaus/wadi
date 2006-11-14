@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.codehaus.wadi.group.Address;
+import org.codehaus.wadi.group.EndPoint;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.PeerInfo;
 
@@ -34,10 +35,10 @@ public class VMPeer implements Peer, Serializable {
     protected final Address address;
     private final PeerInfo peerInfo;
     
-    public VMPeer(String name) {
+    public VMPeer(String name, EndPoint endPoint) {
         this.name = name;
         address = new VMAddress(this);
-        peerInfo = new PeerInfo();
+        peerInfo = new PeerInfo(endPoint);
     }
     
     public PeerInfo getPeerInfo() {

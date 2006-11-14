@@ -428,6 +428,7 @@
     >
     <constructor-arg><value>CLUSTER0</value></constructor-arg>
     <constructor-arg><value>${node.name}</value></constructor-arg>
+    <constructor-arg><ref bean="EndPoint"/></constructor-arg>
     <constructor-arg type="long"><value>5000</value></constructor-arg>
     <constructor-arg><value></value></constructor-arg>
   </bean>
@@ -485,7 +486,6 @@
     <constructor-arg><ref bean="AttributeStreamer"/></constructor-arg>
     <constructor-arg type="boolean"><value>true</value></constructor-arg>
     <constructor-arg><ref bean="ReplicaterFactory"/></constructor-arg>
-    <constructor-arg><ref bean="EndPoint"/></constructor-arg>
     <constructor-arg><ref bean="HttpProxy"/></constructor-arg>
     <constructor-arg><ref bean="DispatcherWrapper"/></constructor-arg>
     <constructor-arg><ref bean="NumPartitions"/></constructor-arg>

@@ -88,7 +88,7 @@ public class SimplePartitionManagerSmokeTest extends TestCase {
     }
 
     private SimplePartitionManager newManager(VMBroker broker, int index) throws Exception {
-        final Dispatcher dispatcher = new VMDispatcher(broker, Integer.toString(index), 1000);
+        final Dispatcher dispatcher = new VMDispatcher(broker, Integer.toString(index), null, 1000);
         dispatcher.start();
 
         SimplePartitionManager manager = new SimplePartitionManager(dispatcher, nbPartitions, null,

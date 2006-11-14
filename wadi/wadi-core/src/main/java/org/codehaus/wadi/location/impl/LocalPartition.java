@@ -32,6 +32,7 @@ import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.Peer;
+import org.codehaus.wadi.group.PeerInfo;
 import org.codehaus.wadi.impl.SimpleLease;
 import org.codehaus.wadi.location.Partition;
 import org.codehaus.wadi.location.SessionRequestMessage;
@@ -431,4 +432,20 @@ public class LocalPartition implements Partition, Serializable {
         return "LocalPartition [" + key + "]@[" + peer + "]";
     }
     
+    // 'Peer' API
+
+    // strictly speaking, I'm not happy about exposing a Peer's Address. This should be a temporary
+    // measure until the Dispatcher's public API is updated in terms of Peers rather than Addresses.
+	public Address getAddress() {
+		return peer.getAddress();
+	}
+
+	public String getName() {
+		return peer.getName();
+	}
+
+	public PeerInfo getPeerInfo() {
+		return peer.getPeerInfo();
+	}
+
 }

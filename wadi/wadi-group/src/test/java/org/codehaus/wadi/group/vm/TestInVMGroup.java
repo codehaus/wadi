@@ -42,7 +42,7 @@ public class TestInVMGroup extends AbstractTestGroup {
                 cluster = new VMBroker(clusterName);
                 clusterNameToCluster.put(clusterName, cluster);
             }
-            return new VMDispatcher(cluster, peerName, inactiveTime);
+            return new VMDispatcher(cluster, peerName, null, inactiveTime);
         }
     }
 }

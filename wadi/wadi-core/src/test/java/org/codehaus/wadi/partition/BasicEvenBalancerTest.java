@@ -29,10 +29,10 @@ import junit.framework.TestCase;
  * @version $Revision: 1538 $
  */
 public class BasicEvenBalancerTest extends TestCase {
-    private static final Peer PEER1 = new VMPeer("peer1");
-    private static final Peer PEER2 = new VMPeer("peer2");
-    private static final Peer PEER3 = new VMPeer("peer3");
-    private static final Peer PEER4 = new VMPeer("peer4");
+    private static final Peer PEER1 = new VMPeer("peer1", null);
+    private static final Peer PEER2 = new VMPeer("peer2", null);
+    private static final Peer PEER3 = new VMPeer("peer3", null);
+    private static final Peer PEER4 = new VMPeer("peer4", null);
     private static final int NB_PARTITIONS = 12;
     
     public void testBalancingAddPeer() throws Exception {

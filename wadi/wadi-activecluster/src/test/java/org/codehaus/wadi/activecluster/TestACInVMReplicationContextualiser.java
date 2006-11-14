@@ -29,7 +29,7 @@ public class TestACInVMReplicationContextualiser extends AbstractReplicationCont
         return new ActiveClusterDispatcher(clusterName, 
                 nodeName, 
                 ACTestUtil.CLUSTER_URI_VM, 
-                timeout);
+                null, timeout);
     }
 
     protected void failNode(String arg0) {

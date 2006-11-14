@@ -11,6 +11,6 @@ while [ $i -lt $iters ]
 do
   let i+=1
   echo "ITERATION: $i/$iters"
-  mvn -Dtest=$test surefire:test || exit $?
+  mvn --offline -X -Dtest=$test surefire:test || exit $?
 done
 

@@ -25,8 +25,8 @@ import junit.framework.TestCase;
  * @version $Revision: 1538 $
  */
 public class PartitionBalancingInfoTest extends TestCase {
-    private static final VMPeer PEER1 = new VMPeer("peer1");
-    private static final VMPeer PEER2 = new VMPeer("peer2");
+    private static final VMPeer PEER1 = new VMPeer("peer1", null);
+    private static final VMPeer PEER2 = new VMPeer("peer2", null);
     
     private PartitionBalancingInfo balancingInfo;
     

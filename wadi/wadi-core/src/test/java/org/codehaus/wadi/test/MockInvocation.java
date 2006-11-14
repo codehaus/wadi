@@ -24,7 +24,7 @@ import org.codehaus.wadi.web.impl.WebInvocation;
 public class MockInvocation extends WebInvocation {
     
     public MockInvocation(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain) {
-        init(hreq, hres, chain);
+        init(hreq, hres, chain, null);
     }
     
 }

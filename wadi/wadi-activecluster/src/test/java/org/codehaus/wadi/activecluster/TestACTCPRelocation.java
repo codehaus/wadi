@@ -35,8 +35,8 @@ public class TestACTCPRelocation extends AbstractTestRelocation {
         ACTestUtil testUtil = new ACTestUtil();
         testUtil.startTCPService();
         try {
-            testSessionRelocation(new ActiveClusterDispatcher(clusterName, "red", clusterUri, timeout), 
-                    new ActiveClusterDispatcher(clusterName, "green", clusterUri, timeout));
+            testSessionRelocation(new ActiveClusterDispatcher(clusterName, "red", clusterUri, null, timeout), 
+                    new ActiveClusterDispatcher(clusterName, "green", clusterUri, null, timeout));
         } finally {
             testUtil.stopTCPService();
         }

@@ -17,6 +17,7 @@ package org.codehaus.wadi.group.vm;
 
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Cluster;
+import org.codehaus.wadi.group.EndPoint;
 import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.impl.AbstractDispatcher;
@@ -29,7 +30,7 @@ public class VMDispatcher extends AbstractDispatcher {
     private final VMLocalPeer localNode;
     private final VMLocalCluster cluster;
     
-    public VMDispatcher(VMBroker cluster, String nodeName, long inactiveTime) {
+    public VMDispatcher(VMBroker cluster, String nodeName, EndPoint endPoint, long inactiveTime) {
         super(inactiveTime);
         
         localNode = new VMLocalPeer(nodeName);

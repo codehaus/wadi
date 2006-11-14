@@ -22,7 +22,7 @@ import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.PeerInfo;
 
 /**
- * 
+ *
  * @version $Revision: 1538 $
  */
 public class UnknownPartitionBalancingInfo extends PartitionBalancingInfo {
@@ -38,7 +38,7 @@ public class UnknownPartitionBalancingInfo extends PartitionBalancingInfo {
         }
         return new PartitionBalancingInfo(0, partitionInfos);
     }
-    
+
     public static class UnknownPeer implements Peer, Serializable {
 
         public Address getAddress() {
@@ -52,6 +52,6 @@ public class UnknownPartitionBalancingInfo extends PartitionBalancingInfo {
         public PeerInfo getPeerInfo() {
             throw new UnsupportedOperationException();
         }
-        
+
     }
 }

@@ -53,12 +53,12 @@ public class ChainTestCase extends TestCase {
 		super.setUp();
 		// TODO - use unique names
 		VMBroker broker=new VMBroker("TestBroker");
-		_dispatcher1=new VMDispatcher(broker, "dispatcher1", _inactiveTime);
+		_dispatcher1=new VMDispatcher(broker, "dispatcher1", null, _inactiveTime);
 		_cluster1=_dispatcher1.getCluster();
 		_dispatcher1.start();
 		_cluster1.waitOnMembershipCount(1, _inactiveTime);
 		_log.info("1 peer...");
-		_dispatcher2=new VMDispatcher(broker, "dispatcher2", _inactiveTime);
+		_dispatcher2=new VMDispatcher(broker, "dispatcher2", null, _inactiveTime);
 		_cluster2=_dispatcher2.getCluster();
 		_dispatcher2.start();
 		_cluster1.waitOnMembershipCount(2, _inactiveTime);

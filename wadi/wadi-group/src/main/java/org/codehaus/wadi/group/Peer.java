@@ -26,4 +26,5 @@ public interface Peer {
     PeerInfo getPeerInfo();
 
     Address getAddress();
+    
 }

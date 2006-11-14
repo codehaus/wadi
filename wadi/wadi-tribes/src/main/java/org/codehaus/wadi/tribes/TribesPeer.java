@@ -44,7 +44,7 @@ public class TribesPeer implements Member, LocalPeer, Address, Serializable {
         this.member = mbr;
         this.uniqueId = new UniqueId(mbr.getUniqueId());
         
-        peerInfo = new PeerInfo();
+        peerInfo = new PeerInfo(null); // FIXME - how can we get hold of EndPoint...
     }
 
     /**

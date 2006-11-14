@@ -16,7 +16,9 @@
  */
 package org.codehaus.wadi.location.impl;
 
+import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Envelope;
+import org.codehaus.wadi.group.PeerInfo;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.location.SessionRequestMessage;
 import org.codehaus.wadi.location.session.DeleteIMToPM;
@@ -56,6 +58,20 @@ public class UnknownPartition extends AbstractPartition {
 
     public Envelope exchange(SessionRequestMessage request, long timeout) throws MessageExchangeException {
         throw new UnsupportedOperationException();
+    }
+
+    // 'Peer' API
+
+    public Address getAddress() {
+    	throw new UnsupportedOperationException();
+    }
+
+    public String getName() {
+    	throw new UnsupportedOperationException();
+    }
+
+    public PeerInfo getPeerInfo() {
+    	throw new UnsupportedOperationException();
     }
 
 }

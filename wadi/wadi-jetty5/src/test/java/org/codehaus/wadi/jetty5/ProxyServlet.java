@@ -18,6 +18,7 @@ package org.codehaus.wadi.jetty5;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+
 import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
@@ -25,10 +26,11 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.InvocationProxy;
-import org.codehaus.wadi.EndPoint;
+import org.codehaus.wadi.group.EndPoint;
+import org.codehaus.wadi.web.impl.AbstractHttpProxy;
 import org.codehaus.wadi.web.impl.StandardHttpProxy;
 import org.codehaus.wadi.web.impl.WebEndPoint;
 import org.codehaus.wadi.web.impl.WebInvocation;
@@ -49,7 +51,7 @@ public class ProxyServlet implements Servlet {
 	protected ServletConfig _config;
 	protected ServletContext _context;
 	
-	protected InvocationProxy _proxy=new StandardHttpProxy("jsessionid");
+	protected AbstractHttpProxy _proxy=new StandardHttpProxy("jsessionid");
 	
 	public void init(ServletConfig config) {
 		_config = config;
@@ -75,8 +77,8 @@ public class ProxyServlet implements Servlet {
 		try {
 			location=new WebEndPoint(new InetSocketAddress(req.getServerName(), req.getServerPort()));
 			WebInvocation invocation=new WebInvocation();
-			invocation.init(hreq, hres, null);
-			_proxy.proxy(location, invocation);
+			invocation.init(hreq, hres, null, _proxy);
+			invocation.relocate(location);
 		} catch (Exception e) {
 			hres.setHeader("Date", null);
 			hres.setHeader("Server", null);

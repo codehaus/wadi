@@ -17,42 +17,54 @@
 package org.codehaus.wadi.web.impl;
 
 import java.io.IOException;
+
 import javax.servlet.FilterChain;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.codehaus.wadi.RWLockListener;
-import org.codehaus.wadi.Session;
-import org.codehaus.wadi.EndPoint;
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
+import org.codehaus.wadi.InvocationProxy;
 import org.codehaus.wadi.PoolableInvocationWrapper;
+import org.codehaus.wadi.RWLockListener;
+import org.codehaus.wadi.Session;
+import org.codehaus.wadi.group.EndPoint;
 import org.codehaus.wadi.web.PoolableHttpServletRequestWrapper;
 
 /**
  * @version $Revision: 1430 $
  */
 public class WebInvocation implements Invocation {
+
+    protected static ThreadLocal _threadLocalInstance=new ThreadLocal() {protected Object initialValue() {return new WebInvocation();}};
+
+    public static WebInvocation getThreadLocalInstance() {
+        return (WebInvocation)_threadLocalInstance.get();
+    }
+
     public static final WebInvocation RELOCATED_INVOCATION = new WebInvocation();
 
     private HttpServletRequest hreq;
     private HttpServletResponse hres;
     private FilterChain chain;
     private boolean proxiedInvocation = true;
+    private InvocationProxy proxy;
     private Session session;
 
     /**
      * Initialise this WebInvocation for action after being taken from a Pool
-     * 
+     *
      * @param hreq
      * @param hres
      * @param chain
+     * @param proxy
      */
-    public void init(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain) {
+    public void init(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, InvocationProxy proxy) {
         this.hreq = hreq;
         this.hres = hres;
         this.chain = chain;
         this.proxiedInvocation = (null == hreq);
+        this.proxy=proxy;
     }
 
     public String getSessionKey() {
@@ -71,9 +83,22 @@ public class WebInvocation implements Invocation {
         return true;
     }
 
-    public void relocate(EndPoint endPoint) {
-        // WebEndPoint wep=(WebEndPoint)endPoint;
-        throw new UnsupportedOperationException("Not hooked up yet - Invocation relocation to: " + endPoint);
+    public void relocate(EndPoint endPoint) throws InvocationException {
+    	WebEndPoint wep=(WebEndPoint)endPoint;
+        // make some decisions about how we would like to relocate the Invocation :
+        // via redirection
+        // via proxy
+        // via ...
+
+        // lets go for proxy first:
+    	try {
+    		proxy.proxy(wep, this);
+    	} catch (ProxyingException e) {
+    		throw new InvocationException("unexpected Invocation relocation failure: ", e);
+    	}
+
+        // thoughts :
+        // will it be restuck at the other end ?
     }
 
     public boolean isProxiedInvocation() {

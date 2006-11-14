@@ -8,6 +8,7 @@ import org.apache.catalina.tribes.ChannelListener;
 import org.apache.catalina.tribes.Member;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Cluster;
+import org.codehaus.wadi.group.EndPoint;
 import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.impl.AbstractDispatcher;
@@ -28,7 +29,7 @@ public class TribesDispatcher extends AbstractDispatcher implements ChannelListe
     protected TribesCluster cluster;
     protected String localPeerName = null;
     
-    public TribesDispatcher(String clusterName, String localPeerName, long inactiveTime, String config) {
+    public TribesDispatcher(String clusterName, String localPeerName, EndPoint endPoint, long inactiveTime, String config) {
         super(inactiveTime);
         //todo, create some sort of config file
         byte[] domain = getBytes(clusterName);

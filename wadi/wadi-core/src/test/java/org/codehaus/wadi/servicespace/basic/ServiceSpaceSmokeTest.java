@@ -42,10 +42,10 @@ public class ServiceSpaceSmokeTest extends TestCase {
     public void testSmoke() throws Exception {
         ServiceSpaceName serviceSpace1Name = new ServiceSpaceName(new URI("space1"));
         VMBroker broker = new VMBroker("CLUSTER");
-        VMDispatcher dispatcher1 = new VMDispatcher(broker, "node1", 1000);
+        VMDispatcher dispatcher1 = new VMDispatcher(broker, "node1", null, 1000);
         dispatcher1.start();
         
-        VMDispatcher dispatcher2 = new VMDispatcher(broker, "node2", 1000);
+        VMDispatcher dispatcher2 = new VMDispatcher(broker, "node2", null, 1000);
         dispatcher2.start();
         
         Lifecycle service1 = new MockService();

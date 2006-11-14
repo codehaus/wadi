@@ -21,9 +21,9 @@ import org.codehaus.wadi.group.vm.VMPeer;
 import junit.framework.TestCase;
 
 public class ReplicaInfoTest extends TestCase {
-    private static final Peer peer1 = new VMPeer("PEER1");
-    private static final Peer peer2 = new VMPeer("PEER2");
-    private static final Peer peer3 = new VMPeer("PEER3");
+    private static final Peer peer1 = new VMPeer("PEER1", null);
+    private static final Peer peer2 = new VMPeer("PEER2", null);
+    private static final Peer peer3 = new VMPeer("PEER3", null);
     
     public void testCreateWithPrototpye() {
         Object replica = new Object();
