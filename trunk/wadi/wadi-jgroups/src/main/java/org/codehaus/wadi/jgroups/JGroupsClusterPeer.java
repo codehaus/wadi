@@ -19,7 +19,7 @@ package org.codehaus.wadi.jgroups;
 public class JGroupsClusterPeer extends JGroupsPeer {
 
     public JGroupsClusterPeer(JGroupsCluster cluster, String name) {
-        super(cluster, name);
+        super(cluster, name, null); // A Cluster has no EndPoint
     }
     
     public String toString() {

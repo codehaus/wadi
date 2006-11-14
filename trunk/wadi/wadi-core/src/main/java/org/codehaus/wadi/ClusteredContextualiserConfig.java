@@ -28,8 +28,6 @@ public interface ClusteredContextualiserConfig extends DistributableContextualis
 
 	InvocationProxy getInvocationProxy();
 
-	EndPoint getEndPoint();
-
 	long getInactiveTime();
 
 	int getNumPartitions();

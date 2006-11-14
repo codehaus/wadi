@@ -16,6 +16,7 @@
  */
 package org.codehaus.wadi.jgroups;
 
+import org.codehaus.wadi.group.EndPoint;
 import org.codehaus.wadi.group.LocalPeer;
 
 /**
@@ -26,8 +27,8 @@ import org.codehaus.wadi.group.LocalPeer;
  */
 public class JGroupsLocalPeer extends JGroupsPeer implements LocalPeer {
 
-    public JGroupsLocalPeer(JGroupsCluster cluster, String name) {
-        super(cluster, name);
+    public JGroupsLocalPeer(JGroupsCluster cluster, String name, EndPoint endPoint) {
+        super(cluster, name, endPoint);
     }
 
     public String toString() {

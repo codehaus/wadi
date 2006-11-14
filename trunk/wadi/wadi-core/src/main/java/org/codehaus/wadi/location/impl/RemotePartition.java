@@ -18,10 +18,12 @@ package org.codehaus.wadi.location.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.Peer;
+import org.codehaus.wadi.group.PeerInfo;
 import org.codehaus.wadi.location.SessionRequestMessage;
 import org.codehaus.wadi.location.session.DeleteIMToPM;
 import org.codehaus.wadi.location.session.EvacuateIMToPM;
@@ -80,5 +82,18 @@ public class RemotePartition extends AbstractPartition {
         }
         return dispatcher.exchangeSend(_peer.getAddress(), request, timeout);
     }
+
+    // see comment in LocalPartition
+	public Address getAddress() {
+		return _peer.getAddress();
+	}
+
+	public String getName() {
+		return _peer.getName();
+	}
+
+	public PeerInfo getPeerInfo() {
+		return _peer.getPeerInfo();
+	}
 
 }

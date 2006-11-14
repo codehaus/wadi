@@ -21,6 +21,7 @@ import java.io.ObjectStreamException;
 import javax.jms.Destination;
 
 import org.codehaus.wadi.group.Address;
+import org.codehaus.wadi.group.EndPoint;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.PeerInfo;
 
@@ -31,7 +32,7 @@ public class ActiveClusterPeer implements Peer, Address, Comparable {
     protected PeerInfo peerInfo;
     protected Destination _acDestination;
 
-    public ActiveClusterPeer(ActiveClusterCluster cluster, String name) {
+    public ActiveClusterPeer(ActiveClusterCluster cluster, String name, EndPoint endPoint) {
         if (null == cluster) {
             throw new IllegalArgumentException("cluster is required");
         } else if (null == name) {
@@ -40,7 +41,7 @@ public class ActiveClusterPeer implements Peer, Address, Comparable {
         _cluster = cluster;
         this.name = name;
         
-        peerInfo = new PeerInfo();
+        peerInfo = new PeerInfo(endPoint);
     }
 
     protected ActiveClusterPeer(ActiveClusterCluster cluster, ActiveClusterPeer prototype) {

@@ -16,6 +16,8 @@
  */
 package org.codehaus.wadi;
 
+import org.codehaus.wadi.group.EndPoint;
+
 
 /**
  * An Invocation provides a tier agnostic encapsulation of a stateful, remote invocation of server-side logic.
@@ -72,7 +74,7 @@ public interface Invocation {
      * 
      * @param endPoint the EndPoint
      */
-    public void relocate(EndPoint endPoint);
+    public void relocate(EndPoint endPoint) throws InvocationException;
     
     
 	/**

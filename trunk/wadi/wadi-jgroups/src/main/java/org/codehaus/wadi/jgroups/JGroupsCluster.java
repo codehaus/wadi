@@ -25,6 +25,7 @@ import java.util.TreeSet;
 
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.ClusterException;
+import org.codehaus.wadi.group.EndPoint;
 import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.MessageExchangeException;
@@ -60,11 +61,11 @@ public class JGroupsCluster extends AbstractCluster implements MembershipListene
     // initialised in init()
     protected org.jgroups.Address _localJGAddress;
 
-    public JGroupsCluster(String clusterName, String localPeerName, String config, JGroupsDispatcher dispatcher) throws ChannelException {
+    public JGroupsCluster(String clusterName, String localPeerName, String config, JGroupsDispatcher dispatcher, EndPoint endPoint) throws ChannelException {
         super(clusterName, localPeerName, dispatcher);
         _dispatcher = dispatcher;
         _clusterPeer = new JGroupsClusterPeer(this, clusterName);
-        _localPeer = new JGroupsLocalPeer(this, localPeerName);
+        _localPeer = new JGroupsLocalPeer(this, localPeerName, endPoint);
         _channel = new JChannel(config);
         _cluster.set(this);
     }
@@ -201,7 +202,7 @@ public class JGroupsCluster extends AbstractCluster implements MembershipListene
             for (Iterator i = newMembers.iterator(); i.hasNext();) {
                 org.jgroups.Address jgaddress = (org.jgroups.Address) i.next();
 
-                JGroupsPeer remotePeer = new JGroupsPeer(this, "UNDEFINED");
+                JGroupsPeer remotePeer = new JGroupsPeer(this, "UNDEFINED", null);
                 remotePeer.init(jgaddress);
                 BootRemotePeer command = new BootRemotePeer(this, remotePeer);
                 remotePeer = (JGroupsPeer) command.getSerializedPeer();

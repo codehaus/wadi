@@ -29,7 +29,7 @@ public class TestInVMEvacuation extends AbstractTestEvacuation {
 	public void testEvacuation() throws Exception {
         VMBroker cluster = new VMBroker("TEST");
 		long timeout=5000;
-		testEvacuation(new VMDispatcher(cluster, "red", timeout), new VMDispatcher(cluster, "green", timeout));
+		testEvacuation(new VMDispatcher(cluster, "red", null, timeout), new VMDispatcher(cluster, "green", null, timeout));
 	}
 	
 }

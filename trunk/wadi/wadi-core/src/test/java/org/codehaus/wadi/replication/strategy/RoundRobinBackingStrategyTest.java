@@ -32,10 +32,10 @@ public class RoundRobinBackingStrategyTest extends TestCase {
 
     protected void setUp() throws Exception {
         strategy = new RoundRobinBackingStrategy(2);
-        peer1 = new VMPeer("peer1");
-        peer2 = new VMPeer("peer2");
-        peer3 = new VMPeer("peer3");
-        peer4 = new VMPeer("peer4");
+        peer1 = new VMPeer("peer1", null);
+        peer2 = new VMPeer("peer2", null);
+        peer3 = new VMPeer("peer3", null);
+        peer4 = new VMPeer("peer4", null);
     }
     
     public void testElectSecondaries() {

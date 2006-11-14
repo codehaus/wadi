@@ -19,6 +19,7 @@ package org.codehaus.wadi.jgroups;
 import java.io.ObjectStreamException;
 
 import org.codehaus.wadi.group.Address;
+import org.codehaus.wadi.group.EndPoint;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.PeerInfo;
 
@@ -29,7 +30,7 @@ public class JGroupsPeer implements Peer, Address, Comparable {
     private final PeerInfo peerInfo;
     protected org.jgroups.Address _jgAddress;
 
-    public JGroupsPeer(JGroupsCluster cluster, String name) {
+    public JGroupsPeer(JGroupsCluster cluster, String name, EndPoint endPoint) {
         if (null == cluster) {
             throw new IllegalArgumentException("cluster is required");
         } else if (null == name) {
@@ -38,7 +39,7 @@ public class JGroupsPeer implements Peer, Address, Comparable {
         _cluster = cluster;
         this.name = name;
 
-        peerInfo = new PeerInfo();
+        peerInfo = new PeerInfo(endPoint);
     }
 
     public JGroupsPeer(JGroupsCluster cluster, JGroupsPeer prototype) {

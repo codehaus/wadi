@@ -29,7 +29,7 @@ public class TestACInVMGroup extends AbstractTestGroup {
         return new DispatcherFactory() {
             public Dispatcher create(String clusterName, String peerName, long inactiveTime) throws Exception {
                 return new ActiveClusterDispatcher(clusterName, peerName, ACTestUtil.CLUSTER_URI_VM,
-                        inactiveTime);
+                        null, inactiveTime);
             }
         };
     }

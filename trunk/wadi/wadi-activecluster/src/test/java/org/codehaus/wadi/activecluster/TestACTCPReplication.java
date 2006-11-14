@@ -35,7 +35,7 @@ public class TestACTCPReplication extends AbstractTestReplication {
         ACTestUtil testUtil = new ACTestUtil();
         testUtil.startTCPService();
         try {
-            testReplication(new ActiveClusterDispatcher(clusterName, "red", clusterUri, timeout));
+            testReplication(new ActiveClusterDispatcher(clusterName, "red", clusterUri, null, timeout));
         } finally {
             testUtil.stopTCPService();
         }

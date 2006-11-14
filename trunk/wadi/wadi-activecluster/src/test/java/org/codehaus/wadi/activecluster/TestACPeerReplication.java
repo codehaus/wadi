@@ -31,7 +31,7 @@ public class TestACPeerReplication extends AbstractTestReplication {
         String clusterName = ACTestUtil.CLUSTER_NAME;
         long timeout = ACTestUtil.CLUSTER_INACTIVE_TIME;
         String nodeName = "red";
-        testReplication(new ActiveClusterDispatcher(clusterName, nodeName, clusterUri, timeout));
+        testReplication(new ActiveClusterDispatcher(clusterName, nodeName, clusterUri, null, timeout));
     }
 
 }

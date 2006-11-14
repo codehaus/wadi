@@ -19,7 +19,7 @@ package org.codehaus.wadi.web.impl;
 import java.io.Serializable;
 import java.net.InetSocketAddress;
 
-import org.codehaus.wadi.EndPoint;
+import org.codehaus.wadi.group.EndPoint;
 
 
 /**

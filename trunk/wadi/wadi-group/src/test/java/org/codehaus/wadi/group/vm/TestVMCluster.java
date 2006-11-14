@@ -36,14 +36,14 @@ public class TestVMCluster extends TestCase {
     public void testExistingPeerSeeJoiningPeerAndViceVersa() throws Exception {
         VMBroker cluster = new VMBroker("clusterName");
         
-        VMDispatcher dispatcher1 = new VMDispatcher(cluster, "node1", 1000);
+        VMDispatcher dispatcher1 = new VMDispatcher(cluster, "node1", null, 1000);
         MockClusterListener listener1 = new MockClusterListener();
         dispatcher1.getCluster().addClusterListener(listener1);
         dispatcher1.start();
         
         assertTrue(listener1.events.isEmpty());
         
-        VMDispatcher dispatcher2 = new VMDispatcher(cluster, "node2", 1000);
+        VMDispatcher dispatcher2 = new VMDispatcher(cluster, "node2", null, 1000);
         MockClusterListener listener2 = new MockClusterListener();
         dispatcher2.getCluster().addClusterListener(listener2);
         dispatcher2.start();
@@ -64,10 +64,10 @@ public class TestVMCluster extends TestCase {
     public void testAddClusterListenerAfterStartSeeExistingPeer() throws Exception {
         VMBroker cluster = new VMBroker("clusterName");
         
-        VMDispatcher dispatcher1 = new VMDispatcher(cluster, "node1", 1000);
+        VMDispatcher dispatcher1 = new VMDispatcher(cluster, "node1", null, 1000);
         dispatcher1.start();
         
-        VMDispatcher dispatcher2 = new VMDispatcher(cluster, "node2", 1000);
+        VMDispatcher dispatcher2 = new VMDispatcher(cluster, "node2", null, 1000);
         dispatcher2.start();
 
         MockClusterListener listener2 = new MockClusterListener();

@@ -26,7 +26,7 @@ import org.codehaus.wadi.replication.integration.AbstractReplicationContextualis
 public class TestACPeerReplicationContextualiser extends AbstractReplicationContextualiserTest {
 
     protected Dispatcher createDispatcher(String clusterName, String nodeName, long timeout) throws Exception {
-        return new ActiveClusterDispatcher(clusterName, nodeName, ACTestUtil.CLUSTER_URI_PEER, timeout);
+        return new ActiveClusterDispatcher(clusterName, nodeName, ACTestUtil.CLUSTER_URI_PEER, null, timeout);
     }
 
     protected void failNode(String arg0) {

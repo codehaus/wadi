@@ -32,8 +32,8 @@ public class TestACInVMRelocation extends AbstractTestRelocation {
         String clusterName = ACTestUtil.CLUSTER_NAME;
         long timeout = ACTestUtil.CLUSTER_INACTIVE_TIME;
         String clusterUri = ACTestUtil.CLUSTER_URI_VM;
-        testSessionRelocation(new ActiveClusterDispatcher(clusterName, "red", clusterUri, timeout),
-                new ActiveClusterDispatcher(clusterName, "green", clusterUri, timeout));
+        testSessionRelocation(new ActiveClusterDispatcher(clusterName, "red", clusterUri, null, timeout),
+                new ActiveClusterDispatcher(clusterName, "green", clusterUri, null, timeout));
     }
 	
 }

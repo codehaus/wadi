@@ -28,8 +28,8 @@ public class MemoryReplicaStorageTest extends TestCase {
 
     protected void setUp() throws Exception {
         storage = new MemoryReplicaStorage();
-        node1 = new VMPeer("node1");
-        node2 = new VMPeer("node2");
+        node1 = new VMPeer("node1", null);
+        node2 = new VMPeer("node2", null);
     }
     
     public void testMergeCreate() {

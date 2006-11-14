@@ -35,7 +35,6 @@ import org.codehaus.wadi.servicespace.ServiceName;
 import org.codehaus.wadi.servicespace.ServiceSpace;
 
 import com.agical.rmock.core.describe.ExpressionDescriber;
-import com.agical.rmock.core.match.Multiplicity;
 import com.agical.rmock.core.match.operator.AbstractExpression;
 import com.agical.rmock.extension.junit.RMockTestCase;
 

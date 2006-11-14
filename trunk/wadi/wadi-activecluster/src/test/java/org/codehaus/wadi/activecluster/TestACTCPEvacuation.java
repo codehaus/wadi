@@ -35,8 +35,8 @@ public class TestACTCPEvacuation extends AbstractTestEvacuation {
         ACTestUtil testUtil = new ACTestUtil();
         testUtil.startTCPService();
         try {
-            testEvacuation(new ActiveClusterDispatcher(clusterName, "red", clusterUri, timeout), 
-                    new ActiveClusterDispatcher(clusterName, "green", clusterUri, timeout));
+            testEvacuation(new ActiveClusterDispatcher(clusterName, "red", clusterUri, null, timeout), 
+                    new ActiveClusterDispatcher(clusterName, "green", clusterUri, null, timeout));
         } finally {
             testUtil.stopTCPService();
         }

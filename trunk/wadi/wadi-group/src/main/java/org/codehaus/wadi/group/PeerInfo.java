@@ -23,13 +23,19 @@ import java.io.Serializable;
  */
 public class PeerInfo implements Serializable {
     private final long birthtime;
+    private final EndPoint endPoint; // TODO - should probably be a Map of EndPoints keyed by Tier
 
-    public PeerInfo() {
+    public PeerInfo(EndPoint endPoint) {
         this.birthtime = System.currentTimeMillis();
+        this.endPoint=endPoint;
     }
 
     public long getBirthtime() {
         return birthtime;
+    }
+    
+    public EndPoint getEndPoint() {
+    	return endPoint;
     }
     
 }

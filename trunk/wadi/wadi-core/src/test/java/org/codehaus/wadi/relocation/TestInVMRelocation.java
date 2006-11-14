@@ -31,7 +31,7 @@ public class TestInVMRelocation extends AbstractTestRelocation {
 	public void testSessionRelocation() throws Exception {
         VMBroker cluster = new VMBroker("TEST");
 		long timeout=5000;
-		testSessionRelocation(new VMDispatcher(cluster, "red", timeout), new VMDispatcher(cluster, "green", timeout));
+		testSessionRelocation(new VMDispatcher(cluster, "red", null, timeout), new VMDispatcher(cluster, "green", null, timeout));
 	}
     
 }

@@ -19,7 +19,7 @@ package org.codehaus.wadi.activecluster;
 public class ActiveClusterClusterPeer extends ActiveClusterPeer {
 
     public ActiveClusterClusterPeer(ActiveClusterCluster cluster, String name) {
-        super(cluster, name);
+        super(cluster, name, null); // A Cluster has no EndPoint...
     }
     
     public String toString() {

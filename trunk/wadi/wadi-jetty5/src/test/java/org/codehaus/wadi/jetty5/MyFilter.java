@@ -59,7 +59,7 @@ public class MyFilter implements Filter {
 			boolean found;
 			try {
 				WebInvocation invocation=new WebInvocation();
-				invocation.init(hreq, hres, chain);
+				invocation.init(hreq, hres, chain, null);
 				found = _servlet.getContextualiser().contextualise(invocation, sessionId, null, null, _exclusiveOnly);
 			} catch (InvocationException e) {
 				throw new ServletException(e);

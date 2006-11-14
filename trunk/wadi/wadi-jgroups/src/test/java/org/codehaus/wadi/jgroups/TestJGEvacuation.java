@@ -29,8 +29,8 @@ public class TestJGEvacuation extends AbstractTestEvacuation {
         String clusterName = JGTestUtil.TEST_CLUSTER_NAME;
         String clusterConfig = JGTestUtil.TEST_CLUSTER_CONFIG;
         long timeout = 5000;
-        testEvacuation(new JGroupsDispatcher(clusterName, "red", timeout, clusterConfig), 
-                new JGroupsDispatcher(clusterName, "green", timeout, clusterConfig));
+        testEvacuation(new JGroupsDispatcher(clusterName, "red", null, timeout, clusterConfig), 
+                new JGroupsDispatcher(clusterName, "green", null, timeout, clusterConfig));
     }
 
 }

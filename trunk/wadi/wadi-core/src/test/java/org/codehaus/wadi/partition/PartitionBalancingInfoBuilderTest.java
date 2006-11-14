@@ -25,8 +25,8 @@ import org.codehaus.wadi.group.vm.VMPeer;
  * @version $Revision: 1538 $
  */
 public class PartitionBalancingInfoBuilderTest extends TestCase {
-    private static final VMPeer PEER1 = new VMPeer("peer1");
-    private static final VMPeer PEER2 = new VMPeer("peer2");
+    private static final VMPeer PEER1 = new VMPeer("peer1", null);
+    private static final VMPeer PEER2 = new VMPeer("peer2", null);
     
     public void testMergePartitionInfos() {
         PartitionInfoUpdateBuilder builder = new PartitionInfoUpdateBuilder(3, 2);
