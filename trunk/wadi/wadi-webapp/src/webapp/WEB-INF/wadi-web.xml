@@ -132,26 +132,6 @@
   </bean>
 -->
 
-<!-- External Derby DS -->
-<!--
--->
-  <bean
-    id="DatabaseURL"
-    class="java.lang.String"
-    >
-    <constructor-arg><value>jdbc:derby://localhost:1527/WADI</value></constructor-arg>
-  </bean>
-
-  <bean id="DataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
-    <property name="driverClassName"><value>org.apache.derby.jdbc.ClientDriver</value></property>
-    <property name="initialSize"><value>2</value></property>
-    <property name="maxActive"><value>2</value></property>
-    <property name="maxIdle"><value>2</value></property>
-    <property name="url"><ref bean="DatabaseURL"/></property>
-    <property name="username"><value>me</value></property>
-    <property name="password"><value>mine</value></property>
-  </bean>
-
   <bean
     id="WebSessionPool"
     class="org.codehaus.wadi.web.impl.WebSessionToSessionPoolAdapter"
@@ -217,32 +197,10 @@
   </bean>
 
   <bean
-    id="DatabaseStore"
-    class="org.codehaus.wadi.impl.DatabaseStore"
-    >
-    <constructor-arg><ref bean="DatabaseURL"/></constructor-arg>
-    <constructor-arg><ref bean="DataSource"/></constructor-arg>
-    <constructor-arg><value>SESSIONS</value></constructor-arg>
-    <constructor-arg type="boolean"><value>false</value></constructor-arg><!-- useNIO: NYI -->
-    <constructor-arg type="boolean"><value>false</value></constructor-arg><!-- reusingStore -->
-    <constructor-arg type="boolean"><value>true</value></constructor-arg><!-- build -->
-  </bean>
-
-  <bean
-    id="DatabaseContextualiser"
-    class="org.codehaus.wadi.impl.SharedStoreContextualiser"
-    >
-    <constructor-arg><ref bean="DummyContextualiser"/></constructor-arg>
-    <constructor-arg><ref bean="Collapser"/></constructor-arg>
-    <constructor-arg type="boolean"><value>false</value></constructor-arg><!-- clean? -->
-    <constructor-arg><ref bean="DatabaseStore"/></constructor-arg>
-  </bean>
-
-  <bean
     id="ClusterContextualiser"
     class="org.codehaus.wadi.impl.ClusterContextualiser"
     >
-    <constructor-arg><ref bean="DatabaseContextualiser"/></constructor-arg>
+    <constructor-arg><ref bean="DummyContextualiser"/></constructor-arg>
     <constructor-arg><ref bean="Collapser"/></constructor-arg>
     <constructor-arg><ref bean="Relocater"/></constructor-arg>
   </bean>
@@ -471,6 +429,29 @@
   <!-- and finally - the SessionManager itself -->
 
   <bean
+    id="URI"
+    class="java.net.URI"
+    >
+    <constructor-arg><value>/wadi</value></constructor-arg>
+  </bean>
+
+  <bean
+    id="ServiceSpaceName"
+    class="org.codehaus.wadi.servicespace.ServiceSpaceName"
+    >
+    <constructor-arg><ref bean="URI"/></constructor-arg>
+  </bean>
+
+  <bean
+    id="ServiceSpace"
+    class="org.codehaus.wadi.servicespace.basic.BasicServiceSpace"
+    >
+    <constructor-arg><ref bean="ServiceSpaceName"/></constructor-arg>
+    <constructor-arg><ref bean="DispatcherWrapper"/></constructor-arg>
+  </bean>
+
+
+  <bean
     id="SessionManager"
     class="org.codehaus.wadi.impl.ClusteredManager"
     >
@@ -486,8 +467,9 @@
     <constructor-arg><ref bean="AttributeStreamer"/></constructor-arg>
     <constructor-arg type="boolean"><value>true</value></constructor-arg>
     <constructor-arg><ref bean="ReplicaterFactory"/></constructor-arg>
+    <constructor-arg><ref bean="EndPoint"/></constructor-arg>
     <constructor-arg><ref bean="HttpProxy"/></constructor-arg>
-    <constructor-arg><ref bean="DispatcherWrapper"/></constructor-arg>
+    <constructor-arg><ref bean="ServiceSpace"/></constructor-arg>
     <constructor-arg><ref bean="NumPartitions"/></constructor-arg>
     <constructor-arg><ref bean="Collapser"/></constructor-arg>
   </bean>

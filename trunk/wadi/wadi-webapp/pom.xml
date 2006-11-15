@@ -57,7 +57,11 @@
       <groupId>org.codehaus.wadi</groupId>
       <artifactId>wadi-core</artifactId>
       <version>${project.version}</version>
-      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.wadi</groupId>
+      <artifactId>wadi-tribes</artifactId>
+      <version>${project.version}</version>
     </dependency>
   </dependencies>
 
