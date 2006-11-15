@@ -93,7 +93,7 @@ public class BasicReplicationManager implements ReplicationManager {
         stopStorageMonitoring();
     }
     
-    public void create(final Object key, final Object tmp) {
+    public void create(Object key, Object tmp) {
         synchronized (keyToReplicaInfo) {
             if (keyToReplicaInfo.containsKey(key)) {
                 throw new ReplicationKeyAlreadyExistsException(key);
@@ -137,13 +137,6 @@ public class BasicReplicationManager implements ReplicationManager {
 
     public Object acquirePrimary(Object key) {
         ReplicaInfo replicaInfo;
-        synchronized (keyToReplicaInfo) {
-            replicaInfo = (ReplicaInfo) keyToReplicaInfo.get(key);
-        }
-        if (null != replicaInfo) {
-            return replicaInfo.getReplica();
-        }
-
         try {
             replicationManagerProxy.releasePrimary(key);
             replicaInfo = replicaStorageProxy.retrieveReplicaInfo(key);
@@ -277,7 +270,6 @@ public class BasicReplicationManager implements ReplicationManager {
     protected ReplicationManager newReplicationManagerProxy(ServiceSpace serviceSpace) {
         ServiceProxyFactory repManagerProxyFactory = serviceSpace.getServiceProxyFactory(ReplicationManager.NAME, 
                 new Class[] {ReplicationManager.class});
-        repManagerProxyFactory.getInvocationMetaData().setOneWay(true);
         return (ReplicationManager) repManagerProxyFactory.getProxy();
     }
 

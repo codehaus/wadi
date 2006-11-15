@@ -131,11 +131,12 @@ public class TestSharedStack extends TestCase {
         map.put(key, value);
         
         // run an Invocation over it...
-        Invocation invocation=new Tier1Invocation();
-        Immoter immoter=null; // there is no-one above in the stack to promote to
-        Sync motionLock=null;
-        boolean exclusiveOnly=true;
-        memory.contextualise(invocation, key, immoter, motionLock, exclusiveOnly);
+        Invocation invocation=new Tier1Invocation() {
+            public boolean isProxiedInvocation() {
+                return true;
+            }
+        };
+        memory.contextualise(invocation, key, null, null, true);
     }
     
 }

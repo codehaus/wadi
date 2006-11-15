@@ -26,7 +26,6 @@ import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.InvocationProxy;
 import org.codehaus.wadi.PoolableInvocationWrapper;
-import org.codehaus.wadi.RWLockListener;
 import org.codehaus.wadi.Session;
 import org.codehaus.wadi.group.EndPoint;
 import org.codehaus.wadi.web.PoolableHttpServletRequestWrapper;
@@ -111,10 +110,6 @@ public class WebInvocation implements Invocation {
             chain.doFilter(actualWrapper, hres);
         } catch (Exception e) {
             throw new InvocationException(e);
-        } finally {
-            if (null != session) {
-                ((RWLockListener) session).readEnded();
-            }
         }
     }
 
@@ -123,10 +118,6 @@ public class WebInvocation implements Invocation {
             chain.doFilter(hreq, hres);
         } catch (Exception e) {
             throw new InvocationException(e);
-        } finally {
-            if (null != session) {
-                ((RWLockListener) session).readEnded();
-            }
         }
     }
 

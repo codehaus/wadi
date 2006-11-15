@@ -160,7 +160,12 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
                     onElection(coordinator);
                 }
             }
+
+            if (null != _coordinator) {
+                _coordinator.queueRebalancing();
+            }
         }
+
     }
 
     public void onPartitionEvacuationRequest(ClusterEvent event) {

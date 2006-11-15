@@ -267,21 +267,22 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
             }
         } else {
             transferPartitions(newBalancingInfo);
-            if (infoUpdate.isPartitionEvacuationAck()) {
-                evacuationCompletionLatch.release();
-            } else {
-                PartitionInfo[] newPartitionInfos = newBalancingInfo.getPartitionInfos();
-                if (infoUpdate.isRepopulationRequested()) {
-                    repopulatePartition(newPartitionInfos);
-                }
-                updateUnchangedPartitionFacades(newPartitionInfos);
-                redefineRemotePartitions(newPartitionInfos);
-                waitForPartitionTranserOrTimeout(newPartitionInfos);
+
+            PartitionInfo[] newPartitionInfos = newBalancingInfo.getPartitionInfos();
+            if (infoUpdate.isRepopulationRequested()) {
+                repopulatePartition(newPartitionInfos);
             }
+            updateUnchangedPartitionFacades(newPartitionInfos);
+            redefineRemotePartitions(newPartitionInfos);
+            waitForPartitionTranserOrTimeout(newPartitionInfos);
         }
         
         synchronized (balancingInfoLock) {
             balancingInfo = newBalancingInfo;
+        }
+
+        if (infoUpdate.isPartitionEvacuationAck()) {
+            evacuationCompletionLatch.release();
         }
     }
 

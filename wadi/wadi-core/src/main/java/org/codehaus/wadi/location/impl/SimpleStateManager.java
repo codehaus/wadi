@@ -270,7 +270,7 @@ public class SimpleStateManager implements StateManager, StateManagerMessageList
             try {
                 Utils.acquireUninterrupted("Invocation", (String) key, invocationLock);
             } catch (TimeoutException e) {
-                _log.error("unexpected timeout - proceding without lock", e);
+                _log.error("unexpected timeout", e);
                 throw new WADIRuntimeException(e);
             }
 

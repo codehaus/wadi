@@ -128,13 +128,8 @@ public class BasicReplicationManagerTest extends RMockTestCase {
 
     private void recordCreateReplicationManagerProxy() {
         beginSection(s.ordered("Create ReplicationManager proxy"));
-        InvocationMetaData invMetaData = (InvocationMetaData) intercept(InvocationMetaData.class, "invMetaData");
         ServiceProxyFactory serviceProxyFactory =
             serviceSpace.getServiceProxyFactory(ReplicationManager.NAME, new Class[] {ReplicationManager.class});
-        serviceProxyFactory.getInvocationMetaData();
-        modify().returnValue(invMetaData);
-        invMetaData.setOneWay(true);
-        modify().forward();
         serviceProxyFactory.getProxy();
         replicationManagerProxy = (ReplicationManager) mock(ReplicationManager.class);
         modify().returnValue(replicationManagerProxy);
