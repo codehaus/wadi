@@ -14,6 +14,7 @@ import junit.framework.TestCase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Invocation;
+import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.test.MockInvocation;
 import org.codehaus.wadi.test.MyHttpServletRequest;
@@ -50,9 +51,6 @@ public class AbstractTestEvacuation extends TestCase {
         String id = red.getManager().create(null).getId();
         assertTrue(id != null);
 
-        red.stop();
-        TestUtil.waitForDispatcherSeeOthers(new Dispatcher[] { greenD }, 5000);
-
         FilterChain fc = new FilterChain() {
             public void doFilter(ServletRequest req, ServletResponse res) throws IOException, ServletException {
                 HttpSession session = ((HttpServletRequest) req).getSession();
@@ -61,20 +59,23 @@ public class AbstractTestEvacuation extends TestCase {
             }
         };
 
+        stopRedAndInvokeAgainstGreen(greenD, red, green, id, fc);
+        startRedAndInvokeAgainstRed(redD, greenD, red, id, fc);
+	}
+
+    private void startRedAndInvokeAgainstRed(Dispatcher redD, Dispatcher greenD, MyStack red, String id, FilterChain fc) throws Exception, InvocationException {
+        red.start();
+        TestUtil.waitForDispatcherSeeOthers(new Dispatcher[] { redD, greenD }, 5000);
+        Invocation invocation = new MockInvocation(new MyHttpServletRequest(), new MyHttpServletResponse(), fc);
+        boolean success = red.getManager().contextualise(invocation, id, null, null, false);
+        assertTrue(success);
+    }
+
+    private void stopRedAndInvokeAgainstGreen(Dispatcher greenD, MyStack red, MyStack green, String id, FilterChain fc) throws Exception, InvocationException {
+        red.stop();
+        TestUtil.waitForDispatcherSeeOthers(new Dispatcher[] { greenD }, 5000);
         Invocation invocation = new MockInvocation(new MyHttpServletRequest(), new MyHttpServletResponse(), fc);
         boolean success = green.getManager().contextualise(invocation, id, null, null, true);
         assertTrue(success);
-
-        red.start();
-        TestUtil.waitForDispatcherSeeOthers(new Dispatcher[] { redD, greenD }, 5000);
-        
-        invocation = new MockInvocation(new MyHttpServletRequest(), new MyHttpServletResponse(), fc);
-        success = red.getManager().contextualise(invocation, id, null, null, false);
-        assertTrue(success);
-        
-        red.stop();
-        TestUtil.waitForDispatcherSeeOthers(new Dispatcher[] { greenD }, 5000);
-
-        green.stop();
-	}
+    }
 }

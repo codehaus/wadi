@@ -71,11 +71,10 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
 	// TODO - sometime figure out how to make this a wrapper around AbstractMappedContextualiser.handle() instead of a replacement...
 	public boolean handle(Invocation invocation, String id, Immoter immoter, Sync motionLock) throws InvocationException {
 		Motable emotable=get(id);
-		if (emotable==null)
-			return false; // we cannot proceed without the session...
-
-		if (immoter!=null) {
-			return promote(invocation, id, immoter, motionLock, emotable); // motionLock will be released here...
+		if (emotable==null) {
+		    return false;
+        } else if (immoter!=null) {
+			return promote(invocation, id, immoter, motionLock, emotable);
 		} else {
 			return contextualiseLocally(invocation, id, motionLock, emotable);
 		}
@@ -89,19 +88,9 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
 				Utils.acquireUninterrupted("State (shared)", id, stateLock);
 				stateLockAcquired=true;
 			} catch (TimeoutException e) {
-				if (_log.isErrorEnabled()) _log.error("unexpected timeout - continuing without lock: "+id+" : "+stateLock, e);
-				// give this some more thought - TODO
+				_log.error("unexpected timeout - continuing without lock: "+id+" : "+stateLock, e);
+                throw new WADIRuntimeException(e);
 			}
-
-			if (motable.getName()==null) {
-				if (_log.isTraceEnabled()) _log.trace("context disappeared whilst we were waiting for lock: "+id+" : "+stateLock);
-				return false; // retain the InvocationLock, release the StateLock
-			}
-
-			if (invocationLock!=null) {
-				Utils.release("Invocation", id, invocationLock);
-			}
-
 
 			motable.setLastAccessedTime(System.currentTimeMillis());
             invocation.setSession((Session)motable);  // we need a solution - MemoryContextualiser needs to separate Contexts and Motables cleanly...

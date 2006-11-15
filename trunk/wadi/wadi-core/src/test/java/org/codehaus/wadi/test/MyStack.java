@@ -45,7 +45,6 @@ import org.codehaus.wadi.impl.HashingCollapser;
 import org.codehaus.wadi.impl.MemoryContextualiser;
 import org.codehaus.wadi.impl.MemoryReplicaterFactory;
 import org.codehaus.wadi.impl.NeverEvicter;
-import org.codehaus.wadi.impl.SerialContextualiser;
 import org.codehaus.wadi.impl.SimpleSessionPool;
 import org.codehaus.wadi.impl.SimpleStreamer;
 import org.codehaus.wadi.impl.SimpleValuePool;
@@ -102,15 +101,13 @@ public class MyStack {
         Contextualiser spool = new ExclusiveStoreContextualiser(cluster, collapser, false, devicter, dmap,
                 sessionStreamer, dir);
 
-        Map mmap = new HashMap();
-        Contextualiser serial = new SerialContextualiser(spool, collapser, mmap);
-        WebSessionPool sessionPool = new SimpleSessionPool(new AtomicallyReplicableSessionFactory());
-
         // Memory
+        Map mmap = new HashMap();
+        WebSessionPool sessionPool = new SimpleSessionPool(new AtomicallyReplicableSessionFactory());
         Evicter mevicter = new AlwaysEvicter(sweepInterval, strictOrdering);
         SessionPool contextPool = new WebSessionToSessionPoolAdapter(sessionPool);
         PoolableInvocationWrapperPool requestPool = new DummyStatefulHttpServletRequestWrapperPool();
-        _memory = new MemoryContextualiser(serial, mevicter, mmap, streamer, contextPool, requestPool);
+        _memory = new MemoryContextualiser(spool, mevicter, mmap, streamer, contextPool, requestPool);
 
         // Manager
         int numPartitions = 72;
