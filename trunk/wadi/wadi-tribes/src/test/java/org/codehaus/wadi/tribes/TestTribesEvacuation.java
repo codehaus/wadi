@@ -16,7 +16,10 @@
  */
 package org.codehaus.wadi.tribes;
 
+import java.io.Serializable;
+
 import org.codehaus.wadi.evacuation.AbstractTestEvacuation;
+import org.codehaus.wadi.group.EndPoint;
 import org.codehaus.wadi.tribes.TribesDispatcher;
 
 public class TestTribesEvacuation extends AbstractTestEvacuation {
@@ -25,10 +28,22 @@ public class TestTribesEvacuation extends AbstractTestEvacuation {
     super(name);
   }
 
+  static class MockEndPoint implements EndPoint, Serializable {
+	  protected String uri;
+	  
+	  public MockEndPoint(String uri) {
+		  this.uri=uri;
+	  }
+	  
+	  public String toString() {
+		  return "<MockEndPoint: "+uri+">";
+	  }
+	  
+  }
   public void testEvacuation() throws Exception {
       String clusterName="dummy"+System.currentTimeMillis();
 	  long timeout=5000;
-      testEvacuation(new TribesDispatcher(clusterName, "red", null, timeout, ""), new TribesDispatcher(clusterName, "green", null, timeout, ""));
+      testEvacuation(new TribesDispatcher(clusterName, "red", new MockEndPoint("red"), timeout, ""), new TribesDispatcher(clusterName, "green", new MockEndPoint("green"), timeout, ""));
   }
 
 }
