@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<project
+  xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"
+  >
+
+  <parent>
+    <groupId>org.codehaus.wadi</groupId>
+    <artifactId>wadi</artifactId>
+    <relativePath>../pom.xml</relativePath>
+    <version>2.0M2-SNAPSHOT</version>
+  </parent>
+
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>wadi-jetty6</artifactId>
+  <packaging>jar</packaging>
+  <name>WADI :: Jetty6</name>
+  <description>WADI/Jetty-6.x Integration - An HttpSession Manager for Jetty-6.x</description>
+
+  <dependencies>
+    <dependency>
+      <groupId>geronimo-spec</groupId>
+      <artifactId>geronimo-spec-servlet</artifactId>
+    </dependency>
+    <!-- commons-httpclient? -->
+    <dependency>
+      <groupId>org.codehaus.wadi</groupId>
+      <artifactId>wadi-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.mortbay.jetty</groupId>
+      <artifactId>jetty</artifactId>
+      <version>${jetty6.version}</version>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
+
+  <repositories>
+    <repository>
+      <id>jetty6-releases</id>
+      <name>Mortbay Repository at the Codehaus</name>
+      <url>http://www.mortbay.org/maven2/release</url>
+    </repository>
+    <repository>
+      <id>jetty6-snapshots</id>
+      <name>Mortbay Repository at the Codehaus</name>
+      <url>http://www.mortbay.org/maven2/snapshot</url>
+    </repository>
+  </repositories>
+
+  <reporting>
+    <plugins>
+      <plugin>
+	<groupId>org.apache.maven.plugins</groupId>
+	<artifactId>maven-javadoc-plugin</artifactId>
+	<configuration>
+	  <source>${jse.version}</source>
+	  <links>
+	    <link>http://java.sun.com/j2se/${jse.version}/docs/api</link>
+	    <link>http://java.sun.com/j2ee/${jee.version}/docs/api</link>
+	    <link>http://jakarta.apache.org/commons/logging/apidocs</link>
+<!--
+	    <link>http://jetty.mortbay.org/jetty6/jetty</link>
+-->
+	  </links>
+	</configuration>
+      </plugin>
+    </plugins>
+  </reporting>
+
+</project>

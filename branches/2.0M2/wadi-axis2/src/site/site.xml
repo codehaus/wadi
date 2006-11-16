@@ -1,0 +1,21 @@
+<project name="wadi-axis2">
+
+  <bannerLeft>
+    <name>WADI</name>
+    <src>../images/wadi.gif</src>
+    <href>http://wadi.codehaus.org</href>
+  </bannerLeft>
+
+  <body>
+    <links>
+      <item name="Axis 2" href="http://ws.apache.org/axis2"/>
+    </links>
+
+    <menu name="WADI">
+      <item name="WADI" href="../index.html"/>
+    </menu>
+
+    ${reports}
+
+  </body>
+</project>

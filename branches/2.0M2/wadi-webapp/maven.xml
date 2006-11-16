@@ -1,0 +1,60 @@
+<project
+  default="default"
+  xmlns:j="jelly:core"
+  xmlns:ant="jelly:ant"
+  xmlns:maven="jelly:maven"
+  xmlns:u="jelly:util"
+  >
+
+  <preGoal name="war:webapp">
+    <j:set var="precompileJsp" value="${war.precompile.jsp}"/>
+    <j:if test="${precompileJsp == 'true'}">
+      <attainGoal name="precompile-jsp"/>
+    </j:if>
+  </preGoal>
+
+  <postGoal name="war:webapp">
+    <j:set var="precompileJsp" value="${war.precompile.jsp}"/>
+    <j:if test="${precompileJsp == 'true'}">
+      <u:available file="${maven.build.dir}/web-fragment.xml">
+	<u:loadText var="fragment" file="${maven.build.dir}/web-fragment.xml"/>
+	<ant:replace file="${maven.war.webapp.dir}/WEB-INF/web.xml" token="&lt;!-- [INSERT FRAGMENT HERE] --&gt;" value="${fragment}"/>
+      </u:available>
+    </j:if>
+  </postGoal>
+
+  <goal name="precompile-jsp" description="Precompile all JSPs into java classes, and then into classes" prereqs="war:load,java:compile">
+    <ant:echo message="maven.war.src=${maven.war.src}"/>
+    <ant:mkdir dir="${maven.build.dir}/jspc"/>
+    <ant:mkdir dir="${maven.build.dir}/jspc-processed"/>
+    <ant:mkdir dir="${maven.build.dir}/jspc-classes"/>
+    <j:set var="jspOutDir" value="${maven.build.dir}/jspc"/>
+    <j:set var="jspClassesOutDir" value="${maven.build.dest}"/>
+    <ant:path id="jspc.classpath">
+      <ant:path refid="maven.dependency.classpath"/>
+      <ant:pathelement path="${maven.build.dest}"/>
+    </ant:path>
+    <ant:java classname="org.apache.jasper.JspC" classpathref="jspc.classpath" fork="true">
+      <arg value="-d"/><!-- outputDir -->
+      <arg value="${jspOutDir}"/>
+      <arg value="-p"/> <!-- package -->
+<!--      <arg value="${pom.package}.jsp.${pom.artifactId}"/> -->
+      <arg value="${pom.package}.jsp.wadi"/><!-- artefactId has a '-' in it -->
+      <arg value="-webinc"/><!-- webXmlFragment -->
+      <arg value="${maven.build.dir}/web-fragment.xml"/>
+      <arg value="-uriroot"/>
+      <arg value="${maven.war.src}"/>
+      <arg value="-uribase"/>
+      <arg value="/${pom.artifactId}"/>
+      <arg value="-v"/>
+    </ant:java>
+    <ant:javac
+      srcdir="${jspOutDir}"
+      destdir="${jspClassesOutDir}"
+      debug="${maven.compile.debug}"
+      deprecation="${maven.compile.deprecation}"
+      optimize="${maven.compile.optimize}"
+      classpathref="jspc.classpath"/>
+  </goal>
+
+</project>
