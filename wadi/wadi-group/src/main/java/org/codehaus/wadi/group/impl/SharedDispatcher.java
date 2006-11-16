@@ -28,11 +28,11 @@ import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.Quipu;
 import org.codehaus.wadi.group.ServiceEndpoint;
 
-public class DispatcherWrapper implements Dispatcher {
+public class SharedDispatcher implements Dispatcher {
 
     protected Dispatcher _delegate;
 
-    public DispatcherWrapper(Dispatcher delegate) throws MessageExchangeException {
+    public SharedDispatcher(Dispatcher delegate) throws MessageExchangeException {
         _delegate=delegate;
         _delegate.start();
     }

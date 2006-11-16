@@ -506,6 +506,8 @@
 	    <exclude implementation="java.lang.String">**/TestInVMEvacuation.java</exclude>
 	    <exclude implementation="java.lang.String">**/TestJetty5.java</exclude>
 
+	    <exclude implementation="java.lang.String">**/TestWadiWebXml.java</exclude>  <!-- needs Derby running -->
+
 	    <!--
 	    Peer group tests fail when executed with
 	    maven. TestACPeerGroup: when the two testMETHOD are

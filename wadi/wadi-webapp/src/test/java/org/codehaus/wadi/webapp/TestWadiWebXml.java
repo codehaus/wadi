@@ -18,6 +18,7 @@ package org.codehaus.wadi.webapp;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.Random;
 
 import javax.servlet.http.HttpSession;
 
@@ -40,7 +41,7 @@ public class TestWadiWebXml extends TestCase {
 
 	public void testWadiWebXml() throws Exception {
 		System.setProperty("http.port", "8080");
-		System.setProperty("node.name", "red");
+		System.setProperty("node.name", "test-"+new Random().nextInt());
 		Manager manager=null;
 		try {
 			InputStream descriptor=new FileInputStream("src/webapp/WEB-INF/wadi-web.xml");
@@ -55,8 +56,8 @@ public class TestWadiWebXml extends TestCase {
 			throw new RuntimeException(e);
 		}
 		assertTrue(manager!=null);
-		//manager.init(null);
-		//manager.start();
-		//manager.manager.stop();
+		manager.init(null);
+		manager.start();
+		manager.stop();
 	}
 }
