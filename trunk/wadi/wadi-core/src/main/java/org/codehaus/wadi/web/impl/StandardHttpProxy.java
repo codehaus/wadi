@@ -38,9 +38,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
+import java.net.URI;
 import java.net.URL;
 import java.util.Enumeration;
 
@@ -73,19 +73,19 @@ public class StandardHttpProxy extends AbstractHttpProxy {
 		super(sessionPathParamKey);
 	}
 	
-	protected void doProxy(InetSocketAddress location, WebInvocation context) throws ProxyingException {
+    protected void doProxy(URI uri, WebInvocation context) throws ProxyingException {
 		HttpServletRequest req = context.getHreq();
 		HttpServletResponse res = context.getHres();
 		
-		String uri=getRequestURI(req);
+		String requestURI=getRequestURI(req);
 		String qs=req.getQueryString();
 		if (qs!=null) {
-			uri=new StringBuffer(uri).append("?").append(qs).toString();
+            requestURI=new StringBuffer(requestURI).append("?").append(qs).toString();
 		}
 		
 		URL url=null;
 		try {
-			url=new URL("http", location.getAddress().getHostAddress(), location.getPort(), uri);
+			url=new URL("http", uri.getHost(), uri.getPort(), requestURI);
 			if (_log.isTraceEnabled()) _log.trace("proxying to: "+url);
 		} catch (MalformedURLException e) {
 			if (_log.isWarnEnabled()) _log.warn("bad proxy url: "+url, e);

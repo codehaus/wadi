@@ -16,30 +16,30 @@
  */
 package org.codehaus.wadi.jetty5;
 
-import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
+
 import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Collapser;
-import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.InvocationProxy;
 import org.codehaus.wadi.Manager;
 import org.codehaus.wadi.ManagerConfig;
 import org.codehaus.wadi.Relocater;
 import org.codehaus.wadi.SessionIdFactory;
+import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.group.EndPoint;
 import org.codehaus.wadi.impl.ClusterContextualiser;
 import org.codehaus.wadi.impl.ClusteredManager;
 import org.codehaus.wadi.impl.DummyContextualiser;
@@ -63,7 +63,6 @@ import org.codehaus.wadi.web.impl.DistributableSessionFactory;
 import org.codehaus.wadi.web.impl.DistributableValueFactory;
 import org.codehaus.wadi.web.impl.DummyRouter;
 import org.codehaus.wadi.web.impl.StandardSessionWrapperFactory;
-import org.codehaus.wadi.web.impl.WebEndPoint;
 import org.codehaus.wadi.web.impl.WebSessionToSessionPoolAdapter;
 
 /**
@@ -95,11 +94,10 @@ public class MyServlet implements Servlet {
 	protected final AttributesFactory _distributableAttributesFactory=new DistributableAttributesFactory();
 	protected final ValuePool _distributableValuePool=new SimpleValuePool(new DistributableValueFactory());
 	protected final InvocationProxy _httpProxy;
-	protected final EndPoint _proxiedLocation;
 	protected final StandardManager _manager;
 
 
-	public MyServlet(String nodeName, String clusterName, SessionPool contextPool, Relocater relocater, InvocationProxy httpProxy, InetSocketAddress httpAddress, Dispatcher dispatcher) throws Exception {
+	public MyServlet(String nodeName, String clusterName, SessionPool contextPool, Relocater relocater, InvocationProxy httpProxy, Dispatcher dispatcher) throws Exception {
 		_log=LogFactory.getLog(getClass().getName()+"#"+nodeName);
 		_clusterName=clusterName;
 		_nodeName=nodeName;
@@ -113,9 +111,8 @@ public class MyServlet implements Servlet {
 		_memoryMap=new HashMap();
 		_serialContextualiser=new SerialContextualiser(_statelessContextualiser, _collapser, _memoryMap);
 		_memoryContextualiser=new MemoryContextualiser(_serialContextualiser, new NeverEvicter(30000, true), _memoryMap, new SimpleStreamer(), contextPool, new MyDummyHttpServletRequestWrapperPool());
-		_proxiedLocation=new WebEndPoint(httpAddress);
 		_httpProxy=httpProxy;
-		_manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, _memoryContextualiser, _memoryMap, _router, true, _streamer, _accessOnLoad, new DummyReplicaterFactory(), _proxiedLocation, _httpProxy, null, 24, _collapser);
+		_manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, _memoryContextualiser, _memoryMap, _router, true, _streamer, _accessOnLoad, new DummyReplicaterFactory(), _httpProxy, null, 24, _collapser);
 	}
 
 	public Contextualiser getContextualiser(){return _memoryContextualiser;}

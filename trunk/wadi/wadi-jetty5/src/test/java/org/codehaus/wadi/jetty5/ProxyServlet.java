@@ -17,7 +17,7 @@
 package org.codehaus.wadi.jetty5;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
+import java.net.URI;
 
 import javax.servlet.Servlet;
 import javax.servlet.ServletConfig;
@@ -32,7 +32,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.group.EndPoint;
 import org.codehaus.wadi.web.impl.AbstractHttpProxy;
 import org.codehaus.wadi.web.impl.StandardHttpProxy;
-import org.codehaus.wadi.web.impl.WebEndPoint;
+import org.codehaus.wadi.web.impl.URIEndPoint;
 import org.codehaus.wadi.web.impl.WebInvocation;
 import org.mortbay.http.SocketListener;
 import org.mortbay.jetty.Server;
@@ -75,7 +75,8 @@ public class ProxyServlet implements Servlet {
 		
 		EndPoint location=null;
 		try {
-			location=new WebEndPoint(new InetSocketAddress(req.getServerName(), req.getServerPort()));
+            URI uri = new URI(req.getServerName() + ":" + req.getServerPort());
+			location=new URIEndPoint(uri);
 			WebInvocation invocation=new WebInvocation();
 			invocation.init(hreq, hres, null, _proxy);
 			invocation.relocate(location);

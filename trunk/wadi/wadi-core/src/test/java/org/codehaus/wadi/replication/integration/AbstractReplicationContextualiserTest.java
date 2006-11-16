@@ -15,7 +15,6 @@
  */
 package org.codehaus.wadi.replication.integration;
 
-import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
@@ -67,7 +66,7 @@ import org.codehaus.wadi.web.impl.DummyRouter;
 import org.codehaus.wadi.web.impl.DummyStatefulHttpServletRequestWrapperPool;
 import org.codehaus.wadi.web.impl.StandardHttpProxy;
 import org.codehaus.wadi.web.impl.StandardSessionWrapperFactory;
-import org.codehaus.wadi.web.impl.WebEndPoint;
+import org.codehaus.wadi.web.impl.URIEndPoint;
 import org.codehaus.wadi.web.impl.WebSessionToSessionPoolAdapter;
 
 /**
@@ -185,7 +184,6 @@ public abstract class AbstractReplicationContextualiserTest extends TestCase {
                 streamer,
                 true,
                 new ReplicaterAdapterFactory(replicationManager, sessionPool),
-                new WebEndPoint(new InetSocketAddress("localhost", 8080)),
                 new StandardHttpProxy("jsessionid"),
                 serviceSpace,
                 24,

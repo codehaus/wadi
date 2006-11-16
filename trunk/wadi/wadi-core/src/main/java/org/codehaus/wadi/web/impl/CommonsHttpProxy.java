@@ -38,7 +38,7 @@ package org.codehaus.wadi.web.impl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.InetSocketAddress;
+import java.net.URI;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -99,13 +99,7 @@ public class CommonsHttpProxy extends AbstractHttpProxy {
 		super(sessionPathParamKey);
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see javax.servlet.Servlet#service(javax.servlet.ServletRequest,
-	 *      javax.servlet.ServletResponse)
-	 */
-	protected void doProxy(InetSocketAddress location, WebInvocation context) throws ProxyingException {
+    protected void doProxy(URI uri, WebInvocation context) throws ProxyingException {
 		HttpServletRequest hreq = context.getHreq();
 		HttpServletResponse hres = context.getHres();
 		
@@ -124,13 +118,13 @@ public class CommonsHttpProxy extends AbstractHttpProxy {
 			throw new IrrecoverableException("could not create HttpMethod instance", e); // should never happen
 		}
 		
-		String uri=getRequestURI(hreq);
-		hm.setPath(uri);
+		String requestURI = getRequestURI(hreq);
+		hm.setPath(requestURI);
 		
 		String queryString=hreq.getQueryString();
 		if (queryString!=null) {
 			hm.setQueryString(queryString);
-			uri+=queryString;
+            requestURI += queryString;
 		}
 		
 		hm.setFollowRedirects(false);
@@ -250,8 +244,9 @@ public class CommonsHttpProxy extends AbstractHttpProxy {
 			HttpClient client=new HttpClient();
 			HostConfiguration hc=new HostConfiguration();
 			//String host=location.getAddress().getHostAddress();
-			String host=location.getHostName(); // inefficient - but stops httpclient from rejecting half our cookies...
-			hc.setHost(host, location.getPort());
+			// inefficient - but stops httpclient from rejecting half our cookies...
+			String host= uri.getHost();
+			hc.setHost(host, uri.getPort());
 			client.executeMethod(hc, hm, state);
 		}
 		catch (IOException e)	// TODO
@@ -318,6 +313,9 @@ public class CommonsHttpProxy extends AbstractHttpProxy {
 		
 		long endTime=System.currentTimeMillis();
 		long elapsed=endTime-startTime;
-		if (_log.isDebugEnabled()) _log.debug("in:"+client2ServerTotal+", out:"+server2ClientTotal+", status:"+code+", time:"+elapsed+", url:http://"+location.getHostName()+":"+location.getPort()+uri);
+		if (_log.isDebugEnabled()) {
+            _log.debug("in:" + client2ServerTotal + ", out:" + server2ClientTotal + ", status:" + code + ", time:"
+                    + elapsed + ", uri:" + uri);
+        }
 	}
 }

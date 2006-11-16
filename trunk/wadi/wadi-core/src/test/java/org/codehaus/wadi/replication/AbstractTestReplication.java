@@ -17,7 +17,6 @@
 package org.codehaus.wadi.replication;
 
 import java.io.File;
-import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
@@ -43,7 +42,6 @@ import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.group.EndPoint;
 import org.codehaus.wadi.impl.AbstractExclusiveContextualiser;
 import org.codehaus.wadi.impl.AlwaysEvicter;
 import org.codehaus.wadi.impl.ClusterContextualiser;
@@ -79,7 +77,6 @@ import org.codehaus.wadi.web.impl.DummyRouter;
 import org.codehaus.wadi.web.impl.DummyStatefulHttpServletRequestWrapperPool;
 import org.codehaus.wadi.web.impl.StandardHttpProxy;
 import org.codehaus.wadi.web.impl.StandardSessionWrapperFactory;
-import org.codehaus.wadi.web.impl.WebEndPoint;
 import org.codehaus.wadi.web.impl.WebSessionToSessionPoolAdapter;
 
 /**
@@ -152,9 +149,8 @@ public abstract class AbstractTestReplication extends TestCase {
 		WebSessionWrapperFactory wrapperFactory=new StandardSessionWrapperFactory();
 		SessionIdFactory idFactory=new TomcatSessionIdFactory();
 		ReplicaterFactory replicaterfactory=new MemoryReplicaterFactory(numPartitions);
-		EndPoint location = new WebEndPoint(new InetSocketAddress("localhost", 8080));
 		InvocationProxy proxy=new StandardHttpProxy("jsessionid");
-		ClusteredManager manager=new ClusteredManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), new DummyRouter(), true, streamer, true, replicaterfactory, location, proxy, serviceSpace, 24, collapser);
+		ClusteredManager manager=new ClusteredManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, memory, memory.getMap(), new DummyRouter(), true, streamer, true, replicaterfactory, proxy, serviceSpace, 24, collapser);
 		manager.init(new DummyManagerConfig());
 
 		serviceSpace.getServiceRegistry().register(new ServiceName("manager"), manager);
