@@ -1,5 +1,9 @@
 package org.codehaus.wadi.tribes;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -25,6 +29,7 @@ import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.ElectionStrategy;
 import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.Peer;
+import org.codehaus.wadi.group.PeerInfo;
 
 /**
  * <p>Title: </p>
@@ -48,7 +53,7 @@ public class TribesCluster implements Cluster {
     private Member coordinator;
     private final TribesDispatcher dispatcher;
 
-    public TribesCluster(byte[] clusterDomain, TribesDispatcher dispatcher) {
+    public TribesCluster(byte[] clusterDomain, TribesDispatcher dispatcher, PeerInfo localPeerinfo) {
         if (null == clusterDomain) {
             throw new IllegalArgumentException("clusterDomain is required");
         } else if (null == dispatcher) {
@@ -66,6 +71,14 @@ public class TribesCluster implements Cluster {
         channel.addMembershipListener(new WadiListener(this));
         ((McastService)channel.getMembershipService()).setMcastAddr("224.0.0.4");
         ((McastService)channel.getMembershipService()).setDomain(clusterDomain);
+    	try {
+    		ByteArrayOutputStream baos=new ByteArrayOutputStream();
+    		ObjectOutputStream oos=new ObjectOutputStream(baos);
+    		oos.writeObject(localPeerinfo);
+		//    		channel.getMembershipService().setPayload(baos.toByteArray());
+    	} catch (Exception e) {
+    		e.printStackTrace(); // TODO - put this somewhere else...
+    	}
         DomainFilterInterceptor filter = new DomainFilterInterceptor();
         filter.setDomain(clusterDomain);
         channel.addInterceptor(filter);
@@ -243,6 +256,14 @@ public class TribesCluster implements Cluster {
         }
         
         public synchronized void memberAdded(Member member) {
+	    //        	try {
+		    //        		ByteArrayInputStream bais=new ByteArrayInputStream(member.getPayload());
+		    //        		ObjectInputStream ois=new ObjectInputStream(bais);
+		    //        		PeerInfo peerInfo=(PeerInfo)ois.readObject();
+		    //        		System.out.println(">>> EndPoint="+peerInfo.getEndPoint());
+		    //        	} catch (Exception e) {
+		    //        		e.printStackTrace();
+		    //        	}
             coordinator = electCoordinator();
             HashSet added = new HashSet();
             HashSet removed = new HashSet();

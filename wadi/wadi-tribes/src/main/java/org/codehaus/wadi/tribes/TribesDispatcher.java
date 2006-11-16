@@ -11,6 +11,7 @@ import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.EndPoint;
 import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.MessageExchangeException;
+import org.codehaus.wadi.group.PeerInfo;
 import org.codehaus.wadi.group.impl.AbstractDispatcher;
 
 /**
@@ -33,9 +34,11 @@ public class TribesDispatcher extends AbstractDispatcher implements ChannelListe
         super(inactiveTime);
         //todo, create some sort of config file
         byte[] domain = getBytes(clusterName);
-        cluster = new TribesCluster(domain, this);
+        PeerInfo localPeerInfo=new PeerInfo(endPoint);
+        cluster = new TribesCluster(domain, this, localPeerInfo);
         this.localPeerName = localPeerName;
     }
+    
     
     private byte[] getBytes(String s) {
         try {

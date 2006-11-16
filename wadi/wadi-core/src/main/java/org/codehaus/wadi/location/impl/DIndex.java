@@ -73,7 +73,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
     private Peer _coordinatorPeer;
     private Coordinator _coordinator;
     private PartitionManagerConfig _config;
-    
+
     public DIndex(int numPartitions, ServiceSpace serviceSpace, PartitionMapper mapper) {
         if (1 > numPartitions) {
             throw new IllegalArgumentException("numPartitions must be > 0");
@@ -103,14 +103,14 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 
     public void start() throws Exception {
         _cluster.addClusterListener(this);
-        
+
         _partitionManager.start();
         _stateManager.start();
     }
 
     public void stop() throws Exception {
         _cluster.removeClusterListener(this);
-        
+
         Thread.interrupted();
 
         if (_coordinator != null) {
