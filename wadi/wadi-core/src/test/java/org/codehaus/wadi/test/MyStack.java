@@ -17,7 +17,6 @@
 package org.codehaus.wadi.test;
 
 import java.io.File;
-import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
@@ -63,7 +62,7 @@ import org.codehaus.wadi.web.impl.DummyRouter;
 import org.codehaus.wadi.web.impl.DummyStatefulHttpServletRequestWrapperPool;
 import org.codehaus.wadi.web.impl.StandardHttpProxy;
 import org.codehaus.wadi.web.impl.StandardSessionWrapperFactory;
-import org.codehaus.wadi.web.impl.WebEndPoint;
+import org.codehaus.wadi.web.impl.URIEndPoint;
 import org.codehaus.wadi.web.impl.WebHybridRelocater;
 import org.codehaus.wadi.web.impl.WebSessionToSessionPoolAdapter;
 
@@ -116,10 +115,9 @@ public class MyStack {
         WebSessionWrapperFactory wrapperFactory = new StandardSessionWrapperFactory();
         SessionIdFactory idFactory = new TomcatSessionIdFactory();
         ReplicaterFactory replicaterfactory = new MemoryReplicaterFactory(numPartitions);
-        EndPoint location = new WebEndPoint(new InetSocketAddress("localhost", 8080));
         InvocationProxy proxy = new StandardHttpProxy("jsessionid");
         _manager = new ClusteredManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, _memory,
-                _memory.getMap(), new DummyRouter(), true, streamer, true, replicaterfactory, location, proxy,
+                _memory.getMap(), new DummyRouter(), true, streamer, true, replicaterfactory, proxy,
                 serviceSpace, 4, collapser);
         _manager.init(new DummyManagerConfig());
 
