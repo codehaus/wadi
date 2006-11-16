@@ -34,7 +34,7 @@ package org.codehaus.wadi.web.impl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.InetSocketAddress;
+import java.net.URI;
 import java.util.HashSet;
 
 import javax.servlet.http.HttpServletRequest;
@@ -130,20 +130,20 @@ public abstract class AbstractHttpProxy implements InvocationProxy {
 	}
 	
 	public final void proxy(EndPoint location, Invocation invocation) throws ProxyingException {
-		if (false == location instanceof WebEndPoint) {
-			throw new IllegalArgumentException(WebEndPoint.class +
+		if (false == location instanceof URIEndPoint) {
+			throw new IllegalArgumentException(URIEndPoint.class +
 			" is expected.");
 		} else if (false == invocation instanceof WebInvocation) {
 			throw new IllegalArgumentException(WebInvocation.class +
 			" is expected.");
 		}
-		WebEndPoint proxiedLocation = (WebEndPoint) location;
-		InetSocketAddress address = proxiedLocation.getInetSocketAddress();
+		URIEndPoint proxiedLocation = (URIEndPoint) location;
+		URI uri = proxiedLocation.getURI();
 		
 		WebInvocation context = (WebInvocation) invocation;
-		doProxy(address, context);
+		doProxy(uri, context);
 	}
 	
-	protected abstract void doProxy(InetSocketAddress address, WebInvocation context) throws ProxyingException;
+	protected abstract void doProxy(URI uri, WebInvocation context) throws ProxyingException;
 	
 }

@@ -83,7 +83,7 @@ public class WebInvocation implements Invocation {
     }
 
     public void relocate(EndPoint endPoint) throws InvocationException {
-    	WebEndPoint wep=(WebEndPoint)endPoint;
+    	URIEndPoint wep=(URIEndPoint)endPoint;
         // make some decisions about how we would like to relocate the Invocation :
         // via redirection
         // via proxy

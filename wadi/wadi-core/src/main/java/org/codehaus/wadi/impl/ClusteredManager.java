@@ -38,7 +38,6 @@ import org.codehaus.wadi.ValueHelper;
 import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.group.EndPoint;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.location.PartitionManagerConfig;
 import org.codehaus.wadi.location.impl.DIndex;
@@ -65,7 +64,6 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
     private final Collapser _collapser;
     private final int _numPartitions;
     private final InvocationProxy _proxy;
-    private final EndPoint _endPoint;
     private final DIndex _dindex;
 
     public ClusteredManager(WebSessionPool sessionPool, 
@@ -80,7 +78,6 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
             Streamer streamer, 
             boolean accessOnLoad, 
             ReplicaterFactory replicaterFactory, 
-            EndPoint endPoint,
             InvocationProxy proxy,
             ServiceSpace serviceSpace, 
             int numPartitions, 
@@ -97,7 +94,6 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
                 streamer, 
                 accessOnLoad, 
                 replicaterFactory);
-        _endPoint = endPoint;
         _proxy = proxy;
         this.serviceSpace = serviceSpace;
         _dispatcher = serviceSpace.getDispatcher();
@@ -223,10 +219,6 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
 
     public InvocationProxy getInvocationProxy() {
         return _proxy;
-    }
-
-    public EndPoint getEndPoint() {
-        return _endPoint;
     }
 
     public boolean contextualise(Invocation invocation, String id, Immoter immoter, Sync motionLock,
