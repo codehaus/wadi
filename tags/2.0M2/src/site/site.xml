@@ -1,0 +1,82 @@
+<project name="WADI">
+  <skin>
+    <groupId>org.apache.maven.skins</groupId>
+    <artifactId>maven-stylus-skin</artifactId>
+  </skin>
+
+  <bannerLeft>
+    <name>WADI</name>
+    <src>/images/wadi.gif</src>
+    <href>http://wadi.codehaus.org</href>
+  </bannerLeft>
+
+  <body>
+
+    <links>
+      <item name="ActiveMQ" href="http://activemq.org"/>
+      <item name="ActiveCluster" href="http://activecluster.codehaus.org"/>
+      <item name="JGroups" href="http://www.jgroups.org"/>
+      <item name="Tribes" href="http://svn.apache.org/viewcvs.cgi/tomcat/container/tc5.5.x/modules/groupcom"/>
+      <item name="Jetty" href="http://jetty.mortbay.org/jetty/index.html"/>
+      <item name="Tomcat" href="http://tomcat.apache.org"/>
+      <item name="Axis" href="http://ws.apache.org/axis2"/>
+      <item name="OpenEJB" href="http://www.openejb.org"/>
+      <item name="JBoss" href="http://sourceforge.net/projects/jboss"/>
+      <item name="Geronimo" href="http://geronimo.apache.org"/>
+    </links>
+
+    <menu name="Users">
+      <item name="Project Page" href="http://xircles.codehaus.org/projects/wadi"/>
+      <item name="Getting Started" href="./getting-started/index.html"/>
+      <item name="Documentation" href="./documentation/index.html"/>
+      <item name="FAQ" href="./faq.html"/>
+      <item name="Wiki" href="http://docs.codehaus.org/pages/listpages-dirview.action?key=WADI"/>
+      <item name="List" href="mailto:user@wadi.codehaus.org"/>
+      <item name="#WADI" href="irc://irc.codehaus.org/wadi"/>
+      <item name="How To Help" href="./help.html"/>
+      <item name="Release Repository" href="http://repository.codehaus.org/org/codehaus/wadi/"/>
+      <item name="Release Distributions" href="http://dist.codehaus.org/wadi/"/>
+      <item name="Snapshot Repository" href="http://snapshots.repository.codehaus.org/org/codehaus/wadi/"/>
+      <!-- <item name="Snapshot Distributions" href="http://snapshots.codehaus.org/"/> --> <!-- TODO -->
+      <item name="Dependency Repository" href="http://dist.codehaus.org/wadi/dependencies/maven2/"/>
+    </menu>
+
+    <menu name="Developers">
+      <item name="Maven 2.0.3+" href="http://docs.codehaus.org/display/WADI/Maven+2.0.x"/>
+      <item name="Eclipse 3.2.x" href="http://docs.codehaus.org/display/WADI/Eclipse-3.2.x"/>
+      <item name="Conventions" href="http://docs.codehaus.org/display/WADI/Conventions"/>
+      <item name="Clock" href="http://www.timeanddate.com/worldclock/custom.html?cities=70,75,340,136,181,240,250"/>
+      <item name="Gmane" href="http://docs.codehaus.org/display/WADI/Gmane"/>
+      <item name="Library" href="http://docs.codehaus.org/display/WADI/Library"/>
+      <item name="List" href="mailto:dev@wadi.codehaus.org"/>
+      <item name="#WADI" href="irc://irc.codehaus.org/wadi"/>
+      <item name="Jira" href="http://jira.codehaus.org/browse/WADI"/>
+      <item name="Continuum" href="http://ouroboros.dnsalias.net:8080/continuum/servlet/continuum/target/View.vm/fid/shellProject/id/1"/>
+      <item name="FishEye" href="http://svn.wadi.codehaus.org/viewrep/wadi/trunk/wadi"/>
+      <item name="Release Repository" href="https://dav.codehaus.org/repository/wadi/org/codehaus/wadi/"/>
+      <item name="Release Distributions" href="https://dav.codehaus.org/dist/wadi/"/>
+      <item name="Snapshot Repository" href="https://dav.codehaus.org/snapshots.repository/wadi/org/codehaus/wadi/"/>
+      <item name="Snapshot Distributions" href="https://dav.codehaus.org/snapshots.dist/wadi/"/>
+      <item name="Dependency Repository" href="https://dav.codehaus.org/dist/wadi/dependencies/maven2/"/>
+    </menu>
+
+    <menu name="Modules">
+      <item name="Group" href="wadi-group/index.html"/>
+      <item name="Core" href="wadi-core/index.html"/>
+      <item name="ActiveCluster 4.0M4+" href="wadi-activecluster/index.html"/>
+      <item name="JGroups 2.8+" href="wadi-jgroups/index.html"/>
+      <item name="Tribes 0.9.5.2+" href="wadi-tribes/index.html"/>
+      <item name="Jetty 5.x" href="wadi-jetty5/index.html"/>
+      <item name="Jetty 6.x" href="wadi-jetty6/index.html"/>
+      <item name="Tomcat 5.0.x" href="wadi-tomcat50/index.html"/>
+      <item name="Tomcat 5.5.x" href="wadi-tomcat55/index.html"/>
+      <item name="Axis 2.x" href="wadi-axis2/index.html"/>
+      <item name="OpenEJB" href="wadi-openejb/index.html"/>
+      <item name="JBoss 4.x" href="wadi-jboss4/index.html"/>
+      <item name="Example Webapp" href="wadi-webapp/index.html"/>
+    </menu>
+
+    ${reports}
+
+  </body>
+</project>

@@ -1,0 +1,45 @@
+/**
+ *
+ * Copyright 2003-2005 Core Developers Network Ltd.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+package org.codehaus.wadi.location.impl;
+
+import org.codehaus.wadi.group.Envelope;
+import org.codehaus.wadi.location.session.DeleteIMToPM;
+import org.codehaus.wadi.location.session.EvacuateIMToPM;
+import org.codehaus.wadi.location.session.InsertIMToPM;
+import org.codehaus.wadi.location.session.MoveIMToPM;
+import org.codehaus.wadi.location.session.MovePMToSM;
+import org.codehaus.wadi.location.session.ReleaseEntryRequest;
+
+/**
+ * 
+ * @version $Revision: 1603 $
+ */
+public interface StateManagerMessageListener {
+    void onDIndexInsertionRequest(Envelope om, InsertIMToPM request);
+
+    void onDIndexDeletionRequest(Envelope om, DeleteIMToPM request);
+
+    void onDIndexRelocationRequest(Envelope om, EvacuateIMToPM request);
+
+    void onMessage(Envelope message, MoveIMToPM request);
+
+    // called on State Master...
+    void onMessage(Envelope message1, MovePMToSM request);
+
+    void onEmigrationRequest(Envelope message, ReleaseEntryRequest request);
+
+}

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<project
+  xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"
+  >
+
+  <parent>
+    <groupId>org.codehaus.wadi</groupId>
+    <artifactId>wadi</artifactId>
+    <version>2.0M2-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>wadi-jboss4</artifactId>
+  <packaging>jar</packaging>
+  <name>WADI :: JBoss4</name>
+  <description>WADI/JBoss4 Integration - Utility classes</description>
+
+  <dependencies>
+    <dependency>
+      <groupId>jboss</groupId>
+      <artifactId>jboss-common</artifactId>
+      <version>${jboss4.version}</version>
+	<exclusions>
+	  <exclusion>
+	    <groupId>slide</groupId>
+	    <artifactId>webdavlib</artifactId>
+	  </exclusion>
+	  <exclusion>
+	    <groupId>xerces</groupId>
+	    <artifactId>xercesImpl</artifactId>
+	  </exclusion>
+	</exclusions>
+    </dependency>
+  </dependencies>
+
+</project>

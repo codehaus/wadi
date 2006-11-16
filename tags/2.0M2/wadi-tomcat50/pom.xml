@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<project
+  xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"
+  >
+
+  <parent>
+    <groupId>org.codehaus.wadi</groupId>
+    <artifactId>wadi</artifactId>
+    <relativePath>../pom.xml</relativePath>
+    <version>2.0M2-SNAPSHOT</version>
+  </parent>
+
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>wadi-tomcat50</artifactId>
+  <packaging>jar</packaging>
+  <name>WADI :: Tomcat50</name>
+  <description>WADI/Tomcat-5.0.x Integration - An HttpSession Manager for Tomcat-5.0.x</description>
+
+  <dependencies>
+    <dependency>
+      <groupId>geronimo-spec</groupId>
+      <artifactId>geronimo-spec-servlet</artifactId>
+    </dependency>
+    <dependency><!-- for Valve -->
+      <groupId>mx4j</groupId>
+      <artifactId>mx4j</artifactId>
+      <version>${mx4j.version}</version>
+    </dependency>
+    <!-- commons-httpclient? -->
+    <dependency>
+      <groupId>org.codehaus.wadi</groupId>
+      <artifactId>wadi-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>tomcat</groupId>
+      <artifactId>catalina</artifactId>
+      <version>${tomcat50.version}</version>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
+
+  <reporting>
+    <plugins>
+      <plugin>
+	<groupId>org.apache.maven.plugins</groupId>
+	<artifactId>maven-javadoc-plugin</artifactId>
+	<configuration>
+	  <source>${jse.version}</source>
+	  <links>
+	    <link>http://java.sun.com/j2se/${jse.version}/docs/api</link>
+	    <link>http://java.sun.com/j2ee/${jee.version}/docs/api</link>
+	    <link>http://jakarta.apache.org/commons/logging/apidocs</link>
+	    <link>http://tomcat.apache.org/tomcat-5.0-doc/catalina/docs/api</link>
+	  </links>
+	</configuration>
+      </plugin>
+    </plugins>
+  </reporting>
+
+</project>

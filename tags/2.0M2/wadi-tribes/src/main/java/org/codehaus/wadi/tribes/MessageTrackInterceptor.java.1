@@ -1,0 +1,154 @@
+package org.codehaus.wadi.tribes;
+
+import org.apache.catalina.tribes.group.ChannelInterceptorBase;
+import org.apache.catalina.tribes.ChannelMessage;
+import org.apache.catalina.tribes.group.InterceptorPayload;
+import org.apache.catalina.tribes.ChannelException;
+import org.apache.catalina.tribes.Member;
+import java.util.HashMap;
+import org.apache.catalina.tribes.UniqueId;
+import java.sql.Timestamp;
+import java.util.Map;
+import java.util.Iterator;
+
+
+public class MessageTrackInterceptor extends ChannelInterceptorBase {
+    public static HashMap messages = new HashMap();
+    protected static DebugThread dt = null;
+
+    public MessageTrackInterceptor() {
+        if ( dt == null ) {
+            dt = new DebugThread();
+            dt.setDaemon(true);
+            dt.setName("Message Tracker Debug Thread");
+            dt.start();
+        }
+    }
+
+
+    public void messageReceived(ChannelMessage msg) {
+        try {
+            messages.remove(new UniqueId(msg.getUniqueId()));
+        }finally {
+            try {
+                super.messageReceived(msg);
+            } catch ( Throwable x ) {
+                x.printStackTrace();
+                if ( x instanceof RuntimeException ) throw (RuntimeException)x;
+                else throw new RuntimeException(x);
+            }
+        }
+    }
+
+    public void sendMessage(Member[] destination, ChannelMessage msg, InterceptorPayload payload) throws ChannelException {
+        try {
+            messages.put(new UniqueId(msg.getUniqueId()), new DebugMessage(msg,getLocalMember(false),destination));
+        }finally {
+            try {
+                super.sendMessage(destination, msg, payload);
+            } catch ( Throwable x ) {
+                x.printStackTrace();
+                if ( x instanceof ChannelException ) throw (ChannelException)x;
+                else throw new ChannelException(x);
+            }
+        }
+    }
+    
+    
+    public void start(int svc) throws ChannelException {
+        try {
+            printStatus();
+        }finally {
+            super.start(svc);
+        }
+    }
+
+    public void stop(int svc) throws ChannelException {
+        try {
+            printStatus();
+        }finally {
+            super.stop(svc);
+        }
+    }
+
+    
+    private static void printStatus() {
+        System.out.println("\nMessage Tracker Start\n size:" +
+                           messages.size() + "\n" +
+                           messages + "\nMessage Tracker End");
+    }
+    
+    private static String getStackTrace(StackTraceElement[] trace) {
+        StringBuffer buf = new StringBuffer();
+        for (int i = 0; i < trace.length; i++) {
+            buf.append("\t");
+            buf.append(trace[i]);
+            buf.append("\n");
+        }
+        return buf.toString();
+    }
+    
+    protected static class DebugMessage {
+        public ChannelMessage message;
+        public Member source;
+        public Member[] destination;
+        public Timestamp sent;
+        public String thread;
+        public Exception trace;
+        public DebugMessage(ChannelMessage msg, Member sender, Member[] destination) {
+            this.message = msg;
+            this.source = sender;
+            this.thread = Thread.currentThread().getName();
+            this.sent = new Timestamp(System.currentTimeMillis());
+            this.destination = destination;
+            trace = new Exception();
+        }
+        
+        public String toString() {
+            StringBuffer buf = new StringBuffer("Debug Message[\nfrom:");
+            buf.append(source);
+            buf.append(";\n to:");
+            for (int i=0; i<(destination.length-1); i++) {
+                buf.append(destination[i].getName());
+                buf.append(",\n ");
+            }
+            if ( destination.length > 0 ) buf.append(destination[destination.length-1]);
+            buf.append(";\n thread:");
+            buf.append(thread);
+            buf.append("; sent:");
+            buf.append(sent);
+            buf.append("; trace:\n");
+            buf.append(getStackTrace(trace.getStackTrace()));
+            buf.append("]");
+            return buf.toString();
+        }
+
+    }
+
+    
+    protected static class DebugThread extends Thread {
+        public void run() {
+            int lastsize = -1;
+            while ( true ) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException x) {
+                    break;
+                }
+                if ( lastsize == messages.size() && lastsize > 0 ) {
+                    System.out.println("Dumping stack");
+                    Map map = Thread.getAllStackTraces();
+                    for (Iterator i = map.keySet().iterator(); i.hasNext(); ) {
+                        Thread t = (Thread)i.next();
+                        StackTraceElement[] trace = (StackTraceElement[])map.get(t);
+                        System.out.println("Thread:"+t.getName()+"\n"+MessageTrackInterceptor.getStackTrace(trace));
+                    }
+                }
+                printStatus();
+                lastsize = messages.size();
+            }
+        }
+
+        
+    }
+}
