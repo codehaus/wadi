@@ -1,11 +1,10 @@
-#!/bin/sh -x
+#!/bin/sh
 
-## an integration script for various ci systems.
+## an integration script for continuum.
 
 echo "***** Continuum build started *****"
 echo
 
-downloadSources=false
 help=false
 site=false
 target=compile
@@ -32,9 +31,9 @@ do
       ;;
       -target)
       shift
-      echo "selecting jdk $1"
+      echo "selecting target $1"
       case $1 in
-	  compile|test|site)
+	  compile|test|site|eclipse)
 	  target=$1
 	  ;;
 	  *)
@@ -43,10 +42,6 @@ do
 	  ;;
       esac
       site=true
-      ;;
-      -sources)
-      echo "enabling source jar download (slow)"
-      downloadSources=true
       ;;
       -help)
       help=true
@@ -120,20 +115,13 @@ case $target in
     status=$?
     ;;
     eclipse)
-    PROPS="$PROPS -DdownloadSources=$downloadSources -Dmaven.test.failure.ignore=true"
+    PROPS="$PROPS -DdownloadSources=true -Dmaven.test.failure.ignore=true"
     mvn $PROPS clean:clean && \
     mvn $PROPS install eclipse:clean eclipse:eclipse
     status=$?
     ;;
 
 esac
-
-## gather all test results together for BJ
-mkdir ./testresults
-for i in `find . -name "TEST*.xml"`
-do
-  mv $i ./testresults/
-done
 
 echo
 echo "***** Continuum build completed *****"
