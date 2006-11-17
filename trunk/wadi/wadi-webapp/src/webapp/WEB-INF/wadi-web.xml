@@ -59,91 +59,25 @@
     >
   </bean>
 
-<!-- Embedded Axion DS -->
-<!--
+  <!-- Pooled Parameterisable Database Connection -->
+
   <bean
     id="DatabaseURL"
     class="java.lang.String"
     >
-    <constructor-arg><value>jdbc:axiondb:testdb</value></constructor-arg>
-  </bean>
-
-  <bean
-    id="DataSource"
-    class="org.axiondb.jdbc.AxionDataSource"
-    >
-    <constructor-arg><ref bean="DatabaseURL"/></constructor-arg>
-  </bean>
--->
-
-<!-- Basic MySQL DS -->
-<!--
-  <bean
-    id="DatabaseURL"
-    class="java.lang.String"
-    >
-    <constructor-arg><value>jdbc:mysql://localhost:3306/WADI?user=root</value></constructor-arg>
-  </bean>
-
-  <bean
-    id="DataSource"
-    class="com.mysql.jdbc.jdbc2.optional.MysqlConnectionPoolDataSource"
-    >
-    <property name="url"><ref bean="DatabaseURL"/></property>
-    <property name="profileSQL"><value>false</value></property>
-  </bean>
--->
-
-<!-- Pooled MySQL DS -->
-<!--
-  <bean
-    id="DatabaseURL"
-    class="java.lang.String"
-    >
-    <constructor-arg><value>jdbc:mysql://localhost/WADI?socket=/tmp/mysql.sock</value></constructor-arg>
+    <!-- <constructor-arg><value>jdbc:mysql://localhost/WADI?socket=/tmp/mysql.sock</value></constructor-arg> --> <!-- External MySql -->
+    <!-- <constructor-arg><value>jdbc:derby:WADI;create=true</value></constructor-arg> --> <!-- Internal Derby -->
+    <!-- <constructor-arg><value>jdbc:derby://localhost:1527/WADI</value></constructor-arg> --> <!-- External Derby -->
+    <!-- <constructor-arg><value>jdbc:axiondb:testdb</value></constructor-arg> --> <!-- Embedded Axion -->
+    <constructor-arg><value>${wadi.db.url}</value></constructor-arg><!-- parameterisable url -->
   </bean>
 
   <bean id="DataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
-    <property name="driverClassName"><value>com.mysql.jdbc.Driver</value></property>
-    <property name="url"><ref bean="DatabaseURL"/></property>
-    <property name="username"><value>root</value></property>
-    <property name="initialSize"><value>60</value></property>
-    <property name="maxActive"><value>60</value>
-    </property><property name="maxIdle"><value>60</value></property>
-  </bean>
--->
-
-<!-- Embedded Derby DS -->
-<!--
-  <bean
-    id="DatabaseURL"
-    class="java.lang.String"
-    >
-    <constructor-arg><value>jdbc:derby:WADI</value></constructor-arg>
-  </bean>
-
-  <bean
-    id="DataSource"
-    class="org.apache.derby.jdbc.EmbeddedDataSource"
-    >
-    <property name="databaseName"><value>${wadi.home}/tmp/${node.name}/db</value></property>
-    <property name="createDatabase"><value>create</value></property>
-    <property name="connectionAttributes"><value>derby.language.logStatementText=true;traceFile=derby-trace.out;traceLevel=255</value></property>
-  </bean>
--->
-
-<!-- External Derby DS -->
-<!--
--->
-  <bean
-    id="DatabaseURL"
-    class="java.lang.String"
-    >
-    <constructor-arg><value>jdbc:derby://localhost:1527/WADI</value></constructor-arg>
-  </bean>
-
-  <bean id="DataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
-    <property name="driverClassName"><value>org.apache.derby.jdbc.ClientDriver</value></property>
+    <!-- <property name="driverClassName"><value>com.mysql.jdbc.Driver</value></property> --> <!-- External MySql -->
+    <!-- <property name="driverClassName"><value>org.apache.derby.jdbc.EmbeddedDriver</value></property> --> <!-- Internal Derby DS -->
+    <!-- <property name="driverClassName"><value>org.apache.derby.jdbc.ClientDriver</value></property> --> <!-- External Derby DS -->
+    <!-- <property name="driverClassName"><value>org.axiondb.jdbc.AxionDriver</value></property> --> <!-- Embedded Axion DS -->
+    <property name="driverClassName"><value>${wadi.db.driver}</value></property><!-- parameterisable driver -->
     <property name="initialSize"><value>2</value></property>
     <property name="maxActive"><value>2</value></property>
     <property name="maxIdle"><value>2</value></property>
@@ -489,7 +423,8 @@
     class="org.codehaus.wadi.servicespace.basic.BasicServiceSpace"
     >
     <constructor-arg><ref bean="ServiceSpaceName"/></constructor-arg>
-    <constructor-arg><ref bean="SharedDispatcher"/></constructor-arg>
+    <!-- <constructor-arg><ref bean="SharedDispatcher"/></constructor-arg> -->
+    <constructor-arg><ref bean="Dispatcher"/></constructor-arg>
   </bean>
 
 

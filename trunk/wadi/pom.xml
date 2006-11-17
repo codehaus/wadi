@@ -500,8 +500,6 @@
 	    <exclude implementation="java.lang.String">**/TestTribesRelocation.java</exclude>
 	    <exclude implementation="java.lang.String">**/TestTribesEvacuation.java</exclude><!-- fails occasionally, investigate -->
 
-	    <exclude implementation="java.lang.String">**/TestWadiWebXml.java</exclude>  <!-- needs Derby running -->
-
 	    <!--
 	    Peer group tests fail when executed with
 	    maven. TestACPeerGroup: when the two testMETHOD are
