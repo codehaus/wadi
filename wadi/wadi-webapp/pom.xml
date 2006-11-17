@@ -85,9 +85,9 @@
       </exclusions>
       <scope>test</scope>
     </dependency>
-    <dependency><!-- derby db client side -->
+    <dependency>
       <groupId>org.apache.derby</groupId>
-      <artifactId>derbyclient</artifactId>
+      <artifactId>derby</artifactId>
       <version>${derby.version}</version>
       <scope>test</scope>
     </dependency>

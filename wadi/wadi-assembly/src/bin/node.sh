@@ -56,6 +56,8 @@ properties="\
 $properties \
 -Dwadi.home=$WADI_HOME \
 -Dwadi.version=$WADI_VERSION \
+-Dwadi.db.driver=org.apache.derby.jdbc.ClientDriver \
+-Dwadi.db.url=jdbc:derby://localhost:1527/WADI \
 -Dorg.apache.commons.logging.Log=org.apache.commons.logging.impl.SimpleLog \
 -Dorg.apache.commons.logging.simplelog.showdatetime=true \
 -Dorg.apache.commons.logging.simplelog.log.org.codehaus.wadi=debug \
