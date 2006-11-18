@@ -502,6 +502,7 @@
 
 	    <!-- These fail/hang occasionally: investigate -->
 	    <exclude implementation="java.lang.String">**/TestInVMEvacuation.java</exclude>
+	    <exclude implementation="java.lang.String">**/TestInVMRelocation.java</exclude>
 	    <exclude implementation="java.lang.String">**/TestJGGroup.java</exclude>
 	    <exclude implementation="java.lang.String">**/SimplePartitionManagerSmokeTest.java</exclude>
 
