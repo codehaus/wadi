@@ -27,16 +27,11 @@ import org.codehaus.wadi.partition.RetrieveBalancingInfoEvent;
  * @version $Revision: 1603 $
  */
 public interface PartitionManagerMessageListener {
-    // a node wants to shutdown...
     void onPartitionEvacuationRequest(Envelope om, PartitionEvacuationRequest request);
 
-    // a node wants to rebuild a lost partition
     void onPartitionRepopulateRequest(Envelope om, PartitionRepopulateRequest request);
 
-    // receive a transfer of partitions
     void onPartitionTransferRequest(Envelope om, PartitionTransferRequest request);
-    
-    void onPartitionManagerJoiningEvent(Envelope om, PartitionManagerJoiningEvent joiningEvent);
     
     void onRetrieveBalancingInfoEvent(Envelope om, RetrieveBalancingInfoEvent infoEvent);
     

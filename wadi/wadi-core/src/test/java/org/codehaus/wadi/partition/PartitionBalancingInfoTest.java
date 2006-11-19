@@ -32,7 +32,7 @@ public class PartitionBalancingInfoTest extends TestCase {
     
     protected void setUp() throws Exception {
         PartitionInfo[] partitionInfos = newPartitionInfo(1, new Peer[] {PEER1, PEER2, PEER2});
-        balancingInfo = new PartitionBalancingInfo(1, partitionInfos);
+        balancingInfo = new PartitionBalancingInfo(partitionInfos);
         balancingInfo = new PartitionBalancingInfo(PEER1, balancingInfo);
     }
     

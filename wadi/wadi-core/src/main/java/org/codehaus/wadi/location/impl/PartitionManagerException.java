@@ -21,8 +21,12 @@ package org.codehaus.wadi.location.impl;
  */
 public class PartitionManagerException extends Exception {
 
-	public PartitionManagerException(String arg0) {
-		super(arg0);
+	public PartitionManagerException(String message) {
+		super(message);
 	}
+
+    public PartitionManagerException(Throwable cause) {
+        super(cause);
+    }
 
 }

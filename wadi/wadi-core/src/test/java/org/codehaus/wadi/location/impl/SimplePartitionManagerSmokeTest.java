@@ -23,7 +23,6 @@ import java.util.List;
 import junit.framework.TestCase;
 
 import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.vm.VMBroker;
 import org.codehaus.wadi.group.vm.VMDispatcher;
@@ -93,9 +92,7 @@ public class SimplePartitionManagerSmokeTest extends TestCase {
 
         SimplePartitionManager manager = new SimplePartitionManager(dispatcher, nbPartitions, null,
                 new SimplePartitionMapper(nbPartitions)) {
-            protected void notifyPartitionManagerJoining() throws MessageExchangeException {
-            }
-            protected void waitUntilUseable(long attemptPeriod) throws InterruptedException, PartitionManagerException {
+            protected void waitForBoot(long attemptPeriod) throws InterruptedException, PartitionManagerException {
             }  
         };
         manager.start();
@@ -104,7 +101,7 @@ public class SimplePartitionManagerSmokeTest extends TestCase {
 
     private class RebalanceThread extends Thread {
         private List managers;
-        private int version;
+        private int version = 1;
         
         public RebalanceThread(List managers) {
             this.managers = managers;
@@ -116,6 +113,7 @@ public class SimplePartitionManagerSmokeTest extends TestCase {
             while (!Thread.interrupted()) {
                 try {
                     Thread.sleep(3000);
+                    version++;
                     doRun();
                     nbRebalancing++;
                 } catch (InterruptedException e) {
@@ -140,7 +138,7 @@ public class SimplePartitionManagerSmokeTest extends TestCase {
             Object object = managers.remove(0);
             managers.add(object);
             
-            final PartitionBalancingInfoUpdate update = new PartitionBalancingInfoUpdate(version++, updates, false, false);
+            final PartitionBalancingInfoUpdate update = new PartitionBalancingInfoUpdate(updates, false, false);
             for (Iterator iter = managers.iterator(); iter.hasNext();) {
                 final SimplePartitionManager manager = (SimplePartitionManager) iter.next();
                 new Thread() {
@@ -167,10 +165,10 @@ public class SimplePartitionManagerSmokeTest extends TestCase {
                 PartitionInfo partitionInfo = new PartitionInfo(version, i, owner);
                 updates[i] = new PartitionInfoUpdate(false, partitionInfo);
             }
-            PartitionBalancingInfoUpdate update = new PartitionBalancingInfoUpdate(version++, updates, true, false);
+            PartitionBalancingInfoUpdate update = new PartitionBalancingInfoUpdate(updates, true, false);
             manager.onPartitionBalancingInfoUpdate(null, update);
 
-            update = new PartitionBalancingInfoUpdate(version, updates, false, false);
+            update = new PartitionBalancingInfoUpdate(updates, false, false);
             while (managerIter.hasNext()) {
                 manager = (SimplePartitionManager) managerIter.next();
                 manager.onPartitionBalancingInfoUpdate(null, update);

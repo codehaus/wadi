@@ -27,8 +27,8 @@ import org.codehaus.wadi.partition.PartitionInfo;
 public interface PartitionFacade extends Partition {
     boolean waitForBoot(long attemptPeriod) throws InterruptedException;
 
-    boolean waitForLocalization(PartitionInfo newPartitionInfo, long attemptPeriod) throws InterruptedException;
-
+    PartitionInfo getPartitionInfo();
+    
     void setPartitionInfo(PartitionInfo partitionInfo);
 
     Partition setContent(PartitionInfo partitionInfo, LocalPartition content);

@@ -171,23 +171,6 @@ public class VersionAwarePartitionFacade implements PartitionFacade {
         onMessage(message, request, attemptAction, delegateAction);
     }
 
-    public boolean waitForLocalization(PartitionInfo newPartitionInfo, long attemptPeriod) throws InterruptedException {
-        PartitionInfo localPartitionInfo;
-        Latch localPartitionInfoLatch;
-        synchronized (partitionInfoLock) {
-            localPartitionInfo = partitionInfo;
-            localPartitionInfoLatch = partitionInfoLatch;
-        }
-        if (null == localPartitionInfo || localPartitionInfo.getVersion() < newPartitionInfo.getVersion()) {
-            boolean success = localPartitionInfoLatch.attempt(attemptPeriod);
-            if (!success) {
-                return false;
-            }
-            return waitForLocalization(newPartitionInfo, attemptPeriod);
-        }
-        return true;
-    }
-    
     public Partition setContent(PartitionInfo partitionInfo, LocalPartition content) {
         Partition oldPartition = delegate.setContent(partitionInfo, content);
         setPartitionInfo(partitionInfo);
@@ -209,7 +192,9 @@ public class VersionAwarePartitionFacade implements PartitionFacade {
     }
 
     public PartitionInfo getPartitionInfo() {
-        return partitionInfo;
+        synchronized (partitionInfoLock) {
+            return partitionInfo;
+        }
     }
 
     public void setPartitionInfo(PartitionInfo partitionInfo) {

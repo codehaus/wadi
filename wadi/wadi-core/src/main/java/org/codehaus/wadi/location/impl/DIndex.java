@@ -174,12 +174,6 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
         }
     }
 
-    public void onPartitionManagerJoiningEvent(PartitionManagerJoiningEvent joiningEvent) {
-        if (null != _coordinator) {
-            _coordinator.queueRebalancing();
-        }
-    }
-
     public void onElection(Peer coordinator) {
         _log.info(_localPeer + " accepting coordinatorship");
         try {
@@ -198,10 +192,6 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
         } catch (Exception e) {
             _log.error("problem stopping Coordinator");
         }
-    }
-
-    public static String getPeerName(Peer node) {
-        return node == null ? "<unknown>" : node.getName();
     }
 
     public boolean isCoordinator() {
@@ -330,7 +320,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
     public String getPeerName(Address address) {
         Peer local = _localPeer;
         Peer node = address.equals(local.getAddress()) ? local : (Peer) _cluster.getRemotePeers().get(address);
-        return getPeerName(node);
+        return node.getName();
     }
 
     public long getInactiveTime() {

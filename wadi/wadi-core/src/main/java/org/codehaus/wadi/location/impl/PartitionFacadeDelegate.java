@@ -57,10 +57,6 @@ public class PartitionFacadeDelegate extends AbstractPartition implements Partit
         return partitionDefinedLatch.attempt(attemptPeriod);
     }
     
-    public boolean waitForLocalization(PartitionInfo newPartitionInfo, long attemptPeriod) {
-        return true;
-    }
-    
     public boolean isLocal() {
         return getContent().isLocal();
     }
@@ -88,6 +84,10 @@ public class PartitionFacadeDelegate extends AbstractPartition implements Partit
     public Envelope exchange(SessionRequestMessage request, long timeout) throws MessageExchangeException {
         Partition localPartition = getContent();
         return localPartition.exchange(request, timeout);
+    }
+    
+    public PartitionInfo getPartitionInfo() {
+        return null;
     }
     
     public void setPartitionInfo(PartitionInfo partitionInfo) {

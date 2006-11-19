@@ -42,17 +42,8 @@ class BasicEvenBalancer implements PartitionBalancingStrategy {
 
         version = newBalancingVersion(peerToBalancingInfoState.values());
         lostPartitions = identifyLostPartitions(peerToBalancingInfoState.values());
+        peerToBalancingInfo = filterOutEvacuatingState(peerToBalancingInfoState);
         
-        peerToBalancingInfo = new HashMap();
-        for (Iterator iter = peerToBalancingInfoState.entrySet().iterator(); iter.hasNext();) {
-            Map.Entry entry = (Map.Entry) iter.next();
-            Peer peer = (Peer) entry.getKey();
-            PartitionBalancingInfoState balancingInfoState = (PartitionBalancingInfoState) entry.getValue();
-            if (balancingInfoState.isEvacuatingPartitions()) {
-                continue;
-            }
-            peerToBalancingInfo.put(peer, balancingInfoState.getBalancingInfo());
-        }
         nbPeers = peerToBalancingInfo.size();
         if (0 == nbPeers) {
             nbPartitionPerPeer = 0;
@@ -62,12 +53,26 @@ class BasicEvenBalancer implements PartitionBalancingStrategy {
             nbSparePartitions = nbPartitions % nbPeers;
         }
     }
+
+    protected Map filterOutEvacuatingState(Map peerToBalancingInfoState) {
+        Map peerToBalancingInfo = new HashMap();
+        for (Iterator iter = peerToBalancingInfoState.entrySet().iterator(); iter.hasNext();) {
+            Map.Entry entry = (Map.Entry) iter.next();
+            Peer peer = (Peer) entry.getKey();
+            PartitionBalancingInfoState balancingInfoState = (PartitionBalancingInfoState) entry.getValue();
+            if (balancingInfoState.isEvacuatingPartitions()) {
+                continue;
+            }
+            peerToBalancingInfo.put(peer, balancingInfoState.getBalancingInfo());
+        }
+        return peerToBalancingInfo;
+    }
     
     protected int newBalancingVersion(Collection balancingStates) {
         int highestBalancingVersion = 0;
         for (Iterator iter = balancingStates.iterator(); iter.hasNext();) {
             PartitionBalancingInfoState balancingInfoState = (PartitionBalancingInfoState) iter.next();
-            int version = balancingInfoState.getBalancingInfo().getVersion();
+            int version = balancingInfoState.getBalancingInfo().getHighestPartitionInfoVersion();
             if (version > highestBalancingVersion) {
                 highestBalancingVersion = version;
             }
@@ -104,9 +109,9 @@ class BasicEvenBalancer implements PartitionBalancingStrategy {
         BitSet lostPartitions = new BitSet(nbPartitions);
         for (Iterator iter = balancingStates.iterator(); iter.hasNext();) {
             PartitionBalancingInfoState balancingInfoState = (PartitionBalancingInfoState) iter.next();
-            PartitionInfo[] loacalPartitionInfos = balancingInfoState.getBalancingInfo().getLocalPartitionInfos();
-            for (int i = 0; i < loacalPartitionInfos.length; i++) {
-                PartitionInfo localPartitionInfo = loacalPartitionInfos[i];
+            PartitionInfo[] localPartitionInfos = balancingInfoState.getBalancingInfo().getLocalPartitionInfos();
+            for (int i = 0; i < localPartitionInfos.length; i++) {
+                PartitionInfo localPartitionInfo = localPartitionInfos[i];
                 int index = localPartitionInfo.getIndex();
                 if (lostPartitions.get(index)) {
                     throw new IllegalStateException("Partition [" + localPartitionInfo + "] is already defined");
