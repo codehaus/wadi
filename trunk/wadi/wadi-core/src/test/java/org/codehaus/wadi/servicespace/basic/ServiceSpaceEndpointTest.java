@@ -25,7 +25,7 @@ import org.codehaus.wadi.servicespace.ServiceSpaceName;
  * 
  * @version $Revision: $
  */
-public class ServiceSpaceEndpoingTest extends AbstractServiceSpaceTestCase {
+public class ServiceSpaceEndpointTest extends AbstractServiceSpaceTestCase {
 
     public void testDispatch() throws Exception {
         Envelope message = (Envelope) mock(Envelope.class);
@@ -33,7 +33,7 @@ public class ServiceSpaceEndpoingTest extends AbstractServiceSpaceTestCase {
         
         startVerification();
         
-        ServiceSpaceEndpoing endpoint = new ServiceSpaceEndpoing(serviceSpace, dispatcher);
+        ServiceSpaceEndpoint endpoint = new ServiceSpaceEndpoint(serviceSpace, dispatcher);
         endpoint.dispatch(message);
     }
 
@@ -46,7 +46,7 @@ public class ServiceSpaceEndpoingTest extends AbstractServiceSpaceTestCase {
 
         startVerification();
         
-        ServiceSpaceEndpoing endpoint = new ServiceSpaceEndpoing(serviceSpace, dispatcher);
+        ServiceSpaceEndpoint endpoint = new ServiceSpaceEndpoint(serviceSpace, dispatcher);
         assertTrue(endpoint.testDispatchMessage(message));
     }
 
@@ -59,7 +59,7 @@ public class ServiceSpaceEndpoingTest extends AbstractServiceSpaceTestCase {
 
         startVerification();
         
-        ServiceSpaceEndpoing endpoint = new ServiceSpaceEndpoing(serviceSpace, dispatcher);
+        ServiceSpaceEndpoint endpoint = new ServiceSpaceEndpoint(serviceSpace, dispatcher);
         assertFalse(endpoint.testDispatchMessage(message));
     }
 
@@ -71,7 +71,7 @@ public class ServiceSpaceEndpoingTest extends AbstractServiceSpaceTestCase {
 
         startVerification();
         
-        ServiceSpaceEndpoing endpoint = new ServiceSpaceEndpoing(serviceSpace, dispatcher);
+        ServiceSpaceEndpoint endpoint = new ServiceSpaceEndpoint(serviceSpace, dispatcher);
         assertFalse(endpoint.testDispatchMessage(message));
     }
 
