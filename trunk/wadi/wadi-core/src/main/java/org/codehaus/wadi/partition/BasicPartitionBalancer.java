@@ -103,8 +103,8 @@ public class BasicPartitionBalancer implements PartitionBalancer {
             PartitionBalancingInfoState balancingInfoState = (PartitionBalancingInfoState) entry.getValue();
             boolean evacuatingPartitions = balancingInfoState.isEvacuatingPartitions();
             PartitionBalancingInfoUpdate infoUpdate = 
-                new PartitionBalancingInfoUpdate(partitionInfoUpdates.getVersion(),
-                        partitionInfoUpdates.getPartitionUpdates(), isPartitionManagerAlone, evacuatingPartitions);
+                new PartitionBalancingInfoUpdate(partitionInfoUpdates.getPartitionUpdates(), 
+                        isPartitionManagerAlone, evacuatingPartitions);
             dispatcher.send(peer.getAddress(), infoUpdate);
         }
     }

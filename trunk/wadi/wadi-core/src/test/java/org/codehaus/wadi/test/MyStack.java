@@ -32,7 +32,6 @@ import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.group.EndPoint;
 import org.codehaus.wadi.impl.AbstractExclusiveContextualiser;
 import org.codehaus.wadi.impl.AlwaysEvicter;
 import org.codehaus.wadi.impl.ClusterContextualiser;
@@ -62,7 +61,6 @@ import org.codehaus.wadi.web.impl.DummyRouter;
 import org.codehaus.wadi.web.impl.DummyStatefulHttpServletRequestWrapperPool;
 import org.codehaus.wadi.web.impl.StandardHttpProxy;
 import org.codehaus.wadi.web.impl.StandardSessionWrapperFactory;
-import org.codehaus.wadi.web.impl.URIEndPoint;
 import org.codehaus.wadi.web.impl.WebHybridRelocater;
 import org.codehaus.wadi.web.impl.WebSessionToSessionPoolAdapter;
 

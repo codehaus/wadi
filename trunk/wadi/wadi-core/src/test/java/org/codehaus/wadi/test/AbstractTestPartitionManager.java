@@ -32,7 +32,6 @@ import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.impl.SimplePartitionMapper;
 import org.codehaus.wadi.location.PartitionManager;
 import org.codehaus.wadi.location.PartitionManagerConfig;
-import org.codehaus.wadi.location.impl.PartitionManagerJoiningEvent;
 import org.codehaus.wadi.location.impl.SimplePartitionManager;
 import org.codehaus.wadi.location.impl.SimplePartitionManager.Callback;
 
@@ -71,9 +70,6 @@ public abstract class AbstractTestPartitionManager extends TestCase {
 
 		Callback callback = new Callback() {
 			public void onPartitionEvacuationRequest(ClusterEvent event) {
-			}
-
-			public void onPartitionManagerJoiningEvent(PartitionManagerJoiningEvent joiningEvent) {
 			}
 		};
 

@@ -37,15 +37,15 @@ public class BasicEvenBalancerTest extends TestCase {
     
     public void testBalancingAddPeer() throws Exception {
         Map peerToBalancingInfo = new HashMap();
-        peerToBalancingInfo.put(PEER1, basicState(new UnknownPartitionBalancingInfo(PEER1, NB_PARTITIONS)));
+        peerToBalancingInfo.put(PEER1, newBasicState(new UnknownPartitionBalancingInfo(PEER1, NB_PARTITIONS)));
         BasicEvenBalancer balancer = new BasicEvenBalancer(NB_PARTITIONS, peerToBalancingInfo);
         PartitionBalancingInfo resultingBalancingInfo = balance(balancer);
 
         assertEquals(12, resultingBalancingInfo.getPartitionsOwnedBy(PEER1).length);
         
         peerToBalancingInfo = new HashMap();
-        peerToBalancingInfo.put(PEER1, basicState(new PartitionBalancingInfo(PEER1, resultingBalancingInfo)));
-        peerToBalancingInfo.put(PEER2, basicState(new UnknownPartitionBalancingInfo(PEER2, NB_PARTITIONS)));
+        peerToBalancingInfo.put(PEER1, newBasicState(new PartitionBalancingInfo(PEER1, resultingBalancingInfo)));
+        peerToBalancingInfo.put(PEER2, newBasicState(new UnknownPartitionBalancingInfo(PEER2, NB_PARTITIONS)));
         balancer = new BasicEvenBalancer(NB_PARTITIONS, peerToBalancingInfo);
         resultingBalancingInfo = balance(balancer);
         
@@ -53,9 +53,9 @@ public class BasicEvenBalancerTest extends TestCase {
         assertEquals(6, resultingBalancingInfo.getPartitionsOwnedBy(PEER2).length);
         
         peerToBalancingInfo = new HashMap();
-        peerToBalancingInfo.put(PEER1, basicState(new PartitionBalancingInfo(PEER1, resultingBalancingInfo)));
-        peerToBalancingInfo.put(PEER2, basicState(new PartitionBalancingInfo(PEER2, resultingBalancingInfo)));
-        peerToBalancingInfo.put(PEER3, basicState(new UnknownPartitionBalancingInfo(PEER3, NB_PARTITIONS)));
+        peerToBalancingInfo.put(PEER1, newBasicState(new PartitionBalancingInfo(PEER1, resultingBalancingInfo)));
+        peerToBalancingInfo.put(PEER2, newBasicState(new PartitionBalancingInfo(PEER2, resultingBalancingInfo)));
+        peerToBalancingInfo.put(PEER3, newBasicState(new UnknownPartitionBalancingInfo(PEER3, NB_PARTITIONS)));
         balancer = new BasicEvenBalancer(NB_PARTITIONS, peerToBalancingInfo);
         resultingBalancingInfo = balance(balancer);
         
@@ -64,10 +64,10 @@ public class BasicEvenBalancerTest extends TestCase {
         assertEquals(4, resultingBalancingInfo.getPartitionsOwnedBy(PEER3).length);
 
         peerToBalancingInfo = new HashMap();
-        peerToBalancingInfo.put(PEER1, basicState(new PartitionBalancingInfo(PEER1, resultingBalancingInfo)));
-        peerToBalancingInfo.put(PEER2, basicState(new PartitionBalancingInfo(PEER2, resultingBalancingInfo)));
-        peerToBalancingInfo.put(PEER3, basicState(new PartitionBalancingInfo(PEER3, resultingBalancingInfo)));
-        peerToBalancingInfo.put(PEER4, basicState(new UnknownPartitionBalancingInfo(PEER4, NB_PARTITIONS)));
+        peerToBalancingInfo.put(PEER1, newBasicState(new PartitionBalancingInfo(PEER1, resultingBalancingInfo)));
+        peerToBalancingInfo.put(PEER2, newBasicState(new PartitionBalancingInfo(PEER2, resultingBalancingInfo)));
+        peerToBalancingInfo.put(PEER3, newBasicState(new PartitionBalancingInfo(PEER3, resultingBalancingInfo)));
+        peerToBalancingInfo.put(PEER4, newBasicState(new UnknownPartitionBalancingInfo(PEER4, NB_PARTITIONS)));
         balancer = new BasicEvenBalancer(NB_PARTITIONS, peerToBalancingInfo);
         resultingBalancingInfo = balance(balancer);
         
@@ -79,17 +79,17 @@ public class BasicEvenBalancerTest extends TestCase {
 
     public void testBalancingRemovePeer() throws Exception {
         Map peerToBalancingInfo = new HashMap();
-        peerToBalancingInfo.put(PEER1, basicState(new UnknownPartitionBalancingInfo(PEER1, NB_PARTITIONS)));
-        peerToBalancingInfo.put(PEER2, basicState(new UnknownPartitionBalancingInfo(PEER2, NB_PARTITIONS)));
-        peerToBalancingInfo.put(PEER3, basicState(new UnknownPartitionBalancingInfo(PEER3, NB_PARTITIONS)));
-        peerToBalancingInfo.put(PEER4, basicState(new UnknownPartitionBalancingInfo(PEER4, NB_PARTITIONS)));
+        peerToBalancingInfo.put(PEER1, newBasicState(new UnknownPartitionBalancingInfo(PEER1, NB_PARTITIONS)));
+        peerToBalancingInfo.put(PEER2, newBasicState(new UnknownPartitionBalancingInfo(PEER2, NB_PARTITIONS)));
+        peerToBalancingInfo.put(PEER3, newBasicState(new UnknownPartitionBalancingInfo(PEER3, NB_PARTITIONS)));
+        peerToBalancingInfo.put(PEER4, newBasicState(new UnknownPartitionBalancingInfo(PEER4, NB_PARTITIONS)));
         BasicEvenBalancer balancer = new BasicEvenBalancer(NB_PARTITIONS, peerToBalancingInfo);
         PartitionBalancingInfo resultingBalancingInfo = balance(balancer);
         
         peerToBalancingInfo = new HashMap();
-        peerToBalancingInfo.put(PEER1, basicState(new PartitionBalancingInfo(PEER1, resultingBalancingInfo)));
-        peerToBalancingInfo.put(PEER2, basicState(new PartitionBalancingInfo(PEER2, resultingBalancingInfo)));
-        peerToBalancingInfo.put(PEER3, basicState(new PartitionBalancingInfo(PEER3, resultingBalancingInfo)));
+        peerToBalancingInfo.put(PEER1, newBasicState(new PartitionBalancingInfo(PEER1, resultingBalancingInfo)));
+        peerToBalancingInfo.put(PEER2, newBasicState(new PartitionBalancingInfo(PEER2, resultingBalancingInfo)));
+        peerToBalancingInfo.put(PEER3, newBasicState(new PartitionBalancingInfo(PEER3, resultingBalancingInfo)));
         balancer = new BasicEvenBalancer(NB_PARTITIONS, peerToBalancingInfo);
         resultingBalancingInfo = balance(balancer);
         
@@ -98,8 +98,8 @@ public class BasicEvenBalancerTest extends TestCase {
         assertEquals(4, resultingBalancingInfo.getPartitionsOwnedBy(PEER3).length);
         
         peerToBalancingInfo = new HashMap();
-        peerToBalancingInfo.put(PEER1, basicState(new PartitionBalancingInfo(PEER1, resultingBalancingInfo)));
-        peerToBalancingInfo.put(PEER2, basicState(new PartitionBalancingInfo(PEER2, resultingBalancingInfo)));
+        peerToBalancingInfo.put(PEER1, newBasicState(new PartitionBalancingInfo(PEER1, resultingBalancingInfo)));
+        peerToBalancingInfo.put(PEER2, newBasicState(new PartitionBalancingInfo(PEER2, resultingBalancingInfo)));
         balancer = new BasicEvenBalancer(NB_PARTITIONS, peerToBalancingInfo);
         resultingBalancingInfo = balance(balancer);
         
@@ -107,7 +107,7 @@ public class BasicEvenBalancerTest extends TestCase {
         assertEquals(6, resultingBalancingInfo.getPartitionsOwnedBy(PEER2).length);
 
         peerToBalancingInfo = new HashMap();
-        peerToBalancingInfo.put(PEER1, basicState(new PartitionBalancingInfo(PEER1, resultingBalancingInfo)));
+        peerToBalancingInfo.put(PEER1, newBasicState(new PartitionBalancingInfo(PEER1, resultingBalancingInfo)));
         balancer = new BasicEvenBalancer(NB_PARTITIONS, peerToBalancingInfo);
         resultingBalancingInfo = balance(balancer);
 
@@ -116,7 +116,7 @@ public class BasicEvenBalancerTest extends TestCase {
     
     public void testEvacuatingPeersAreSkipped() throws Exception {
         Map peerToBalancingInfo = new HashMap();
-        peerToBalancingInfo.put(PEER1, basicState(new UnknownPartitionBalancingInfo(PEER1, NB_PARTITIONS)));
+        peerToBalancingInfo.put(PEER1, newBasicState(new UnknownPartitionBalancingInfo(PEER1, NB_PARTITIONS)));
         peerToBalancingInfo.put(PEER2, new PartitionBalancingInfoState(true, new UnknownPartitionBalancingInfo(PEER1, NB_PARTITIONS)));
         BasicEvenBalancer balancer = new BasicEvenBalancer(NB_PARTITIONS, peerToBalancingInfo);
         PartitionBalancingInfo resultingBalancingInfo = balance(balancer);
@@ -138,10 +138,10 @@ public class BasicEvenBalancerTest extends TestCase {
         for (int i = 8; i < 12; i++) {
             partitionInfos[i] = new PartitionInfo(version, i, PEER3);
         }
-        PartitionBalancingInfo partitionBalancingInfo = new PartitionBalancingInfo(version, partitionInfos);
+        PartitionBalancingInfo partitionBalancingInfo = new PartitionBalancingInfo(partitionInfos);
 
-        peerToBalancingInfo.put(PEER1, basicState(new PartitionBalancingInfo(PEER1, partitionBalancingInfo)));
-        peerToBalancingInfo.put(PEER2, basicState(new PartitionBalancingInfo(PEER2, partitionBalancingInfo)));
+        peerToBalancingInfo.put(PEER1, newBasicState(new PartitionBalancingInfo(PEER1, partitionBalancingInfo)));
+        peerToBalancingInfo.put(PEER2, newBasicState(new PartitionBalancingInfo(PEER2, partitionBalancingInfo)));
  
         BasicEvenBalancer balancer = new BasicEvenBalancer(NB_PARTITIONS, peerToBalancingInfo);
         PartitionInfoUpdates infoUpdates = balancer.computePartitionInfoUpdates();
@@ -154,8 +154,8 @@ public class BasicEvenBalancerTest extends TestCase {
             assertTrue(updates[i].isRepopulate());
         }
     }
-
-    private PartitionBalancingInfoState basicState(PartitionBalancingInfo balancingInfo) {
+    
+    private PartitionBalancingInfoState newBasicState(PartitionBalancingInfo balancingInfo) {
     	return new PartitionBalancingInfoState(false, balancingInfo);
     }
     
@@ -166,7 +166,7 @@ public class BasicEvenBalancerTest extends TestCase {
         for (int i = 0; i < updates.length; i++) {
             partitionInfos[i] = updates[i].getPartitionInfo();
         }
-        return new PartitionBalancingInfo(infoUpdates.getVersion(), partitionInfos);
+        return new PartitionBalancingInfo(partitionInfos);
     }
     
 }

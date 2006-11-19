@@ -30,8 +30,6 @@ import org.codehaus.wadi.partition.PartitionBalancingInfo;
  *
  */
 public interface PartitionManager {
-	PartitionFacade getPartition(int partition);
-
 	PartitionFacade getPartition(Object key);
 	
     PartitionBalancingInfo getBalancingInfo();

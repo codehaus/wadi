@@ -36,7 +36,7 @@ public class UnknownPartitionBalancingInfo extends PartitionBalancingInfo {
         for (int i = 0; i < partitionInfos.length; i++) {
             partitionInfos[i] = new PartitionInfo(0, i, new UnknownPeer());
         }
-        return new PartitionBalancingInfo(0, partitionInfos);
+        return new PartitionBalancingInfo(partitionInfos);
     }
 
     public static class UnknownPeer implements Peer, Serializable {

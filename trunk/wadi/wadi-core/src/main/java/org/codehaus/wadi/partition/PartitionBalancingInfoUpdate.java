@@ -26,21 +26,16 @@ import org.codehaus.wadi.group.Peer;
  * @version $Revision: 1538 $
  */
 public class PartitionBalancingInfoUpdate implements Serializable {
-    private final int version;
     private final PartitionInfoUpdate[] balancingInfoUpdates;
     private final boolean isPartitionManagerAlone;
     private final boolean partitionEvacuationAck;
 
-    public PartitionBalancingInfoUpdate(int version,
-            PartitionInfoUpdate[] balancingInfoUpdates,
+    public PartitionBalancingInfoUpdate(PartitionInfoUpdate[] balancingInfoUpdates,
             boolean isPartitionManagerAlone,
             boolean partitionEvacuationAck) {
-        if (0 > version) {
-            throw new IllegalArgumentException("version must be >= 0");
-        } else if (null == balancingInfoUpdates) {
+        if (null == balancingInfoUpdates) {
             throw new IllegalArgumentException("balancingInfoUpdates is required");
         }
-        this.version = version;
         this.balancingInfoUpdates = balancingInfoUpdates;
         this.isPartitionManagerAlone = isPartitionManagerAlone;
         this.partitionEvacuationAck = partitionEvacuationAck;
@@ -63,29 +58,23 @@ public class PartitionBalancingInfoUpdate implements Serializable {
         for (int i = 0; i < balancingInfoUpdates.length; i++) {
             partitionInfos[i] = balancingInfoUpdates[i].getPartitionInfo();
         }
-        PartitionBalancingInfo newBalancingInfo = new PartitionBalancingInfo(version, partitionInfos);
-        newBalancingInfo = new PartitionBalancingInfo(peer, newBalancingInfo);
-        return newBalancingInfo;
+        PartitionBalancingInfo newBalancingInfo = new PartitionBalancingInfo(partitionInfos);
+        return new PartitionBalancingInfo(peer, newBalancingInfo);
     }
     
     public boolean isRepopulationRequested() {
-        return getIndicesToRepopulate().length > 0;
+        return getRepopulatePartitionInfoUpdates().length > 0;
     }
     
-    public int[] getIndicesToRepopulate() {
-        List indexOfPartitionsToRepopulate = new ArrayList();
+    public PartitionInfoUpdate[] getRepopulatePartitionInfoUpdates() {
+        List partitionInfoUpdatesToRepopulate = new ArrayList();
         for (int i = 0; i < balancingInfoUpdates.length; i++) {
             PartitionInfoUpdate partitionInfoUpdate = balancingInfoUpdates[i];
             if (partitionInfoUpdate.isRepopulate()) {
-                indexOfPartitionsToRepopulate.add(new Integer(i));
+                partitionInfoUpdatesToRepopulate.add(partitionInfoUpdate);
             }
         }
-
-        int[] returnedIndexes = new int[indexOfPartitionsToRepopulate.size()];
-        for (int i = 0; i < returnedIndexes.length; i++) {
-            returnedIndexes[i] = ((Integer) indexOfPartitionsToRepopulate.get(i)).intValue();
-        }
-        return returnedIndexes;
+        return (PartitionInfoUpdate[]) partitionInfoUpdatesToRepopulate.toArray(new PartitionInfoUpdate[0]);
     }
     
 }

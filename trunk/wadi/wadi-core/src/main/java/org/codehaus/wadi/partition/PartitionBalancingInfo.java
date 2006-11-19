@@ -26,19 +26,15 @@ import org.codehaus.wadi.group.Peer;
  * @version $Revision: 1538 $
  */
 public class PartitionBalancingInfo implements Serializable {
-    private final int version;
     private final PartitionInfo[] partitionInfos;
     private final Peer definingPeer;
     
-    public PartitionBalancingInfo(int version, PartitionInfo[] partitionInfos) {
-        if (0 > version) {
-            throw new IllegalArgumentException("version must be >= 0");
-        } else if (null == partitionInfos) {
+    public PartitionBalancingInfo(PartitionInfo[] partitionInfos) {
+        if (null == partitionInfos) {
             throw new IllegalArgumentException("partitionInfos is required");
         } else if (!areAllPartitionInfoOwned(partitionInfos)) {
             throw new IllegalArgumentException("all the partitions are not owned");
         }
-        this.version = version;
         this.partitionInfos = partitionInfos;
         
         definingPeer = null;
@@ -53,7 +49,6 @@ public class PartitionBalancingInfo implements Serializable {
             throw new IllegalArgumentException("prototype should not have a definingPeer");
         }
         this.definingPeer = definingPeer;
-        this.version = prototype.version;
         this.partitionInfos = prototype.partitionInfos;
     }
 
@@ -104,8 +99,15 @@ public class PartitionBalancingInfo implements Serializable {
         return copy;
     }
     
-    public int getVersion() {
-        return version;
+    public int getHighestPartitionInfoVersion() {
+        int highestVersion = 0;
+        for (int i = 0; i < partitionInfos.length; i++) {
+            PartitionInfo partitionInfo = partitionInfos[i];
+            if (highestVersion < partitionInfo.getVersion()) {
+                highestVersion = partitionInfo.getVersion();
+            }
+        }
+        return highestVersion;
     }
 
     public String toString() {
