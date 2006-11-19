@@ -95,7 +95,7 @@ public class BasicServiceSpace implements ServiceSpace, Lifecycle {
         MessageListener messageListener = dispatcher; 
         messageListener = new ServiceInvocationListener(this, messageListener);
         messageListener = new ServiceResponseListener(this, messageListener);
-        serviceSpaceEndpoint = new ServiceSpaceEndpoing(this, messageListener);
+        serviceSpaceEndpoint = new ServiceSpaceEndpoint(this, messageListener);
         
         lifecycleEndpoint = new ServiceSpaceLifecycleEndpoint();
         underlyingClusterListener = new UnderlyingClusterListener();

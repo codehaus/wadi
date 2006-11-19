@@ -25,12 +25,12 @@ import org.codehaus.wadi.servicespace.ServiceSpaceName;
  * 
  * @version $Revision: $
  */
-public class ServiceSpaceEndpoing implements ServiceEndpoint {
+public class ServiceSpaceEndpoint implements ServiceEndpoint {
     private final ServiceSpace serviceSpace;
     private final ServiceSpaceMessageHelper messageHelper;
     private final MessageListener messageListener;
     
-    public ServiceSpaceEndpoing(ServiceSpace serviceSpace, MessageListener messageListener) {
+    public ServiceSpaceEndpoint(ServiceSpace serviceSpace, MessageListener messageListener) {
         if (null == serviceSpace) {
             throw new IllegalArgumentException("serviceSpace is required");
         } else if (null == messageListener) {
