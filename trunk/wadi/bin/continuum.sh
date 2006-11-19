@@ -126,7 +126,7 @@ case $target in
 esac
 
 ## kick off a 'sword' - this will kill us if we take too long...
-sh -c "sleep $timeout && echo 'build has overrun - killing it' && kill -9 $damocles" & sword=$!
+sh -c "sleep $timeout && date && echo 'build has overrun - killing it' && kill -9 $damocles" & sword=$!
 
 ## bring our task (damocles) back into the foreground
 fg %1
