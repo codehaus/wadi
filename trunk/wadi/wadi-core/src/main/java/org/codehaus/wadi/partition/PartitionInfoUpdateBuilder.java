@@ -146,7 +146,8 @@ public class PartitionInfoUpdateBuilder {
         int owned = 0;
         for (int i = 0; i < partitionUpdates.length; i++) {
             PartitionInfoUpdate partitionInfoUpdate = partitionUpdates[i];
-            if (peer.equals(partitionInfoUpdate.getPartitionInfo().getOwner())) {
+            PartitionInfo partitionInfo = partitionInfoUpdate.getPartitionInfo();
+            if (partitionInfo.isOwned() && peer.equals(partitionInfo.getOwner())) {
                 owned++;
             }
         }
