@@ -50,7 +50,6 @@ import org.codehaus.wadi.partition.PartitionBalancingInfoUpdate;
 import org.codehaus.wadi.partition.PartitionInfo;
 import org.codehaus.wadi.partition.PartitionInfoUpdate;
 import org.codehaus.wadi.partition.RetrieveBalancingInfoEvent;
-import org.codehaus.wadi.partition.UnknownPartitionBalancingInfo;
 
 import EDU.oswego.cs.dl.util.concurrent.Latch;
 
@@ -68,23 +67,22 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
         void onPartitionEvacuationRequest(ClusterEvent event);
     }
 
-    protected final String _nodeName;
-    protected final Log _log;
-    protected final int _numPartitions;
-    protected final PartitionFacade[] _partitions;
-    protected final Cluster _cluster;
-    protected final Peer _localPeer;
-    protected final Dispatcher _dispatcher;
-    protected final long _inactiveTime;
-    protected final Callback _callback;
-    protected final PartitionMapper _mapper;
+    private final String _nodeName;
+    private final Log _log;
+    private final int _numPartitions;
+    private final PartitionFacade[] _partitions;
+    private final Cluster _cluster;
+    private final Peer _localPeer;
+    private final Dispatcher _dispatcher;
+    private final long _inactiveTime;
+    private final Callback _callback;
+    private final PartitionMapper _mapper;
     private final ServiceEndpointBuilder _endpointBuilder;
 
     private final Object balancingUnderExecution = new Object();
-    private PartitionBalancingInfo balancingInfo;
     private volatile boolean evacuatingPartitions;
     private Latch evacuationCompletionLatch;
-    protected PartitionManagerConfig _config;
+    private PartitionManagerConfig _config;
 
     public SimplePartitionManager(Dispatcher dispatcher, int numPartitions, Callback callback, PartitionMapper mapper) {
         _dispatcher = dispatcher;
@@ -103,11 +101,11 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 
     protected void initializePartitionFacades() {
         for (int i = 0; i < _numPartitions; i++) {
-            _partitions[i] = new VersionAwarePartitionFacade(_dispatcher, 
+            _partitions[i] = new VersionAwarePartitionFacade(_dispatcher,
+                    new PartitionInfo(0, i),
                     new PartitionFacadeDelegate(i, _dispatcher),
                     PARTITION_UPDATE_WAIT_TIME);
         }
-        balancingInfo = new UnknownPartitionBalancingInfo(_localPeer, _numPartitions);
     }
 
     public void init(PartitionManagerConfig config) {
@@ -189,8 +187,6 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
         } else {
             from = (Peer) _cluster.getRemotePeers().get(address);
         }
-
-        assert (from != null);
         _callback.onPartitionEvacuationRequest(new ClusterEvent(_cluster, from, ClusterEvent.PEER_REMOVED));
     }
 
@@ -205,10 +201,11 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
     }
 
     public void onRetrieveBalancingInfoEvent(Envelope om, RetrieveBalancingInfoEvent infoEvent) {
-        PartitionBalancingInfoState state;
+        PartitionBalancingInfo balancingInfo;
         synchronized (balancingUnderExecution) {
-            state = new PartitionBalancingInfoState(evacuatingPartitions, balancingInfo);
+            balancingInfo = buildBalancingInfo();
         }
+        PartitionBalancingInfoState state = new PartitionBalancingInfoState(evacuatingPartitions, balancingInfo);
         try {
             _dispatcher.reply(om, state);
         } catch (MessageExchangeException e) {
@@ -224,20 +221,21 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
                 _log.error("See nested", e);
                 throw new RuntimeException(e);
             } finally {
-                PartitionInfo[] partitionInfos = new PartitionInfo[_partitions.length];
-                for (int i = 0; i < _partitions.length; i++) {
-                    PartitionFacade facade = _partitions[i];
-                    PartitionInfo partitionInfo = facade.getPartitionInfo();
-                    partitionInfos[i] = partitionInfo;
-                }
-                PartitionBalancingInfo newBalancingInfo = new PartitionBalancingInfo(partitionInfos);
-                balancingInfo = new PartitionBalancingInfo(_localPeer, newBalancingInfo);
-                
                 if (infoUpdate.isPartitionEvacuationAck()) {
                     evacuationCompletionLatch.release();
                 }
             }
         }
+    }
+
+    protected PartitionBalancingInfo buildBalancingInfo() {
+        PartitionInfo[] partitionInfos = new PartitionInfo[_partitions.length];
+        for (int i = 0; i < _partitions.length; i++) {
+            PartitionFacade facade = _partitions[i];
+            PartitionInfo partitionInfo = facade.getPartitionInfo();
+            partitionInfos[i] = partitionInfo;
+        }
+        return new PartitionBalancingInfo(_localPeer, new PartitionBalancingInfo(partitionInfos));
     }
     
     protected void doOnPartitionBalancingInfoUpdate(Envelope om, PartitionBalancingInfoUpdate infoUpdate) throws MessageExchangeException, PartitionBalancingException {
@@ -373,7 +371,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
 
     public PartitionBalancingInfo getBalancingInfo() {
         synchronized (balancingUnderExecution) {
-            return balancingInfo;
+            return buildBalancingInfo();
         }
     }
     

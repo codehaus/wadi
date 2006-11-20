@@ -47,7 +47,7 @@ public class VersionAwarePartitionFacadeTest extends RMockTestCase {
     protected void setUp() throws Exception {
         dispatcher = (Dispatcher) mock(Dispatcher.class);
         delegate = (PartitionFacade) mock(PartitionFacade.class);
-        facade = new VersionAwarePartitionFacade(dispatcher, delegate, TIMEOUT);
+        facade = new VersionAwarePartitionFacade(dispatcher, new PartitionInfo(0, 0), delegate, TIMEOUT);
         facade.setPartitionInfo(PARTITION_INFO_V0);
     }
 

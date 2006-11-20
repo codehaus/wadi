@@ -49,15 +49,19 @@ public class VersionAwarePartitionFacade implements PartitionFacade {
     private PartitionInfo partitionInfo;
     private Latch partitionInfoLatch;
 
-    public VersionAwarePartitionFacade(Dispatcher dispatcher, PartitionFacade delegate, long partitionUpdateWaitTime) {
+    public VersionAwarePartitionFacade(Dispatcher dispatcher, PartitionInfo partitionInfo, PartitionFacade delegate, 
+            long partitionUpdateWaitTime) {
         if (null == dispatcher ) {
             throw new IllegalArgumentException("dispatcher is required");
+        } else if (null == partitionInfo) {
+            throw new IllegalArgumentException("partitionInfo is required");
         } else if (null == delegate) {
             throw new IllegalArgumentException("delegate is required");
         } else if (0 > partitionUpdateWaitTime) {
             throw new IllegalArgumentException("partitionUpdateWaitTime must be >= 0");
         }
         this.dispatcher = dispatcher;
+        this.partitionInfo = partitionInfo;
         this.delegate = delegate;
         this.partitionUpdateWaitTime = partitionUpdateWaitTime;
         

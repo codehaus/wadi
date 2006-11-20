@@ -32,7 +32,7 @@ public class PartitionBalancingInfo implements Serializable {
     public PartitionBalancingInfo(PartitionInfo[] partitionInfos) {
         if (null == partitionInfos) {
             throw new IllegalArgumentException("partitionInfos is required");
-        } else if (!areAllPartitionInfoOwned(partitionInfos)) {
+        } else if (!checkPartitionInfo(partitionInfos)) {
             throw new IllegalArgumentException("all the partitions are not owned");
         }
         this.partitionInfos = partitionInfos;
@@ -82,7 +82,7 @@ public class PartitionBalancingInfo implements Serializable {
         Collection foundPartitionInfos = new ArrayList();
         for (int i = 0; i < partitionInfos.length; i++) {
             PartitionInfo partitionInfo = partitionInfos[i];
-            if (peer.equals(partitionInfo.getOwner())) {
+            if (partitionInfo.isOwned() && peer.equals(partitionInfo.getOwner())) {
                 foundPartitionInfos.add(partitionInfo);
             }
         }
@@ -119,14 +119,11 @@ public class PartitionBalancingInfo implements Serializable {
         return buffer.toString();
     }
     
-    private boolean areAllPartitionInfoOwned(PartitionInfo[] partitionInfos) {
+    private boolean checkPartitionInfo(PartitionInfo[] partitionInfos) {
         for (int i = 0; i < partitionInfos.length; i++) {
             PartitionInfo partitionInfo = partitionInfos[i];
             if (null == partitionInfo) {
                 throw new IllegalArgumentException("partitionInfos[" + i + "] is null");
-            }
-            if (!partitionInfo.isOwned()) {
-                return false;
             } else if (partitionInfo.getIndex() != i) {
                 throw new IllegalArgumentException("partitionInfos[" + i + "] has a wrong index");
             }

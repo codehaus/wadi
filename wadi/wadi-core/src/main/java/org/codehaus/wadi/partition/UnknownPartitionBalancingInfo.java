@@ -15,11 +15,7 @@
  */
 package org.codehaus.wadi.partition;
 
-import java.io.Serializable;
-
-import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Peer;
-import org.codehaus.wadi.group.PeerInfo;
 
 /**
  *
@@ -34,24 +30,9 @@ public class UnknownPartitionBalancingInfo extends PartitionBalancingInfo {
     private static PartitionBalancingInfo buildUnownedPartitions(int nbPartitions) {
         PartitionInfo[] partitionInfos = new PartitionInfo[nbPartitions];
         for (int i = 0; i < partitionInfos.length; i++) {
-            partitionInfos[i] = new PartitionInfo(0, i, new UnknownPeer());
+            partitionInfos[i] = new PartitionInfo(0, i);
         }
         return new PartitionBalancingInfo(partitionInfos);
     }
 
-    public static class UnknownPeer implements Peer, Serializable {
-
-        public Address getAddress() {
-            throw new UnsupportedOperationException();
-        }
-
-        public String getName() {
-            throw new UnsupportedOperationException();
-        }
-
-        public PeerInfo getPeerInfo() {
-            throw new UnsupportedOperationException();
-        }
-
-    }
 }
