@@ -70,7 +70,6 @@ import org.codehaus.wadi.web.impl.WebSessionToSessionPoolAdapter;
  * @version $Revision:1846 $
  */
 public class MyServlet implements Servlet {
-
 	protected ServletConfig _config;
 	protected final Log _log;
 	protected final String _clusterName;
@@ -157,7 +156,6 @@ public class MyServlet implements Servlet {
 	public void destroy() {
 		try {
 			_manager.stop();
-			_manager.destroy();
 		} catch (Exception e) {
 			_log.warn("unexpected problem", e);
 		}
