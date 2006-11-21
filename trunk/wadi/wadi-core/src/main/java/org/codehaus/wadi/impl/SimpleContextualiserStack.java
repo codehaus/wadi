@@ -170,9 +170,6 @@ public class SimpleContextualiserStack implements Contextualiser {
 	public void promoteToExclusive(Immoter immoter){_memory.promoteToExclusive(immoter);}
 	public void load(Emoter emoter, Immoter immoter) {_memory.load(emoter, immoter);}
 
-	public void setLastAccessedTime(Evictable evictable, long oldTime, long newTime){_memory.setLastAccessedTime(evictable, oldTime, newTime);}
-	public void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval) {_memory.setMaxInactiveInterval(evictable, oldInterval, newInterval);}
-
 	public Contextualiser getTop() {return _memory;}
 
     public void findRelevantSessionNames(PartitionMapper mapper, Map keyToSessionNames) {

@@ -52,12 +52,6 @@ public abstract class AbstractChainedContextualiser extends AbstractContextualis
         super.stop();
     }
 
-    public void setLastAccessedTime(Evictable evictable, long oldTime, long newTime) {
-    }
-
-    public void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newTime) {
-    }
-
     public void findRelevantSessionNames(PartitionMapper mapper, Map keyToSessionNames) {
         super.findRelevantSessionNames(mapper, keyToSessionNames);
         if (_next.isExclusive()) {

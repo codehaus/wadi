@@ -264,9 +264,6 @@ public class StandardManager implements Lifecycle, WebSessionConfig, Contextuali
 
 	public Contextualiser getContextualiser() {return _contextualiser;}
 
-	public void setLastAccessedTime(Evictable evictable, long oldTime, long newTime) {_contextualiser.setLastAccessedTime(evictable, oldTime, newTime);}
-	public void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval) {_contextualiser.setMaxInactiveInterval(evictable, oldInterval, newInterval);}
-
 	public void expire(Motable motable) {
 		destroy(null, (WebSession)motable);
 	}
