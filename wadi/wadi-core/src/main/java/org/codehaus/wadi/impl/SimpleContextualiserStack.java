@@ -26,7 +26,6 @@ package org.codehaus.wadi.impl;
 
 import java.io.File;
 import java.net.InetAddress;
-import java.util.Collection;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -35,8 +34,6 @@ import javax.sql.DataSource;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Collapser;
-import org.codehaus.wadi.PartitionMapper;
-import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.ContextualiserConfig;
 import org.codehaus.wadi.Emoter;
@@ -46,8 +43,10 @@ import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.Motable;
+import org.codehaus.wadi.PartitionMapper;
 import org.codehaus.wadi.PoolableInvocationWrapperPool;
 import org.codehaus.wadi.Relocater;
+import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.web.impl.DummyStatefulHttpServletRequestWrapperPool;
 
@@ -180,9 +179,9 @@ public class SimpleContextualiserStack implements Contextualiser {
 
 	public Contextualiser getTop() {return _memory;}
 
-    public void findRelevantSessionNames(PartitionMapper mapper, Collection[] resultSet) {
+    public void findRelevantSessionNames(PartitionMapper mapper, Map keyToSessionNames) {
 		_log.info("findRelevantSessionNames");
-		_memory.findRelevantSessionNames(mapper, resultSet);
+		_memory.findRelevantSessionNames(mapper, keyToSessionNames);
 	}
 
 	public int getLocalSessionCount() {

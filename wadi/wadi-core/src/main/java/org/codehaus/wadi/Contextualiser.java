@@ -16,7 +16,7 @@
  */
 package org.codehaus.wadi;
 
-import java.util.Collection;
+import java.util.Map;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
@@ -106,7 +106,7 @@ public interface Contextualiser extends Lifecycle {
     
 	void load(Emoter emoter, Immoter immoter);
 	
-	void findRelevantSessionNames(PartitionMapper mapper, Collection[] resultSet);
+	void findRelevantSessionNames(PartitionMapper mapper, Map keyToSessionNames);
 	
 	int getLocalSessionCount();
 

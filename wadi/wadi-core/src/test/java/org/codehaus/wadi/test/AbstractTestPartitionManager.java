@@ -17,6 +17,7 @@
 package org.codehaus.wadi.test;
 
 import java.util.Collection;
+import java.util.Map;
 
 import junit.framework.TestCase;
 
@@ -86,7 +87,7 @@ public abstract class AbstractTestPartitionManager extends TestCase {
 
 			protected long _birthTime=System.currentTimeMillis();
 			
-            public void findRelevantSessionNames(PartitionMapper mapper, Collection[] resultSet) {
+            public void findRelevantSessionNames(PartitionMapper mapper, Map keyToSessionNames) {
 			}
 
             public Peer getCoordinator() {

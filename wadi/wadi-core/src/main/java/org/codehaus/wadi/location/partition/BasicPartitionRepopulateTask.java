@@ -17,6 +17,7 @@ package org.codehaus.wadi.location.partition;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Map;
 
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Envelope;
@@ -61,9 +62,9 @@ public class BasicPartitionRepopulateTask implements PartitionRepopulateTask {
         for (Iterator i = results.iterator(); i.hasNext();) {
             Envelope message = (Envelope) i.next();
             PartitionRepopulateResponse response = (PartitionRepopulateResponse) message.getPayload();
-            Collection[] relevantKeys = response.getKeys();
+            Map keyToSessionNames = response.getKeyToSessionNames();
             Peer peer = response.getPeer();
-            repopulate(toBePopulated, peer, relevantKeys);
+            repopulate(toBePopulated, peer, keyToSessionNames);
         }
     }
     
@@ -82,14 +83,11 @@ public class BasicPartitionRepopulateTask implements PartitionRepopulateTask {
         return rv;
     }
 
-    protected void repopulate(LocalPartition[] toBePopulated, Peer peer, Collection[] partitionIndexToSessionNames) {
+    protected void repopulate(LocalPartition[] toBePopulated, Peer peer, Map keyToSessionNames) {
         for (int i = 0; i < toBePopulated.length; i++) {
             LocalPartition partition = toBePopulated[i];
-            Collection sessionNames = partitionIndexToSessionNames[partition.getKey()];
-            for (Iterator j = sessionNames.iterator(); j.hasNext();) {
-                String name = (String) j.next();
-                partition.put(name, peer);
-            }
+            Collection sessionNames = (Collection) keyToSessionNames.get(new Integer(partition.getKey()));
+            partition.put(sessionNames, peer);
         }
     }
     

@@ -16,7 +16,7 @@
  */
 package org.codehaus.wadi.impl;
 
-import java.util.Collection;
+import java.util.Map;
 
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.ContextualiserConfig;
@@ -63,10 +63,10 @@ public abstract class AbstractChainedContextualiser extends AbstractContextualis
     public void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newTime) {
     }
 
-    public void findRelevantSessionNames(PartitionMapper mapper, Collection[] resultSet) {
-        super.findRelevantSessionNames(mapper, resultSet);
+    public void findRelevantSessionNames(PartitionMapper mapper, Map keyToSessionNames) {
+        super.findRelevantSessionNames(mapper, keyToSessionNames);
         if (_next.isExclusive()) {
-            _next.findRelevantSessionNames(mapper, resultSet);
+            _next.findRelevantSessionNames(mapper, keyToSessionNames);
         }
     }
 }
