@@ -37,18 +37,7 @@ public abstract class AbstractContextualiser implements Contextualiser {
     public void start() throws Exception {
     }
 
-    public String getStartInfo() {
-        return "";
-    }
-
     public void stop() throws Exception {
-    }
-
-    public String getStopInfo() {
-        return "";
-    }
-
-    public void destroy() {
     }
 
     public void findRelevantSessionNames(PartitionMapper mapper, Map keyToSessionNames) {

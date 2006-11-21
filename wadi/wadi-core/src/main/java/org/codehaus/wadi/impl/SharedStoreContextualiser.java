@@ -52,11 +52,6 @@ public class SharedStoreContextualiser extends AbstractSharedContextualiser {
 		_emoter=new SharedJDBCEmoter();
 	}
 
-	public String getStartInfo() {
-		return "["+_store.getLabel()+"/"+_store.getTable()+"]";
-	}
-
-
 	public void init(ContextualiserConfig config) {
 		super.init(config);
 		if (_clean)

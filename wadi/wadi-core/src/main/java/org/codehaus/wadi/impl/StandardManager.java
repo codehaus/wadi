@@ -166,12 +166,6 @@ public class StandardManager implements Lifecycle, WebSessionConfig, Contextuali
 		return httpSession;
 	}
 
-	public void destroy() {
-		_router.destroy();
-		_contextualiser.destroy();
-		_sessionPool.destroy();
-	}
-
 	protected boolean validateSessionName(String name) {
 		return true;
 	}

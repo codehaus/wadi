@@ -30,8 +30,4 @@ public abstract class AbstractRelocater implements Relocater {
         _config=config;
     }
 
-    public void destroy() {
-        _config=null;
-    }
-
 }

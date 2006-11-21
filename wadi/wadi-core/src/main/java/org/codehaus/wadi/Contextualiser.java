@@ -46,7 +46,6 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * @version $Revision$
  */
 public interface Contextualiser extends Lifecycle {
-	
     /**
      * Initialise this Contextualiser with a configuration object, injecting information
      * which was not readily available at construction time.
@@ -54,11 +53,6 @@ public interface Contextualiser extends Lifecycle {
      * @param config the configuration object
      */
     void init(ContextualiserConfig config);
-    
-    /**
-     * Destroy this Contextualiser - releasing all associated resources.
-     */
-    void destroy();
     
     /**
      * Contextualise the given Invocation. 
@@ -108,8 +102,6 @@ public interface Contextualiser extends Lifecycle {
 	
 	void findRelevantSessionNames(PartitionMapper mapper, Map keyToSessionNames);
 	
-	int getLocalSessionCount();
-
     // lose these
 	void setLastAccessedTime(Evictable evictable, long oldTime, long newTime);
     

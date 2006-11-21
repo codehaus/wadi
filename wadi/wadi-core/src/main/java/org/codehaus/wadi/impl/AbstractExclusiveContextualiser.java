@@ -120,11 +120,6 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
         super.stop();
     }
 
-    public void destroy() {
-        _evicter.destroy();
-        super.destroy();
-    }
-
     public void load(Emoter emoter, Immoter immoter) {
         // MappedContextualisers are all Exclusive
     }
@@ -140,10 +135,6 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
         } else {
             return getImmoter();
         }
-    }
-
-    public int getLocalSessionCount() {
-        return getSize() + _next.getLocalSessionCount();
     }
 
     public int getSize() {

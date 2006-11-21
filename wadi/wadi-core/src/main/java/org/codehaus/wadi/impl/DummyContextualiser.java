@@ -101,8 +101,4 @@ public class DummyContextualiser extends AbstractContextualiser {
         /* do nothing */
     }
 
-    public int getLocalSessionCount() {
-        return 0;
-    }
-
 }

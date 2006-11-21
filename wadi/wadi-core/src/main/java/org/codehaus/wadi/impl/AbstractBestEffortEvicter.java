@@ -98,10 +98,6 @@ public abstract class AbstractBestEffortEvicter extends AbstractEvicter {
 	_log.trace("stopped");
     }
 
-    public void destroy() {
-        _config=null;
-    }
-
     public void evict() {
       _log.trace("sweep started");
       

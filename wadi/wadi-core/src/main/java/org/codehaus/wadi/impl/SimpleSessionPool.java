@@ -26,7 +26,6 @@ import org.codehaus.wadi.web.WebSessionPool;
  * @version $Revision$
  */
 public class SimpleSessionPool implements WebSessionPool {
-
     protected final WebSessionFactory _factory;
     protected WebSessionConfig _config;
 
@@ -38,11 +37,6 @@ public class SimpleSessionPool implements WebSessionPool {
     public void init(WebSessionConfig config) {
       assert (_config==null);
         _config=config;
-    }
-
-    public void destroy() {
-      assert (_config!=null);
-        _config=null;
     }
 
     public WebSession take() {

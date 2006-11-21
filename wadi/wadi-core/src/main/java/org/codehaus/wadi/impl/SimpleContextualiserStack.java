@@ -167,10 +167,6 @@ public class SimpleContextualiserStack implements Contextualiser {
 		_memory.stop();
 	}
 
-	public void destroy() {
-		_memory.destroy();
-	}
-
 	public void promoteToExclusive(Immoter immoter){_memory.promoteToExclusive(immoter);}
 	public void load(Emoter emoter, Immoter immoter) {_memory.load(emoter, immoter);}
 
@@ -182,10 +178,6 @@ public class SimpleContextualiserStack implements Contextualiser {
     public void findRelevantSessionNames(PartitionMapper mapper, Map keyToSessionNames) {
 		_log.info("findRelevantSessionNames");
 		_memory.findRelevantSessionNames(mapper, keyToSessionNames);
-	}
-
-	public int getLocalSessionCount() {
-		return _memory.getLocalSessionCount();
 	}
 
 }

@@ -24,9 +24,7 @@ import org.codehaus.wadi.Invocation;
  * @version $Revision$
  */
 public interface Router {
-
     void init(RouterConfig config);
-    void destroy();
 
     /**
      * Strip any routing info from this session id.

@@ -34,10 +34,6 @@ public class DummyRelocater implements Relocater {
 		// empty
 	}
 
-	public void destroy() {
-		// empty
-	}
-
 	public boolean relocate(Invocation invocation, String name, Immoter immoter, Sync motionLock) throws InvocationException {
 		return true;
 	}

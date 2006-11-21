@@ -19,8 +19,6 @@ package org.codehaus.wadi.impl;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.ClusteredContextualiserConfig;
 import org.codehaus.wadi.Collapser;
 import org.codehaus.wadi.Contextualiser;
@@ -49,18 +47,17 @@ import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
  * @version $Revision$
  */
 public class ClusterContextualiser extends AbstractSharedContextualiser implements RelocaterConfig, ClusterListener, StateManager.ImmigrationListener {
-    protected final Collapser _collapser;
-	protected final Relocater _relocater;
-	protected final Immoter _immoter;
-	protected final Emoter _emoter;
-	protected final int _resTimeout = 5000; // TODO - parameterise
-	protected final Log _lockLog = LogFactory.getLog("org.codehaus.wadi.LOCKS");
-	protected SynchronizedBoolean _shuttingDown;
-	protected String _nodeName;
-	protected Dispatcher _dispatcher;
-	protected Cluster _cluster;
-	protected DIndex _dindex;
-	protected Contextualiser _top;
+    private final Collapser _collapser;
+    private final Relocater _relocater;
+    private final Immoter _immoter;
+    private final Emoter _emoter;
+    private final int _resTimeout = 5000; // TODO - parameterise
+    private SynchronizedBoolean _shuttingDown;
+    private String _nodeName;
+    private Dispatcher _dispatcher;
+    private Cluster _cluster;
+    private DIndex _dindex;
+    private Contextualiser _top;
 
 	public ClusterContextualiser(Contextualiser next, Collapser collapser, Relocater relocater) {
 		super(next, new CollapsingLocker(collapser), false);
@@ -85,16 +82,6 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 		_dindex=ccc.getDIndex();
 		_top=ccc.getContextualiser();
 		_relocater.init(this);
-	}
-
-	public String getStartInfo() {
-		return "["+_nodeName+"]";
-	}
-
-	public void destroy() {
-		_relocater.destroy();
-		// TODO - what else ?
-		super.destroy();
 	}
 
 	public Immoter getImmoter(){return _immoter;}

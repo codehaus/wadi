@@ -59,10 +59,6 @@ public class ExclusiveStoreContextualiser extends AbstractExclusiveContextualise
             _store.clean();
     }
 
-    public String getStartInfo() {
-        return "["+_store.getStartInfo()+"]";
-    }
-
 	public boolean isExclusive(){return true;}
 
 	public Immoter getImmoter(){return _immoter;}

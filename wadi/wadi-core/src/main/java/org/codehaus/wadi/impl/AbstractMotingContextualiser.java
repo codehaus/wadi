@@ -116,9 +116,4 @@ public abstract class AbstractMotingContextualiser extends AbstractChainedContex
 		_config=config;
 	}
 	
-	public void destroy() {
-		_config=null;
-		super.destroy();
-	}
-	
 }

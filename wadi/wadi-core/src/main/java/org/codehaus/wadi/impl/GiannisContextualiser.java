@@ -57,10 +57,6 @@ public class GiannisContextualiser extends AbstractExclusiveContextualiser {
             _store.clean();
     }
 
-    public String getStartInfo() {
-        return "["+_store.getLabel()+"/"+_store.getTable()+"] : "+_map.size()+" sessions loaded";
-    }
-
 	public boolean isExclusive(){
 		return true;
 	}
