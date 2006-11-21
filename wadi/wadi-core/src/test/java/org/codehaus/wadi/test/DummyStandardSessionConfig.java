@@ -68,14 +68,6 @@ public class DummyStandardSessionConfig implements WebSessionConfig {
     protected final int _maxInactiveInterval=2;
     public int getMaxInactiveInterval() {return _maxInactiveInterval;}
 
-    public void setLastAccessedTime(Evictable evictable, long oldTime, long newTime) {
-        throw new UnsupportedOperationException();
-    }
-
-    public void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval) {
-        throw new UnsupportedOperationException();
-    }
-
     protected final Router _router=new DummyRouter();
     public Router getRouter() {return _router;}
 

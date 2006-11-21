@@ -110,11 +110,5 @@ public interface Manager extends Lifecycle {
      */
     void contextualise(Invocation invocation) throws InvocationException;
     
-    // lose these
-    void setLastAccessedTime(Evictable evictable, long oldTime, long newTime);
-
-    void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval);
-
     WebSessionWrapperFactory getSessionWrapperFactory();
-
 }

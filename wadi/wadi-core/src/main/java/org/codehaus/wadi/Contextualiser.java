@@ -101,9 +101,4 @@ public interface Contextualiser extends Lifecycle {
 	void load(Emoter emoter, Immoter immoter);
 	
 	void findRelevantSessionNames(PartitionMapper mapper, Map keyToSessionNames);
-	
-    // lose these
-	void setLastAccessedTime(Evictable evictable, long oldTime, long newTime);
-    
-    void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval);
 }

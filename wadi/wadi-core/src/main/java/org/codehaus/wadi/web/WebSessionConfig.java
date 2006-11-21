@@ -19,8 +19,8 @@ package org.codehaus.wadi.web;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSessionAttributeListener;
 import javax.servlet.http.HttpSessionListener;
+
 import org.codehaus.wadi.Config;
-import org.codehaus.wadi.Evictable;
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.SessionIdFactory;
 import org.codehaus.wadi.ValuePool;
@@ -31,22 +31,23 @@ import org.codehaus.wadi.ValuePool;
  * @version $Revision: 1885 $
  */
 public interface WebSessionConfig extends Config {
-
     ValuePool getValuePool();
+
     AttributesFactory getAttributesFactory();
+    
     HttpSessionListener[] getSessionListeners();
+    
     HttpSessionAttributeListener[] getAttributeListeners();
+    
     ServletContext getServletContext();
 
     void destroy(Invocation invocation, WebSession session);
+    
     WebSessionWrapperFactory getSessionWrapperFactory();
+    
     SessionIdFactory getSessionIdFactory();
 
     int getMaxInactiveInterval();
 
-    void setLastAccessedTime(Evictable evictable, long oldTime, long newTime);
-    void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval);
-
     Router getRouter();
-
 }

@@ -93,12 +93,4 @@ public class DummyContextualiser extends AbstractContextualiser {
         /* empty */
     }
 
-    public void setLastAccessedTime(Evictable evictable, long oldTime, long newTime) {
-        /* do nothing */
-    }
-
-    public void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval) {
-        /* do nothing */
-    }
-
 }

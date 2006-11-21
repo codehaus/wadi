@@ -91,14 +91,6 @@ public class DummyDistributableSessionConfig implements DistributableSessionConf
     protected final int _maxInactiveInterval=30*60;
     public int getMaxInactiveInterval() {return _maxInactiveInterval;}
 
-    public void setLastAccessedTime(Evictable evictable, long oldTime, long newTime) {
-        //throw new UnsupportedOperationException();
-    }
-
-    public void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval) {
-        throw new UnsupportedOperationException();
-    }
-
     protected final Router _router=new DummyRouter();
     public Router getRouter() {return _router;}
 

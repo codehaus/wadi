@@ -188,26 +188,12 @@ public class StandardSession extends AbstractSession implements WADIHttpSession,
 		return _config;
 	}
 	
-	// AttributesConfig
-	
 	public ValuePool getValuePool(){
 		return _config.getValuePool();
 	}
 	
-	public void setLastAccessedTime(long newLastAccessedTime) {
-		long oldLastAccessedTime=_lastAccessedTime;
-		super.setLastAccessedTime(newLastAccessedTime);
-		_config.setLastAccessedTime(this, oldLastAccessedTime, newLastAccessedTime);
-	}
-	
-	public void setMaxInactiveInterval(int newMaxInactiveInterval) {
-		int oldMaxInactiveInterval=_maxInactiveInterval;
-		super.setMaxInactiveInterval(newMaxInactiveInterval);
-		_config.setMaxInactiveInterval(this, oldMaxInactiveInterval, newMaxInactiveInterval);
-	}
-	
 	public String getId() {
 		return _config.getRouter().augment(_name);
-	} // TODO - How can we cache this ?
+	}
 	
 }
