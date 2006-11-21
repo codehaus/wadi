@@ -16,7 +16,7 @@
  */
 package org.codehaus.wadi.impl;
 
-import java.util.Collection;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -51,7 +51,7 @@ public abstract class AbstractContextualiser implements Contextualiser {
     public void destroy() {
     }
 
-    public void findRelevantSessionNames(PartitionMapper mapper, Collection[] resultSet) {
+    public void findRelevantSessionNames(PartitionMapper mapper, Map keyToSessionNames) {
     }
     
 }

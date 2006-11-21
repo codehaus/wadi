@@ -191,10 +191,10 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
     }
 
     public void onPartitionRepopulateRequest(Envelope om, PartitionRepopulateRequest request) {
-        Collection[] c = request.createPartitionIndexToSessionNames(_numPartitions);
-        _config.findRelevantSessionNames(_mapper, c);
+        Map keyToSessionNames = request.createKeyToSessionNames(_numPartitions);
+        _config.findRelevantSessionNames(_mapper, keyToSessionNames);
         try {
-            _dispatcher.reply(om, new PartitionRepopulateResponse(_localPeer, c));
+            _dispatcher.reply(om, new PartitionRepopulateResponse(_localPeer, keyToSessionNames));
         } catch (MessageExchangeException e) {
             _log.warn("unexpected problem responding to partition repopulation request", e);
         }

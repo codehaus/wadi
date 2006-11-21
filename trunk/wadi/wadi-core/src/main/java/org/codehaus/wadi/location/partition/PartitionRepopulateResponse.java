@@ -17,7 +17,7 @@
 package org.codehaus.wadi.location.partition;
 
 import java.io.Serializable;
-import java.util.Collection;
+import java.util.Map;
 
 import org.codehaus.wadi.PartitionResponseMessage;
 import org.codehaus.wadi.group.Peer;
@@ -27,36 +27,29 @@ import org.codehaus.wadi.group.Peer;
  * @version $Revision:1815 $
  */
 public class PartitionRepopulateResponse implements PartitionResponseMessage, Serializable {
-    protected final Peer peer;
-    protected final Collection[] _keys;
+    private final Peer peer;
+    private final Map keyToSessionNames;
 
-    public PartitionRepopulateResponse(Peer peer, Collection[] keys) {
+    public PartitionRepopulateResponse(Peer peer, Map keyToSessionNames) {
         if (null == peer) {
             throw new IllegalArgumentException("peer is required");
-        } else if (null == keys) {
-            throw new IllegalArgumentException("keys is required");            
+        } else if (null == keyToSessionNames) {
+            throw new IllegalArgumentException("keyToSessionNames is required");            
         }
         this.peer = peer;
-        _keys = keys;
+        this.keyToSessionNames = keyToSessionNames;
     }
 
     public Peer getPeer() {
         return peer;
     }
 
-    public Collection[] getKeys() {
-        return _keys;
+    public Map getKeyToSessionNames() {
+        return keyToSessionNames;
     }
 
     public String toString() {
-        StringBuffer buffer = new StringBuffer("<PartitionRepopulateResponse: ");
-        for (int i = 0; i < _keys.length; i++) {
-            Collection c = _keys[i];
-            if (c != null)
-                buffer.append("" + i + ":" + c.toString() + ", ");
-        }
-        buffer.append(">");
-        return buffer.toString();
+        return "PartitionRepopulateResponse [" + keyToSessionNames + "]";
     }
 
 }
