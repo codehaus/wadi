@@ -22,7 +22,6 @@ import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Motable;
 
 /**
- * TODO - JavaDoc this type
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
@@ -33,16 +32,25 @@ public abstract class AbstractDelegatingContextualiser extends AbstractChainedCo
     public AbstractDelegatingContextualiser(Contextualiser next) {
         super(next);
     }
-    
-    public boolean isExclusive() {return _next.isExclusive();}
 
-    public Immoter getDemoter(String name, Motable motable) {return _next.getDemoter(name, motable);}
-    
-    public Immoter getSharedDemoter() {return _next.getSharedDemoter();}
+    public boolean isExclusive() {
+        return _next.isExclusive();
+    }
 
-    public void promoteToExclusive(Immoter immoter) {_next.promoteToExclusive(immoter);}
-    
-    public void load(Emoter emoter, Immoter immoter) {_next.load(emoter, immoter);}
-    
-    public int getLocalSessionCount() {return _next.getLocalSessionCount();}
+    public Immoter getDemoter(String name, Motable motable) {
+        return _next.getDemoter(name, motable);
+    }
+
+    public Immoter getSharedDemoter() {
+        return _next.getSharedDemoter();
+    }
+
+    public void promoteToExclusive(Immoter immoter) {
+        _next.promoteToExclusive(immoter);
+    }
+
+    public void load(Emoter emoter, Immoter immoter) {
+        _next.load(emoter, immoter);
+    }
+
 }

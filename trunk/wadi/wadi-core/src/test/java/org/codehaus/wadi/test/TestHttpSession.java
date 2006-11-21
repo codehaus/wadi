@@ -246,7 +246,6 @@ public class TestHttpSession extends TestCase {
 //        _distributableManager.destroy();
         _standardManager.setSessionListeners(null);
         _standardManager.setAttributelisteners(null);
-        _standardManager.destroy();
         _listener=null;
     }
 

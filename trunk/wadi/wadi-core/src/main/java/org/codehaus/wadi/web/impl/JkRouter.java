@@ -47,10 +47,6 @@ public class JkRouter implements Router {
 		_config=config;
 	}
 
-	public void destroy() {
-		_config=null;
-	}
-
 	public String strip(String session) {
 		int i=session.lastIndexOf(".");
 		if (i<0)

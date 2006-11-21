@@ -50,11 +50,6 @@ public interface Manager extends Lifecycle {
      */
     void stop() throws Exception;
 
-    /**
-     * Destroy the Manager - clean up any associated resources
-     */
-    void destroy();
-
     WebSession createWithName(String name) throws SessionAlreadyExistException;
 
     /**

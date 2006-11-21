@@ -27,12 +27,16 @@ import org.codehaus.wadi.EvicterConfig;
  */
 public abstract class AbstractEvicter implements Evicter {
 
-    public void init(EvicterConfig config) {/* do nothing */}
-    public void destroy() {/* do nothing */}
-    
-    // Lifecycle
-    
-    public void start() throws Exception {/* do nothing */}
-    public void stop() throws Exception {/* do nothing */}
+    public void init(EvicterConfig config) {
+        /* do nothing */
+    }
+
+    public void start() throws Exception {
+        /* do nothing */
+    }
+
+    public void stop() throws Exception {
+        /* do nothing */
+    }
 
 }

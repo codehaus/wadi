@@ -52,11 +52,6 @@ public abstract class AbstractChainedContextualiser extends AbstractContextualis
         super.stop();
     }
 
-    public void destroy() {
-        _next.destroy();
-        super.destroy();
-    }
-
     public void setLastAccessedTime(Evictable evictable, long oldTime, long newTime) {
     }
 

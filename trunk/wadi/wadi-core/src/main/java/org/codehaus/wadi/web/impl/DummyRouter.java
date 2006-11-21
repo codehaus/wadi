@@ -16,9 +16,6 @@
  */
 package org.codehaus.wadi.web.impl;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.web.Router;
 import org.codehaus.wadi.web.RouterConfig;
@@ -35,10 +32,6 @@ public class DummyRouter implements Router {
 		_config=config;
 	}
 
-	public void destroy() {
-		_config=null;
-	}
-
 	public String strip(String session) {
 		return session;
 	}
@@ -47,31 +40,7 @@ public class DummyRouter implements Router {
 		return session;
 	}
 
-	public String getInfo() {
-		return "";
-	}
-
-	public boolean canReroute() {
-		return false;
-	}
-
 	public boolean reroute(Invocation invocation) {
-		return false;
-	}
-
-	public boolean rerouteCookie(HttpServletRequest req, HttpServletResponse res, String id) {
-		return false;
-	}
-
-	public boolean rerouteCookie(HttpServletRequest req, HttpServletResponse res, String id, String route) {
-		return false;
-	}
-
-	public boolean rerouteURL() {
-		return false;
-	}
-
-	public boolean rerouteURL(String target) {
 		return false;
 	}
 

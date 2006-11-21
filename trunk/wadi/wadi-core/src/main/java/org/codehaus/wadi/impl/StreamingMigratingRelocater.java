@@ -40,10 +40,6 @@ public class StreamingMigratingRelocater implements WebSessionRelocater {
 		_config=config;
 	}
 
-	public void destroy() {
-		_config=null;
-	}
-
 	public boolean relocate(Invocation invocation, String name, Immoter immoter, Sync motionLock) throws InvocationException {
 		// check cache
 		//Server server=_config.getServer();

@@ -22,11 +22,9 @@ package org.codehaus.wadi.web;
  * @version $Revision: 1885 $
  */
 public interface WebSessionPool {
-
     void init(WebSessionConfig config);
-    void destroy();
 
     WebSession take();
-    void put(WebSession session);
 
+    void put(WebSession session);
 }
