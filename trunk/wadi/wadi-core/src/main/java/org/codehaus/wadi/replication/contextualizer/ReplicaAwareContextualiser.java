@@ -81,9 +81,6 @@ public class ReplicaAwareContextualiser extends AbstractSharedContextualiser {
         public void rollback(String name, Motable motable) {
         }
 
-        public String getInfo() {
-            return null;
-        }
     }
     
 }

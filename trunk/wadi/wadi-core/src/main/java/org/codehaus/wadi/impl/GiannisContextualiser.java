@@ -46,7 +46,7 @@ public class GiannisContextualiser extends AbstractExclusiveContextualiser {
 	public GiannisContextualiser(Contextualiser next, Collapser collapser, boolean clean, Evicter evicter, Map map, DatabaseStore dbstore) throws Exception {
 	    super(next, new CollapsingLocker(collapser), clean, evicter, map);
 	    _immoter=new GiannisImmoter(_map);
-	    _emoter=new GiannisEmoter(_map);
+	    _emoter=new BaseMappedEmoter(_map);
 	    _store=dbstore;
 	}
 
@@ -81,18 +81,6 @@ public class GiannisContextualiser extends AbstractExclusiveContextualiser {
             return motable; // TODO - Pool, maybe as ThreadLocal
 		}
 
-		public String getInfo() {
-			return _store.getDescription();
-		}
-	}
-
-	class GiannisEmoter extends AbstractMappedEmoter {
-
-		public GiannisEmoter(Map map) {super(map);}
-
-		public String getInfo() {
-			return _store.getDescription();
-		}
 	}
 
     public void start() throws Exception {

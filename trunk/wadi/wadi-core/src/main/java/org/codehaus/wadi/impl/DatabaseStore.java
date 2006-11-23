@@ -381,14 +381,6 @@ public class DatabaseStore implements Store, DatabaseMotableConfig {
     }
   }
   
-  public String getStartInfo() {
-    return _dataSource.toString();
-  }
-  
-  public String getDescription() {
-    return "["+_label+"/"+_table+"]";
-  }
-  
   public StoreMotable create() {
     return new DatabaseMotable();
   }

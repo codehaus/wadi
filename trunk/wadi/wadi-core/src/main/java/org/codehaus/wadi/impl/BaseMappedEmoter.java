@@ -27,25 +27,28 @@ import org.codehaus.wadi.Motable;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public abstract class AbstractMappedEmoter extends AbstractChainedEmoter {
-
+public class BaseMappedEmoter extends AbstractChainedEmoter {
 	protected final Map _map;
 
-	public AbstractMappedEmoter(Map map) {
-		_map=map;
-	}
+	public BaseMappedEmoter(Map map) {
+        if (null == map) {
+            throw new IllegalArgumentException("map is required");
+        }
+        _map = map;
+    }
 
-	public boolean prepare(String name, Motable emotable, Motable immotable) {
-		if (super.prepare(name, emotable, immotable)) {
-			_map.remove(name); // remove ref in cache
-			return true;
-		} else
-			return false;
-	}
-	
-	public void rollback(String name, Motable motable) {
-		super.rollback(name, motable);
-		_map.put(name, motable);
-	}
-	
+    public boolean prepare(String name, Motable emotable, Motable immotable) {
+        if (super.prepare(name, emotable, immotable)) {
+            _map.remove(name);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public void rollback(String name, Motable motable) {
+        super.rollback(name, motable);
+        _map.put(name, motable);
+    }
+
 }

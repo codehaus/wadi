@@ -21,15 +21,13 @@ package org.codehaus.wadi;
  * @version $Revision$
  */
 public interface Store extends StoreMotableConfig {
-
     interface Putter {
         void put(String name, Motable motable);
     }
 
     void clean();
-    String getStartInfo();
-    String getDescription();
 
     StoreMotable create();
+
     void load(Putter putter, boolean accessOnLoad);
 }

@@ -251,10 +251,6 @@ public class SimpleStateManager implements StateManager, StateManagerMessageList
             return false;
         }
 
-        public String getInfo() {
-            return "emigration:" + _tgtNodeName;
-        }
-
         public boolean getFound() {
             return _found;
         }

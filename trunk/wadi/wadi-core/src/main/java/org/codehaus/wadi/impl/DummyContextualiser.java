@@ -55,10 +55,6 @@ public class DummyContextualiser extends AbstractContextualiser {
             return new SimpleMotable();
         }
 
-        public String getInfo() {
-            return "dummy";
-        }
-
         public boolean prepare(String name, Motable emotable, Motable immotable) {
             return true;
         }
