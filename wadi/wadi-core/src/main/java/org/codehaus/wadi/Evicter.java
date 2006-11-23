@@ -28,12 +28,4 @@ public interface Evicter extends Lifecycle {
     void evict();
 
     boolean test(Evictable evictable, long time, long ttl);
-    
-    void setLastAccessedTime(Evictable evictable, long oldTime, long newTime);
-    
-    void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval);
-    
-    void insert(Evictable evictable);
-    
-    void remove(Evictable evictable);
 }

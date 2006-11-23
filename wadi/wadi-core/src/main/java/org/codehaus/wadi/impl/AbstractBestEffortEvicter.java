@@ -187,16 +187,9 @@ public abstract class AbstractBestEffortEvicter extends AbstractEvicter {
       
       RankedRWLock.setPriority(RankedRWLock.NO_PRIORITY); // TODO - shouldn't really be here, but...
       
-      if (_log.isDebugEnabled()) _log.debug("sweep completed ("+(System.currentTimeMillis()-time)+" millis) - expirations:"+expirations+", demotions:"+demotions);
+      if (_log.isDebugEnabled()) {
+          _log.debug("sweep completed ("+(System.currentTimeMillis()-time)+" millis) - expirations:"+expirations+", demotions:"+demotions);
+      }
     }
-
-    // BestEffort Evicters pay no attention to these notifications - to do so would be very expensive.
-    // If you plan to build e.g. an LRU Evicter, by ordering Sessions according to time-to-live, use
-    // this notification to reorder your Sessions after each change/access...
-
-    public void insert(Evictable evictable) {/* do nothing */}
-    public void remove(Evictable evictable) {/* do nothing */}
-    public void setLastAccessedTime(Evictable evictable, long oldTime, long newTime) {/* do nothing */}
-    public void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval) {/* do nothing */}
 
 }

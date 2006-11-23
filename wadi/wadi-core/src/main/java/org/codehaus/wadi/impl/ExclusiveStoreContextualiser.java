@@ -49,7 +49,7 @@ public class ExclusiveStoreContextualiser extends AbstractExclusiveContextualise
 	    super(next, new CollapsingLocker(collapser), clean, evicter, map);
         _store=new DiscStore(streamer, dir, true, false);
 	    _immoter=new ExclusiveStoreImmoter(_map);
-	    _emoter=new ExclusiveStoreEmoter(_map);
+	    _emoter=new BaseMappedEmoter(_map);
 	}
 
     public void init(ContextualiserConfig config) {
@@ -79,22 +79,6 @@ public class ExclusiveStoreContextualiser extends AbstractExclusiveContextualise
             return motable; // TODO - Pool, maybe as ThreadLocal
 		}
 
-		public String getInfo() {
-			return _store.getDescription();
-		}
-	}
-
-	/**
-	 * An Emmoter that deals in terms of StoreMotables
-	 *
-	 * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
-	 * @version $Revision$
-	 */
-	class ExclusiveStoreEmoter extends AbstractMappedEmoter {
-
-		public ExclusiveStoreEmoter(Map map) {super(map);}
-
-		public String getInfo(){return _store.getDescription();}
 	}
 
     public void start() throws Exception {

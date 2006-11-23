@@ -84,16 +84,9 @@ public class SharedStoreContextualiser extends AbstractSharedContextualiser {
 			return motable; // TODO - Pool, maybe as ThreadLocal
 		}
 
-		public String getInfo() {
-			return _store.getDescription();
-		}
 	}
 
 	public class SharedJDBCEmoter extends AbstractChainedEmoter {
-
-		public String getInfo() {
-			return _store.getDescription();
-		}
 	}
 
 	class SharedPutter implements Store.Putter {

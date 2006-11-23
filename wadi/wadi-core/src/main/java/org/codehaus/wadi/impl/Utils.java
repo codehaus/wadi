@@ -70,7 +70,7 @@ public class Utils {
             if (immotionOK) {
                 emoter.rollback(name, emotable);
             }
-            _log.warn("motion failed: " + name + " : " + emoter.getInfo() + " -> " + immoter.getInfo());
+            _log.warn("motion failed: " + name + " : " + emoter + " -> " + immoter);
             return null;
         }
     }

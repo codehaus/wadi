@@ -20,11 +20,8 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.Session;
-import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Emoter;
-import org.codehaus.wadi.Evictable;
 import org.codehaus.wadi.Evicter;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Invocation;
@@ -32,6 +29,8 @@ import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.PoolableInvocationWrapper;
 import org.codehaus.wadi.PoolableInvocationWrapperPool;
+import org.codehaus.wadi.Session;
+import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.Streamer;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
@@ -61,7 +60,7 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
 
 		_immoter=new MemoryImmoter(_map);
 		_emoter=new MemoryEmoter(_map);
-		_evictionEmoter=new AbstractMappedEmoter(_map){public String getInfo(){return "memory";}};
+		_evictionEmoter=new BaseMappedEmoter(_map);
 
 		_requestPool=requestPool;
 	}
@@ -115,7 +114,7 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
 		}
 	}
 
-	class MemoryEmoter extends AbstractMappedEmoter {
+	class MemoryEmoter extends BaseMappedEmoter {
 
 		public MemoryEmoter(Map map) {
 			super(map);
@@ -152,9 +151,6 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
 			Utils.release("State (excl.)", name, stateLock);
 		}
 
-		public String getInfo() {
-			return "memory";
-		}
 	}
 
 	class MemoryImmoter extends AbstractMappedImmoter {
@@ -171,9 +167,6 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
 			return contextualiseLocally(invocation, id, motionLock, immotable);
 		}
 
-		public String getInfo() {
-			return "memory";
-		}
 	}
 
 	public Immoter getImmoter(){return _immoter;}
@@ -183,9 +176,5 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
 	public Sync getEvictionLock(String id, Motable motable){return ((Session)motable).getExclusiveLock();}
 	public Emoter getEvictionEmoter(){return _evictionEmoter;} // leave lock-taking to evict()...
 
-	public void setLastAccessTime(Evictable evictable, long oldTime, long newTime) {_evicter.setLastAccessedTime(evictable, oldTime, newTime);}
-	public void setMaxInactiveInterval(Evictable evictable, int oldInterval, int newInterval) {_evicter.setMaxInactiveInterval(evictable, oldInterval, newInterval);}
-
 	public void expire(Motable motable) {_config.expire(motable);}
-
 }

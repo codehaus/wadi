@@ -24,12 +24,11 @@ import org.codehaus.wadi.Evictable;
  */
 public class DummyEvicter extends AbstractEvicter {
 
-    public void evict() {/* do nothing */}
-    public boolean test(Evictable evictable, long time, long ttl) {return false;}
+    public void evict() {
+    }
 
-    public void setLastAccessedTime(Evictable evictable, long oldTime, long newTime) {/* do nothing */}
-    public void setMaxInactiveInterval(Evictable evictable, int oldInterval,int newInterval) {/* do nothing */}
-    public void insert(Evictable evictable) {/* do nothing */}
-    public void remove(Evictable evictable) {/* do nothing */}
+    public boolean test(Evictable evictable, long time, long ttl) {
+        return false;
+    }
 
 }

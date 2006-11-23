@@ -266,9 +266,6 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
             throw new RuntimeException("NYI");
         }
 
-        public String getInfo() {
-            return "immigration:" + _nodeName;
-        }
     }
 
     public Motable relocate(Invocation invocation, String sessionName, boolean shuttingDown,

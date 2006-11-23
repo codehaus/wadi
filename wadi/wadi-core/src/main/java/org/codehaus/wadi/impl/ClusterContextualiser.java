@@ -153,9 +153,6 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 			// TODO - perhaps this is how a proxied contextualisation should occur ?
 		}
 
-		public String getInfo() {
-			return "cluster";
-		}
 	}
 
 	/**
@@ -188,9 +185,6 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 			throw new RuntimeException("NYI");
 		}
 
-		public String getInfo() {
-			return "cluster"; // TODO - figure out where session is going and append to info
-		}
 	}
 
 	public void onImmigration(Envelope message, Motable emotable) {

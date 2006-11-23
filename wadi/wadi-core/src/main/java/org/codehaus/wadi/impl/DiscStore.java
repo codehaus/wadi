@@ -105,11 +105,7 @@ public class DiscStore implements Store, DiscMotableConfig {
         return new DiscMotable();
     }
 
-    public String getStartInfo() {return _dir.toString();}
-    public String getDescription() {return "exclusive disc";}
-
     // ExclusiveDiscMotableConfig
-
     public File getDirectory() {return _dir;}
     public String getSuffix() {return _streamer.getSuffixWithDot();}
     public boolean getUseNIO() {return _useNIO;}
