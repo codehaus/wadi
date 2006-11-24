@@ -257,10 +257,9 @@ public class DatabaseStore implements Store, DatabaseMotableConfig {
         
         motable.init(creationTime, lastAccessedTime, maxInactiveInterval);
         
-        if (!motable.checkTimeframe(System.currentTimeMillis()))
-          if (_log.isWarnEnabled()) _log.warn("loaded (database ["+_table+"]) from the future!: "+name);
-        
-        if (_log.isTraceEnabled()) _log.trace("loaded (database ["+_table+"]): "+name);
+        if (_log.isTraceEnabled()) {
+            _log.trace("loaded (database ["+_table+"]): "+name);
+        }
       }
     } catch (SQLException e) {
       if (_log.isWarnEnabled()) _log.warn("load (database ["+_table+"]) failed: "+name, e);

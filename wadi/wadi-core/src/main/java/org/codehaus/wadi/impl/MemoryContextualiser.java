@@ -81,11 +81,9 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
 
 	public boolean contextualiseLocally(Invocation invocation, String id, Sync invocationLock, Motable motable)  throws InvocationException {
 		Sync stateLock=((Session)motable).getSharedLock();
-		boolean stateLockAcquired=false;
 		try {
 			try {
 				Utils.acquireUninterrupted("State (shared)", id, stateLock);
-				stateLockAcquired=true;
 			} catch (TimeoutException e) {
 				_log.error("unexpected timeout - continuing without lock: "+id+" : "+stateLock, e);
                 throw new WADIRuntimeException(e);
@@ -108,9 +106,7 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
 			}
 			return true;
 		} finally {
-			if (stateLockAcquired) {
-				Utils.release("State (shared)", id, stateLock);
-			}
+		    Utils.release("State (shared)", id, stateLock);
 		}
 	}
 

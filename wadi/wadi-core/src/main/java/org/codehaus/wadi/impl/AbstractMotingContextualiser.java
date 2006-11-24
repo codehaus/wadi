@@ -67,7 +67,6 @@ public abstract class AbstractMotingContextualiser extends AbstractChainedContex
         return _next.contextualise(invocation, key, getPromoter(immoter), invocationLock, exclusiveOnly);
 	}
 	
-	// TODO - I don't think that we need test isExclusive anymore - or even need this flag...
 	public boolean promote(Invocation invocation, String id, Immoter immoter, Sync motionLock, Motable emotable) throws InvocationException {
 		Emoter emoter=getEmoter();
 		Motable immotable=Utils.mote(emoter, immoter, emotable, id);
