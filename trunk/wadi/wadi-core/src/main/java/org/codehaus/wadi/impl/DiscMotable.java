@@ -107,10 +107,6 @@ public class DiscMotable extends AbstractMotable implements StoreMotable {
             _maxInactiveInterval=ois.readInt();
             _name=(String)ois.readObject();
             _bodyLength=ois.readInt();
-
-            if (!checkTimeframe(System.currentTimeMillis()))
-                if (_log.isWarnEnabled()) _log.warn("loaded (exclusive disc) from the future!: "+_name);
-
             return fis.getChannel().position();
         } catch (Exception e) {
             if (_log.isErrorEnabled()) _log.warn("load (exclusive disc) failed: "+_file, e);

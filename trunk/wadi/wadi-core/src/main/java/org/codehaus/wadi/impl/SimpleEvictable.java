@@ -80,8 +80,6 @@ public abstract class SimpleEvictable implements Evictable, Serializable {
     
     public boolean isNew(){return _lastAccessedTime==_creationTime;} // assumes lastAccessedTime is only updated once per request...
     
-	public boolean checkTimeframe(long time) {return !(_creationTime>time || _lastAccessedTime>time);}
-	
 	public long getTimeToLive(long time) {return _maxInactiveInterval<0?Long.MAX_VALUE:(_maxInactiveInterval*1000)-(time-_lastAccessedTime);}
 
 	public boolean getTimedOut(long time) {return getTimeToLive(time)<=0;}

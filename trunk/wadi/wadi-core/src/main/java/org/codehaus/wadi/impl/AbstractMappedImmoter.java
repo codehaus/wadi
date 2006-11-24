@@ -28,17 +28,15 @@ import org.codehaus.wadi.Motable;
  */
 
 public abstract class AbstractMappedImmoter extends AbstractImmoter {
-    
     protected final Map _map;
     
     public AbstractMappedImmoter(Map map) {
-        super();
         _map=map;    
     }
     
 	public void commit(String name, Motable immotable) {
 		super.commit(name, immotable);
-		_map.put(name, immotable); // TODO - map locking ?
+		_map.put(name, immotable);
 	}
 	
 }

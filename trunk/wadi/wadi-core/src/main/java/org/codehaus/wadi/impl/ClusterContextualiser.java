@@ -134,7 +134,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 			try {
 				immotable.copy(emotable);
 			} catch (Exception e) {
-				if (_log.isWarnEnabled()) _log.warn("problem sending emigration request: "+name, e);
+				_log.warn("problem sending emigration request: "+name, e);
 				return false;
 			}
 			return _dindex.getStateManager().offerEmigrant(name, immotable, _resTimeout);
@@ -198,15 +198,11 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 
 			Emoter emoter=new ImmigrationEmoter(message);
 
-			if (!emotable.checkTimeframe(System.currentTimeMillis())) {
-			    _log.warn("immigrating session has come from the future!: "+emotable.getName());
-            }
-
 			Immoter immoter=_top.getDemoter(name, emotable);
 			Utils.mote(emoter, immoter, emotable, name);
 			notifySessionRelocation(name);
 		} catch (TimeoutException e) {
-			if (_log.isWarnEnabled()) _log.warn("could not acquire promotion lock for incoming session: "+name);
+			_log.warn("could not acquire promotion lock for incoming session: "+name);
 		} finally {
 			if (invocationLockAcquired) {
 				Utils.release("Invocation", name, invocationLock);
