@@ -131,16 +131,6 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
         _dindex.stop();
     }
 
-    static class HelperPair {
-        final Class _type;
-        final ValueHelper _helper;
-
-        HelperPair(Class type, ValueHelper helper) {
-            _type = type;
-            _helper = helper;
-        }
-    }
-
     public void destroy(String key) {
         WebSession session = (WebSession) _map.get(key);
         if (null == session) {
@@ -180,10 +170,6 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
 
     public long getInactiveTime() {
         return _dispatcher.getCluster().getInactiveTime();
-    }
-
-    public int getNumPartitions() {
-        return _numPartitions;
     }
 
     public Dispatcher getDispatcher() {

@@ -30,7 +30,6 @@ import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.StreamerConfig;
 import org.codehaus.wadi.ValueHelper;
 import org.codehaus.wadi.ValuePool;
-import org.codehaus.wadi.impl.ClusteredManager.HelperPair;
 import org.codehaus.wadi.web.AttributesFactory;
 import org.codehaus.wadi.web.ReplicableSessionConfig;
 import org.codehaus.wadi.web.Router;
@@ -103,6 +102,16 @@ public class DistributableManager extends StandardManager implements ReplicableS
 		}
 		return null;
 	}
+    
+    static class HelperPair {
+        final Class _type;
+        final ValueHelper _helper;
+
+        HelperPair(Class type, ValueHelper helper) {
+            _type = type;
+            _helper = helper;
+        }
+    }
 	
 	public boolean getHttpSessionAttributeListenersRegistered() {
 		return _attributeListeners.length>0;

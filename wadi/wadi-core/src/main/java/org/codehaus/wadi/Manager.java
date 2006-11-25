@@ -36,20 +36,6 @@ public interface Manager extends Lifecycle {
      */
     void init(ManagerConfig config);
 
-    /**
-     * Start the Manager and subcomponents/threads
-     * 
-     * @throws Exception
-     */
-    void start() throws Exception;
-    
-    /**
-     * Stop the Manager and subcomponents/threads
-     * 
-     * @throws Exception
-     */
-    void stop() throws Exception;
-
     WebSession createWithName(String name) throws SessionAlreadyExistException;
 
     /**
