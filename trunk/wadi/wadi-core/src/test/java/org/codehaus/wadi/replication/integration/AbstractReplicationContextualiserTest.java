@@ -66,7 +66,6 @@ import org.codehaus.wadi.web.impl.DummyRouter;
 import org.codehaus.wadi.web.impl.DummyStatefulHttpServletRequestWrapperPool;
 import org.codehaus.wadi.web.impl.StandardHttpProxy;
 import org.codehaus.wadi.web.impl.StandardSessionWrapperFactory;
-import org.codehaus.wadi.web.impl.URIEndPoint;
 import org.codehaus.wadi.web.impl.WebSessionToSessionPoolAdapter;
 
 /**
