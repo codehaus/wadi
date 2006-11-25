@@ -60,27 +60,20 @@ public class ReplicaAwareContextualiser extends AbstractSharedContextualiser {
     }
     
     private final class PromotionEmoter implements Emoter {
-        public boolean prepare(String name, Motable emotable, Motable immotable) {
+        public boolean emote(Motable emotable, Motable immotable) {
             try {
                 immotable.restore(emotable.getCreationTime(), 
                         emotable.getLastAccessedTime(),
                         emotable.getMaxInactiveInterval(),
-                        name,
+                        emotable.getName(),
                         emotable.getBodyAsByteArray());
             } catch (Exception e) {
-                _log.warn("Problem emoting " + name, e);
+                _log.warn("Problem emoting [" + emotable + "]", e);
                 return false;
             }
 
             return true;
         }
-
-        public void commit(String name, Motable motable) {
-        }
-
-        public void rollback(String name, Motable motable) {
-        }
-
     }
     
 }

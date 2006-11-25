@@ -116,37 +116,22 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
 			super(map);
 		}
 
-		public boolean prepare(String name, Motable emotable, Motable immotable) {
-			Sync stateLock=((Session)emotable).getExclusiveLock();
-			try {
-				Utils.acquireUninterrupted("State (excl.)", name, stateLock); // released in commit/rollback
-			} catch (TimeoutException e) {
-				_log.error("unexpected timeout", e);
-				return false;
-			}
-
-			if (emotable.getName()==null)
-				return false; // we lost race to motable and it has gone...
-
-			// copies emotable content into immotable
-			return super.prepare(name, emotable, immotable);
-		}
-
-		public void commit(String name, Motable emotable) {
-			// removes emotable from map
-			// destroys emotable
-			super.commit(name, emotable);
-			Sync stateLock=((Session)emotable).getExclusiveLock();
-			Utils.release("State (excl.)", name, stateLock);
-		}
-
-		public void rollback(String name, Motable emotable) {
-			// noop
-			super.rollback(name, emotable);
-			Sync stateLock=((Session)emotable).getExclusiveLock();
-			Utils.release("State (excl.)", name, stateLock);
-		}
-
+        public boolean emote(Motable emotable, Motable immotable) {
+            String name = emotable.getName();
+            Sync stateLock = ((Session) emotable).getExclusiveLock();
+            try {
+                Utils.acquireUninterrupted("State (excl.)", name, stateLock);
+            } catch (TimeoutException e) {
+                _log.error("unexpected timeout", e);
+                return false;
+            }
+            try {
+                return super.emote(emotable, immotable);
+            } finally {
+                Utils.release("State (excl.)", name, stateLock);
+            }
+        }
+        
 	}
 
 	class MemoryImmoter extends AbstractMappedImmoter {
@@ -155,7 +140,7 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
 			super(map);
 		}
 
-		public Motable nextMotable(String id, Motable emotable) {
+		public Motable newMotable() {
 			return _pool.take();
 		}
 

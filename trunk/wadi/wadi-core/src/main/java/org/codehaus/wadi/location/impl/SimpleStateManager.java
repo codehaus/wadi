@@ -164,13 +164,11 @@ public class SimpleStateManager implements StateManager, StateManagerMessageList
     }
 
     class PMToIMEmotable extends AbstractMotable {
-        protected final String _name;
         protected final String _tgtNodeName;
         protected Envelope _message1;
         protected final MovePMToSM _get;
 
-        public PMToIMEmotable(String name, String nodeName, Envelope message1, MovePMToSM get) {
-            _name = name;
+        public PMToIMEmotable(String nodeName, Envelope message1, MovePMToSM get) {
             _tgtNodeName = nodeName;
             _message1 = message1;
             _get = get;
@@ -230,22 +228,15 @@ public class SimpleStateManager implements StateManager, StateManagerMessageList
             _request = request;
         }
 
-        public Motable nextMotable(String name, Motable emotable) {
-            return new PMToIMEmotable(name, _tgtNodeName, _message, _request);
+        public Motable newMotable() {
+            return new PMToIMEmotable(_tgtNodeName, _message, _request);
         }
 
-        public boolean prepare(String name, Motable emotable, Motable immotable) {
+        public boolean immote(Motable emotable, Motable immotable) {
+            _found = true;
             return true;
         }
-
-        public void commit(String name, Motable immotable) {
-            _found = true;
-        }
-
-        public void rollback(String name, Motable immotable) {
-            // this probably has to by NYI... - nasty...
-        }
-
+        
         public boolean contextualise(Invocation invocation, String id, Motable immotable, Sync motionLock)
                 throws InvocationException {
             return false;
@@ -302,7 +293,8 @@ public class SimpleStateManager implements StateManager, StateManagerMessageList
         }
     }
 
-    public boolean offerEmigrant(String key, Motable emotable, long timeout) {
+    public boolean offerEmigrant(Motable emotable, long timeout) {
+        String key = emotable.getName();
         Partition partition = partitionManager.getPartition(key);
         ReleaseEntryRequest pojo = new ReleaseEntryRequest(emotable);
         Envelope response = null;
@@ -320,11 +312,11 @@ public class SimpleStateManager implements StateManager, StateManagerMessageList
         }
     }
 
-    public void acceptImmigrant(Envelope message, String name, Motable motable) {
+    public void acceptImmigrant(Envelope message, Motable motable) {
         try {
             _dispatcher.reply(message, new ReleaseEntryResponse(true));
         } catch (MessageExchangeException e) {
-            _log.error("could not acknowledge safe receipt: " + name);
+            _log.error("could not acknowledge safe receipt [" + motable + "]");
         }
     }
 

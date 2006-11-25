@@ -55,7 +55,6 @@ public class AbstractTestEvacuation extends TestCase {
             public void doFilter(ServletRequest req, ServletResponse res) throws IOException, ServletException {
                 HttpSession session = ((HttpServletRequest) req).getSession();
                 assertTrue(session != null);
-                _log.info("ACQUIRED SESSION: " + session.getId());
             }
         };
 

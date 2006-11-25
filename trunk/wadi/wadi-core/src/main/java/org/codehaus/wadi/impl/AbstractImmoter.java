@@ -16,8 +16,6 @@
  */
 package org.codehaus.wadi.impl;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
@@ -33,27 +31,14 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  */
 
 public abstract class AbstractImmoter implements Immoter {
-	protected static final Log _log = LogFactory.getLog(AbstractImmoter.class);
 	
-	public boolean prepare(String name, Motable emotable, Motable immotable) {
-		return true;
-	}
-	
-	public void commit(String name, Motable immotable) {
-		// do nothing
-	}
-	
-	public void rollback(String name, Motable immotable) {
-		try {
-			immotable.destroy();
-		} catch (Exception e) {
-			if (_log.isErrorEnabled()) _log.error("problem rolling back immotion: "+name, e);
-		}
-	}
-	
-	// keep the throws clause - we are defining a method signature for our subtypes
+    public boolean immote(Motable emotable, Motable immotable) {
+        return true;
+    }
+    
 	public boolean contextualise(Invocation invocation, String id, Motable immotable, Sync motionLock) throws InvocationException {
 		// most Contextualisers cannot contextualise locally...
 		return false;
 	}
+
 }

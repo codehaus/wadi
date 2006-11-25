@@ -73,10 +73,10 @@ public class ExclusiveStoreContextualiser extends AbstractExclusiveContextualise
 	        super(map);
 	    }
 
-		public Motable nextMotable(String name, Motable emotable) {
+		public Motable newMotable() {
 			StoreMotable motable=_store.create();
 			motable.init(_store);
-            return motable; // TODO - Pool, maybe as ThreadLocal
+            return motable;
 		}
 
 	}

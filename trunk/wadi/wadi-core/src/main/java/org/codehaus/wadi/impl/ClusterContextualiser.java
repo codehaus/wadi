@@ -128,29 +128,22 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 	 * Manage the immotion of a session into the cluster tier from another and its emigration thence to another node.
 	 */
 	class EmigrationImmoter implements Immoter {
-		public Motable nextMotable(String id, Motable emotable) {return new SimpleMotable();}
+		public Motable newMotable() {
+            return new SimpleMotable();
+        }
 
-		public boolean prepare(String name, Motable emotable, Motable immotable) {
-			try {
-				immotable.copy(emotable);
-			} catch (Exception e) {
-				_log.warn("problem sending emigration request: "+name, e);
-				return false;
-			}
-			return _dindex.getStateManager().offerEmigrant(name, immotable, _resTimeout);
-		}
-
-		public void commit(String name, Motable immotable) {
-			// TODO - cache new location of emigrating session...
-		}
-
-		public void rollback(String name, Motable immotable) {
-			// TODO - errr... HOW ?
-		}
-
+        public boolean immote(Motable emotable, Motable immotable) {
+            try {
+                immotable.copy(emotable);
+            } catch (Exception e) {
+                _log.warn("problem sending emigration request for [" + emotable + "]", e);
+                return false;
+            }
+            return _dindex.getStateManager().offerEmigrant(immotable, _resTimeout);
+        }
+        
 		public boolean contextualise(Invocation invocation, String id, Motable immotable, Sync motionLock) throws InvocationException {
 			return false;
-			// TODO - perhaps this is how a proxied contextualisation should occur ?
 		}
 
 	}
@@ -162,29 +155,20 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
 	 * @version $Revision$
 	 */
 	class ImmigrationEmoter extends AbstractChainedEmoter {
-
 		protected final Envelope _message;
 
 		public ImmigrationEmoter(Envelope message) {
 			_message=message;
 		}
 
-		public boolean prepare(String name, Motable emotable, Motable immotable) {
-			if (super.prepare(name, emotable, immotable)) {
-				_dindex.getStateManager().acceptImmigrant(_message, name, emotable);
-				return true;
-			} else {
-				return false;
-			}
-		}
-
-		public void commit(String name, Motable emotable) {
-		}
-
-		public void rollback(String name, Motable emotable) {
-			throw new RuntimeException("NYI");
-		}
-
+        public boolean emote(Motable emotable, Motable immotable) {
+            if (super.emote(emotable, immotable)) {
+                _dindex.getStateManager().acceptImmigrant(_message, emotable);
+                return true;
+            } else {
+                return false;
+            }
+        }
 	}
 
 	public void onImmigration(Envelope message, Motable emotable) {

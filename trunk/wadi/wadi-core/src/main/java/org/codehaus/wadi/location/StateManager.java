@@ -35,9 +35,9 @@ public interface StateManager {
         void onImmigration(Envelope message, Motable immigrant);
     }
 
-    boolean offerEmigrant(String key, Motable emotable, long timeout);
+    boolean offerEmigrant(Motable emotable, long timeout);
 
-    void acceptImmigrant(Envelope message, String name, Motable immotable);
+    void acceptImmigrant(Envelope message, Motable immotable);
 
     void setImmigrationListener(ImmigrationListener listener);
 

@@ -21,22 +21,24 @@ import java.util.Map;
 import org.codehaus.wadi.Motable;
 
 /**
- * TODO - JavaDoc this type
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
 
 public abstract class AbstractMappedImmoter extends AbstractImmoter {
-    protected final Map _map;
-    
+    private final Map map;
+
     public AbstractMappedImmoter(Map map) {
-        _map=map;    
+        if (null == map) {
+            throw new IllegalArgumentException("map is requried");
+        }
+        this.map = map;
     }
-    
-	public void commit(String name, Motable immotable) {
-		super.commit(name, immotable);
-		_map.put(name, immotable);
-	}
-	
+
+    public boolean immote(Motable emotable, Motable immotable) {
+        map.put(emotable.getName(), immotable);
+        return true;
+    }
+
 }
