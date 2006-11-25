@@ -38,10 +38,10 @@ import org.codehaus.wadi.impl.ClusterContextualiser;
 import org.codehaus.wadi.impl.ClusteredManager;
 import org.codehaus.wadi.impl.DummyContextualiser;
 import org.codehaus.wadi.impl.DummyManagerConfig;
+import org.codehaus.wadi.impl.DummyReplicaterFactory;
 import org.codehaus.wadi.impl.ExclusiveStoreContextualiser;
 import org.codehaus.wadi.impl.HashingCollapser;
 import org.codehaus.wadi.impl.MemoryContextualiser;
-import org.codehaus.wadi.impl.MemoryReplicaterFactory;
 import org.codehaus.wadi.impl.NeverEvicter;
 import org.codehaus.wadi.impl.SimpleSessionPool;
 import org.codehaus.wadi.impl.SimpleStreamer;
@@ -107,12 +107,11 @@ public class MyStack {
         _memory = new MemoryContextualiser(spool, mevicter, mmap, streamer, contextPool, requestPool);
 
         // Manager
-        int numPartitions = 72;
         AttributesFactory attributesFactory = new DistributableAttributesFactory();
         ValuePool valuePool = new SimpleValuePool(new DistributableValueFactory());
         WebSessionWrapperFactory wrapperFactory = new StandardSessionWrapperFactory();
         SessionIdFactory idFactory = new TomcatSessionIdFactory();
-        ReplicaterFactory replicaterfactory = new MemoryReplicaterFactory(numPartitions);
+        ReplicaterFactory replicaterfactory = new DummyReplicaterFactory();
         InvocationProxy proxy = new StandardHttpProxy("jsessionid");
         _manager = new ClusteredManager(sessionPool, attributesFactory, valuePool, wrapperFactory, idFactory, _memory,
                 _memory.getMap(), new DummyRouter(), true, streamer, true, replicaterfactory, proxy,
