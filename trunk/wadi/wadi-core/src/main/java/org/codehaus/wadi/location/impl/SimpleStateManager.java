@@ -183,7 +183,6 @@ public class SimpleStateManager implements StateManager, StateManagerMessageList
             immotable.init(_creationTime, _lastAccessedTime, _maxInactiveInterval, _name);
             immotable.setBodyAsByteArray(bytes);
 
-            long timeout = _config.getInactiveTime();
             LocalPeer smPeer = _dispatcher.getCluster().getLocalPeer();
             Peer imPeer = _get.getIMPeer();
             MoveSMToIM request = new MoveSMToIM(immotable);
@@ -191,7 +190,7 @@ public class SimpleStateManager implements StateManager, StateManagerMessageList
             if (_log.isTraceEnabled()) {
                 _log.trace("exchanging MoveSMToIM between [" + smPeer + "]->[" + imPeer + "]");
             }
-            Envelope message2 = _dispatcher.exchangeSend(imPeer.getAddress(), request, timeout, _get
+            Envelope message2 = _dispatcher.exchangeSend(imPeer.getAddress(), request, _inactiveTime, _get
                     .getIMCorrelationId());
             // should receive response from IM confirming safe receipt...
             if (message2 == null) {
@@ -272,9 +271,8 @@ public class SimpleStateManager implements StateManager, StateManagerMessageList
                     _log.warn("state not found - perhaps it has just been destroyed: " + key);
                     MoveSMToIM req = new MoveSMToIM(null);
                     // send on null state from StateMaster to InvocationMaster...
-                    long timeout = _config.getInactiveTime();
                     _log.info("sending 0 bytes to : " + imPeer);
-                    Envelope ignore = _dispatcher.exchangeSend(imPeer.getAddress(), req, timeout, request
+                    Envelope ignore = _dispatcher.exchangeSend(imPeer.getAddress(), req, _inactiveTime, request
                             .getIMCorrelationId());
                     _log.info("received: " + ignore);
                     // StateMaster replies to PartitionMaster indicating

@@ -29,6 +29,4 @@ public interface CoordinatorConfig {
     Cluster getCluster();
     
     Dispatcher getDispatcher();
-
-    long getInactiveTime();
 }
