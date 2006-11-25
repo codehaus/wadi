@@ -130,7 +130,7 @@ public class SimpleContextualiserStack implements Contextualiser {
 		_memoryMap=sessionMap;
 		_serial=new SerialContextualiser(_disc, _collapser, _memoryMap);
 		_requestPool=new DummyStatefulHttpServletRequestWrapperPool(); // TODO - use a ThreadLocal based Pool
-		_memory=new MemoryContextualiser(_serial, _memoryEvicter, _memoryMap, _streamer, _memoryPool, _requestPool);
+		_memory=new MemoryContextualiser(_serial, _memoryEvicter, _memoryMap, _memoryPool, _requestPool);
 
 		// ready to rock !
 	}

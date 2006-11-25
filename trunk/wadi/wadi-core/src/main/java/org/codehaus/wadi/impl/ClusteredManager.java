@@ -35,7 +35,6 @@ import org.codehaus.wadi.ReplicaterFactory;
 import org.codehaus.wadi.SessionIdFactory;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValuePool;
-import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.location.PartitionManagerConfig;
@@ -130,14 +129,6 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
         _dindex.stop();
     }
 
-    public void destroy(String key) {
-        WebSession session = (WebSession) _map.get(key);
-        if (null == session) {
-            throw new IllegalArgumentException("Provided session id is unknown.");
-        }
-        destroy(null, session);
-    }
-
     public void destroy(Invocation invocation, WebSession session) {
         // this destroySession method must not chain the one in super - otherwise the notification aspect fires twice 
         // - once around each invocation... - DOH !
@@ -161,14 +152,6 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
         if (_log.isDebugEnabled()) {
             _log.debug("destroyed: " + name);
         }
-    }
-
-    public String getNodeName() {
-        return _dispatcher.getCluster().getLocalPeer().getName();
-    }
-
-    public long getInactiveTime() {
-        return _dispatcher.getCluster().getInactiveTime();
     }
 
     public Dispatcher getDispatcher() {
@@ -195,7 +178,7 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
     }
 
     protected boolean validateSessionName(String name) {
-        return _dindex.insert(name, getInactiveTime());
+        return _dindex.insert(name);
     }
 
     public void findRelevantSessionNames(PartitionMapper mapper, Map keyToSessionNames) {
@@ -213,10 +196,6 @@ public class ClusteredManager extends DistributableManager implements ClusteredC
 
     public Immoter getImmoter(String name, Motable immotable) {
         return _contextualiser.getDemoter(name, immotable);
-    }
-
-    public String getPeerName(Address address) {
-        return _dispatcher.getPeerName(address);
     }
 
     public Sync getInvocationLock(String name) {

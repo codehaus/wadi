@@ -104,7 +104,7 @@ public class MyStack {
         Evicter mevicter = new AlwaysEvicter(sweepInterval, strictOrdering);
         SessionPool contextPool = new WebSessionToSessionPoolAdapter(sessionPool);
         PoolableInvocationWrapperPool requestPool = new DummyStatefulHttpServletRequestWrapperPool();
-        _memory = new MemoryContextualiser(spool, mevicter, mmap, streamer, contextPool, requestPool);
+        _memory = new MemoryContextualiser(spool, mevicter, mmap, contextPool, requestPool);
 
         // Manager
         AttributesFactory attributesFactory = new DistributableAttributesFactory();

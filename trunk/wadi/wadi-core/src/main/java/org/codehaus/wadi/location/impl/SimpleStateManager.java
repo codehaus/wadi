@@ -110,11 +110,11 @@ public class SimpleStateManager implements StateManager, StateManagerMessageList
         _endpointBuilder.dispose(10, 500);
     }
 
-    public boolean insert(String name, long timeout) {
+    public boolean insert(String name) {
         try {
             InsertIMToPM request = new InsertIMToPM(name, localPeer);
             PartitionFacade pf = partitionManager.getPartition(name);
-            Envelope reply = pf.exchange(request, timeout);
+            Envelope reply = pf.exchange(request, _inactiveTime);
             return ((InsertPMToIM) reply.getPayload()).getSuccess();
         } catch (MessageExchangeException e) {
             _log.error("See nested", e);

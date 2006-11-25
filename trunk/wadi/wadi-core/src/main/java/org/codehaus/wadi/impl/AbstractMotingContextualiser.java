@@ -34,12 +34,9 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * @version $Revision$
  */
 public abstract class AbstractMotingContextualiser extends AbstractChainedContextualiser {
-	
 	protected final Locker _locker;
-	
-	protected ContextualiserConfig _config;
-	
 	protected final boolean _clean;
+    protected ContextualiserConfig _config;
 	
 	public AbstractMotingContextualiser(Contextualiser next, Locker locker, boolean clean) {
 		super(next);

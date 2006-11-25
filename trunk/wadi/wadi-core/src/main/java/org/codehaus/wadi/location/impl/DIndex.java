@@ -210,8 +210,8 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
         return _partitionManager.getNumPartitions();
     }
 
-    public boolean insert(String name, long timeout) {
-        return _stateManager.insert(name, timeout);
+    public boolean insert(String name) {
+        return _stateManager.insert(name);
     }
 
     public void remove(String name) {
@@ -224,14 +224,11 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
 
     class SMToIMEmoter extends AbstractChainedEmoter {
         protected final Log _log = LogFactory.getLog(getClass());
-
-        protected final String _nodeName;
         protected final Envelope _message;
         protected Sync _invocationLock;
         protected Sync _stateLock;
 
-        public SMToIMEmoter(String nodeName, Envelope message) {
-            _nodeName = nodeName;
+        public SMToIMEmoter(Envelope message) {
             _message = message;
         }
 
@@ -275,7 +272,7 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
                 _log.warn("failed relocation - 0 bytes arrived: " + sessionName);
                 return null;
             } else {
-                Emoter emoter = new SMToIMEmoter(_config.getPeerName(message.getReplyTo()), message);
+                Emoter emoter = new SMToIMEmoter(message);
                 Motable immotable = Utils.mote(emoter, immoter, emotable, sessionName);
                 return immotable;
             }

@@ -202,7 +202,7 @@ public class SimplePartitionManagerSmokeTest extends TestCase {
             int nbInsert = 30;
             String prefix = Thread.currentThread().getName() + "||";
             for (int i = 0; i < nbInsert; i++) {
-                boolean success = manager.insert(prefix + i, EXCHANGE_TIMEOUT);
+                boolean success = manager.insert(prefix + i);
                 if (!success) {
                     throw new IllegalStateException();
                 }

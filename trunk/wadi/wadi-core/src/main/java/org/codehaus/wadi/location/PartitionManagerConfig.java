@@ -23,7 +23,6 @@ import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.PartitionMapper;
-import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Peer;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
@@ -37,15 +36,9 @@ public interface PartitionManagerConfig {
 
     Peer getCoordinator();
     
-    long getInactiveTime();
-
     boolean contextualise(Invocation invocation, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws InvocationException;
     
-    String getPeerName(Address address);
-
     Immoter getImmoter(String name, Motable immotable);
     
     Sync getInvocationLock(String name);
-
-    long getBirthTime();
 }

@@ -24,8 +24,6 @@ import org.codehaus.wadi.location.impl.DIndex;
  * @version $Revision$
  */
 public interface ClusteredContextualiserConfig extends DistributableContextualiserConfig {
-	String getNodeName();
-
 	InvocationProxy getInvocationProxy();
 
 	Dispatcher getDispatcher();

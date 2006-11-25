@@ -20,7 +20,6 @@ import java.util.Map;
 
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.ContextualiserConfig;
-import org.codehaus.wadi.Evictable;
 import org.codehaus.wadi.PartitionMapper;
 
 /**
