@@ -21,8 +21,7 @@ package org.codehaus.wadi;
  * @version $Revision$
  */
 public interface Lifecycle {
+    void start() throws Exception;
 
-    public void start() throws Exception;
-    public void stop() throws Exception;
-
+    void stop() throws Exception;
 }
