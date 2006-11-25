@@ -34,7 +34,6 @@ import org.codehaus.wadi.PartitionMapper;
 import org.codehaus.wadi.ReplicaterFactory;
 import org.codehaus.wadi.SessionIdFactory;
 import org.codehaus.wadi.Streamer;
-import org.codehaus.wadi.ValueHelper;
 import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Dispatcher;
