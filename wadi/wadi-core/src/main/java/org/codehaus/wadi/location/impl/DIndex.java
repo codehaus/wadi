@@ -294,16 +294,6 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
         }
     }
 
-    public String getPeerName(Address address) {
-        Peer local = _localPeer;
-        Peer node = address.equals(local.getAddress()) ? local : (Peer) _cluster.getRemotePeers().get(address);
-        return node.getName();
-    }
-
-    public long getInactiveTime() {
-        return _inactiveTime;
-    }
-
     public StateManager getStateManager() {
         return _stateManager;
     }
