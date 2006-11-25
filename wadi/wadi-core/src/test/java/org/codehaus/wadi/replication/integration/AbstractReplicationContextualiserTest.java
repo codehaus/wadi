@@ -168,7 +168,7 @@ public abstract class AbstractReplicationContextualiserTest extends TestCase {
         Contextualiser contextualiser = new DummyContextualiser();
         contextualiser = new ReplicaAwareContextualiser(contextualiser, sessionRepManager);
         contextualiser = new ClusterContextualiser(contextualiser, new HashingCollapser(100, 1000), new HybridRelocater(1000, 1000, true));
-        contextualiser = new MemoryContextualiser(contextualiser, mevicter, mmap, streamer, contextPool, requestPool);
+        contextualiser = new MemoryContextualiser(contextualiser, mevicter, mmap, contextPool, requestPool);
 
         ClusteredManager manager = new ClusteredManager(
                 sessionPool, 

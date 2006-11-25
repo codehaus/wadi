@@ -57,10 +57,6 @@ public class GiannisContextualiser extends AbstractExclusiveContextualiser {
             _store.clean();
     }
 
-	public boolean isExclusive(){
-		return true;
-	}
-
 	public Immoter getImmoter() {
 		return _immoter;
 	}

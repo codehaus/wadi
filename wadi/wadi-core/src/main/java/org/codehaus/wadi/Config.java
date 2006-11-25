@@ -21,7 +21,4 @@ package org.codehaus.wadi;
  * @version $Revision$
  */
 public interface Config {
-
-    // empty
-
 }

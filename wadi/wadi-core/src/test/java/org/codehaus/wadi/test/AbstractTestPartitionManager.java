@@ -94,16 +94,8 @@ public abstract class AbstractTestPartitionManager extends TestCase {
                 return null;
             }
 
-			public long getInactiveTime() {
-				return 0;
-			}
-
 			public boolean contextualise(Invocation invocation, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws InvocationException {
 				return false;
-			}
-
-			public String getPeerName(Address address) {
-				return null;
 			}
 
 			public Immoter getImmoter(String name, Motable immotable) {
@@ -113,11 +105,6 @@ public abstract class AbstractTestPartitionManager extends TestCase {
 			public Sync getInvocationLock(String name) {
 				return null;
 			}
-
-			public long getBirthTime() {
-				return _birthTime;
-			}
-			
 		};
 
 		pm1.init(pmc);

@@ -123,7 +123,7 @@ public class TestSharedStack extends TestCase {
         SessionPool contextPool=new Tier1ContextPool();
         PoolableInvocationWrapperPool invocationWrapperPool=new Tier1WrapperPool(); // can't remember why we need this... - investigate
         
-        Contextualiser memory=new MemoryContextualiser(terminator, evicter, map, streamer, contextPool, invocationWrapperPool);
+        Contextualiser memory=new MemoryContextualiser(terminator, evicter, map, contextPool, invocationWrapperPool);
         
         // add a session...
         String key="xxx";

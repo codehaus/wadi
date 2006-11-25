@@ -59,8 +59,6 @@ public class ExclusiveStoreContextualiser extends AbstractExclusiveContextualise
             _store.clean();
     }
 
-	public boolean isExclusive(){return true;}
-
 	public Immoter getImmoter(){return _immoter;}
 	public Emoter getEmoter(){return _emoter;}
 

@@ -17,7 +17,6 @@
 package org.codehaus.wadi.location.impl;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -62,6 +61,7 @@ import EDU.oswego.cs.dl.util.concurrent.Latch;
 public class SimplePartitionManager implements PartitionManager, PartitionConfig, PartitionManagerMessageListener {
 	private static final int WAIT_DEFINED_PARTITION_MANAGER = 60 * 1000;
 	private static final long PARTITION_UPDATE_WAIT_TIME = 5000;
+	private static final long PARTITION_EVACUATION_WAIT_TIME = 5000;
 
     public interface Callback {
         void onPartitionEvacuationRequest(ClusterEvent event);
@@ -153,7 +153,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
             boolean evacuationCompleted = false;
             try {
                 _dispatcher.send(coordPeer.getAddress(), request);
-                evacuationCompleted = evacuationCompletionLatch.attempt(_config.getInactiveTime());
+                evacuationCompleted = evacuationCompletionLatch.attempt(PARTITION_EVACUATION_WAIT_TIME);
             } catch (Exception e) {
                 _log.warn("Problem evacuating partitions", e);
             }
@@ -161,7 +161,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionConfig
                 failures++;
                 _log.warn("Could not contact Coordinator - backing off for " + _inactiveTime + " millis...");
                 try {
-                    Thread.sleep(_config.getInactiveTime());
+                    Thread.sleep(_inactiveTime);
                 } catch (InterruptedException e) {
                     interruptFlag = true;
                 }

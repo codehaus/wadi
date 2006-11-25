@@ -57,13 +57,15 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
         _evicter = evicter;
     }
 
+    public final boolean isExclusive() {
+        return true;
+    }
+    
     public Motable get(String id) {
         return (Motable) _map.get(id);
     }
 
-    // TODO - sometime figure out how to make this a wrapper around
-    // AbstractChainedContextualiser.handle() instead of a replacement...
-    public boolean handle(Invocation invocation, String id, Immoter immoter, Sync motionLock)
+    public final boolean handle(Invocation invocation, String id, Immoter immoter, Sync motionLock)
             throws InvocationException {
         Motable emotable = get(id);
         if (emotable == null) {
@@ -71,10 +73,15 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
         } else if (immoter != null) {
             return promote(invocation, id, immoter, motionLock, emotable);
         } else {
-            return false;
+            return handleLocally(invocation, id, motionLock, emotable);
         }
     }
 
+    protected boolean handleLocally(Invocation invocation, String id, Sync invocationLock, Motable motable)
+        throws InvocationException {
+        return false;
+    }
+    
     public Emoter getEvictionEmoter() {
         return getEmoter();
     }

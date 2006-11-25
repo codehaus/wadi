@@ -43,7 +43,7 @@ public interface StateManager {
 
     void unsetImmigrationListener(ImmigrationListener listener);
 
-    boolean insert(String name, long timeout);
+    boolean insert(String name);
 
     void remove(String name);
 

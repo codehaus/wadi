@@ -140,10 +140,9 @@ public abstract class AbstractTestReplication extends TestCase {
 		Evicter mevicter=new AlwaysEvicter(sweepInterval, strictOrdering);
 		SessionPool contextPool=new WebSessionToSessionPoolAdapter(sessionPool);
 		PoolableInvocationWrapperPool requestPool=new DummyStatefulHttpServletRequestWrapperPool();
-		AbstractExclusiveContextualiser memory=new MemoryContextualiser(serial, mevicter, mmap, streamer, contextPool, requestPool);
+		AbstractExclusiveContextualiser memory=new MemoryContextualiser(serial, mevicter, mmap, contextPool, requestPool);
 
 		// Manager
-		int numPartitions=72;
 		AttributesFactory attributesFactory=new DistributableAttributesFactory();
 		ValuePool valuePool=new SimpleValuePool(new DistributableValueFactory());
 		WebSessionWrapperFactory wrapperFactory=new StandardSessionWrapperFactory();

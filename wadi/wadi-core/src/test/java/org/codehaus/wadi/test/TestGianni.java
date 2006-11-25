@@ -142,7 +142,7 @@ public class TestGianni extends TestCase {
 		Evicter mevicter=new AlwaysEvicter(sweepInterval, strictOrdering);
 		SessionPool contextPool=new WebSessionToSessionPoolAdapter(sessionPool);
 		PoolableInvocationWrapperPool requestPool=new DummyStatefulHttpServletRequestWrapperPool();
-		AbstractExclusiveContextualiser memory=new MemoryContextualiser(serial, mevicter, mmap, streamer, contextPool, requestPool);
+		AbstractExclusiveContextualiser memory=new MemoryContextualiser(serial, mevicter, mmap, contextPool, requestPool);
 
 		// Manager
 		AttributesFactory attributesFactory=new DistributableAttributesFactory();
@@ -259,7 +259,7 @@ public class TestGianni extends TestCase {
 		Evicter mevicter=new AlwaysEvicter(sweepInterval, strictOrdering);
 		SessionPool contextPool=new WebSessionToSessionPoolAdapter(sessionPool);
 		PoolableInvocationWrapperPool requestPool=new DummyStatefulHttpServletRequestWrapperPool();
-		AbstractExclusiveContextualiser memory=new MemoryContextualiser(serial, mevicter, mmap, streamer, contextPool, requestPool);
+		AbstractExclusiveContextualiser memory=new MemoryContextualiser(serial, mevicter, mmap, contextPool, requestPool);
 
 		// Manager
 		AttributesFactory attributesFactory=new DistributableAttributesFactory();
