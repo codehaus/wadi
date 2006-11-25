@@ -109,7 +109,7 @@ public class MyServlet implements Servlet {
 		_statelessContextualiser=new StatelessContextualiser(_clusterContextualiser, methods, true, uris, false);
 		_memoryMap=new HashMap();
 		_serialContextualiser=new SerialContextualiser(_statelessContextualiser, _collapser, _memoryMap);
-		_memoryContextualiser=new MemoryContextualiser(_serialContextualiser, new NeverEvicter(30000, true), _memoryMap, new SimpleStreamer(), contextPool, new MyDummyHttpServletRequestWrapperPool());
+		_memoryContextualiser=new MemoryContextualiser(_serialContextualiser, new NeverEvicter(30000, true), _memoryMap, contextPool, new MyDummyHttpServletRequestWrapperPool());
 		_httpProxy=httpProxy;
 		_manager=new ClusteredManager(_distributableSessionPool, _distributableAttributesFactory, _distributableValuePool, _sessionWrapperFactory, _sessionIdFactory, _memoryContextualiser, _memoryMap, _router, true, _streamer, _accessOnLoad, new DummyReplicaterFactory(), _httpProxy, null, 24, _collapser);
 	}
