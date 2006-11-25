@@ -59,20 +59,13 @@ public class Utils {
 	 * @return - the resulting immotable - in other words - the data's new representation in the target Contextualiser
 	 */
 	public static Motable mote(Emoter emoter, Immoter immoter, Motable emotable, String name) {
-        Motable immotable = immoter.nextMotable(name, emotable);
-        boolean immotionOK = true;
-        if ((immotionOK = immoter.prepare(name, emotable, immotable)) && emoter.prepare(name, emotable, immotable)) {
-            immoter.commit(name, immotable);
-            emoter.commit(name, emotable);
-            return immotable;
-        } else {
-            immoter.rollback(name, immotable);
-            if (immotionOK) {
-                emoter.rollback(name, emotable);
-            }
-            _log.warn("motion failed: " + name + " : " + emoter + " -> " + immoter);
+        Motable immotable = immoter.newMotable();
+        boolean immotionOK = immoter.immote(emotable, immotable);
+        if (!immotionOK) {
             return null;
         }
+        emoter.emote(emotable, immotable);
+        return immotable;
     }
 
     public static void acquireUninterrupted(String lockType, String lockName, Sync sync) throws TimeoutException {

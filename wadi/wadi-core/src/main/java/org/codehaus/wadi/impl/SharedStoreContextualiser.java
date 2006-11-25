@@ -49,7 +49,7 @@ public class SharedStoreContextualiser extends AbstractSharedContextualiser {
 		super(next, new CollapsingLocker(collapser), clean);
 		_store=store;
 		_immoter=new SharedJDBCImmoter();
-		_emoter=new SharedJDBCEmoter();
+		_emoter=new AbstractChainedEmoter();
 	}
 
 	public void init(ContextualiserConfig config) {
@@ -78,15 +78,12 @@ public class SharedStoreContextualiser extends AbstractSharedContextualiser {
 	 */
 	public class SharedJDBCImmoter extends AbstractImmoter {
 
-		public Motable nextMotable(String name, Motable emotable) {
+		public Motable newMotable() {
 			StoreMotable motable=_store.create();
 			motable.init(_store);
-			return motable; // TODO - Pool, maybe as ThreadLocal
+			return motable;
 		}
 
-	}
-
-	public class SharedJDBCEmoter extends AbstractChainedEmoter {
 	}
 
 	class SharedPutter implements Store.Putter {

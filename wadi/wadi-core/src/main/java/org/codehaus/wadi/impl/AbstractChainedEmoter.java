@@ -28,25 +28,17 @@ import org.codehaus.wadi.Motable;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public abstract class AbstractChainedEmoter implements Emoter {
+public class AbstractChainedEmoter implements Emoter {
 	protected final Log _log = LogFactory.getLog(getClass());
 
-    public boolean prepare(String name, Motable emotable, Motable immotable) {
+    public boolean emote(Motable emotable, Motable immotable) {
         try {
             emotable.mote(immotable);
             return true;
         } catch (Exception e) {
-            _log.warn("problem transferring data ownership: " + name, e);
+            _log.warn("problem transferring data ownership [" + emotable + "] -> [" + immotable + "]", e);
             return false;
         }
     }
-
-    public void commit(String name, Motable motable) {
-        // do nothing
-    }
-
-    public void rollback(String name, Motable motable) {
-        // immotable.mote(emotable);
-    }
-
+    
 }

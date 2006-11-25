@@ -37,18 +37,13 @@ public class BaseMappedEmoter extends AbstractChainedEmoter {
         _map = map;
     }
 
-    public boolean prepare(String name, Motable emotable, Motable immotable) {
-        if (super.prepare(name, emotable, immotable)) {
-            _map.remove(name);
+    public boolean emote(Motable emotable, Motable immotable) {
+        if (super.emote(emotable, immotable)) {
+            _map.remove(immotable.getName());
             return true;
         } else {
             return false;
         }
     }
-
-    public void rollback(String name, Motable motable) {
-        super.rollback(name, motable);
-        _map.put(name, motable);
-    }
-
+    
 }

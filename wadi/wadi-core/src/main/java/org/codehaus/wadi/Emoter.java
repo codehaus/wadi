@@ -22,5 +22,6 @@ package org.codehaus.wadi;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public interface Emoter extends Moter {
+public interface Emoter {
+    boolean emote(Motable emotable, Motable immotable);
 }

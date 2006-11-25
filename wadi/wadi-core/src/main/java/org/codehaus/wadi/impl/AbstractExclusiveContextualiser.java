@@ -90,11 +90,9 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
             Motable emotable = (Motable) iter.next();
             try {
                 String name = emotable.getName();
-                if (name != null) {
-                    Immoter immoter = _next.getSharedDemoter();
-                    Utils.mote(emoter, immoter, emotable, name);
-                    i++;
-                }
+                Immoter immoter = _next.getSharedDemoter();
+                Utils.mote(emoter, immoter, emotable, name);
+                i++;
             } catch (Exception e) {
                 _log.warn("unexpected problem while unloading session", e);
             }

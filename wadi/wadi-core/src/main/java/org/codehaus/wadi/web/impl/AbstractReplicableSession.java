@@ -38,13 +38,6 @@ public abstract class AbstractReplicableSession extends DistributableSession imp
 
     public abstract void readEnded();
 
-    public void copy(Motable motable) throws Exception {
-        super.copy(motable);
-
-        Replicater replicater = getReplicater();
-        replicater.acquireFromOtherReplicater(this);
-    }
-
     public void mote(Motable recipient) throws Exception {
         recipient.copy(this); 
         // this is a transfer, so use special case destructor...

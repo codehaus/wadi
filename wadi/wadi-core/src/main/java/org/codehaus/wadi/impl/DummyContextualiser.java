@@ -17,7 +17,6 @@
 package org.codehaus.wadi.impl;
 
 import org.codehaus.wadi.Emoter;
-import org.codehaus.wadi.Evictable;
 import org.codehaus.wadi.Evicter;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Invocation;
@@ -51,20 +50,12 @@ public class DummyContextualiser extends AbstractContextualiser {
     }
 
     public static class DummyImmoter implements Immoter {
-        public Motable nextMotable(String id, Motable emotable) {
-            return new SimpleMotable();
-        }
-
-        public boolean prepare(String name, Motable emotable, Motable immotable) {
+        public boolean immote(Motable emotable, Motable immotable) {
             return true;
         }
-
-        public void commit(String name, Motable immotable) {
-            // throw away incoming state...
-        }
-
-        public void rollback(String name, Motable immotable) {
-            // nothing to do...
+        
+        public Motable newMotable() {
+            return new SimpleMotable();
         }
 
         public boolean contextualise(Invocation invocation, String id, Motable immotable, Sync motionLock)

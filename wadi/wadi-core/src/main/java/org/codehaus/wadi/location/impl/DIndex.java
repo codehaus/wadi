@@ -235,37 +235,23 @@ public class DIndex implements ClusterListener, CoordinatorConfig, SimplePartiti
             _message = message;
         }
 
-        public boolean prepare(String name, Motable emotable, Motable immotable) {
+        public boolean emote(Motable emotable, Motable immotable) {
             try {
                 immotable.rehydrate(emotable.getCreationTime(),
                         emotable.getLastAccessedTime(),
                         emotable.getMaxInactiveInterval(),
-                        name,
+                        emotable.getName(),
                         emotable.getBodyAsByteArray());
+                MoveIMToSM response = new MoveIMToSM(true);
+                _dispatcher.reply(_message, response);
+                emotable.destroy();
             } catch (Exception e) {
                 _log.warn(e);
                 return false;
             }
-
             return true;
         }
-
-        public void commit(String name, Motable emotable) {
-            try {
-                // respond...
-                MoveIMToSM response = new MoveIMToSM(true);
-                _dispatcher.reply(_message, response);
-
-                emotable.destroy(); // remove copy in store
-            } catch (Exception e) {
-                throw new UnsupportedOperationException("NYI"); // NYI
-            }
-        }
-
-        public void rollback(String name, Motable motable) {
-            throw new RuntimeException("NYI");
-        }
-
+        
     }
 
     public Motable relocate(Invocation invocation, String sessionName, boolean shuttingDown,
