@@ -16,7 +16,6 @@
  */
 package org.codehaus.wadi.test;
 
-import java.util.Collection;
 import java.util.Map;
 
 import junit.framework.TestCase;
@@ -26,7 +25,6 @@ import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.PartitionMapper;
-import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.ClusterEvent;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Peer;

@@ -17,7 +17,6 @@
 package org.codehaus.wadi.web.impl;
 
 import java.io.Serializable;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;

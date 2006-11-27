@@ -31,8 +31,6 @@ import org.codehaus.wadi.group.impl.RendezVousMsgDispatcher;
 import org.codehaus.wadi.location.Partition;
 import org.codehaus.wadi.location.PartitionConfig;
 import org.codehaus.wadi.location.impl.LocalPartition;
-import org.codehaus.wadi.location.impl.PartitionFacade;
-import org.codehaus.wadi.location.impl.UnknownPartition;
 import org.codehaus.wadi.location.session.MoveIMToPM;
 import org.codehaus.wadi.location.session.MovePMToIM;
 

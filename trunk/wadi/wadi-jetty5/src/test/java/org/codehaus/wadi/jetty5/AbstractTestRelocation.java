@@ -17,7 +17,6 @@
 package org.codehaus.wadi.jetty5;
 
 import java.io.IOException;
-import java.net.URI;
 import java.util.Map;
 
 import javax.servlet.ServletRequest;

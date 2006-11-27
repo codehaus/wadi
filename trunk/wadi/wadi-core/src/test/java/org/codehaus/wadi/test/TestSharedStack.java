@@ -18,22 +18,20 @@ package org.codehaus.wadi.test;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.codehaus.wadi.Session;
-import org.codehaus.wadi.SessionPool;
+
+import junit.framework.TestCase;
+
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Evicter;
-import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.PoolableInvocationWrapper;
 import org.codehaus.wadi.PoolableInvocationWrapperPool;
-import org.codehaus.wadi.Streamer;
+import org.codehaus.wadi.Session;
+import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.impl.AbstractSession;
 import org.codehaus.wadi.impl.DummyContextualiser;
 import org.codehaus.wadi.impl.DummyEvicter;
 import org.codehaus.wadi.impl.MemoryContextualiser;
-import org.codehaus.wadi.impl.SimpleStreamer;
-import EDU.oswego.cs.dl.util.concurrent.Sync;
-import junit.framework.TestCase;
 
 public class TestSharedStack extends TestCase {
     
@@ -119,7 +117,6 @@ public class TestSharedStack extends TestCase {
         Map map=new HashMap();
         
         // app specific components... - should be injected via the Invocation...
-        Streamer streamer=new SimpleStreamer();
         SessionPool contextPool=new Tier1ContextPool();
         PoolableInvocationWrapperPool invocationWrapperPool=new Tier1WrapperPool(); // can't remember why we need this... - investigate
         
