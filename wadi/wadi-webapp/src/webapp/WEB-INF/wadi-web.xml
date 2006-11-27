@@ -288,7 +288,7 @@
     <constructor-arg><ref bean="SerialContextualiser"/></constructor-arg>
     <constructor-arg><ref bean="MemoryEvicter"/></constructor-arg>
     <constructor-arg><ref bean="MemoryMap"/></constructor-arg>
-    <constructor-arg><ref bean="SessionStreamer"/></constructor-arg>
+<!-- <constructor-arg><ref bean="SessionStreamer"/></constructor-arg> -->
     <constructor-arg><ref bean="WebSessionPool"/></constructor-arg>
     <constructor-arg><ref bean="RequestPool"/></constructor-arg>
   </bean>
@@ -328,13 +328,6 @@
   </bean>
 
   <bean
-    id="ReplicaterFactory"
-    class="org.codehaus.wadi.impl.MemoryReplicaterFactory"
-    >
-    <constructor-arg><ref bean="NumPartitions"/></constructor-arg>
-  </bean>
-
-  <bean
     id="LocalHost"
     class="java.net.InetAddress"
     factory-method="getLocalHost"
@@ -351,7 +344,7 @@
 
   <bean
     id="EndPoint"
-    class="org.codehaus.wadi.web.impl.WebEndPoint"
+    class="org.codehaus.wadi.web.impl.URIEndPoint"
     >
     <constructor-arg><ref bean="HttpAddress"/></constructor-arg>
   </bean>
@@ -402,8 +395,6 @@
     <constructor-arg><ref bean="Dispatcher"/></constructor-arg>
   </bean>
 
-  <!-- and finally - the SessionManager itself -->
-
   <bean
     id="URI"
     class="java.net.URI"
@@ -427,6 +418,45 @@
     <constructor-arg><ref bean="Dispatcher"/></constructor-arg>
   </bean>
 
+  <bean
+    id="ReplicationManagerFactory"
+    class="org.codehaus.wadi.replication.manager.basic.BasicReplicationManagerFactory"
+    >
+  </bean>
+
+  <bean
+    id="BackingStrategy"
+    class="org.codehaus.wadi.replication.strategy.RoundRobinBackingStrategyFactory"
+    >
+    <constructor-arg type="int"><value>1</value></constructor-arg>
+  </bean>
+
+  <bean
+    id="ReplicationManager"
+    factory-bean="ReplicationManagerFactory"
+    factory-method="factory"
+    >
+    <constructor-arg><ref bean="ServiceSpace"/></constructor-arg>
+    <constructor-arg><ref bean="BackingStrategy"/></constructor-arg>
+  </bean>
+
+  <bean
+    id="ReplicaterManager"
+    class="org.codehaus.wadi.replication.manager.ReplicaterAdapterFactory"
+    >
+    <constructor-arg><ref bean="ReplicationManager"/></constructor-arg>
+    <constructor-arg><ref bean="SessionPool"/></constructor-arg>
+  </bean>
+
+  <bean
+    id="ReplicaterFactory"
+    class="org.codehaus.wadi.replication.manager.ReplicaterAdapterFactory"
+    >
+    <constructor-arg><ref bean="ReplicationManager"/></constructor-arg>
+    <constructor-arg><ref bean="SessionPool"/></constructor-arg>
+  </bean>
+
+  <!-- and finally - the SessionManager itself -->
 
   <bean
     id="SessionManager"
@@ -444,7 +474,7 @@
     <constructor-arg><ref bean="AttributeStreamer"/></constructor-arg>
     <constructor-arg type="boolean"><value>true</value></constructor-arg>
     <constructor-arg><ref bean="ReplicaterFactory"/></constructor-arg>
-    <constructor-arg><ref bean="EndPoint"/></constructor-arg>
+<!-- <constructor-arg><ref bean="EndPoint"/></constructor-arg> -->
     <constructor-arg><ref bean="HttpProxy"/></constructor-arg>
     <constructor-arg><ref bean="ServiceSpace"/></constructor-arg>
     <constructor-arg><ref bean="NumPartitions"/></constructor-arg>
