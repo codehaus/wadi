@@ -17,7 +17,10 @@
 package org.codehaus.wadi.web.impl;
 
 import java.io.Serializable;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.URI;
+import java.net.URISyntaxException;
 
 import org.codehaus.wadi.group.EndPoint;
 
@@ -36,6 +39,13 @@ public class URIEndPoint implements EndPoint, Serializable {
             throw new IllegalArgumentException("uri is required");
         }
         this.uri = uri;
+    }
+
+    public URIEndPoint(InetSocketAddress address) throws URISyntaxException {
+        if (null == address) {
+            throw new IllegalArgumentException("address is required");
+        }
+        this.uri = new URI(address.getHostName()+":"+address.getPort());
     }
 
     public String toString() {
