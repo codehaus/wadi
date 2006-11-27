@@ -20,7 +20,6 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSessionAttributeListener;
 import javax.servlet.http.HttpSessionListener;
 
-import org.codehaus.wadi.Evictable;
 import org.codehaus.wadi.EvicterConfig;
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.SessionIdFactory;
