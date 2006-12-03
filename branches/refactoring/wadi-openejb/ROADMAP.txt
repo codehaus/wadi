@@ -1,0 +1,99 @@
+
+This is a very brief braindump of how I imagine OpenEJB might be
+clustered using WADI. It's probably a little confused because it's
+beena while since I did any EJB stuff, but the broad outline should be
+OK. Anyone interested in getting this going should start here....
+
+
+OpenEJB clustering on top of WADI technology will require the
+following :
+
+Some form of JNDI service (ultimately this will need to be HA)
+
+     I guess OpenEJB must come with instructions for setting up a
+     simple JNDI service.
+
+Server-side :
+
+	    OpenEJB will need to store its SFSBs in WADI's distributed
+	    cache and adhere to WADI locking policies (still under
+	    construction).
+
+
+Client-side :
+
+	    Clustered OpenEJBs will need to register cluster-aware
+	    Home and Bean stubs with JNDI on deployment.
+
+	    A Client/Server interaction might go something like this :
+
+	      Client locates a JNDI service somehow (for HA-JNDI, this
+	      will probably be via some form of autodiscovery)
+
+	      Client d/ls and runs a Home stub.
+
+	      Home stub may contain details of all OpenEJB services
+	      within cluster at its registration time, or use
+	      autodiscovery again to locate one
+
+	      Client uses Home stub to talk to an OpenEJB service and
+	      create() e.g. an SFSB
+
+	      OpenEJB container returns a cluster-aware Bean stub.
+
+	      The type of Bean stub should contain a pluggable
+	      'Coordinator' component (the location it came from and a
+	      list of the other OpenEJB services in the same cluster)
+
+	      Different modes of 'Coordination' available would
+	      include e.g. :
+
+			Sticky (client always returns to same OpenEJB
+			instance for service - used with SFSB to avoid
+			unnecessary migration)
+
+			PseudoRandom (client can use any OpenEJB
+			service that has this Bean deployed - used
+			with e.g. SLSB, Homes etc)
+
+			... (Other load-balancing algorithms)
+
+			SLSBs and Entities might use a sticky
+			coordinator just to save cycles, but should
+			not reqire it.
+
+			SFSBs should also work without sticky but will
+			stress distributed cache as state is
+			transferred back and forth unnecessarily
+
+	      If the service to which a client is 'stuck' should
+	      disappear, that client's stub should have a list
+	      (updated at last call to the service when it was alive)
+	      of all the other nodes in the cluster (If none of these
+	      nodes remain, but others have taken their place, falling
+	      back to autodiscovery should locate a running
+	      service). Once the client has located a running OpenEJB
+	      service it may send it an invocation for its
+	      e.g. SFSB. This Bean may, by now live somewhere else. A
+	      distributable Invocation object will be passed from
+	      OpenEJB to WADI's Distributed cache which will decide
+	      whether to migrate the SFSB in under the Invocation and
+	      run it locally, whether to send a 'redirect' message
+	      back to the client stub, with the new whereabouts of the
+	      SFSB, or whether to act as a proxy and forward the
+	      Invocation to the SFSB location where it can be
+	      successfully run (returning the new location in the
+	      response so that the client stub knows where to find it
+	      the next time).
+
+	      WADI's distributed cache will manage replication and
+	      location of all state stored within it.
+
+
+	      Later, all this will need to be tied in to ideas that I
+	      have for a cluster-wide Application or User scoped
+	      Session object, to allow colocation of related resources
+	      - see thread on g-dev.
+
+
+Jules

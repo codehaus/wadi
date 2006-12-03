@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<project
+  xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"
+  >
+
+  <parent>
+    <groupId>org.codehaus.wadi</groupId>
+    <artifactId>wadi</artifactId>
+    <relativePath>../pom.xml</relativePath>
+    <version>2.0M3-SNAPSHOT</version>
+  </parent>
+
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>wadi-tribes</artifactId>
+  <packaging>jar</packaging>
+  <name>WADI :: Tribes</name>
+  <description>WADI Tribes Integration</description>
+
+  <dependencies>
+    <dependency>
+      <groupId>geronimo-spec</groupId>
+      <artifactId>geronimo-spec-servlet</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.wadi</groupId>
+      <artifactId>wadi-group</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.wadi</groupId>
+      <artifactId>wadi-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.catalina.tribes</groupId>
+      <artifactId>tribes</artifactId>
+      <version>0.9.5.2</version>
+    </dependency>
+
+    <!-- test -->
+    <!-- axion -->
+    <dependency>
+      <groupId>axion</groupId>
+      <artifactId>axion</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>commons-primitives</groupId>
+      <artifactId>commons-primitives</artifactId>
+    </dependency>
+    <!--  -->
+    <dependency>
+      <groupId>org.codehaus.wadi</groupId>
+      <artifactId>wadi-group</artifactId>
+      <version>${project.version}</version>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.wadi</groupId>
+      <artifactId>wadi-core</artifactId>
+      <version>${project.version}</version>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
+    <!--  -->
+
+  </dependencies>
+
+</project>

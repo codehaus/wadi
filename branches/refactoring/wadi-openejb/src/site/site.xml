@@ -1,0 +1,21 @@
+<project name="wadi-openejb">
+
+  <bannerLeft>
+    <name>WADI</name>
+    <src>../images/wadi.gif</src>
+    <href>http://wadi.codehaus.org</href>
+  </bannerLeft>
+
+  <body>
+    <links>
+      <item name="OpenEJB" href="http://www.openejb.org"/>
+    </links>
+
+    <menu name="WADI">
+      <item name="WADI" href="../index.html"/>
+    </menu>
+
+    ${reports}
+
+  </body>
+</project>
