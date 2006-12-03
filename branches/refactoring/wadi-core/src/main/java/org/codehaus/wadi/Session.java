@@ -17,7 +17,6 @@
 package org.codehaus.wadi;
 
 
-import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
  * A Session is an object with Time-To-Live (See Motable) and Locking semantics.
@@ -30,9 +29,5 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * @version $Revision$
  */
 public interface Session extends Motable, SerializableContent {
-
-	Sync getSharedLock();
-    
-	Sync getExclusiveLock();
-    
+    void onEndProcessing();
 }

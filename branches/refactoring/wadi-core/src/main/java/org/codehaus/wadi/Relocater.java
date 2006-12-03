@@ -25,17 +25,15 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-
 public interface Relocater {
-    void init(RelocaterConfig config);
-    
-	/**
+    /**
 	 * Either relocate the request to the session by proxying/redirection, or the session to the request, by migration...
      * @param invocation
 	 * @param name
 	 * @param immoter
 	 * @param motionLock
+	 * @param b 
 	 * @return - whether, or not, the request was contextualised
 	 */
-    boolean relocate(Invocation invocation, String name, Immoter immoter, Sync motionLock) throws InvocationException;
+    boolean relocate(Invocation invocation, String name, Immoter immoter, Sync motionLock, boolean shuttingDown) throws InvocationException;
 }

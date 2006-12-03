@@ -29,11 +29,12 @@ public class TimeToLiveEvicter extends AbstractBestEffortEvicter {
 	protected final long _ttl;
 
     public TimeToLiveEvicter(int sweepInterval, boolean strictOrdering, int ttl) {
-	    super(sweepInterval, strictOrdering);
-		_ttl=ttl*1000;
-	}
+        super(sweepInterval, strictOrdering);
+        _ttl = ttl * 1000;
+    }
 
-	public boolean test(Evictable evictable, long time, long ttl) {
-	    return ttl<=_ttl;
-	}
+    public boolean test(Evictable evictable, long time, long ttl) {
+        return ttl <= _ttl;
+    }
+
 }

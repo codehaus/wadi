@@ -20,7 +20,6 @@ import org.codehaus.wadi.Emoter;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.impl.AbstractSharedContextualiser;
-import org.codehaus.wadi.impl.RWLocker;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
 
 /**
@@ -31,7 +30,7 @@ public class ReplicaAwareContextualiser extends AbstractSharedContextualiser {
     private final ReplicationManager replicationManager;
     
     public ReplicaAwareContextualiser(Contextualiser next, ReplicationManager replicationManager) {
-        super(next, new RWLocker(), false);
+        super(next);
         if (null == replicationManager) {
             throw new IllegalArgumentException("replicationManager is required");
         }
@@ -43,10 +42,10 @@ public class ReplicaAwareContextualiser extends AbstractSharedContextualiser {
     }
 
     public Immoter getImmoter() {
-        return _next.getSharedDemoter();
+        return next.getSharedDemoter();
     }
     
-    public Motable get(String id) {
+    public Motable acquire(String id) {
         Object object;
         try {
             object = replicationManager.acquirePrimary(id);
@@ -56,6 +55,9 @@ public class ReplicaAwareContextualiser extends AbstractSharedContextualiser {
         return (Motable) object;
     }
 
+    protected void release(Motable motable) {
+    }
+    
     public void load(Emoter emoter, Immoter immoter) {
     }
     

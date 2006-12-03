@@ -16,8 +16,10 @@
  */
 package org.codehaus.wadi.impl;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import org.codehaus.wadi.Evicter;
-import org.codehaus.wadi.EvicterConfig;
 
 /**
  * Abstract base for Evicters.
@@ -26,17 +28,21 @@ import org.codehaus.wadi.EvicterConfig;
  * @version $Revision$
  */
 public abstract class AbstractEvicter implements Evicter {
-
-    public void init(EvicterConfig config) {
-        /* do nothing */
+    private final int sweepInterval;
+    
+    public AbstractEvicter(int sweepInterval) {
+        if (1 > sweepInterval) {
+            throw new IllegalArgumentException("sweepInterval must be > 0");
+        }
+        this.sweepInterval = sweepInterval * 1000;
+    }
+    
+    public void schedule(Timer timer, TimerTask timerTask) {
+        timer.schedule(timerTask, sweepInterval, sweepInterval);
     }
 
-    public void start() throws Exception {
-        /* do nothing */
+    public void cancel(TimerTask timerTask) {
+        timerTask.cancel();
     }
-
-    public void stop() throws Exception {
-        /* do nothing */
-    }
-
+    
 }

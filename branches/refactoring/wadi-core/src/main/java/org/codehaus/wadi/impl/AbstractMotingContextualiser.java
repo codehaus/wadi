@@ -17,12 +17,10 @@
 package org.codehaus.wadi.impl;
 
 import org.codehaus.wadi.Contextualiser;
-import org.codehaus.wadi.ContextualiserConfig;
 import org.codehaus.wadi.Emoter;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
-import org.codehaus.wadi.Locker;
 import org.codehaus.wadi.Motable;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
@@ -34,82 +32,80 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * @version $Revision$
  */
 public abstract class AbstractMotingContextualiser extends AbstractChainedContextualiser {
-	protected final Locker _locker;
-	protected final boolean _clean;
-    protected ContextualiserConfig _config;
 	
-	public AbstractMotingContextualiser(Contextualiser next, Locker locker, boolean clean) {
+	public AbstractMotingContextualiser(Contextualiser next) {
 		super(next);
-		_locker=locker;
-		_clean=clean;
 	}
-	
-	/**
-	 * @return - an Emoter that facilitates removal of Motables from this Contextualiser's own store
-	 */
-	public abstract Emoter getEmoter();
-	
-	/**
-	 * @return - an Immoter that facilitates insertion of Motables into this Contextualiser's own store
-	 */
-	public abstract Immoter getImmoter();
 	
 	public boolean contextualise(Invocation invocation, String key, Immoter immoter, Sync invocationLock, boolean exclusiveOnly) throws InvocationException {
         boolean handled = handle(invocation, key, immoter, invocationLock);
         if (handled) {
             return true;
-        } else if (exclusiveOnly && !_next.isExclusive()) {
+        } else if (exclusiveOnly && !next.isExclusive()) {
             return false;
         }
-        return _next.contextualise(invocation, key, getPromoter(immoter), invocationLock, exclusiveOnly);
+        return next.contextualise(invocation, key, getPromoter(immoter), invocationLock, exclusiveOnly);
 	}
 	
-	public boolean promote(Invocation invocation, String id, Immoter immoter, Sync motionLock, Motable emotable) throws InvocationException {
-		Emoter emoter=getEmoter();
-		Motable immotable=Utils.mote(emoter, immoter, emotable, id);
-		if (immotable!=null) {
-			return immoter.contextualise(invocation, id, immotable, motionLock);
-		} else {
-			return false;
-		}
-	}
-	
-	public Immoter getPromoter(Immoter immoter) {
-		return immoter; // just pass contexts straight through...
-	}
+    public void promoteToExclusive(Immoter immoter) {
+        if (isExclusive()) {
+            next.promoteToExclusive(next.isExclusive() ? null : getImmoter());
+        } else {
+            Emoter emoter = getEmoter();
+            load(emoter, immoter);
+            next.promoteToExclusive(immoter);
+        }
+    }
 	
 	public Immoter getSharedDemoter() {
-		if (isExclusive())
-			return _next.getSharedDemoter();
-		else
-			return getImmoter();
+		if (isExclusive()) {
+		    return next.getSharedDemoter();
+        } else {
+            return getImmoter();
+        }
 	}
 	
-	public abstract Motable get(String id);
+    /**
+     * @return - an Emoter that facilitates removal of Motables from this Contextualiser's own store
+     */
+    protected abstract Emoter getEmoter();
+    
+    /**
+     * @return - an Immoter that facilitates insertion of Motables into this Contextualiser's own store
+     */
+    protected abstract Immoter getImmoter();
+    
+    protected Immoter getPromoter(Immoter immoter) {
+        // just pass contexts straight through...
+        return immoter; 
+    }
+
+	protected abstract Motable acquire(String id);
+
+    protected abstract void release(Motable motable);
 	
-	public boolean handle(Invocation invocation, String id, Immoter immoter, Sync motionLock) throws InvocationException {
+    protected boolean handle(Invocation invocation, String id, Immoter immoter, Sync motionLock) throws InvocationException {
 		if (null != immoter) {
-            Motable emotable = get(id);
+            Motable emotable = acquire(id);
             if (null != emotable) {
-                return promote(invocation, id, immoter, motionLock, emotable);
+                try {
+                    return promote(invocation, id, immoter, motionLock, emotable);
+                } finally {
+                    release(emotable);
+                }
             }
         }
         return false;
 	}
-	
-	public void promoteToExclusive(Immoter immoter) {
-		if (isExclusive())
-			_next.promoteToExclusive(_next.isExclusive()?null:getImmoter());
-		else {
-			Emoter emoter=getEmoter();
-			load(emoter, immoter);
-			_next.promoteToExclusive(immoter);
-		}
-	}
-	
-	public void init(ContextualiserConfig config) {
-		super.init(config);
-		_config=config;
-	}
-	
+
+    protected boolean promote(Invocation invocation, String id, Immoter immoter, Sync motionLock, Motable emotable) throws InvocationException {
+        Emoter emoter = getEmoter();
+        Motable immotable = Utils.mote(emoter, immoter, emotable, id);
+        if (immotable != null) {
+            return immoter.contextualise(invocation, id, immotable, motionLock);
+        } else {
+            return false;
+        }
+    }
+    
 }

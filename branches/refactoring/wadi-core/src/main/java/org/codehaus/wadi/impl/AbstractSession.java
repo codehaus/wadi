@@ -20,8 +20,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Session;
 
-import EDU.oswego.cs.dl.util.concurrent.Sync;
-
 /**
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -31,16 +29,9 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
 public abstract class AbstractSession extends AbstractMotable implements Session {
     protected static Log _log = LogFactory.getLog(AbstractSession.class);
 
-    protected final RankedRWLock _lock = new RankedRWLock();
-
-    public Sync getSharedLock() {
-        return _lock.readLock();
+    public void onEndProcessing() {
     }
-
-    public Sync getExclusiveLock() {
-        return _lock.writeLock();
-    }
-
+    
     public byte[] getBodyAsByteArray() throws Exception {
         return Utils.getContent(this, new SimpleStreamer());
     }

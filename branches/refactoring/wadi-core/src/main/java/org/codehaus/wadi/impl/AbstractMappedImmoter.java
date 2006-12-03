@@ -16,9 +16,8 @@
  */
 package org.codehaus.wadi.impl;
 
-import java.util.Map;
-
 import org.codehaus.wadi.Motable;
+import org.codehaus.wadi.core.ConcurrentMotableMap;
 
 /**
  *
@@ -27,9 +26,9 @@ import org.codehaus.wadi.Motable;
  */
 
 public abstract class AbstractMappedImmoter extends AbstractImmoter {
-    private final Map map;
+    private final ConcurrentMotableMap map;
 
-    public AbstractMappedImmoter(Map map) {
+    public AbstractMappedImmoter(ConcurrentMotableMap map) {
         if (null == map) {
             throw new IllegalArgumentException("map is requried");
         }

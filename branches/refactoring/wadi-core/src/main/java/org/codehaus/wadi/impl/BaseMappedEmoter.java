@@ -16,9 +16,8 @@
  */
 package org.codehaus.wadi.impl;
 
-import java.util.Map;
-
 import org.codehaus.wadi.Motable;
+import org.codehaus.wadi.core.ConcurrentMotableMap;
 
 
 /**
@@ -28,18 +27,18 @@ import org.codehaus.wadi.Motable;
  * @version $Revision$
  */
 public class BaseMappedEmoter extends AbstractChainedEmoter {
-	protected final Map _map;
+	private final ConcurrentMotableMap map;
 
-	public BaseMappedEmoter(Map map) {
+	public BaseMappedEmoter(ConcurrentMotableMap map) {
         if (null == map) {
             throw new IllegalArgumentException("map is required");
         }
-        _map = map;
+        this.map = map;
     }
 
     public boolean emote(Motable emotable, Motable immotable) {
         if (super.emote(emotable, immotable)) {
-            _map.remove(immotable.getName());
+            map.remove(immotable.getName());
             return true;
         } else {
             return false;

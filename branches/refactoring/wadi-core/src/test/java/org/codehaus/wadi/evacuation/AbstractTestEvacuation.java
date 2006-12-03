@@ -21,6 +21,7 @@ import org.codehaus.wadi.test.MyHttpServletRequest;
 import org.codehaus.wadi.test.MyHttpServletResponse;
 import org.codehaus.wadi.test.MyStack;
 import org.codehaus.wadi.test.TestUtil;
+import org.codehaus.wadi.web.WebSession;
 
 public class AbstractTestEvacuation extends TestCase {
 	protected Log _log = LogFactory.getLog(getClass());
@@ -48,8 +49,9 @@ public class AbstractTestEvacuation extends TestCase {
 
         TestUtil.waitForDispatcherSeeOthers(new Dispatcher[] { redD, greenD }, 5000);
 
-        String id = red.getManager().create(null).getId();
-        assertTrue(id != null);
+        WebSession session = red.getManager().create(null);
+        session.onEndProcessing();
+        String id = session.getId();
 
         FilterChain fc = new FilterChain() {
             public void doFilter(ServletRequest req, ServletResponse res) throws IOException, ServletException {
@@ -65,16 +67,16 @@ public class AbstractTestEvacuation extends TestCase {
     private void startRedAndInvokeAgainstRed(Dispatcher redD, Dispatcher greenD, MyStack red, String id, FilterChain fc) throws Exception, InvocationException {
         red.start();
         TestUtil.waitForDispatcherSeeOthers(new Dispatcher[] { redD, greenD }, 5000);
-        Invocation invocation = new MockInvocation(new MyHttpServletRequest(), new MyHttpServletResponse(), fc);
-        boolean success = red.getManager().contextualise(invocation, id, null, null, false);
+        Invocation invocation = new MockInvocation(new MyHttpServletRequest(id), new MyHttpServletResponse(), fc);
+        boolean success = red.getManager().contextualise(invocation);
         assertTrue(success);
     }
 
     private void stopRedAndInvokeAgainstGreen(Dispatcher greenD, MyStack red, MyStack green, String id, FilterChain fc) throws Exception, InvocationException {
         red.stop();
         TestUtil.waitForDispatcherSeeOthers(new Dispatcher[] { greenD }, 5000);
-        Invocation invocation = new MockInvocation(new MyHttpServletRequest(), new MyHttpServletResponse(), fc);
-        boolean success = green.getManager().contextualise(invocation, id, null, null, true);
+        Invocation invocation = new MockInvocation(new MyHttpServletRequest(id), new MyHttpServletResponse(), fc);
+        boolean success = green.getManager().contextualise(invocation);
         assertTrue(success);
     }
 }

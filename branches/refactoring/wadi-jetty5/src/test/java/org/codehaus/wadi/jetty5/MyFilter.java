@@ -37,6 +37,7 @@ import org.codehaus.wadi.web.impl.WebInvocation;
 public class MyFilter implements Filter {
 	protected final Log _log;
 	protected final MyServlet _servlet;
+    protected boolean _exclusiveOnly = false;
 
 	public MyFilter(String name, MyServlet servlet) {
 		_log=LogFactory.getLog(getClass().getName()+"#"+name);
@@ -60,14 +61,14 @@ public class MyFilter implements Filter {
 			try {
 				WebInvocation invocation=new WebInvocation();
 				invocation.init(hreq, hres, chain, null);
-				found = _servlet.getContextualiser().contextualise(invocation, sessionId, null, null, _exclusiveOnly);
+				found = _servlet.getStackContext().getManager().contextualise(invocation);
 			} catch (InvocationException e) {
 				throw new ServletException(e);
 			}
 
 			// only here for testing...
 			if (!found) {
-				if (_log.isErrorEnabled()) _log.error("could not locate session: "+sessionId);
+				_log.error("could not locate session: "+sessionId);
 				hres.sendError(410, "could not locate session: "+sessionId);
 			}
 
@@ -78,10 +79,10 @@ public class MyFilter implements Filter {
 	}
 
 	public void destroy() {
-		// can't be bothered...
 	}
 
-	protected boolean _exclusiveOnly=false;
-	public void setExclusiveOnly(boolean exclusiveOnly){_exclusiveOnly=exclusiveOnly;}
+	public void setExclusiveOnly(boolean exclusiveOnly) {
+        _exclusiveOnly = exclusiveOnly;
+    }
 
 }

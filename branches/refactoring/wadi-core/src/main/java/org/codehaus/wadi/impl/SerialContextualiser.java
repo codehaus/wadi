@@ -83,7 +83,7 @@ public class SerialContextualiser extends AbstractDelegatingContextualiser {
 	    // session was not promoted whilst we were waiting for motionLock. Continue down Contextualiser stack
 	    // it may be below us...
 	    // lock is to be released as soon as context is available to subsequent contextualisations...
-	    boolean found=_next.contextualise(invocation, key, immoter, invocationLock, exclusiveOnly);
+	    boolean found=next.contextualise(invocation, key, immoter, invocationLock, exclusiveOnly);
 	    release=!found;
 	    return found;
 	  } catch (TimeoutException e) {

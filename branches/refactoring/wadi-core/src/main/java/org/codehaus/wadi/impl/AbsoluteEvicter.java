@@ -30,10 +30,11 @@ public class AbsoluteEvicter extends AbstractBestEffortEvicter {
     
     public AbsoluteEvicter(int sweepInterval, boolean strictOrdering, int inactivityInterval) {
         super(sweepInterval, strictOrdering);
-        _inactiveInterval=inactivityInterval*1000;
+        _inactiveInterval = inactivityInterval * 1000;
+    }
+
+    public boolean test(Evictable evictable, long time, long ttl) {
+        return time - evictable.getLastAccessedTime() >= _inactiveInterval;
     }
     
-    public boolean test(Evictable evictable, long time, long ttl) {
-        return time-evictable.getLastAccessedTime()>=_inactiveInterval;
-    }
 }

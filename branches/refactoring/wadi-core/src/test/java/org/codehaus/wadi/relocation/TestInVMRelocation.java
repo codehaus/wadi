@@ -24,10 +24,6 @@ import org.codehaus.wadi.group.vm.VMDispatcher;
  */
 public class TestInVMRelocation extends AbstractTestRelocation {
 
-	public TestInVMRelocation(String arg0) {
-		super(arg0);
-	}
-	
 	public void testSessionRelocation() throws Exception {
         VMBroker cluster = new VMBroker("TEST");
 		long timeout=5000;

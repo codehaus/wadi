@@ -31,6 +31,7 @@ import org.codehaus.wadi.servicespace.ServiceName;
 import org.codehaus.wadi.servicespace.ServiceNotAvailableException;
 import org.codehaus.wadi.servicespace.ServiceNotFoundException;
 import org.codehaus.wadi.servicespace.ServiceSpace;
+import org.codehaus.wadi.servicespace.SingletonServiceHolder;
 
 /**
  * 
@@ -43,7 +44,7 @@ public class BasicServiceRegistry implements StartableServiceRegistry {
     private final Dispatcher dispatcher;
     private final LinkedHashMap nameToServiceHolder;
     private final ServiceQueryEndpoint queryEndpoint;
-    private boolean started;
+    private volatile boolean started;
 
     public BasicServiceRegistry(ServiceSpace serviceSpace) {
         if (null == serviceSpace) {
@@ -56,13 +57,17 @@ public class BasicServiceRegistry implements StartableServiceRegistry {
         queryEndpoint = new ServiceQueryEndpoint(this, serviceSpace);
     }
     
-    public synchronized List getServiceNames() {
-        return new ArrayList(nameToServiceHolder.keySet());
+    public List getServiceNames() {
+        synchronized (nameToServiceHolder) {
+            return new ArrayList(nameToServiceHolder.keySet());
+        }
     }
     
-    public synchronized Object getStartedService(ServiceName name) throws ServiceNotFoundException,
-            ServiceNotAvailableException {
-        BasicServiceHolder serviceHolder = (BasicServiceHolder) nameToServiceHolder.get(name);
+    public Object getStartedService(ServiceName name) throws ServiceNotFoundException, ServiceNotAvailableException {
+        BasicServiceHolder serviceHolder;
+        synchronized (nameToServiceHolder) {
+            serviceHolder = (BasicServiceHolder) nameToServiceHolder.get(name);
+        }
         if (null == serviceHolder) {
             throw new ServiceNotFoundException(name);
         } else if (!serviceHolder.isStarted()) {
@@ -71,15 +76,32 @@ public class BasicServiceRegistry implements StartableServiceRegistry {
         return serviceHolder.getService();
     }
     
-    public synchronized boolean isServiceStarted(ServiceName name) {
-        BasicServiceHolder serviceHolder = (BasicServiceHolder) nameToServiceHolder.get(name);
+    public boolean isServiceStarted(ServiceName name) {
+        BasicServiceHolder serviceHolder;
+        synchronized (nameToServiceHolder) {
+            serviceHolder = (BasicServiceHolder) nameToServiceHolder.get(name);
+        }
         if (null == serviceHolder) {
             return false;
         }
         return serviceHolder.isStarted();
     }
 
-    public synchronized void register(ServiceName name, Lifecycle service) throws ServiceAlreadyRegisteredException {
+    public void register(ServiceName name, Lifecycle service) throws ServiceAlreadyRegisteredException {
+        if (null == name) {
+            throw new IllegalArgumentException("name is required");
+        } else if (started) {
+            throw new IllegalStateException("ServiceRegistry is started. Cannot register service");
+        }
+        synchronized (nameToServiceHolder) {
+            if (nameToServiceHolder.containsKey(name)) {
+                throw new ServiceAlreadyRegisteredException(name);
+            }
+            nameToServiceHolder.put(name, new BasicServiceHolder(serviceSpace, name, service));
+        }
+    }
+
+    public SingletonServiceHolder registerSingleton(ServiceName name, Lifecycle service) throws ServiceAlreadyRegisteredException {
         if (null == name) {
             throw new IllegalArgumentException("name is required");
         } else if (started) {
@@ -87,24 +109,39 @@ public class BasicServiceRegistry implements StartableServiceRegistry {
         } else if (nameToServiceHolder.containsKey(name)) {
             throw new ServiceAlreadyRegisteredException(name);
         }
-        nameToServiceHolder.put(name, new BasicServiceHolder(serviceSpace, name, service));
+        BasicSingletonServiceHolder serviceHolder = new BasicSingletonServiceHolder(serviceSpace, name, service);
+        synchronized (nameToServiceHolder) {
+            if (nameToServiceHolder.containsKey(name)) {
+                throw new ServiceAlreadyRegisteredException(name);
+            }
+            nameToServiceHolder.put(name, serviceHolder);
+        }
+        return serviceHolder;
     }
-
-    public synchronized void unregister(ServiceName name) {
+    
+    public void unregister(ServiceName name) {
         if (null == name) {
             throw new IllegalArgumentException("name is required");
         } else if (started) {
             throw new IllegalStateException("ServiceRegistry is started. Cannot unregister service");
         }
-        Object removed = nameToServiceHolder.remove(name);
+        Object removed;
+        synchronized (nameToServiceHolder) {
+            removed = nameToServiceHolder.remove(name);
+        }
         if (null == removed) {
             throw new IllegalArgumentException("No service named [" + name + "]");
         }
         
     }
 
-    public synchronized void start() throws Exception {
-        Collection services = nameToServiceHolder.values();
+    public void start() throws Exception {
+        started = true;
+        
+        Collection services;
+        synchronized (nameToServiceHolder) {
+            services = nameToServiceHolder.values();
+        }
         Collection startedServices = new ArrayList();
         for (Iterator iter = services.iterator(); iter.hasNext();) {
             BasicServiceHolder serviceHolder = (BasicServiceHolder) iter.next();
@@ -119,16 +156,19 @@ public class BasicServiceRegistry implements StartableServiceRegistry {
         }
         
         dispatcher.register(queryEndpoint);
-        started = true;
     }
 
-    public synchronized void stop() throws Exception {
+    public void stop() throws Exception {
+        started = false;
+        
         dispatcher.unregister(queryEndpoint, 10, 500);
 
-        List services = new ArrayList(nameToServiceHolder.values());
+        List services;
+        synchronized (nameToServiceHolder) {
+            services = new ArrayList(nameToServiceHolder.values());
+        }
         Collections.reverse(services);
         stopServices(services);
-        started = false;
     }
 
     protected void stopServices(Collection services) {

@@ -21,8 +21,6 @@ import org.codehaus.wadi.location.session.DeleteIMToPM;
 import org.codehaus.wadi.location.session.EvacuateIMToPM;
 import org.codehaus.wadi.location.session.InsertIMToPM;
 import org.codehaus.wadi.location.session.MoveIMToPM;
-import org.codehaus.wadi.location.session.MovePMToSM;
-import org.codehaus.wadi.location.session.ReleaseEntryRequest;
 
 /**
  * 
@@ -36,10 +34,4 @@ public interface StateManagerMessageListener {
     void onDIndexRelocationRequest(Envelope om, EvacuateIMToPM request);
 
     void onMessage(Envelope message, MoveIMToPM request);
-
-    // called on State Master...
-    void onMessage(Envelope message1, MovePMToSM request);
-
-    void onEmigrationRequest(Envelope message, ReleaseEntryRequest request);
-
 }

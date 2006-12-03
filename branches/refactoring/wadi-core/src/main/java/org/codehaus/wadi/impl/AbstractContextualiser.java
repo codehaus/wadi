@@ -21,7 +21,6 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Contextualiser;
-import org.codehaus.wadi.ContextualiserConfig;
 import org.codehaus.wadi.PartitionMapper;
 
 /**
@@ -30,9 +29,6 @@ import org.codehaus.wadi.PartitionMapper;
  */
 public abstract class AbstractContextualiser implements Contextualiser {
     protected final Log _log = LogFactory.getLog(getClass());
-
-    public void init(ContextualiserConfig config) {
-    }
 
     public void start() throws Exception {
     }

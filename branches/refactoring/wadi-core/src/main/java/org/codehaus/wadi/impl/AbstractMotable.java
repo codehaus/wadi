@@ -26,6 +26,9 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.RehydrationException;
 
+import EDU.oswego.cs.dl.util.concurrent.Mutex;
+import EDU.oswego.cs.dl.util.concurrent.Sync;
+
 /**
  * Implement all of Motable except for the Bytes field. This is the field most likely to have different representations.
  *
@@ -38,6 +41,11 @@ public abstract class AbstractMotable extends SimpleEvictable implements Motable
 
     protected String _name;
     protected boolean newSession = true;
+    protected transient Sync _lock = new Mutex();
+
+    public Sync getLock() {
+        return _lock;
+    }
 
     public void init(long creationTime, long lastAccessedTime, int maxInactiveInterval, String name) {
         init(creationTime, lastAccessedTime, maxInactiveInterval);
@@ -72,6 +80,7 @@ public abstract class AbstractMotable extends SimpleEvictable implements Motable
     public void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
         super.readContent(oi);
         _name = (String) oi.readObject();
+        _lock = new Mutex();
     }
 
     public void writeContent(ObjectOutput oo) throws IOException {

@@ -25,7 +25,6 @@ import org.codehaus.wadi.Session;
  * @version $Revision$
  */
 public interface WebSession extends Session {
-
 	String getId();
 
     Object getAttribute(String name);
@@ -41,5 +40,4 @@ public interface WebSession extends Session {
     Object removeAttribute(String name);
 
     WebSessionConfig getConfig();
-
 }

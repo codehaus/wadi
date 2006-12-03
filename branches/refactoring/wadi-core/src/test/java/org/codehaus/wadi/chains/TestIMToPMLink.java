@@ -18,7 +18,6 @@ package org.codehaus.wadi.chains;
 
 import org.codehaus.wadi.Message;
 import org.codehaus.wadi.group.Address;
-import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.LocalPeer;
@@ -29,7 +28,6 @@ import org.codehaus.wadi.group.ServiceEndpoint;
 import org.codehaus.wadi.group.impl.AbstractMsgDispatcher;
 import org.codehaus.wadi.group.impl.RendezVousMsgDispatcher;
 import org.codehaus.wadi.location.Partition;
-import org.codehaus.wadi.location.PartitionConfig;
 import org.codehaus.wadi.location.impl.LocalPartition;
 import org.codehaus.wadi.location.session.MoveIMToPM;
 import org.codehaus.wadi.location.session.MovePMToIM;
@@ -45,49 +43,6 @@ public class TestIMToPMLink extends ChainTestCase {
 		super(name);
 	}
 
-	static class MockPartitionConfig implements PartitionConfig {
-
-		protected Dispatcher _dispatcher;
-
-		public MockPartitionConfig(Dispatcher dispatcher) {
-			_dispatcher=dispatcher;
-		}
-
-		public Cluster getCluster() {
-			return _dispatcher.getCluster();
-		}
-
-		public Dispatcher getDispatcher() {
-			return _dispatcher;
-		}
-
-		public long getInactiveTime() {
-			return _dispatcher.getCluster().getInactiveTime();
-		}
-
-		public String getLocalPeerName() {
-			return _dispatcher.getCluster().getLocalPeer().getName();
-		}
-
-		public String getPeerName(Address address) {
-			return _dispatcher.getCluster().getPeerFromAddress(address).getName();
-		}
-
-	}
-
-	/**
-	 * Test locking around a Partition as its location becomes known/unknown...
-	 */
-//	public void testUnknownPartition() {
-//		int index=0;
-//		UnknownPartition unknown=new UnknownPartition(index);
-//		PartitionFacade partition=new PartitionFacade(index, unknown, new MockPartitionConfig(_dispatcher1));
-//		// since we initialised it with an unknown location, it should be locked.
-//		assertTrue(partition.isLocked());
-//		LocalPartition known=new LocalPartition(_dispatcher1, index, 5000);
-//		partition.setContent(known);
-//		assertTrue(!partition.isLocked());
-//	}
 
 	protected WatermarkedCounter _count=new WatermarkedCounter();
 

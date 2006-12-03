@@ -6,10 +6,6 @@ import org.codehaus.wadi.relocation.AbstractTestRelocation;
 
 public class TestTribesRelocation extends AbstractTestRelocation {
 
-	public TestTribesRelocation(String name) {
-		super(name);
-	}
-
 	public void testSessionRelocation() throws Exception {
         String clusterName="dummy";
         long timeout=5000;

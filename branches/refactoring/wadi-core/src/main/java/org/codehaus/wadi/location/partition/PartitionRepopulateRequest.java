@@ -37,7 +37,7 @@ public class PartitionRepopulateRequest implements PartitionRequestMessage, Seri
         this.keys = keys;
     }
 
-    public Map createKeyToSessionNames(int numPartitions) {
+    public Map createKeyToSessionNames() {
         Map partitionIndexToSessionNames = new HashMap();
         for (int i = 0; i < keys.length; i++) {
             partitionIndexToSessionNames.put(new Integer(keys[i]), new ArrayList());
@@ -50,7 +50,7 @@ public class PartitionRepopulateRequest implements PartitionRequestMessage, Seri
     }
 
     public String toString() {
-        return "<PartitionRepopulateRequest" + keys + ">";
+        return "PartitionRepopulateRequest [" + keys + "]";
     }
 
 }

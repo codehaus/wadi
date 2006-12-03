@@ -23,10 +23,6 @@ import org.codehaus.wadi.relocation.AbstractTestRelocation;
  */
 public class TestACTCPRelocation extends AbstractTestRelocation {
 	
-	public TestACTCPRelocation(String name) {
-		super(name);
-	}
-	
 	public void testEvacuation() throws Exception {
         String clusterName = ACTestUtil.CLUSTER_NAME;
         String clusterUri = ACTestUtil.CLUSTER_URI_TCP;

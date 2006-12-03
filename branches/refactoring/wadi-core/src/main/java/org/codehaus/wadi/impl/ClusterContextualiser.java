@@ -16,113 +16,101 @@
  */
 package org.codehaus.wadi.impl;
 
-import org.codehaus.wadi.ClusteredContextualiserConfig;
-import org.codehaus.wadi.Collapser;
 import org.codehaus.wadi.Contextualiser;
-import org.codehaus.wadi.ContextualiserConfig;
 import org.codehaus.wadi.Emoter;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.Relocater;
-import org.codehaus.wadi.RelocaterConfig;
-import org.codehaus.wadi.group.Cluster;
-import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.group.Envelope;
+import org.codehaus.wadi.location.PartitionManager;
 import org.codehaus.wadi.location.StateManager;
-import org.codehaus.wadi.location.impl.DIndex;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
-import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class ClusterContextualiser extends AbstractSharedContextualiser implements RelocaterConfig, StateManager.ImmigrationListener {
-    private static final int RESPONSE_TIMEOUT = 5000;
-    
-    private final Collapser _collapser;
-    private final Relocater _relocater;
-    private final Immoter _immoter;
-    private final Emoter _emoter;
-    private SynchronizedBoolean _shuttingDown;
-    private Dispatcher _dispatcher;
-    private Cluster _cluster;
-    private DIndex _dindex;
-    private Contextualiser _top;
+public class ClusterContextualiser extends AbstractSharedContextualiser {
+    private final Relocater relocater;
+    private final PartitionManager partitionManager;
+    private final StateManager stateManager;
+    private final SynchronizedBoolean shuttingDown;
+    private final Immoter immoter;
+    private final Emoter emoter;
 
-	public ClusterContextualiser(Contextualiser next, Collapser collapser, Relocater relocater) {
-		super(next, new CollapsingLocker(collapser), false);
+	public ClusterContextualiser(Contextualiser next,
+            Relocater relocater,
+            PartitionManager partitionManager,
+            StateManager stateManager,
+            SynchronizedBoolean shuttingDown) {
+		super(next);
+        if (null == relocater) {
+            throw new IllegalArgumentException("relocater is required");
+        } else if (null == partitionManager) {
+            throw new IllegalArgumentException("partitionManager is required");
+        } else if (null == stateManager) {
+            throw new IllegalArgumentException("stateManager is required");
+        } else if (null == shuttingDown) {
+            throw new IllegalArgumentException("shuttingDown is required");
+        }
+        this.relocater = relocater;
+        this.partitionManager = partitionManager;
+        this.stateManager = stateManager;
+        this.shuttingDown = shuttingDown;
         
-		_collapser = collapser;
-        _relocater = relocater;
-        _immoter = new EmigrationImmoter();
-        _emoter = null;
-        // TODO - I think this should be something like the ImmigrationEmoter
-		// it pulls a named Session out of the cluster and emotes it from this Contextualiser...
-		// this makes it awkward to split session and request relocation into different strategies,
-		// so session relocation should be the basic strategy, with request relocation as a pluggable
-		// optimisation...
+        immoter = new EmigrationImmoter();
+        emoter = null;
 	}
 
-	public void init(ContextualiserConfig config) {
-        super.init(config);
-        ClusteredContextualiserConfig ccc = (ClusteredContextualiserConfig) config;
-        _shuttingDown = ccc.getShuttingDown();
-        _dispatcher = ccc.getDispatcher();
-        _cluster = _dispatcher.getCluster();
-        _dindex = ccc.getDIndex();
-        _top = ccc.getContextualiser();
-        _relocater.init(this);
-    }
-
     public Immoter getImmoter() {
-        return _immoter;
+        return immoter;
     }
 
     public Emoter getEmoter() {
-        return _emoter;
+        return emoter;
     }
 
     public Immoter getDemoter(String name, Motable motable) {
         // how many partitions are we responsible for ?
-        if (_dindex.getPartitionManager().getBalancingInfo().getNumberOfLocalPartitionInfos() == 0) {
+        if (partitionManager.getBalancingInfo().getNumberOfLocalPartitionInfos() == 0) {
             // evacuate sessions to their respective partition masters...
             return getImmoter();
         } else {
-            return _next.getDemoter(name, motable);
+            return next.getDemoter(name, motable);
         }
     }
 
     public Immoter getSharedDemoter() {
         // how many partitions are we responsible for ?
-        if (_dindex.getPartitionManager().getBalancingInfo().getNumberOfLocalPartitionInfos() == 0) {
+        if (partitionManager.getBalancingInfo().getNumberOfLocalPartitionInfos() == 0) {
             // evacuate sessions to their respective partition masters...
             return getImmoter();
         } else {
             // we must be the last node, push the sessions downwards into shared
             // store...
-            return _next.getSharedDemoter();
+            return next.getSharedDemoter();
         }
     }
 
     public boolean handle(Invocation invocation, String id, Immoter immoter, Sync motionLock)
             throws InvocationException {
-        return _relocater.relocate(invocation, id, immoter, motionLock);
+        return relocater.relocate(invocation, id, immoter, motionLock, shuttingDown.get());
     }
 
-    public void start() throws Exception {
-        super.start();
-        _dindex.getStateManager().setImmigrationListener(this);
+    public void load(Emoter emoter, Immoter immoter) {
     }
 
-    public void stop() throws Exception {
-        super.stop();
+    public Motable acquire(String name) {
+        throw new UnsupportedOperationException();
     }
-
+    
+    protected void release(Motable motable) {
+        throw new UnsupportedOperationException();
+    }
+    
     /**
      * Manage the immotion of a session into the cluster tier from another and
      * its emigration thence to another node.
@@ -139,7 +127,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
                 _log.warn("problem sending emigration request for [" + emotable + "]", e);
                 return false;
             }
-            return _dindex.getStateManager().offerEmigrant(immotable, RESPONSE_TIMEOUT);
+            return stateManager.offerEmigrant(immotable);
         }
 
         public boolean contextualise(Invocation invocation, String id, Motable immotable, Sync motionLock)
@@ -147,94 +135,6 @@ public class ClusterContextualiser extends AbstractSharedContextualiser implemen
             return false;
         }
 
-    }
-
-    /**
-     * Manage the immigration of a session from another node and and thence its
-     * emotion from the cluster layer into another.
-     * 
-     * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
-     * @version $Revision$
-     */
-    class ImmigrationEmoter extends AbstractChainedEmoter {
-        protected final Envelope _message;
-
-        public ImmigrationEmoter(Envelope message) {
-            _message = message;
-        }
-
-        public boolean emote(Motable emotable, Motable immotable) {
-            if (super.emote(emotable, immotable)) {
-                _dindex.getStateManager().acceptImmigrant(_message, emotable);
-                return true;
-            } else {
-                return false;
-            }
-        }
-    }
-
-    public void onImmigration(Envelope message, Motable emotable) {
-        String name = emotable.getName();
-        if (_log.isTraceEnabled()) {
-            _log.trace("EmigrationRequest received: " + name);
-        }
-        Sync invocationLock = _locker.getLock(name, emotable);
-        boolean invocationLockAcquired = false;
-        try {
-            Utils.acquireUninterrupted("Invocation(ClusterContextualiser)", name, invocationLock);
-            invocationLockAcquired = true;
-
-            Emoter emoter = new ImmigrationEmoter(message);
-
-            Immoter immoter = _top.getDemoter(name, emotable);
-            Utils.mote(emoter, immoter, emotable, name);
-            notifySessionRelocation(name);
-        } catch (TimeoutException e) {
-            _log.warn("could not acquire promotion lock for incoming session: " + name);
-        } finally {
-            if (invocationLockAcquired) {
-                Utils.release("Invocation", name, invocationLock);
-            }
-        }
-    }
-
-    public void load(Emoter emoter, Immoter immoter) {
-        // currently - we don't load anything from the Cluster - we could do
-        // state-balancing here
-        // i.e. on startup, take ownership of a number of active sessions -
-        // affinity implications etc...
-    }
-
-    public Collapser getCollapser() {
-        return _collapser;
-    }
-
-    public Dispatcher getDispatcher() {
-        return _dispatcher;
-    }
-
-    public Contextualiser getContextualiser() {
-        return _top;
-    }
-
-    public SynchronizedBoolean getShuttingDown() {
-        return _shuttingDown;
-    }
-
-    public DIndex getDIndex() {
-        return _dindex;
-    }
-
-    public void notifySessionRelocation(String name) {
-        _config.notifySessionRelocation(name);
-    }
-
-    public Motable get(String name) {
-        throw new UnsupportedOperationException();
-    }
-
-    public String toString() {
-        return "ClusterContextualiser [" + _cluster + "]";
     }
 
 }

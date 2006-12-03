@@ -55,7 +55,7 @@
 
   <bean
     id="MemoryMap"
-    class="EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap"
+    class="org.codehaus.wadi.core.OswegoConcurrentSessionMap"
     >
   </bean>
 
@@ -112,16 +112,82 @@
 -->
 
   <bean
+    id="NumPartitions"
+    class="java.lang.Integer"
+    >
+    <constructor-arg><value>72</value></constructor-arg>
+  </bean>
+
+  <bean
+    id="PartitionMapper"
+    class="org.codehaus.wadi.impl.SimplePartitionMapper"
+    >
+    <constructor-arg>
+        <ref local="NumPartitions"/>
+    </constructor-arg>
+  </bean>
+
+  <bean
+    id="PartitionBalancerSingletonServiceHolder"
+    class="org.codehaus.wadi.impl.StackContext"
+    factory-method="newPartitionBalancerSingletonServiceHolder"
+    >
+    <constructor-arg>
+        <ref local="ServiceSpace"/>
+    </constructor-arg>
+    <constructor-arg>
+        <ref local="NumPartitions"/>
+    </constructor-arg>
+  </bean>
+
+  <bean
+    id="PartitionManager"
+    class="org.codehaus.wadi.location.impl.SimplePartitionManager"
+    >
+    <constructor-arg>
+        <ref local="ServiceSpace"/>
+    </constructor-arg>
+    <constructor-arg>
+        <ref local="NumPartitions"/>
+    </constructor-arg>
+    <constructor-arg>
+        <ref local="PartitionMapper"/>
+    </constructor-arg>
+    <constructor-arg>
+        <ref local="PartitionBalancerSingletonServiceHolder"/>
+    </constructor-arg>
+    <constructor-arg>
+        <bean class="org.codehaus.wadi.location.impl.SimplePartitionManagerTiming"/>
+    </constructor-arg>
+  </bean>
+
+  <bean
+    id="StateManager"
+    class="org.codehaus.wadi.location.impl.SimpleStateManager"
+    >
+    <constructor-arg>
+        <ref local="ServiceSpace"/>
+    </constructor-arg>
+    <constructor-arg>
+        <ref local="PartitionManager"/>
+    </constructor-arg>
+    <constructor-arg value="2000"/>
+  </bean>
+
+  <bean
     id="Relocater"
     class="org.codehaus.wadi.impl.HybridRelocater"
     >
-    <constructor-arg type="long" index="0"><value>5000</value></constructor-arg>
-    <constructor-arg type="long" index="1"><value>5000</value></constructor-arg>
-    <constructor-arg type="boolean" index="2"><value>true</value></constructor-arg><!-- relocate session, not request, if possible -->
+    <constructor-arg>
+        <ref local="ServiceSpace"/>
+    </constructor-arg>
+    <constructor-arg>
+        <ref local="PartitionManager"/>
+    </constructor-arg>
+    <constructor-arg value="5000"/>
   </bean>
 
   <!-- the contextualiser stack -->
-
   <bean
     id="SessionStreamer"
     class="org.codehaus.wadi.impl.SimpleStreamer"
@@ -134,21 +200,8 @@
     class="org.codehaus.wadi.impl.DebugCollapser"
     >
   </bean>
+
 -->
-
-  <bean
-    id="Collapser"
-    class="org.codehaus.wadi.impl.HashingCollapser"
-    >
-    <constructor-arg type="int"><value>1024</value></constructor-arg>
-    <constructor-arg type="long"><value>10000</value></constructor-arg>
-  </bean>
-
-  <bean
-    id="DummyContextualiser"
-    class="org.codehaus.wadi.impl.DummyContextualiser"
-    >
-  </bean>
 
   <bean
     id="DatabaseStore"
@@ -166,19 +219,42 @@
     id="DatabaseContextualiser"
     class="org.codehaus.wadi.impl.SharedStoreContextualiser"
     >
-    <constructor-arg><ref bean="DummyContextualiser"/></constructor-arg>
-    <constructor-arg><ref bean="Collapser"/></constructor-arg>
-    <constructor-arg type="boolean"><value>false</value></constructor-arg><!-- clean? -->
-    <constructor-arg><ref bean="DatabaseStore"/></constructor-arg>
+    <constructor-arg>
+        <bean class="org.codehaus.wadi.impl.DummyContextualiser"/>
+    </constructor-arg>
+    <constructor-arg value="false"/>
+    <constructor-arg>
+        <ref local="DatabaseStore"/>
+    </constructor-arg>
+    <constructor-arg value="true"/>
+  </bean>
+
+  <bean
+    id="ShuttingDownBoolean"
+    class="EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean"
+    >
+    <constructor-arg value="false"/>
   </bean>
 
   <bean
     id="ClusterContextualiser"
     class="org.codehaus.wadi.impl.ClusterContextualiser"
     >
-    <constructor-arg><ref bean="DatabaseContextualiser"/></constructor-arg>
-    <constructor-arg><ref bean="Collapser"/></constructor-arg>
-    <constructor-arg><ref bean="Relocater"/></constructor-arg>
+    <constructor-arg>
+        <ref local="DatabaseContextualiser"/>
+    </constructor-arg>
+    <constructor-arg>
+        <ref local="Relocater"/>
+    </constructor-arg>
+    <constructor-arg>
+        <ref local="PartitionManager"/>
+    </constructor-arg>
+    <constructor-arg>
+        <ref local="StateManager"/>
+    </constructor-arg>
+    <constructor-arg>
+        <ref local="ShuttingDownBoolean"/>
+    </constructor-arg>
   </bean>
 
   <bean
@@ -239,31 +315,26 @@
   </bean> <!-- sessions never pass below this point, unless the node is shutdown -->
 
   <bean
-    id="DiscMap"
-    class="EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap"
-    >
-  </bean>
-
-  <bean
     id="DiscContextualiser"
     class="org.codehaus.wadi.impl.ExclusiveStoreContextualiser"
     >
-    <constructor-arg><ref bean="StatelessContextualiser"/></constructor-arg>
-    <constructor-arg><ref bean="Collapser"/></constructor-arg>
-    <constructor-arg type="boolean"><value>true</value></constructor-arg>
-    <constructor-arg><ref bean="DiscEvicter"/></constructor-arg>
-    <constructor-arg><ref bean="DiscMap"/></constructor-arg>
-    <constructor-arg><ref bean="SessionStreamer"/></constructor-arg>
-    <constructor-arg><ref bean="DiscDirectory"/></constructor-arg>
-  </bean>
-
-  <bean
-    id="SerialContextualiser"
-    class="org.codehaus.wadi.impl.SerialContextualiser"
-    >
-    <constructor-arg><ref bean="DiscContextualiser"/></constructor-arg>
-    <constructor-arg><ref bean="Collapser"/></constructor-arg>
-    <constructor-arg><ref bean="MemoryMap"/></constructor-arg>
+    <constructor-arg>
+        <ref local="StatelessContextualiser"/>
+    </constructor-arg>
+    <constructor-arg value="true"/>
+    <constructor-arg>
+        <ref local="DiscEvicter"/>
+    </constructor-arg>
+    <constructor-arg>
+        <bean class="org.codehaus.wadi.core.OswegoConcurrentSessionMap"/>
+    </constructor-arg>
+    <constructor-arg>
+        <ref local="SessionStreamer"/>
+    </constructor-arg>
+    <constructor-arg>
+        <ref local="DiscDirectory"/>
+    </constructor-arg>
+    <constructor-arg value="true"/>
   </bean>
 
   <bean
@@ -285,14 +356,43 @@
     id="MemoryContextualiser"
     class="org.codehaus.wadi.impl.MemoryContextualiser"
     >
-    <constructor-arg><ref bean="SerialContextualiser"/></constructor-arg>
-    <constructor-arg><ref bean="MemoryEvicter"/></constructor-arg>
-    <constructor-arg><ref bean="MemoryMap"/></constructor-arg>
-<!-- <constructor-arg><ref bean="SessionStreamer"/></constructor-arg> -->
-    <constructor-arg><ref bean="WebSessionPool"/></constructor-arg>
-    <constructor-arg><ref bean="RequestPool"/></constructor-arg>
+    <constructor-arg>
+        <ref local="DiscContextualiser"/>
+    </constructor-arg>
+    <constructor-arg>
+        <ref local="MemoryEvicter"/>
+    </constructor-arg>
+    <constructor-arg>
+        <ref local="MemoryMap"/>
+    </constructor-arg>
+    <constructor-arg>
+        <ref local="WebSessionPool"/>
+    </constructor-arg>
+    <constructor-arg>
+        <ref local="RequestPool"/>
+    </constructor-arg>
   </bean>
 
+  <bean
+    id="Collapser"
+    class="org.codehaus.wadi.impl.HashingCollapser"
+    >
+    <constructor-arg type="int"><value>1024</value></constructor-arg>
+    <constructor-arg type="long"><value>10000</value></constructor-arg>
+  </bean>
+
+  <bean
+    id="TopContextualiser"
+    class="org.codehaus.wadi.impl.SerialContextualiserFrontingMemory"
+    >
+    <constructor-arg>
+        <ref local="MemoryContextualiser"/>
+    </constructor-arg>
+    <!-- Collapser -->
+    <constructor-arg>
+        <ref local="Collapser"/>
+    </constructor-arg>
+  </bean>
 
   <!-- the Router (load-balancer integration) -->
 
@@ -318,13 +418,6 @@
     class="org.codehaus.wadi.web.impl.StandardHttpProxy"
     >
     <constructor-arg><value>jsessionid</value></constructor-arg>
-  </bean>
-
-  <bean
-    id="NumPartitions"
-    class="java.lang.Integer"
-    >
-    <constructor-arg><value>72</value></constructor-arg>
   </bean>
 
   <bean
@@ -414,8 +507,7 @@
     class="org.codehaus.wadi.servicespace.basic.BasicServiceSpace"
     >
     <constructor-arg><ref bean="ServiceSpaceName"/></constructor-arg>
-    <!-- <constructor-arg><ref bean="SharedDispatcher"/></constructor-arg> -->
-    <constructor-arg><ref bean="Dispatcher"/></constructor-arg>
+    <constructor-arg><ref bean="SharedDispatcher"/></constructor-arg>
   </bean>
 
   <bean
@@ -462,23 +554,25 @@
     id="SessionManager"
     class="org.codehaus.wadi.impl.ClusteredManager"
     >
+    <constructor-arg>
+        <ref local="StateManager"/>
+    </constructor-arg>
+    <constructor-arg>
+        <ref local="PartitionManager"/>
+    </constructor-arg>
     <constructor-arg><ref bean="SessionPool"/></constructor-arg>
     <constructor-arg><ref bean="AttributesFactory"/></constructor-arg>
     <constructor-arg><ref bean="ValuePool"/></constructor-arg>
     <constructor-arg><ref bean="SessionWrapperFactory"/></constructor-arg>
     <constructor-arg><ref bean="SessionIdFactory"/></constructor-arg>
-    <constructor-arg><ref bean="MemoryContextualiser"/></constructor-arg>
+    <constructor-arg><ref bean="TopContextualiser"/></constructor-arg>
     <constructor-arg><ref bean="MemoryMap"/></constructor-arg>
     <constructor-arg><ref bean="Router"/></constructor-arg>
     <constructor-arg type="boolean"><value>false</value></constructor-arg><!-- errorIfSessionNotAcquired -->
     <constructor-arg><ref bean="AttributeStreamer"/></constructor-arg>
     <constructor-arg type="boolean"><value>true</value></constructor-arg>
     <constructor-arg><ref bean="ReplicaterFactory"/></constructor-arg>
-<!-- <constructor-arg><ref bean="EndPoint"/></constructor-arg> -->
     <constructor-arg><ref bean="HttpProxy"/></constructor-arg>
-    <constructor-arg><ref bean="ServiceSpace"/></constructor-arg>
-    <constructor-arg><ref bean="NumPartitions"/></constructor-arg>
-    <constructor-arg><ref bean="Collapser"/></constructor-arg>
   </bean>
 
 

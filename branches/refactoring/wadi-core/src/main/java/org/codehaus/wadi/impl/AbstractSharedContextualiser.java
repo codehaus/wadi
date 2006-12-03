@@ -18,7 +18,6 @@ package org.codehaus.wadi.impl;
 
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Immoter;
-import org.codehaus.wadi.Locker;
 import org.codehaus.wadi.Motable;
 
 /**
@@ -27,8 +26,8 @@ import org.codehaus.wadi.Motable;
  */
 public abstract class AbstractSharedContextualiser extends AbstractMotingContextualiser {
 
-    public AbstractSharedContextualiser(Contextualiser next, Locker locker, boolean clean) {
-        super(next, locker, clean);
+    public AbstractSharedContextualiser(Contextualiser next) {
+        super(next);
     }
 
     public Immoter getDemoter(String name, Motable motable) {

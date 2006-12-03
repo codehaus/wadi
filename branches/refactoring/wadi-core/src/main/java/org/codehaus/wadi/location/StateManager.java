@@ -17,31 +17,15 @@
 package org.codehaus.wadi.location;
 
 
+import org.codehaus.wadi.Lifecycle;
 import org.codehaus.wadi.Motable;
-import org.codehaus.wadi.group.Envelope;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public interface StateManager {
-	void init(StateManagerConfig config);
-
-    void start() throws Exception;
-
-    void stop() throws Exception;
-
-    interface ImmigrationListener {
-        void onImmigration(Envelope message, Motable immigrant);
-    }
-
-    boolean offerEmigrant(Motable emotable, long timeout);
-
-    void acceptImmigrant(Envelope message, Motable immotable);
-
-    void setImmigrationListener(ImmigrationListener listener);
-
-    void unsetImmigrationListener(ImmigrationListener listener);
+public interface StateManager extends Lifecycle {
+    boolean offerEmigrant(Motable emotable);
 
     boolean insert(String name);
 

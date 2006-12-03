@@ -18,7 +18,6 @@ package org.codehaus.wadi.impl;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Timer;
 
 import javax.servlet.ServletContext;
@@ -30,7 +29,6 @@ import javax.servlet.http.HttpSessionListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Contextualiser;
-import org.codehaus.wadi.ContextualiserConfig;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
@@ -43,6 +41,7 @@ import org.codehaus.wadi.PoolableInvocationWrapperPool;
 import org.codehaus.wadi.SessionAlreadyExistException;
 import org.codehaus.wadi.SessionIdFactory;
 import org.codehaus.wadi.ValuePool;
+import org.codehaus.wadi.core.ConcurrentMotableMap;
 import org.codehaus.wadi.web.AttributesFactory;
 import org.codehaus.wadi.web.Router;
 import org.codehaus.wadi.web.RouterConfig;
@@ -58,14 +57,11 @@ import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
 
 /**
- * TODO - JavaDoc this type
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-
-public class StandardManager implements Lifecycle, WebSessionConfig, ContextualiserConfig, RouterConfig, Manager {
-
+public class StandardManager implements Lifecycle, WebSessionConfig, RouterConfig, Manager {
 	protected final Log _log = LogFactory.getLog(getClass());
 
 	protected final WebSessionPool _sessionPool;
@@ -74,7 +70,7 @@ public class StandardManager implements Lifecycle, WebSessionConfig, Contextuali
 	protected final WebSessionWrapperFactory _sessionWrapperFactory;
 	protected final SessionIdFactory _sessionIdFactory;
 	protected final Contextualiser _contextualiser;
-	protected final Map _map;
+	protected final ConcurrentMotableMap _map;
 	protected final Timer _timer;
 	protected final Router _router;
 	protected final boolean _errorIfSessionNotAcquired;
@@ -83,8 +79,17 @@ public class StandardManager implements Lifecycle, WebSessionConfig, Contextuali
 
 	protected HttpSessionListener[] _sessionListeners;
 	protected HttpSessionAttributeListener[] _attributeListeners;
+    protected PoolableInvocationWrapperPool _pool = new DummyStatefulHttpServletRequestWrapperPool();
 
-	public StandardManager(WebSessionPool sessionPool, AttributesFactory attributesFactory, ValuePool valuePool, WebSessionWrapperFactory sessionWrapperFactory, SessionIdFactory sessionIdFactory, Contextualiser contextualiser, Map map, Router router, boolean errorIfSessionNotAcquired) {
+	public StandardManager(WebSessionPool sessionPool,
+            AttributesFactory attributesFactory,
+            ValuePool valuePool,
+            WebSessionWrapperFactory sessionWrapperFactory,
+            SessionIdFactory sessionIdFactory,
+            Contextualiser contextualiser,
+            ConcurrentMotableMap map,
+            Router router,
+            boolean errorIfSessionNotAcquired) {
 		_sessionPool=sessionPool;
 		_attributesFactory=attributesFactory;
 		_valuePool=valuePool;
@@ -107,13 +112,10 @@ public class StandardManager implements Lifecycle, WebSessionConfig, Contextuali
 
 		_config=config;
 		_sessionPool.init(this);
-		_contextualiser.init(this);
 		_router.init(this);
 	}
 
 	public void start() throws Exception {
-		_log.info("starting");
-
 		_contextualiser.promoteToExclusive(null);
 		_contextualiser.start();
 		ServletContext context=getServletContext();
@@ -128,16 +130,9 @@ public class StandardManager implements Lifecycle, WebSessionConfig, Contextuali
 		_log.info("WADI-"+version+" successfully installed");
 	}
 
-	public void aboutToStop() throws Exception {
-		// do nothing
-	}
-
 	public void stop() throws Exception {
 		_acceptingSessions.set(false);
-		// if we are clustered, partitions must be evacuated before sessions - hack
-		aboutToStop();
 		_contextualiser.stop();
-		_log.info("stopped"); // although this sometimes does not appear, it IS called...
 	}
 
 	protected void notifySessionCreation(WebSession session) {
@@ -317,33 +312,29 @@ public class StandardManager implements Lifecycle, WebSessionConfig, Contextuali
 		return System.currentTimeMillis()-_birthTime;
 	}
 
-	// Deal with incoming/outgoing invocations... - taking over flow control
-    
-    public void contextualise(Invocation invocation) throws InvocationException {
-        String key=invocation.getSessionKey();
-        if (_log.isTraceEnabled()) {
-            _log.trace("potentially stateful request: "+key);
-        }
-        
-        if (key==null) {
+    public boolean contextualise(Invocation invocation) throws InvocationException {
+        String key = invocation.getSessionKey();
+        if (key == null) {
             processStateless(invocation);
         } else {
-            // already associated with a session...
-            String name=_router.strip(key); // strip off any routing info...
+            // already associated with a session. strip off any routing info.
+            String name = _router.strip(key); 
+            invocation.setRouter(_router);
             if (!_contextualiser.contextualise(invocation, name, null, null, false)) {
                 _log.error("could not acquire session: " + name);
                 if (_errorIfSessionNotAcquired) {
                     // send the client a 503...
-                    invocation.sendError(503, "session "+name+" is not known");
+                    invocation.sendError(503, "session " + name + " is not known");
                 } else {
-                    // process request without session - it may create a new one...
+                    // process request without session - it may create a new
+                    // one...
                     processStateless(invocation);
                 }
+                return false;
             }
         }
+        return true;
     }
-
-    protected PoolableInvocationWrapperPool _pool=new DummyStatefulHttpServletRequestWrapperPool(); // TODO - init from _manager
 
     public void processStateless(Invocation invocation) throws InvocationException {
         // are we accepting sessions ? - otherwise relocate to another node...

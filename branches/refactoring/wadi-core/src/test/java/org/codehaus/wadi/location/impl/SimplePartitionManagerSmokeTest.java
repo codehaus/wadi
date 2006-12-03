@@ -15,13 +15,13 @@
  */
 package org.codehaus.wadi.location.impl;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import junit.framework.TestCase;
-
+import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.vm.VMBroker;
@@ -30,13 +30,18 @@ import org.codehaus.wadi.impl.SimplePartitionMapper;
 import org.codehaus.wadi.partition.PartitionBalancingInfoUpdate;
 import org.codehaus.wadi.partition.PartitionInfo;
 import org.codehaus.wadi.partition.PartitionInfoUpdate;
+import org.codehaus.wadi.servicespace.ServiceSpace;
+import org.codehaus.wadi.servicespace.ServiceSpaceName;
+import org.codehaus.wadi.servicespace.basic.BasicServiceSpace;
 
 import EDU.oswego.cs.dl.util.concurrent.Latch;
+
+import com.agical.rmock.extension.junit.RMockTestCase;
 
 /**
  * @version $Revision:1815 $
  */
-public class SimplePartitionManagerSmokeTest extends TestCase {
+public class SimplePartitionManagerSmokeTest extends RMockTestCase {
     private static final long EXCHANGE_TIMEOUT = 6000;
 
     private Exception failureException;
@@ -56,10 +61,13 @@ public class SimplePartitionManagerSmokeTest extends TestCase {
         List managers = new ArrayList();
         Collection loadThreads = new ArrayList();
         for (int i = 0; i < 6; i++) {
-            SimplePartitionManager manager = newManager(broker, i);
+            Contextualiser contextualiser = (Contextualiser) mock(Contextualiser.class);
+            SimplePartitionManager manager = newManager(broker, i, contextualiser);
             managers.add(manager);
-            SimpleStateManager stateManager = new SimpleStateManager(manager.getDispatcher(), manager, EXCHANGE_TIMEOUT);
+            ServiceSpace serviceSpace = manager.getServiceSpace();
+            SimpleStateManager stateManager = new SimpleStateManager(serviceSpace, manager,EXCHANGE_TIMEOUT);
             stateManager.start();
+            serviceSpace.start();
             loadThreads.add(new LoadThread(stateManager));
             loadThreads.add(new LoadThread(stateManager));
         }
@@ -86,14 +94,24 @@ public class SimplePartitionManagerSmokeTest extends TestCase {
         System.out.println("[" + nbOperations + "] successful invocations.");
     }
 
-    private SimplePartitionManager newManager(VMBroker broker, int index) throws Exception {
+    private SimplePartitionManager newManager(VMBroker broker, int index, Contextualiser contextualiser) throws Exception {
         final Dispatcher dispatcher = new VMDispatcher(broker, Integer.toString(index), null, 1000);
         dispatcher.start();
 
-        SimplePartitionManager manager = new SimplePartitionManager(dispatcher, nbPartitions, null,
-                new SimplePartitionMapper(nbPartitions)) {
-            protected void waitForBoot(long attemptPeriod) throws InterruptedException, PartitionManagerException {
+        ServiceSpace serviceSpace = new BasicServiceSpace(new ServiceSpaceName(URI.create("serviceSpace")), dispatcher);
+
+        PartitionBalancerSingletonServiceHolder holder =
+            (PartitionBalancerSingletonServiceHolder) mock(PartitionBalancerSingletonServiceHolder.class);
+        
+        SimplePartitionManager manager = new SimplePartitionManager(serviceSpace, nbPartitions,
+                new SimplePartitionMapper(nbPartitions),
+                holder,
+                new SimplePartitionManagerTiming()) {
+            protected void waitForBoot() throws InterruptedException, PartitionManagerException {
             }  
+            
+            protected void queueRebalancing() {
+            }
         };
         manager.start();
         return manager;
@@ -131,7 +149,7 @@ public class SimplePartitionManagerSmokeTest extends TestCase {
                     managerIter = managers.iterator();
                 }
                 SimplePartitionManager manager = (SimplePartitionManager) managerIter.next();
-                Peer owner = manager.getCluster().getLocalPeer();
+                Peer owner = manager.getServiceSpace().getDispatcher().getCluster().getLocalPeer();
                 PartitionInfo partitionInfo = new PartitionInfo(version, i, owner);
                 updates[i] = new PartitionInfoUpdate(false, partitionInfo);
             }
@@ -159,7 +177,7 @@ public class SimplePartitionManagerSmokeTest extends TestCase {
         protected void bootManagers() {
             Iterator managerIter = managers.iterator();
             SimplePartitionManager manager = (SimplePartitionManager) managerIter.next();
-            Peer owner = manager.getCluster().getLocalPeer();
+            Peer owner = manager.getServiceSpace().getDispatcher().getCluster().getLocalPeer();
             PartitionInfoUpdate[] updates = new PartitionInfoUpdate[nbPartitions];
             for (int i = 0; i < updates.length; i++) {
                 PartitionInfo partitionInfo = new PartitionInfo(version, i, owner);

@@ -17,7 +17,6 @@ package org.codehaus.wadi.location.impl;
 
 import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.location.partition.PartitionEvacuationRequest;
-import org.codehaus.wadi.location.partition.PartitionRepopulateRequest;
 import org.codehaus.wadi.location.partition.PartitionTransferRequest;
 import org.codehaus.wadi.partition.PartitionBalancingInfoUpdate;
 import org.codehaus.wadi.partition.RetrieveBalancingInfoEvent;
@@ -28,8 +27,6 @@ import org.codehaus.wadi.partition.RetrieveBalancingInfoEvent;
  */
 public interface PartitionManagerMessageListener {
     void onPartitionEvacuationRequest(Envelope om, PartitionEvacuationRequest request);
-
-    void onPartitionRepopulateRequest(Envelope om, PartitionRepopulateRequest request);
 
     void onPartitionTransferRequest(Envelope om, PartitionTransferRequest request);
     

@@ -16,8 +16,6 @@
  */
 package org.codehaus.wadi.impl;
 
-import java.util.Map;
-
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Emoter;
 import org.codehaus.wadi.Evicter;
@@ -29,9 +27,9 @@ import org.codehaus.wadi.PoolableInvocationWrapper;
 import org.codehaus.wadi.PoolableInvocationWrapperPool;
 import org.codehaus.wadi.Session;
 import org.codehaus.wadi.SessionPool;
+import org.codehaus.wadi.core.ConcurrentMotableMap;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
-import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 
 /**
  * A Contextualiser that stores its state in Memory as Java Objects
@@ -46,76 +44,40 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
     private final Emoter _evictionEmoter;
     private final PoolableInvocationWrapperPool _requestPool;
 
-	public MemoryContextualiser(Contextualiser next, Evicter evicter, Map map, SessionPool pool, PoolableInvocationWrapperPool requestPool) {
-		super(next, new RWLocker(), false, evicter, map);
+	public MemoryContextualiser(Contextualiser next,
+            Evicter evicter,
+            ConcurrentMotableMap map,
+            SessionPool pool,
+            PoolableInvocationWrapperPool requestPool) {
+		super(next, evicter, map);
         _pool = pool;
         _requestPool = requestPool;
         
-        _immoter = new MemoryImmoter(_map);
-        _emoter = new MemoryEmoter(_map);
-        _evictionEmoter = new BaseMappedEmoter(_map);
+        _immoter = new MemoryImmoter(map);
+        _emoter = new BaseMappedEmoter(map);
+        _evictionEmoter = _emoter;
     }
 
     protected boolean handleLocally(Invocation invocation, String id, Sync invocationLock, Motable motable) throws InvocationException {
-        Sync stateLock = ((Session) motable).getSharedLock();
-        try {
-            try {
-                Utils.acquireUninterrupted("State (shared)", id, stateLock);
-            } catch (TimeoutException e) {
-                _log.error("unexpected timeout - continuing without lock: " + id + " : " + stateLock, e);
-                throw new WADIRuntimeException(e);
-            }
-
-            motable.setLastAccessedTime(System.currentTimeMillis());
-            // we need a solution - MemoryContextualiser needs to separate Contexts and Motables cleanly...
-            invocation.setSession((Session) motable); 
-            if (!invocation.isProxiedInvocation()) {
-                // part of the proxying proedure runs a null req...
-                // restick clients whose session is here, but whose routing info
-                // points elsewhere...
-                _config.getRouter().reroute(invocation);
-                // take wrapper from pool...
-                PoolableInvocationWrapper wrapper = _requestPool.take();
-                wrapper.init(invocation, (Session) motable);
-                invocation.invoke(wrapper);
-                wrapper.destroy();
-                _requestPool.put(wrapper);
-            } else {
-                invocation.invoke();
-            }
-            return true;
-        } finally {
-            Utils.release("State (shared)", id, stateLock);
+        motable.setLastAccessedTime(System.currentTimeMillis());
+        // we need a solution - MemoryContextualiser needs to separate Contexts and Motables cleanly...
+        invocation.setSession((Session) motable); 
+        if (!invocation.isProxiedInvocation()) {
+            // take wrapper from pool...
+            PoolableInvocationWrapper wrapper = _requestPool.take();
+            wrapper.init(invocation, (Session) motable);
+            invocation.invoke(wrapper);
+            wrapper.destroy();
+            _requestPool.put(wrapper);
+        } else {
+            invocation.invoke();
         }
-    }
-
-    class MemoryEmoter extends BaseMappedEmoter {
-
-        public MemoryEmoter(Map map) {
-            super(map);
-        }
-
-        public boolean emote(Motable emotable, Motable immotable) {
-            String name = emotable.getName();
-            Sync stateLock = ((Session) emotable).getExclusiveLock();
-            try {
-                Utils.acquireUninterrupted("State (excl.)", name, stateLock);
-            } catch (TimeoutException e) {
-                _log.error("unexpected timeout", e);
-                return false;
-            }
-            try {
-                return super.emote(emotable, immotable);
-            } finally {
-                Utils.release("State (excl.)", name, stateLock);
-            }
-        }
-
+        return true;
     }
 
     class MemoryImmoter extends AbstractMappedImmoter {
 
-        public MemoryImmoter(Map map) {
+        public MemoryImmoter(ConcurrentMotableMap map) {
             super(map);
         }
 
@@ -142,16 +104,8 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
         return immoter == null ? _immoter : immoter;
     }
 
-    public Sync getEvictionLock(String id, Motable motable) {
-        return ((Session) motable).getExclusiveLock();
-    }
-
     public Emoter getEvictionEmoter() {
         return _evictionEmoter;
-    }
-
-    public void expire(Motable motable) {
-        _config.expire(motable);
     }
 
 }

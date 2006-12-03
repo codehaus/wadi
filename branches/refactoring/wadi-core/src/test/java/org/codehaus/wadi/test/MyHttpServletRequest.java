@@ -35,10 +35,10 @@ import javax.servlet.http.HttpSession;
  * @version $Revision$
  */
 public class MyHttpServletRequest implements HttpServletRequest {
+    private String requestedSessionId;
 
-    public MyHttpServletRequest() {
-        super();
-        // TODO Auto-generated constructor stub
+    public MyHttpServletRequest(String requestedSessionId) {
+        this.requestedSessionId = requestedSessionId;
     }
 
     public String getAuthType() {
@@ -117,10 +117,13 @@ public class MyHttpServletRequest implements HttpServletRequest {
     }
 
     public String getRequestedSessionId() {
-        // TODO Auto-generated method stub
-        return null;
+        return requestedSessionId;
     }
 
+    public void setRequestedSessionId(String requestedSessionId) {
+        this.requestedSessionId = requestedSessionId;
+    }
+    
     public String getRequestURI() {
         // TODO Auto-generated method stub
         return null;

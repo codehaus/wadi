@@ -33,7 +33,7 @@ public class RWLocker implements Locker {
     }
 
     public Sync getLock(String id, Motable motable) {
-        return ((Session)motable).getExclusiveLock();
+        return ((Session)motable).getLock();
     }
 
 }

@@ -25,7 +25,6 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 
 import org.codehaus.wadi.Streamer;
-import org.codehaus.wadi.StreamerConfig;
 
 /**
  * Don't do anything extra, just connect streams up directly.
@@ -35,18 +34,21 @@ import org.codehaus.wadi.StreamerConfig;
  */
 public class SimpleStreamer implements Streamer {
     
-	protected StreamerConfig _config;
-	
-	public SimpleStreamer() {
-		// empty
-	}
-	
-	public void init(StreamerConfig config) {
-		_config=config;
+    private final ClassLoader classLoader;
+
+    public SimpleStreamer() {
+        this(Thread.currentThread().getContextClassLoader());
+    }
+
+	public SimpleStreamer(ClassLoader classLoader) {
+        if (null == classLoader) {
+            throw new IllegalArgumentException("classLoader is required");
+        }
+        this.classLoader = classLoader;
 	}
 	
 	public ObjectInput getInputStream(InputStream is) throws IOException {
-        return new ObjectInputStream(is, _config.getClassLoader());
+        return new ObjectInputStream(is, classLoader);
     }
     
     public ObjectOutput getOutputStream(OutputStream os) throws IOException {

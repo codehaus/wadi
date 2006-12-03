@@ -47,14 +47,6 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  */
 public interface Contextualiser extends Lifecycle {
     /**
-     * Initialise this Contextualiser with a configuration object, injecting information
-     * which was not readily available at construction time.
-     * 
-     * @param config the configuration object
-     */
-    void init(ContextualiserConfig config);
-    
-    /**
      * Contextualise the given Invocation. 
      * 
      * @param invocation the Invocation

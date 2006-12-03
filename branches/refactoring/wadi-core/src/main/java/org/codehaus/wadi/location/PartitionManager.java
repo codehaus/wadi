@@ -16,7 +16,7 @@
  */
 package org.codehaus.wadi.location;
 
-import org.codehaus.wadi.location.impl.PartitionFacade;
+import org.codehaus.wadi.Lifecycle;
 import org.codehaus.wadi.partition.PartitionBalancingInfo;
 
 /**
@@ -24,23 +24,13 @@ import org.codehaus.wadi.partition.PartitionBalancingInfo;
  * that there is a change in Cluster membership and exposing these Partitions to the rest of the program,
  * whether local or Remote.
  *
- * A lot of work needed here...
- *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  *
  */
-public interface PartitionManager {
-	PartitionFacade getPartition(Object key);
+public interface PartitionManager extends Lifecycle {
+	Partition getPartition(Object key);
 	
     PartitionBalancingInfo getBalancingInfo();
 	
-	int getNumPartitions();
-
-	void init(PartitionManagerConfig config);
-	
-	void start() throws Exception;
-	
 	void evacuate() throws Exception;
-	
-	void stop() throws Exception;
 }

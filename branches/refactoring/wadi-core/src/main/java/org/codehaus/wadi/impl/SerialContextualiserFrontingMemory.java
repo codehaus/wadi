@@ -33,13 +33,16 @@ public class SerialContextualiserFrontingMemory extends AbstractDelegatingContex
 
     public SerialContextualiserFrontingMemory(Contextualiser next, Collapser collapser) {
         super(next);
+        if (null == collapser) {
+            throw new IllegalArgumentException("collapser is required");
+        }
         this.collapser = collapser;
     }
 
     public boolean contextualise(Invocation invocation, String key, Immoter immoter, Sync invocationLock, 
             boolean exclusiveOnly) throws InvocationException {
         if (null != invocationLock) {
-            return _next.contextualise(invocation, key, immoter, invocationLock, exclusiveOnly);
+            return next.contextualise(invocation, key, immoter, invocationLock, exclusiveOnly);
         } else {
             return lockAndContextualise(invocation, key, immoter, invocationLock, exclusiveOnly);
         }
@@ -52,7 +55,7 @@ public class SerialContextualiserFrontingMemory extends AbstractDelegatingContex
         try {
             Utils.acquireUninterrupted("Invocation(SerialContextualiserFrontingMemory)", key, lock);
             isLockAcquired = true;
-            return _next.contextualise(invocation, key, immoter, invocationLock, exclusiveOnly);
+            return next.contextualise(invocation, key, immoter, invocationLock, exclusiveOnly);
         } catch (TimeoutException e) {
             throw new InvocationException(e);
         } finally {
