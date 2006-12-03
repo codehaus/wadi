@@ -23,8 +23,6 @@ import java.io.Serializable;
  * @version $Revision: 1538 $
  */
 public class InvocationInfo implements Serializable {
-    private static final long DEFAULT_TIMEOUT = 5000;
-    
     private final String methodName;
     private final Class[] paramTypes;
     private final Object[] params;
