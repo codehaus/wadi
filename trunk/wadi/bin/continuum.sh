@@ -1,5 +1,9 @@
 #!/bin/sh
 
+ARGS="-e --offline $ARGS"
+
+PROPS="$PROPS -Djava.awt.headless=true"
+
 ## an integration script for continuum.
 ## if the build takes too long (maybe a test hangs), it will kill itself
 
@@ -92,9 +96,6 @@ echo
 ## cleanup maven repo
 rm -fr ~/.m2/repository/org/codehaus/wadi
 
-PROPS="$PROPS -Djava.awt.headless=true"
-PROPS="-e $PROPS"
-
 set -m ## enable job control
 
 ## kick off our build (damocles) in the background
@@ -102,38 +103,36 @@ case $target in
 
     compile)
     timeout=600 ## 10 mins
-    mvn $PROPS clean:clean && \
-    mvn $PROPS compiler:compile & damocles=$!
+    PROPS="$PROPS -Dmaven.test.skip=true"
+    TARGETS="clean install"
     ;;
     test)
     timeout=1800 ## 1/2 hr
-    mvn $PROPS clean:clean && \
-    mvn $PROPS install & damocles=$!
+    TARGETS="clean install"
     ;;
     site)
     timeout=6400 ## 2 hrs
     PROPS="$PROPS -Dmaven.test.failure.ignore=true"
-    mvn $PROPS clean:clean && \
-    mvn $PROPS install clover:instrument clover:aggregate site:site site:deploy & damocles=$!
+    TARGETS="clean install clover:instrument clover:aggregate site:site site:deploy"
     ;;
     eclipse)
     timeout=3600 ## 1 hr
     PROPS="$PROPS -DdownloadSources=true -Dmaven.test.failure.ignore=true"
-    mvn $PROPS clean:clean && \
-    mvn $PROPS install eclipse:clean eclipse:eclipse & damocles=$!
+    TARGETS="clean install eclipse:clean eclipse:eclipse"
     ;;
 
 esac
 
+## kick off the build (damocles)
+mvn $PROPS $ARGS $TARGETS & damocles=$!
 ## kick off a 'sword' - this will kill us if we take too long...
 sh -c "sleep $timeout && date && echo 'build has overrun - killing it' && kill -9 -$damocles" & sword=$!
-
 ## bring our task (damocles) back into the foreground
 fg %1
+## record damocles' exit status
 status=$?
-
-## remember the 'sword's pid, so when we finish our own task, we can kill it...
-kill -9 $sword
+## tidy up sword after damocles' exit
+kill -9 -- -$sword
 
 echo
 echo "***** Continuum build completed *****"
