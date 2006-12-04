@@ -1,6 +1,6 @@
 #!/bin/sh
 
-ARGS="-e --offline $ARGS"
+ARGS="-e $ARGS"
 
 PROPS="$PROPS -Djava.awt.headless=true"
 
