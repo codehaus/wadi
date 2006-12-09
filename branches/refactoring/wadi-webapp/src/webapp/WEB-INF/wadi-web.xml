@@ -55,7 +55,7 @@
 
   <bean
     id="MemoryMap"
-    class="org.codehaus.wadi.core.OswegoConcurrentSessionMap"
+    class="org.codehaus.wadi.core.OswegoConcurrentMotableMap"
     >
   </bean>
 
@@ -326,7 +326,7 @@
         <ref local="DiscEvicter"/>
     </constructor-arg>
     <constructor-arg>
-        <bean class="org.codehaus.wadi.core.OswegoConcurrentSessionMap"/>
+        <bean class="org.codehaus.wadi.core.OswegoConcurrentMotableMap"/>
     </constructor-arg>
     <constructor-arg>
         <ref local="SessionStreamer"/>
