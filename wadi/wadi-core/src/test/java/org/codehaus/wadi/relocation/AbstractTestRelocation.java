@@ -1,3 +1,18 @@
+/**
+ * Copyright 2006 The Apache Software Foundation
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 package org.codehaus.wadi.relocation;
 
 import java.io.IOException;
@@ -23,35 +38,27 @@ import org.codehaus.wadi.test.MyHttpServletRequest;
 import org.codehaus.wadi.test.MyHttpServletResponse;
 import org.codehaus.wadi.test.MyStack;
 import org.codehaus.wadi.test.TestUtil;
+import org.codehaus.wadi.web.Router;
 import org.codehaus.wadi.web.WebSession;
 
+/**
+ * 
+ * @version $Revision: 1538 $
+ */
 public class AbstractTestRelocation extends TestCase {
     protected Log _log = LogFactory.getLog(getClass());
 
-	public AbstractTestRelocation(String arg0) {
-		super(arg0);
-	}
-
-	protected void setUp() throws Exception {
-		super.setUp();
-	}
-
-	protected void tearDown() throws Exception {
-		super.tearDown();
-	}
-    
     static class MyInvocation implements Invocation {
-
         protected Log _log = LogFactory.getLog(getClass());
         protected StandardManager _manager;
         protected String _key;
         protected WebSession _session;
-        
+
         public void init(StandardManager manager, String key) {
-            _manager=manager;
-            _key=key;
+            _manager = manager;
+            _key = key;
         }
-        
+
         public String getSessionKey() {
             return _key;
         }
@@ -63,13 +70,13 @@ public class AbstractTestRelocation extends TestCase {
         public void setSession(Session session) {
             throw new UnsupportedOperationException("NYI");
         }
-        
+
         public void invoke(PoolableInvocationWrapper wrapper) throws InvocationException {
             throw new UnsupportedOperationException("NYI");
         }
 
         public void invoke() throws InvocationException {
-            assertTrue(_session!=null);
+            assertTrue(_session != null);
         }
 
         public boolean isProxiedInvocation() {
@@ -77,44 +84,47 @@ public class AbstractTestRelocation extends TestCase {
         }
 
         public void relocate(EndPoint endPoint) {
-            throw new UnsupportedOperationException("NYI - relocate to: "+endPoint);
-            // clever stuff here...
+            throw new UnsupportedOperationException("NYI - relocate to: " + endPoint);
         }
 
         public void sendError(int code, String message) throws InvocationException {
             throw new UnsupportedOperationException("NYI");
         }
 
+        public void setRouter(Router router) {
+            throw new UnsupportedOperationException("NYI");
+        }
+
     }
 
-	public void testSessionRelocation(Dispatcher redD, Dispatcher greenD) throws Exception {
-		MyStack red=new MyStack(redD);
-		red.start();
+    public void testSessionRelocation(Dispatcher redD, Dispatcher greenD) throws Exception {
+        MyStack red = new MyStack(redD);
+        red.start();
         redD = red.getServiceSpace().getDispatcher();
-        
-		MyStack green=new MyStack(greenD);
-		green.start();
+
+        MyStack green = new MyStack(greenD);
+        green.start();
         greenD = green.getServiceSpace().getDispatcher();
 
-        TestUtil.waitForDispatcherSeeOthers(new Dispatcher[] {redD, greenD}, 5000);
+        TestUtil.waitForDispatcherSeeOthers(new Dispatcher[] { redD, greenD }, 5000);
 
-		String id=red.getManager().create(null).getId();
+        WebSession session = red.getManager().create(null);
+        session.onEndProcessing();
+        String id = session.getId();
 
-		assertTrue(id!=null);
+        assertTrue(id != null);
 
-		FilterChain fc=new FilterChain() {
-			public void doFilter(ServletRequest req, ServletResponse res) throws IOException, ServletException {
-			}
-		};
+        FilterChain fc = new FilterChain() {
+            public void doFilter(ServletRequest req, ServletResponse res) throws IOException, ServletException {
+            }
+        };
 
-		Invocation invocation=new MockInvocation(new MyHttpServletRequest(), new MyHttpServletResponse(), fc);
-		boolean success=green.getManager().contextualise(invocation, id, null, null, false);
+        Invocation invocation = new MockInvocation(new MyHttpServletRequest(id), new MyHttpServletResponse(), fc);
+        boolean success = green.getManager().contextualise(invocation);
+        assertTrue(success);
 
-		assertTrue(success);
-
-		red.stop();
-        TestUtil.waitForDispatcherSeeOthers(new Dispatcher[] {greenD}, 5000);
-
-		green.stop();
-	}
+        success = red.getManager().contextualise(invocation);
+        assertTrue(success);
+    }
+    
 }

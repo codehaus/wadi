@@ -19,7 +19,6 @@ package org.codehaus.wadi.impl;
 import java.util.Map;
 
 import org.codehaus.wadi.Contextualiser;
-import org.codehaus.wadi.ContextualiserConfig;
 import org.codehaus.wadi.PartitionMapper;
 
 /**
@@ -27,34 +26,30 @@ import org.codehaus.wadi.PartitionMapper;
  * @version $Revision$
  */
 public abstract class AbstractChainedContextualiser extends AbstractContextualiser {
-    protected final Contextualiser _next;
+    protected final Contextualiser next;
 
     public AbstractChainedContextualiser(Contextualiser next) {
         if (null == next) {
             throw new IllegalArgumentException("next is required");
         }
-        _next = next;
-    }
-
-    public void init(ContextualiserConfig config) {
-        super.init(config);
-        _next.init(config);
+        this.next = next;
     }
 
     public void start() throws Exception {
         super.start();
-        _next.start();
+        next.start();
     }
 
     public void stop() throws Exception {
-        _next.stop();
+        next.stop();
         super.stop();
     }
 
     public void findRelevantSessionNames(PartitionMapper mapper, Map keyToSessionNames) {
         super.findRelevantSessionNames(mapper, keyToSessionNames);
-        if (_next.isExclusive()) {
-            _next.findRelevantSessionNames(mapper, keyToSessionNames);
+        if (next.isExclusive()) {
+            next.findRelevantSessionNames(mapper, keyToSessionNames);
         }
     }
+    
 }

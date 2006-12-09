@@ -33,13 +33,12 @@ import java.io.OutputStream;
  * @version $Revision$
  */
 public interface Streamer {
-	
-	void init(StreamerConfig confige);
-	
 	ObjectInput getInputStream(InputStream is) throws IOException;
-	ObjectOutput getOutputStream(OutputStream os) throws IOException;
-	String getSuffix();
-	String getSuffixWithDot();
+
+    ObjectOutput getOutputStream(OutputStream os) throws IOException;
 	
+    String getSuffix();
+	
+    String getSuffixWithDot();
 }
 

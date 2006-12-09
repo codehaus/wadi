@@ -1,6 +1,5 @@
 /**
- *
- * Copyright 2003-2005 Core Developers Network Ltd.
+ * Copyright 2006 The Apache Software Foundation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,18 +13,14 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.test;
+package org.codehaus.wadi.location.impl;
 
-import org.codehaus.wadi.PoolableInvocationWrapper;
-import org.codehaus.wadi.PoolableInvocationWrapperPool;
+import org.codehaus.wadi.servicespace.SingletonServiceHolder;
 
 /**
- * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
+ * 
+ * @version $Revision: 1538 $
  */
-public class MyDummyHttpServletRequestWrapperPool implements PoolableInvocationWrapperPool {
-
-	public PoolableInvocationWrapper take(){return new MyPoolableHttpServletRequestWrapper();}
-	public void put(PoolableInvocationWrapper wrapper){/* empty */}
-
+public interface PartitionBalancerSingletonServiceHolder extends SingletonServiceHolder {
+    PartitionBalancerSingletonService getPartitionBalancerSingletonService();
 }

@@ -1,6 +1,5 @@
 /**
- *
- * Copyright 2003-2005 Core Developers Network Ltd.
+ * Copyright 2006 The Apache Software Foundation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,25 +13,15 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.location;
+package org.codehaus.wadi.location.impl;
 
-
-import org.codehaus.wadi.group.Address;
-import org.codehaus.wadi.group.Cluster;
-import org.codehaus.wadi.group.Dispatcher;
+import org.codehaus.wadi.group.Envelope;
+import org.codehaus.wadi.location.session.MovePMToSM;
 
 /**
- * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
+ * 
+ * @version $Revision: 1538 $
  */
-public interface PartitionConfig {
-    Dispatcher getDispatcher();
-
-    Cluster getCluster();
-    
-    String getPeerName(Address address);
-    
-    long getInactiveTime();
-
-    String getLocalPeerName();
+public interface MovePMToSMEndPointMessageListener {
+    void onMessage(Envelope message, MovePMToSM request);
 }

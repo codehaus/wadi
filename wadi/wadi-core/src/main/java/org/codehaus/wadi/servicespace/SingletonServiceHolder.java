@@ -1,6 +1,5 @@
 /**
- *
- * Copyright 2003-2005 Core Developers Network Ltd.
+ * Copyright 2006 The Apache Software Foundation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,20 +13,19 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.impl;
+package org.codehaus.wadi.servicespace;
 
-import org.codehaus.wadi.Relocater;
-import org.codehaus.wadi.RelocaterConfig;
+import org.codehaus.wadi.Lifecycle;
+import org.codehaus.wadi.group.Peer;
 
 /**
- * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
+ * 
+ * @version $Revision: 1538 $
  */
-public abstract class AbstractRelocater implements Relocater {
-    protected RelocaterConfig _config;
+public interface SingletonServiceHolder extends Lifecycle {
+    boolean isLocal();
 
-    public void init(RelocaterConfig config) {
-        _config=config;
-    }
+    Peer getHostingPeer();
 
+    Lifecycle getSingletonService();
 }

@@ -27,10 +27,9 @@ import org.codehaus.wadi.location.impl.SessionRequestImpl;
  * @version $Revision:1815 $
  */
 public class MoveIMToPM extends SessionRequestImpl implements Serializable {
-
-    protected final Peer peer;
-    protected final boolean _relocateSession;
-    protected final boolean _relocateInvocation;
+    private final Peer peer;
+    private final boolean relocateSession;
+    private final boolean relocateInvocation;
 
     public MoveIMToPM(Peer peer, String sessionName, boolean relocateSession, boolean relocateInvocation) {
         super(sessionName);
@@ -38,16 +37,16 @@ public class MoveIMToPM extends SessionRequestImpl implements Serializable {
             throw new IllegalArgumentException("peer is required");
         }
         this.peer = peer;
-        _relocateSession = relocateSession;
-        _relocateInvocation = relocateInvocation;
+        this.relocateSession = relocateSession;
+        this.relocateInvocation = relocateInvocation;
     }
 
     public boolean isRelocateSession() {
-        return _relocateSession;
+        return relocateSession;
     }
 
     public boolean isRelocateInvocation() {
-        return _relocateInvocation;
+        return relocateInvocation;
     }
 
     public Peer getIMPeer() {

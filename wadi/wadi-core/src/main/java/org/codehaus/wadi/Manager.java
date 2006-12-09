@@ -94,7 +94,7 @@ public interface Manager extends Lifecycle {
      * @param invocation
      * @throws InvocationException
      */
-    void contextualise(Invocation invocation) throws InvocationException;
+    boolean contextualise(Invocation invocation) throws InvocationException;
     
     WebSessionWrapperFactory getSessionWrapperFactory();
 }

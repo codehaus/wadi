@@ -23,8 +23,7 @@ package org.codehaus.wadi.impl;
 public abstract class AbstractStrictEvicter extends AbstractEvicter {
 
     public AbstractStrictEvicter() {
-        super();
-        // TODO Auto-generated constructor stub
+        super(10);
     }
 
 }

@@ -16,6 +16,8 @@
  */
 package org.codehaus.wadi;
 
+import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
+
 
 
 /**
@@ -42,4 +44,6 @@ public interface Motable extends Evictable {
     byte[] getBodyAsByteArray() throws Exception;
 
     void setBodyAsByteArray(byte[] bytes) throws Exception;
+
+    ReadWriteLock getReadWriteLock();
 }

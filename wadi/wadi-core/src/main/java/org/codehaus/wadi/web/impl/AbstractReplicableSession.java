@@ -17,7 +17,6 @@
 package org.codehaus.wadi.web.impl;
 
 import org.codehaus.wadi.Motable;
-import org.codehaus.wadi.RWLockListener;
 import org.codehaus.wadi.Replicater;
 import org.codehaus.wadi.web.ReplicableSessionConfig;
 
@@ -28,15 +27,11 @@ import org.codehaus.wadi.web.ReplicableSessionConfig;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision: 1725 $
  */
-public abstract class AbstractReplicableSession extends DistributableSession implements RWLockListener {
+public abstract class AbstractReplicableSession extends DistributableSession {
 	
 	public AbstractReplicableSession(ReplicableSessionConfig config) {
         super(config);
-        // we could use a lock subclass to save space - need a lock factory in config - aargh !
-        _lock.setListener(this);
     }
-
-    public abstract void readEnded();
 
     public void mote(Motable recipient) throws Exception {
         recipient.copy(this); 
@@ -74,8 +69,8 @@ public abstract class AbstractReplicableSession extends DistributableSession imp
     // then it would be redundant and very expensive to replicate this data,
     // since it will change
     // with every request.
-
     private Replicater getReplicater() {
         return ((ReplicableSessionConfig) _config).getReplicater();
     }
+
 }

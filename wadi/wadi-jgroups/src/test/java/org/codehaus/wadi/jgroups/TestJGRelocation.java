@@ -6,10 +6,6 @@ import org.codehaus.wadi.relocation.AbstractTestRelocation;
 
 public class TestJGRelocation extends AbstractTestRelocation {
 	
-	public TestJGRelocation(String name) {
-		super(name);
-	}
-	
 	public void testSessionRelocation() throws Exception {
         String clusterName = JGTestUtil.TEST_CLUSTER_NAME;
         long timeout = 5000;

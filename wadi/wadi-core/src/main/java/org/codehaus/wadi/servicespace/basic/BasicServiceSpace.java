@@ -29,8 +29,8 @@ import org.codehaus.wadi.Lifecycle;
 import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.ClusterListener;
 import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.Envelope;
+import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.MessageListener;
 import org.codehaus.wadi.group.Peer;
@@ -131,7 +131,7 @@ public class BasicServiceSpace implements ServiceSpace, Lifecycle {
         }
         return serviceMonitor;
     }
-
+    
     public ServiceRegistry getServiceRegistry() {
         return serviceRegistry;
     }
@@ -252,7 +252,7 @@ public class BasicServiceSpace implements ServiceSpace, Lifecycle {
     }
     
     protected void processLifecycleEvent(ServiceSpaceLifecycleEvent event) {
-        log.info("Processing event [" + event + "]");
+        log.debug("Processing event [" + event + "]");
         
         Peer hostingPeer = event.getHostingPeer();
         LifecycleState state = event.getState();

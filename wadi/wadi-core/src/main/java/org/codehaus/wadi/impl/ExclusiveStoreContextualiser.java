@@ -17,12 +17,8 @@
 package org.codehaus.wadi.impl;
 
 import java.io.File;
-import java.util.Map;
 
-import org.codehaus.wadi.Collapser;
 import org.codehaus.wadi.Contextualiser;
-import org.codehaus.wadi.ContextualiserConfig;
-import org.codehaus.wadi.DistributableContextualiserConfig;
 import org.codehaus.wadi.Emoter;
 import org.codehaus.wadi.Evicter;
 import org.codehaus.wadi.Immoter;
@@ -30,8 +26,7 @@ import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.Store;
 import org.codehaus.wadi.StoreMotable;
 import org.codehaus.wadi.Streamer;
-
-// TODO - a JDBC-based equivalent
+import org.codehaus.wadi.core.ConcurrentMotableMap;
 
 /**
  * Maps id:File where file contains Context content...
@@ -40,77 +35,65 @@ import org.codehaus.wadi.Streamer;
  * @version $Revision$
  */
 public class ExclusiveStoreContextualiser extends AbstractExclusiveContextualiser {
-
+    private final boolean clean;
+    private final boolean accessOnLoad;
     protected final Store _store;
     protected final Immoter _immoter;
 	protected final Emoter _emoter;
 
-	public ExclusiveStoreContextualiser(Contextualiser next, Collapser collapser, boolean clean, Evicter evicter, Map map, Streamer streamer, File dir) throws Exception {
-	    super(next, new CollapsingLocker(collapser), clean, evicter, map);
-        _store=new DiscStore(streamer, dir, true, false);
-	    _immoter=new ExclusiveStoreImmoter(_map);
-	    _emoter=new BaseMappedEmoter(_map);
+	public ExclusiveStoreContextualiser(Contextualiser next,
+            boolean clean,
+            Evicter evicter,
+            ConcurrentMotableMap map,
+            Streamer streamer,
+            File dir,
+            boolean accessOnLoad) throws Exception {
+	    super(next, evicter, map);
+        this.clean = clean;
+        this.accessOnLoad = accessOnLoad;
+        
+        _store = new DiscStore(streamer, dir, true, false);
+        _immoter = new ExclusiveStoreImmoter(map);
+        _emoter = new BaseMappedEmoter(map);
 	}
 
-    public void init(ContextualiserConfig config) {
-        super.init(config);
-        // perhaps this should be done in start() ?
-        if (_clean)
-            _store.clean();
+	public Immoter getImmoter() {
+        return _immoter;
     }
 
-	public Immoter getImmoter(){return _immoter;}
-	public Emoter getEmoter(){return _emoter;}
-
-	/**
-	 * An Immoter that deals in terms of StoreMotables
-	 */
-	public class ExclusiveStoreImmoter extends AbstractMappedImmoter {
-
-	    public ExclusiveStoreImmoter(Map map) {
-	        super(map);
-	    }
-
-		public Motable newMotable() {
-			StoreMotable motable=_store.create();
-			motable.init(_store);
-            return motable;
-		}
-
-	}
+    public Emoter getEmoter() {
+        return _emoter;
+    }
 
     public void start() throws Exception {
-        Store.Putter putter=new Store.Putter() {
-            public void put(String name, Motable motable) {
-                _map.put(name, motable);
-            }
-        };
-        _store.load(putter, ((DistributableContextualiserConfig)_config).getAccessOnLoad());
-        super.start(); // continue down chain...
-    }
-
-    // this should move up.....
-    public void expire(Motable motable) {
-        // decide whether session needs promotion
-        boolean needsLoading=true; // FIXME
-        // if so promote to top and expire there
-        String id=motable.getName();
-        if (_log.isTraceEnabled()) _log.trace("expiring from disc: "+id);
-        if (needsLoading) {
-            _map.remove(id);
-            Motable loaded=_config.getSessionPool().take();
-            try {
-                loaded.copy(motable);
-                motable=null;
-                _config.expire(loaded);
-            } catch (Exception e) {
-	      _log.error("unexpected problem expiring from disc", e);
-            }
-            loaded=null;
+        if (clean) {
+            _store.clean();
         } else {
-            // else, just drop it off the disc here...
-            throw new UnsupportedOperationException(); // FIXME
+            Store.Putter putter = new Store.Putter() {
+                public void put(String name, Motable motable) {
+                    map.put(name, motable);
+                }
+            };
+            _store.load(putter, accessOnLoad);
         }
+        super.start();
+    }
+    
+    /**
+     * An Immoter that deals in terms of StoreMotables
+     */
+    public class ExclusiveStoreImmoter extends AbstractMappedImmoter {
+
+        public ExclusiveStoreImmoter(ConcurrentMotableMap map) {
+            super(map);
+        }
+
+        public Motable newMotable() {
+            StoreMotable motable = _store.create();
+            motable.init(_store);
+            return motable;
+        }
+
     }
 
 }

@@ -1,6 +1,5 @@
 /**
- *
- * Copyright 2003-2005 Core Developers Network Ltd.
+ * Copyright 2006 The Apache Software Foundation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,26 +13,14 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.impl;
-
-import org.codehaus.wadi.Session;
-import org.codehaus.wadi.Locker;
-import org.codehaus.wadi.Motable;
-
-import EDU.oswego.cs.dl.util.concurrent.Sync;
+package org.codehaus.wadi;
 
 /**
- * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
+ * 
+ * @version $Revision: 1538 $
  */
-public class RWLocker implements Locker {
-
-    public RWLocker() {
-        super();
-    }
-
-    public Sync getLock(String id, Motable motable) {
-        return ((Session)motable).getExclusiveLock();
-    }
-
+public interface EvictionStrategy {
+    void demote(Motable motable);
+    
+    void expire(Motable motable);
 }

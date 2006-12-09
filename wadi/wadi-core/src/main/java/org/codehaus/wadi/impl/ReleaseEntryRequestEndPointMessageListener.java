@@ -1,6 +1,5 @@
 /**
- *
- * Copyright 2003-2005 Core Developers Network Ltd.
+ * Copyright 2006 The Apache Software Foundation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,19 +13,15 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.test;
+package org.codehaus.wadi.impl;
 
-import org.codehaus.wadi.Session;
-import org.codehaus.wadi.Invocation;
-import org.codehaus.wadi.web.PoolableHttpServletRequestWrapper;
+import org.codehaus.wadi.group.Envelope;
+import org.codehaus.wadi.location.session.ReleaseEntryRequest;
 
 /**
- * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
+ * 
+ * @version $Revision: 1538 $
  */
-class MyPoolableHttpServletRequestWrapper extends MyHttpServletRequest implements PoolableHttpServletRequestWrapper {
-
-	public void init(Invocation invocation, Session context){ /* I KNOW */}
-	public void destroy(){/* I KNOW */}
-
+public interface ReleaseEntryRequestEndPointMessageListener {
+    void onReleaseEntryRequest(Envelope message, ReleaseEntryRequest request);
 }

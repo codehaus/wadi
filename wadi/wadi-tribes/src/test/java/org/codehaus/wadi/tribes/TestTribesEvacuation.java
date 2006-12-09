@@ -25,25 +25,27 @@ import org.codehaus.wadi.tribes.TribesDispatcher;
 public class TestTribesEvacuation extends AbstractTestEvacuation {
 
   public TestTribesEvacuation(String name) {
-    super(name);
-  }
+        super(name);
+    }
 
-  static class MockEndPoint implements EndPoint, Serializable {
-	  protected String uri;
-	  
-	  public MockEndPoint(String uri) {
-		  this.uri=uri;
-	  }
-	  
-	  public String toString() {
-		  return "<MockEndPoint: "+uri+">";
-	  }
-	  
-  }
-  public void testEvacuation() throws Exception {
-      String clusterName="dummy"+System.currentTimeMillis();
-	  long timeout=5000;
-      testEvacuation(new TribesDispatcher(clusterName, "red", new MockEndPoint("red"), timeout, ""), new TribesDispatcher(clusterName, "green", new MockEndPoint("green"), timeout, ""));
-  }
+    static class MockEndPoint implements EndPoint, Serializable {
+        protected String uri;
+
+        public MockEndPoint(String uri) {
+            this.uri = uri;
+        }
+
+        public String toString() {
+            return "<MockEndPoint: " + uri + ">";
+        }
+
+    }
+
+    public void testEvacuation() throws Exception {
+        String clusterName = "dummy" + System.currentTimeMillis();
+        long timeout = 5000;
+        testEvacuation(new TribesDispatcher(clusterName, "red", new MockEndPoint("red"), timeout, ""),
+                new TribesDispatcher(clusterName, "green", new MockEndPoint("green"), timeout, ""));
+    }
 
 }

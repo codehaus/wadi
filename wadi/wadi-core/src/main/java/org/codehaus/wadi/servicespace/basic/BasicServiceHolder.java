@@ -38,8 +38,8 @@ import org.codehaus.wadi.servicespace.ServiceSpace;
 public class BasicServiceHolder implements Lifecycle {
     private static final Log log = LogFactory.getLog(BasicServiceHolder.class);
     
-    private final ServiceSpace serviceSpace;
-    private final Lifecycle service;
+    protected final ServiceSpace serviceSpace;
+    protected final Lifecycle service;
     private final ServiceName serviceName;
     private volatile boolean started;
  
@@ -56,7 +56,7 @@ public class BasicServiceHolder implements Lifecycle {
         this.service = service;
     }
     
-    public synchronized void start() throws Exception {
+    public void start() throws Exception {
         multicastLifecycleEvent(LifecycleState.STARTING);
         try {
             service.start();
@@ -68,7 +68,7 @@ public class BasicServiceHolder implements Lifecycle {
         started = true;
     }
     
-    public synchronized void stop() throws Exception {
+    public void stop() throws Exception {
         started = false;
         multicastLifecycleEvent(LifecycleState.STOPPING);
         try {

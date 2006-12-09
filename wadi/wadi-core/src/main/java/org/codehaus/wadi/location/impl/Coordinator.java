@@ -56,18 +56,18 @@ public class Coordinator implements Runnable {
         partitionBalancer = newPartitionBalancer();
     }
 
-    public synchronized void start() throws Exception {
+    public void start() throws Exception {
         partitionBalancer.start();
         startCoordinatorThread();
     }
 
-    public synchronized void stop() throws Exception {
+    public void stop() throws Exception {
         _flag.put(Boolean.FALSE);
         _thread.join();
         partitionBalancer.stop();
     }
 
-    public synchronized void queueRebalancing() {
+    public synchronized void queueRebalancing() { 
         _log.info("Queueing partition rebalancing");
         try {
             _flag.offer(Boolean.TRUE, 0);
@@ -114,4 +114,5 @@ public class Coordinator implements Runnable {
         _thread = new Thread(this, "WADI Coordinator");
         _thread.start();
     }
+    
 }
