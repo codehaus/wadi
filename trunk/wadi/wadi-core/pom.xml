@@ -97,6 +97,10 @@
       <groupId>commons-primitives</groupId><!-- for axion -->
       <artifactId>commons-primitives</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-mock</artifactId>
+    </dependency>
     <!-- derby -->
     <dependency><!-- for TestGianni -->
       <groupId>org.apache.derby</groupId>

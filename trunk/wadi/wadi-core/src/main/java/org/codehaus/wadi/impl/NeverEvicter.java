@@ -30,6 +30,8 @@ public class NeverEvicter extends AbstractBestEffortEvicter {
         super(sweepInterval, strictOrdering);
     }
     
-    public boolean test(Evictable evictable, long time, long ttl) {return false;}
+    public boolean test(Evictable evictable, long time, long ttl) {
+        return false;
+    }
 
 }

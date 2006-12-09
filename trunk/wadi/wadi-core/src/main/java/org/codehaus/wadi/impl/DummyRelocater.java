@@ -20,7 +20,6 @@ import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.Relocater;
-import org.codehaus.wadi.RelocaterConfig;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
@@ -30,11 +29,7 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  */
 public class DummyRelocater implements Relocater {
 
-	public void init(RelocaterConfig config) {
-		// empty
-	}
-
-	public boolean relocate(Invocation invocation, String name, Immoter immoter, Sync motionLock) throws InvocationException {
+    public boolean relocate(Invocation invocation, String name, Immoter immoter, Sync motionLock, boolean shuttingDown) throws InvocationException {
 		return true;
 	}
 

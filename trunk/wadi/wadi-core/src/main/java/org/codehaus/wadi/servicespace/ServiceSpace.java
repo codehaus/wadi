@@ -17,6 +17,7 @@ package org.codehaus.wadi.servicespace;
 
 import java.util.Set;
 
+import org.codehaus.wadi.Lifecycle;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.LocalPeer;
 
@@ -24,7 +25,7 @@ import org.codehaus.wadi.group.LocalPeer;
  * 
  * @version $Revision: 1538 $
  */
-public interface ServiceSpace {
+public interface ServiceSpace extends Lifecycle {
     ServiceSpaceName getServiceSpaceName();
 
     LocalPeer getLocalPeer();

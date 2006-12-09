@@ -87,7 +87,7 @@ public class StatelessContextualiser extends AbstractDelegatingContextualiser {
 		HttpServletRequest hreq = context.getHreq();
 		if (hreq==null || isStateful(hreq)) {
 			// we cannot optimise...
-			return _next.contextualise(invocation, key, immoter, invocationLock, exclusiveOnly);
+			return next.contextualise(invocation, key, immoter, invocationLock, exclusiveOnly);
 		} else {
 			// we know that we can run the request locally...
 			if (invocationLock!=null) {

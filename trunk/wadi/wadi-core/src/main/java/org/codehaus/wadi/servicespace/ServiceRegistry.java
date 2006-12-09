@@ -25,7 +25,9 @@ import org.codehaus.wadi.Lifecycle;
  */
 public interface ServiceRegistry {
     void register(ServiceName name, Lifecycle service) throws ServiceAlreadyRegisteredException;
-    
+
+    SingletonServiceHolder registerSingleton(ServiceName name, Lifecycle service) throws ServiceAlreadyRegisteredException;
+
     void unregister(ServiceName name) throws ServiceNotFoundException;
     
     List getServiceNames();

@@ -16,16 +16,23 @@
  */
 package org.codehaus.wadi;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
+import org.codehaus.wadi.core.ConcurrentMotableMap;
+
 /**
  * An API for deciding whether or not to evict a given Evictable
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public interface Evicter extends Lifecycle {
-    void init(EvicterConfig config);
-    
-    void evict();
+public interface Evicter {
+    void schedule(Timer timer, TimerTask timerTask);
 
+    void cancel(TimerTask timerTask);
+    
+    void evict(ConcurrentMotableMap idToEvictable, EvictionStrategy evictionStrategy);
+    
     boolean test(Evictable evictable, long time, long ttl);
 }

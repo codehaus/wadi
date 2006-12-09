@@ -17,6 +17,7 @@
 package org.codehaus.wadi;
 
 import org.codehaus.wadi.group.EndPoint;
+import org.codehaus.wadi.web.Router;
 
 
 /**
@@ -76,7 +77,6 @@ public interface Invocation {
      */
     public void relocate(EndPoint endPoint) throws InvocationException;
     
-    
 	/**
      * Actually make the encapsulated Invocation. Called when required environment has been prepared -
      * i.e. Session has been locked into memory and attached to the Invocation via setSession().
@@ -89,4 +89,6 @@ public interface Invocation {
     void invoke(PoolableInvocationWrapper wrapper) throws InvocationException;
     
 	boolean isProxiedInvocation();
+    
+    void setRouter(Router router);
 }

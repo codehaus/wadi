@@ -22,10 +22,11 @@ import java.io.Serializable;
 import javax.servlet.http.HttpSessionActivationListener;
 import javax.servlet.http.HttpSessionEvent;
 
+import junit.framework.TestCase;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Streamer;
-import org.codehaus.wadi.StreamerConfig;
 import org.codehaus.wadi.Value;
 import org.codehaus.wadi.ValueFactory;
 import org.codehaus.wadi.ValueHelper;
@@ -35,8 +36,6 @@ import org.codehaus.wadi.impl.SimpleValuePool;
 import org.codehaus.wadi.impl.Utils;
 import org.codehaus.wadi.web.impl.DistributableValue;
 import org.codehaus.wadi.web.impl.DistributableValueFactory;
-
-import junit.framework.TestCase;
 
 /**
  * Test Attribute and Attributes classes and subclasses...
@@ -186,7 +185,6 @@ public class TestAttributes extends TestCase {
     
     public void testAttributeSerialisation(DistributableValue a, DistributableValue b, Object s) throws Exception {
         Streamer streamer=new SimpleStreamer();
-        streamer.init(new StreamerConfig(){public ClassLoader getClassLoader() {return getClass().getClassLoader();}});
         a.setValue(s);
         byte[] bytes=Utils.getContent(a, streamer);
         assertTrue(a.getValue()==s); // activation

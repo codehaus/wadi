@@ -21,6 +21,10 @@ import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.vm.VMPeer;
 import org.codehaus.wadi.replication.common.ReplicaInfo;
 
+/**
+ * 
+ * @version $Revision$
+ */
 public class MemoryReplicaStorageTest extends TestCase {
     private MemoryReplicaStorage storage;
     private Peer node1;

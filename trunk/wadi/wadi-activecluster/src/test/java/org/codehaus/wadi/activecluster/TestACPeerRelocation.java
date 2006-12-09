@@ -24,10 +24,6 @@ import org.codehaus.wadi.relocation.AbstractTestRelocation;
  */
 public class TestACPeerRelocation extends AbstractTestRelocation {
 
-    public TestACPeerRelocation(String arg0) {
-        super(arg0);
-    }
-
     public void testSessionRelocation() throws Exception {
         String clusterUri = ACTestUtil.CLUSTER_URI_PEER;
         String clusterName = ACTestUtil.CLUSTER_NAME;

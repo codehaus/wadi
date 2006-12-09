@@ -23,6 +23,7 @@ import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.PoolableInvocationWrapper;
 import org.codehaus.wadi.group.EndPoint;
+import org.codehaus.wadi.web.Router;
 
 public class DummyInvocation implements Invocation {
     
@@ -64,6 +65,10 @@ public class DummyInvocation implements Invocation {
 
     public void setSession(Session session) {
         // not used
+    }
+    
+    public void setRouter(Router router) {
+        throw new UnsupportedOperationException("NYI");
     }
     
 }

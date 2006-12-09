@@ -66,9 +66,7 @@ public class AtomicallyReplicableSession extends AbstractReplicableSession {
         super.restore(creationTime, lastAccessedTime, maxInactiveInterval, name, body);
     }
     
-    public void readEnded() {
-        // N.B. this is called from our RWLock inside an implicit exclusive lock, so we should not need to worry
-        // about synchronisation.
+    public void onEndProcessing() {
         if (newSession) {
             _replicater.create(this);
             newSession = false;

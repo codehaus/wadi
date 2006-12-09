@@ -24,6 +24,7 @@ import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.Manager;
 import org.codehaus.wadi.PoolableInvocationWrapper;
 import org.codehaus.wadi.group.EndPoint;
+import org.codehaus.wadi.web.Router;
 import org.codehaus.wadi.web.impl.StatefulHttpServletRequestWrapper;
 import EDU.oswego.cs.dl.util.concurrent.Rendezvous;
 
@@ -148,6 +149,10 @@ public class Axis2Invocation implements Invocation, Runnable {
     
     public boolean isProxiedInvocation() {
         return false;
+    }
+    
+    public void setRouter(Router router) {
+        throw new UnsupportedOperationException("NYI");
     }
 
 }

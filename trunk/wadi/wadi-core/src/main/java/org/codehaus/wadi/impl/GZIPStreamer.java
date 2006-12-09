@@ -27,7 +27,6 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import org.codehaus.wadi.Streamer;
-import org.codehaus.wadi.StreamerConfig;
 
 /**
  * Pluggable support for [un]GZIP-ing sessions as they are exchanged with
@@ -38,14 +37,17 @@ import org.codehaus.wadi.StreamerConfig;
  */
 public class GZIPStreamer implements Streamer {
 	
-	protected StreamerConfig _config;
-	
-	public void init(StreamerConfig config) {
-		_config=config;
-	}
-	
+    private final ClassLoader classLoader;
+    
+	public GZIPStreamer(ClassLoader classLoader) {
+        if (null == classLoader) {
+            throw new IllegalArgumentException("classloader is required");
+        }
+        this.classLoader = classLoader;
+    }
+
 	public ObjectInput getInputStream(InputStream is) throws IOException {
-		return new ObjectInputStream(new GZIPInputStream(is), _config.getClassLoader());
+		return new ObjectInputStream(new GZIPInputStream(is), classLoader);
 	}
 	
 	public ObjectOutput getOutputStream(OutputStream os) throws IOException {

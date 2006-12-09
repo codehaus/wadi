@@ -17,6 +17,8 @@
 package org.codehaus.wadi.impl;
 
 import org.codehaus.wadi.Evictable;
+import org.codehaus.wadi.EvictionStrategy;
+import org.codehaus.wadi.core.ConcurrentMotableMap;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -24,9 +26,13 @@ import org.codehaus.wadi.Evictable;
  */
 public class DummyEvicter extends AbstractEvicter {
 
-    public void evict() {
+    public DummyEvicter() {
+        super(10);
     }
 
+    public void evict(ConcurrentMotableMap idToMotable, EvictionStrategy evictionStrategy) {
+    }
+    
     public boolean test(Evictable evictable, long time, long ttl) {
         return false;
     }

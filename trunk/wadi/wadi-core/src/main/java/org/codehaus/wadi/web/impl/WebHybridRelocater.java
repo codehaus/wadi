@@ -18,14 +18,16 @@ package org.codehaus.wadi.web.impl;
 
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.impl.HybridRelocater;
+import org.codehaus.wadi.location.PartitionManager;
+import org.codehaus.wadi.servicespace.ServiceSpace;
 
 /**
  * @version $Revision: 1737 $
  */
 public class WebHybridRelocater extends HybridRelocater {
 	
-	public WebHybridRelocater(long resTimeout, long ackTimeout, boolean sessionOrRequestPreferred) {
-		super(resTimeout, ackTimeout, sessionOrRequestPreferred);
+	public WebHybridRelocater(ServiceSpace serviceSpace, PartitionManager partitionManager, long resTimeout) {
+		super(serviceSpace, partitionManager, resTimeout);
 	}
 	
 	protected Invocation newRelocationinvocation() {

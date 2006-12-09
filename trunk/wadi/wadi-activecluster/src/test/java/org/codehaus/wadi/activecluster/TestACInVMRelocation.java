@@ -24,10 +24,6 @@ import org.codehaus.wadi.relocation.AbstractTestRelocation;
  */
 public class TestACInVMRelocation extends AbstractTestRelocation {
 
-	public TestACInVMRelocation(String arg0) {
-        super(arg0);
-    }
-
     public void testSessionRelocation() throws Exception {
         String clusterName = ACTestUtil.CLUSTER_NAME;
         long timeout = ACTestUtil.CLUSTER_INACTIVE_TIME;

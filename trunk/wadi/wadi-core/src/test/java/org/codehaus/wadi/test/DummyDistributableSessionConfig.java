@@ -24,7 +24,6 @@ import javax.servlet.http.HttpSessionListener;
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.SessionIdFactory;
 import org.codehaus.wadi.Streamer;
-import org.codehaus.wadi.StreamerConfig;
 import org.codehaus.wadi.ValueHelper;
 import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.impl.SimpleStreamer;
@@ -46,14 +45,19 @@ import org.codehaus.wadi.web.impl.StandardSessionWrapperFactory;
  */
 public class DummyDistributableSessionConfig implements DistributableSessionConfig {
 
-    protected final Streamer _streamer=new SimpleStreamer();
+    private final Streamer _streamer = new SimpleStreamer();
+    private final ValuePool _valuePool = new SimpleValuePool(new DistributableValueFactory());
+    private final AttributesFactory _attributesFactory = new DistributableAttributesFactory();
+    private final WebSessionWrapperFactory _sessionWrapperFactory = new StandardSessionWrapperFactory();
+    private final SessionIdFactory _sessionIdFactory = new TomcatSessionIdFactory();
+    private final int _maxInactiveInterval = 30 * 60;
+    private final Router _router = new DummyRouter();
 
     public DummyDistributableSessionConfig() {
-    	_streamer.init(new StreamerConfig(){public ClassLoader getClassLoader() {return getClass().getClassLoader();}});
     }
 
     public Streamer getStreamer() {
-    	return _streamer;
+        return _streamer;
     }
 
     public ValueHelper findHelper(Class type) {
@@ -64,14 +68,21 @@ public class DummyDistributableSessionConfig implements DistributableSessionConf
         return false;
     }
 
-    protected final ValuePool _valuePool=new SimpleValuePool(new DistributableValueFactory());
-    public ValuePool getValuePool() {return _valuePool;}
+    public ValuePool getValuePool() {
+        return _valuePool;
+    }
 
-    protected final AttributesFactory _attributesFactory=new DistributableAttributesFactory();
-    public AttributesFactory getAttributesFactory() {return _attributesFactory;}
+    public AttributesFactory getAttributesFactory() {
+        return _attributesFactory;
+    }
 
-    public HttpSessionListener[] getSessionListeners() {return new HttpSessionListener[0];}
-    public HttpSessionAttributeListener[] getAttributeListeners() {return new HttpSessionAttributeListener[0];}
+    public HttpSessionListener[] getSessionListeners() {
+        return new HttpSessionListener[0];
+    }
+
+    public HttpSessionAttributeListener[] getAttributeListeners() {
+        return new HttpSessionAttributeListener[0];
+    }
 
     public ServletContext getServletContext() {
         throw new UnsupportedOperationException();
@@ -81,16 +92,21 @@ public class DummyDistributableSessionConfig implements DistributableSessionConf
         throw new UnsupportedOperationException();
     }
 
-    protected final WebSessionWrapperFactory _sessionWrapperFactory=new StandardSessionWrapperFactory();
-    public WebSessionWrapperFactory getSessionWrapperFactory() {return _sessionWrapperFactory;}
 
-    protected final SessionIdFactory _sessionIdFactory=new TomcatSessionIdFactory();
-    public SessionIdFactory getSessionIdFactory() {return _sessionIdFactory;}
+    public WebSessionWrapperFactory getSessionWrapperFactory() {
+        return _sessionWrapperFactory;
+    }
 
-    protected final int _maxInactiveInterval=30*60;
-    public int getMaxInactiveInterval() {return _maxInactiveInterval;}
+    public SessionIdFactory getSessionIdFactory() {
+        return _sessionIdFactory;
+    }
 
-    protected final Router _router=new DummyRouter();
-    public Router getRouter() {return _router;}
+    public int getMaxInactiveInterval() {
+        return _maxInactiveInterval;
+    }
+
+    public Router getRouter() {
+        return _router;
+    }
 
 }

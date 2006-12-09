@@ -17,7 +17,6 @@
 package org.codehaus.wadi.jetty5;
 
 import java.io.IOException;
-import java.util.Map;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -31,14 +30,13 @@ import org.apache.commons.httpclient.HttpState;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.InvocationProxy;
 import org.codehaus.wadi.Relocater;
+import org.codehaus.wadi.core.ConcurrentMotableMap;
 import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.impl.AbstractRelocater;
 import org.codehaus.wadi.test.MyContext;
 import org.codehaus.wadi.web.impl.CommonsHttpProxy;
 import org.codehaus.wadi.web.impl.StandardHttpProxy;
@@ -71,34 +69,26 @@ public abstract class AbstractTestRelocation extends TestCase {
 	protected SwitchableRelocater _relocater0;
 	protected SwitchableRelocater _relocater1;
 	
-	class SwitchableRelocater extends AbstractRelocater {
-		protected Relocater _delegate=new DummyRelocater();
+	class SwitchableRelocater implements Relocater {
+		protected Relocater _delegate = new DummyRelocater();
 		
 		public void setRelocationStrategy(Relocater delegate){
 			_delegate=delegate;
-			_delegate.init(_config);
 		}
 		
-		// Relocater
-		public boolean relocate(Invocation invocation, String name, Immoter immoter, Sync motionLock) throws InvocationException {
-			return _delegate.relocate(invocation, name, immoter, motionLock);
+        public boolean relocate(Invocation invocation, String name, Immoter immoter, Sync motionLock, boolean shuttingDown) throws InvocationException {
+			return _delegate.relocate(invocation, name, immoter, motionLock, shuttingDown);
 		}
-		
 	}
 	
-	class DummyRelocater extends AbstractRelocater {
-		public boolean relocate(Invocation invocation, String name, Immoter immoter, Sync motionLock) throws InvocationException {
+	class DummyRelocater implements Relocater {
+        public boolean relocate(Invocation invocation, String name, Immoter immoter, Sync motionLock, boolean shuttingDown) throws InvocationException {
 			return false;
 		}
-		protected Contextualiser _top;
-		public void setTop(Contextualiser top) {_top=top;}
-		public Contextualiser getTop(){return _top;}
 	}
 	
 	protected abstract Dispatcher createDispatcher(String clusterName, String nodeName, long timeout) throws Exception;
-	/*
-	 * @see TestCase#setUp()
-	 */
+
 	protected void setUp() throws Exception {
 		super.setUp();
 		//ConnectionFactory connectionFactory = Utils.getConnectionFactory();
@@ -149,15 +139,12 @@ public abstract class AbstractTestRelocation extends TestCase {
 	}
 	
 	public void testProxyInsecureRelocation() throws Exception {
-		_relocater0.setRelocationStrategy(new WebHybridRelocater(2000, 3000, true));
-		_relocater1.setRelocationStrategy(new WebHybridRelocater(2000, 3000, true));
+        setUpRelocaters();
 		testInsecureRelocation(false);
 	}
 	
 	public void testMigrateInsecureRelocation() throws Exception {
-		//Collapser collapser=new HashingCollapser(10, 2000);
-		_relocater0.setRelocationStrategy(new WebHybridRelocater(2000, 500, true));
-		_relocater1.setRelocationStrategy(new WebHybridRelocater(2000, 500, true));
+		setUpRelocaters();
 		testInsecureRelocation(true);
 	}
 	
@@ -166,15 +153,11 @@ public abstract class AbstractTestRelocation extends TestCase {
 		HttpMethod method0=new GetMethod("http://localhost:8080");
 		HttpMethod method1=new GetMethod("http://localhost:8081");
 		
-		Map m0=_servlet0.getMemoryMap();
-		Map m1=_servlet1.getMemoryMap();
-		Map c0=_servlet0.getClusterMap();
-		Map c1=_servlet1.getClusterMap();
+		ConcurrentMotableMap m0=_servlet0.getStackContext().getMemoryMap();
+        ConcurrentMotableMap m1=_servlet1.getStackContext().getMemoryMap();
 		
 		assertTrue(m0.isEmpty());
 		assertTrue(m1.isEmpty());
-		assertTrue(c0.isEmpty());
-		assertTrue(c1.isEmpty());
 		
 		// no sessions available locally
 		_filter0.setExclusiveOnly(true);
@@ -186,16 +169,12 @@ public abstract class AbstractTestRelocation extends TestCase {
 		
 		assertTrue(m0.isEmpty());
 		assertTrue(m1.isEmpty());
-		assertTrue(c0.isEmpty());
-		assertTrue(c1.isEmpty());
 		
 		m0.put("foo", new MyContext("foo", "1"));
 		m1.put("bar", new MyContext("bar", "2"));
 		
 		assertTrue(m0.size()==1);
 		assertTrue(m1.size()==1);
-		assertTrue(c0.isEmpty());
-		assertTrue(c1.isEmpty());
 		
 		// 2/4 sessions available locally
 		_filter0.setExclusiveOnly(true);
@@ -209,8 +188,6 @@ public abstract class AbstractTestRelocation extends TestCase {
 		
 		assertTrue(m0.size()==1);
 		assertTrue(m1.size()==1);
-		assertTrue(c0.isEmpty());
-		assertTrue(c1.isEmpty());
 		
 		// 4/4 sessions available locally|remotely
 		_filter0.setExclusiveOnly(false);
@@ -221,13 +198,9 @@ public abstract class AbstractTestRelocation extends TestCase {
 			assertTrue(m0.size()==2);
 			Thread.sleep(1000); // can take a while for ACK to be processed
 			assertTrue(m1.size()==0);
-			assertTrue(c0.size()==0); // n0 has all the sessions, so needn't remember any further locations...
-			assertTrue(c1.size()==1); // bar migrated from n1 to n0, so n1 needs to remember the new location...
 		} else {
 			assertTrue(m0.size()==1);
 			assertTrue(m1.size()==1);
-			assertTrue(c0.size()==1); // n0 had to proxy a request to n1, so needs to remember the location
-			assertTrue(c1.size()==0);
 		}
 		
 		_filter1.setExclusiveOnly(false);
@@ -238,19 +211,13 @@ public abstract class AbstractTestRelocation extends TestCase {
 			assertTrue(m1.size()==2);
 			Thread.sleep(1000); // can take a while for ACK to be processed
 			assertTrue(m0.size()==0);
-			assertTrue(c0.size()==2); // n0 should now know that both sessions are on n1
 			if (_log.isInfoEnabled()) {
 				_log.info("M0="+m0);
 				_log.info("M1="+m1);
-				_log.info("C0="+c0);
-				_log.info("C1="+c1);
 			}
-			assertTrue(c1.size()==0); // n1 has all the sessions and doesn't need to know anything...
 		} else {
 			assertTrue(m0.size()==1);
 			assertTrue(m1.size()==1);
-			assertTrue(c0.size()==1); // location from clusterwide query has been cached
-			assertTrue(c1.size()==1); // location from clusterwide query has been cached
 		}
 		
 		// ensure that cached locations work second time around...
@@ -262,13 +229,9 @@ public abstract class AbstractTestRelocation extends TestCase {
 			assertTrue(m0.size()==2);
 			Thread.sleep(1000); // can take a while for ACK to be processed
 			assertTrue(m1.size()==0);
-			assertTrue(c0.size()==0); // n1 had all the sessions, now n0 has
-			assertTrue(c1.size()==2); // n1 needs to know all their new locations
 		} else {
 			assertTrue(m0.size()==1);
 			assertTrue(m1.size()==1);
-			assertTrue(c0.size()==1); // no change - everyone already knows
-			assertTrue(c1.size()==1); // all locations...
 		}
 		
 		_filter1.setExclusiveOnly(false);
@@ -279,26 +242,19 @@ public abstract class AbstractTestRelocation extends TestCase {
 			assertTrue(m1.size()==2);
 			Thread.sleep(1000); // can take a while for ACK to be processed
 			assertTrue(m0.size()==0);
-			assertTrue(c0.size()==2); // n0 needs to know all their new locations
-			assertTrue(c1.size()==0); // n0 had all the sessions, now n1 has
 		} else {
 			assertTrue(m0.size()==1);
 			assertTrue(m1.size()==1);
-			assertTrue(c0.size()==1);
-			assertTrue(c1.size()==1);
 		}
 	}
 	
 	public void testProxySecureRelocation() throws Exception {
-		_relocater0.setRelocationStrategy(new WebHybridRelocater(2000, 3000, true));
-		_relocater1.setRelocationStrategy(new WebHybridRelocater(2000, 3000, true));
+		setUpRelocaters();
 		testSecureRelocation(false);
 	}
-	
+
 	public void testMigrateSecureRelocation() throws Exception {
-		//Collapser collapser=new HashingCollapser(10, 2000);
-		_relocater0.setRelocationStrategy(new WebHybridRelocater(2000, 500, true));
-		_relocater1.setRelocationStrategy(new WebHybridRelocater(2000, 500, true));
+		setUpRelocaters();
 		testSecureRelocation(true);
 	}
 	
@@ -307,23 +263,17 @@ public abstract class AbstractTestRelocation extends TestCase {
 		HttpMethod method0=new GetMethod("http://localhost:8080");
 		HttpMethod method1=new GetMethod("http://localhost:8081");
 		
-		Map m0=_servlet0.getMemoryMap();
-		Map m1=_servlet1.getMemoryMap();
-		Map c0=_servlet0.getClusterMap();
-		Map c1=_servlet1.getClusterMap();
+		ConcurrentMotableMap m0=_servlet0.getStackContext().getMemoryMap();
+        ConcurrentMotableMap m1=_servlet1.getStackContext().getMemoryMap();
 		
 		assertTrue(m0.isEmpty());
 		assertTrue(m1.isEmpty());
-		assertTrue(c0.isEmpty());
-		assertTrue(c1.isEmpty());
 		
 		m0.put("foo", new MyContext("foo", "1"));
 		m1.put("bar", new MyContext("bar", "2"));
 		
 		assertTrue(m0.size()==1);
 		assertTrue(m1.size()==1);
-		assertTrue(c0.isEmpty());
-		assertTrue(c1.isEmpty());
 		
 		assertTrue(!_node0.getSecure());
 		// won't run locally
@@ -376,15 +326,12 @@ public abstract class AbstractTestRelocation extends TestCase {
 	}
 	
 	public void testRelocationStatelessContextualiser() throws Exception {
-		_relocater0.setRelocationStrategy(new WebHybridRelocater(2000, 3000, true));
-		_relocater1.setRelocationStrategy(new WebHybridRelocater(2000, 3000, true));
+		setUpRelocaters();
 		testStatelessContextualiser(false);
 	}
 	
 	public void testMigrateStatelessContextualiser() throws Exception {
-		//Collapser collapser=new HashingCollapser(10, 2000);
-		_relocater0.setRelocationStrategy(new WebHybridRelocater(2000, 500, true));
-		_relocater1.setRelocationStrategy(new WebHybridRelocater(2000, 500, true));
+		setUpRelocaters();
 		testStatelessContextualiser(true);
 	}
 	
@@ -394,8 +341,8 @@ public abstract class AbstractTestRelocation extends TestCase {
 		HttpMethod method0=new GetMethod("http://localhost:8080");
 		HttpMethod method1=new GetMethod("http://localhost:8081");
 		
-		Map m0=_servlet0.getMemoryMap();
-		Map m1=_servlet1.getMemoryMap();
+		ConcurrentMotableMap m0=_servlet0.getStackContext().getMemoryMap();
+        ConcurrentMotableMap m1=_servlet1.getStackContext().getMemoryMap();
 		
 		m0.put("foo", new MyContext("foo", "1"));
 		m1.put("bar", new MyContext("bar", "2"));
@@ -435,4 +382,15 @@ public abstract class AbstractTestRelocation extends TestCase {
 		servlet.setTest(null);
 	}
 	
+    private void setUpRelocaters() {
+        _relocater0.setRelocationStrategy(new WebHybridRelocater(
+                _servlet0.getStackContext().getServiceSpace(),
+                _servlet0.getStackContext().getPartitionManager(),
+                2000));
+        _relocater1.setRelocationStrategy(new WebHybridRelocater(
+                _servlet1.getStackContext().getServiceSpace(),
+                _servlet1.getStackContext().getPartitionManager(),
+                2000));
+    }
+
 }

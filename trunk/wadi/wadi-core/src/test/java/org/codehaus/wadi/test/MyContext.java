@@ -23,7 +23,6 @@ import java.io.ObjectOutput;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Streamer;
-import org.codehaus.wadi.StreamerConfig;
 import org.codehaus.wadi.impl.AbstractSession;
 import org.codehaus.wadi.impl.SimpleStreamer;
 import org.codehaus.wadi.impl.Utils;
@@ -32,40 +31,32 @@ import org.codehaus.wadi.impl.Utils;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class MyContext extends AbstractSession implements StreamerConfig {
-  
-  protected static Log _log = LogFactory.getLog(MyContext.class);
-  protected String _val;
-  protected Streamer _streamer=new SimpleStreamer();
-  
-  public MyContext(String id, String val) {
-    //this();
-    _name=id;
-    _val=val;
-    _streamer.init(this);
-  }
-  
-  public MyContext() {
-    //_lock=new RWLock();
-    _streamer.init(this);
-  }
-  
-  public void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
-    _name=(String)oi.readObject();
-    _val=(String)oi.readObject();
-  }
-  
-  public void writeContent(ObjectOutput oo) throws IOException {
-    oo.writeObject(_name);
-    oo.writeObject(_val);
-  }
-  
-  public void setBodyAsByteArray(byte[] bytes) throws IOException, ClassNotFoundException {
-    Utils.setContent(this, bytes, _streamer);
-  }
-  
-  public ClassLoader getClassLoader() {
-    return getClass().getClassLoader();
-  }
-  
+public class MyContext extends AbstractSession {
+    protected static Log _log = LogFactory.getLog(MyContext.class);
+
+    protected String _val;
+    protected Streamer _streamer = new SimpleStreamer();
+
+    public MyContext(String id, String val) {
+        _name = id;
+        _val = val;
+    }
+
+    public MyContext() {
+    }
+
+    public void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
+        _name = (String) oi.readObject();
+        _val = (String) oi.readObject();
+    }
+
+    public void writeContent(ObjectOutput oo) throws IOException {
+        oo.writeObject(_name);
+        oo.writeObject(_val);
+    }
+
+    public void setBodyAsByteArray(byte[] bytes) throws IOException, ClassNotFoundException {
+        Utils.setContent(this, bytes, _streamer);
+    }
+
 }
