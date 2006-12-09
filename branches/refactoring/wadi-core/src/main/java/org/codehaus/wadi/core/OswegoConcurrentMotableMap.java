@@ -22,19 +22,33 @@ import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.impl.WADIRuntimeException;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
+import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
  * 
  * @version $Revision: 1538 $
  */
-public class OswegoConcurrentSessionMap implements ConcurrentMotableMap {
+public class OswegoConcurrentMotableMap implements ConcurrentMotableMap {
     private final ConcurrentHashMap delegate = new ConcurrentHashMap();
 
     public Motable acquire(String id) {
         Motable motable = (Motable) delegate.get(id);
         if (null != motable) {
             try {
-                motable.getLock().acquire();
+                getSharedLock(motable).acquire();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new WADIRuntimeException(e);
+            }
+        }
+        return motable;
+    }
+    
+    public Motable acquireExclusive(String id) {
+        Motable motable = (Motable) delegate.get(id);
+        if (null != motable) {
+            try {
+                getExclusiveLock(motable).acquire();
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 throw new WADIRuntimeException(e);
@@ -63,9 +77,13 @@ public class OswegoConcurrentSessionMap implements ConcurrentMotableMap {
     }
 
     public void release(Motable motable) {
-        motable.getLock().release();
+        getSharedLock(motable).release();
     }
 
+    public void releaseExclusive(Motable motable) {
+        getExclusiveLock(motable).release();
+    }
+    
     public void releaseAll() {
     }
 
@@ -77,4 +95,12 @@ public class OswegoConcurrentSessionMap implements ConcurrentMotableMap {
         return delegate.size();
     }
     
+    protected Sync getSharedLock(Motable motable) {
+        return motable.getReadWriteLock().readLock();
+    }
+
+    protected Sync getExclusiveLock(Motable motable) {
+        return motable.getReadWriteLock().writeLock();
+    }
+
 }

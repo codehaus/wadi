@@ -45,7 +45,7 @@ public class ReplicaAwareContextualiser extends AbstractSharedContextualiser {
         return next.getSharedDemoter();
     }
     
-    public Motable acquire(String id) {
+    protected Motable acquire(String id, boolean exclusiveOnly) {
         Object object;
         try {
             object = replicationManager.acquirePrimary(id);
@@ -55,7 +55,7 @@ public class ReplicaAwareContextualiser extends AbstractSharedContextualiser {
         return (Motable) object;
     }
 
-    protected void release(Motable motable) {
+    protected void release(Motable motable, boolean exclusiveOnly) {
     }
     
     public void load(Emoter emoter, Immoter immoter) {

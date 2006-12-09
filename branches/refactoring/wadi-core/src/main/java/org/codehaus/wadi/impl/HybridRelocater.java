@@ -105,6 +105,7 @@ public class HybridRelocater implements Relocater {
                 return null;
             } else {
                 Emoter emoter = new SMToIMEmoter(message);
+                immoter = new SMToIMImmoter(immoter, emotable);
                 Motable immotable = Utils.mote(emoter, immoter, emotable, sessionName);
                 return immotable;
             }
@@ -124,8 +125,42 @@ public class HybridRelocater implements Relocater {
         }
     }
 
+    class SMToIMImmoter implements Immoter {
+        protected final Log _log = LogFactory.getLog(SMToIMImmoter.class);
+        private final Immoter delegate;
+        private final Motable emotable;
+        
+        public SMToIMImmoter(Immoter delegate, Motable emotable) {
+            this.delegate = delegate;
+            this.emotable = emotable;
+        }
+
+        public boolean contextualise(Invocation invocation, String id, Motable immotable, Sync motionLock) throws InvocationException {
+            return delegate.contextualise(invocation, id, immotable, motionLock);
+        }
+
+        public boolean immote(Motable emotable, Motable immotable) {
+            return delegate.immote(emotable, immotable);
+        }
+
+        public Motable newMotable() {
+            Motable immotable = delegate.newMotable();
+            try {
+                immotable.rehydrate(emotable.getCreationTime(),
+                        emotable.getLastAccessedTime(),
+                        emotable.getMaxInactiveInterval(),
+                        emotable.getName(),
+                        emotable.getBodyAsByteArray());
+            } catch (Exception e) {
+                throw new WADIRuntimeException(e);
+            }
+            return immotable;
+        }
+        
+    }
+    
     class SMToIMEmoter extends AbstractChainedEmoter {
-        protected final Log _log = LogFactory.getLog(getClass());
+        protected final Log _log = LogFactory.getLog(SMToIMEmoter.class);
         protected final Envelope _message;
         protected Sync _invocationLock;
         protected Sync _stateLock;
@@ -136,14 +171,8 @@ public class HybridRelocater implements Relocater {
 
         public boolean emote(Motable emotable, Motable immotable) {
             try {
-                immotable.rehydrate(emotable.getCreationTime(),
-                        emotable.getLastAccessedTime(),
-                        emotable.getMaxInactiveInterval(),
-                        emotable.getName(),
-                        emotable.getBodyAsByteArray());
                 MoveIMToSM response = new MoveIMToSM(true);
                 dispatcher.reply(_message, response);
-                emotable.destroy();
             } catch (Exception e) {
                 _log.warn(e);
                 return false;

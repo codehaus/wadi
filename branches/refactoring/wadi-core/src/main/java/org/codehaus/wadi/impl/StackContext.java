@@ -23,7 +23,7 @@ import org.codehaus.wadi.PartitionMapper;
 import org.codehaus.wadi.PoolableInvocationWrapperPool;
 import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.core.ConcurrentMotableMap;
-import org.codehaus.wadi.core.OswegoConcurrentSessionMap;
+import org.codehaus.wadi.core.OswegoConcurrentMotableMap;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.location.PartitionManager;
 import org.codehaus.wadi.location.StateManager;
@@ -124,11 +124,11 @@ public class StackContext {
         Contextualiser contextualiser = newReplicaAwareContextualiser(new DummyContextualiser());
         
         contextualiser = newClusteredContextualiser(contextualiser);
-        
-        memoryMap = new OswegoConcurrentSessionMap();
-        contextualiser = newMemoryContextualiser(contextualiser, memoryMap);
 
-        contextualiser = newCollapserContextualiser(contextualiser);
+        memoryMap = new OswegoConcurrentMotableMap();
+        contextualiser = newCollapserContextualiser(contextualiser, memoryMap);
+        
+        contextualiser = newMemoryContextualiser(contextualiser, memoryMap);
 
         manager = new ClusteredManager(stateManager,
                         partitionManager,
@@ -232,8 +232,8 @@ public class StackContext {
         return replicationManager;
     }
     
-    protected Contextualiser newCollapserContextualiser(Contextualiser contextualiser) {
-        return new SerialContextualiserFrontingMemory(contextualiser, new HashingCollapser(1024, 2000));
+    protected Contextualiser newCollapserContextualiser(Contextualiser contextualiser, ConcurrentMotableMap mmap) {
+        return new SerialContextualiser(contextualiser, new HashingCollapser(1024, 2000), mmap);
     }
     
     protected Contextualiser newMemoryContextualiser(Contextualiser next, ConcurrentMotableMap mmap) {
@@ -282,10 +282,6 @@ public class StackContext {
 
     public ClusteredManager getManager() {
         return manager;
-    }
-
-    public void setManager(ClusteredManager manager) {
-        this.manager = manager;
     }
 
     public ConcurrentMotableMap getMemoryMap() {

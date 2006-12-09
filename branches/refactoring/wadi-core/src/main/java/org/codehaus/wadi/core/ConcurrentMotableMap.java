@@ -31,7 +31,11 @@ public interface ConcurrentMotableMap {
 
     Motable acquire(String id);
 
+    Motable acquireExclusive(String id);
+
     void release(Motable motable);
+
+    void releaseExclusive(Motable motable);
 
     int size();
 

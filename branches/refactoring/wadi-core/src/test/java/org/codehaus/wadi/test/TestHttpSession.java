@@ -44,7 +44,7 @@ import org.codehaus.wadi.ValueFactory;
 import org.codehaus.wadi.ValueHelper;
 import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.core.ConcurrentMotableMap;
-import org.codehaus.wadi.core.OswegoConcurrentSessionMap;
+import org.codehaus.wadi.core.OswegoConcurrentMotableMap;
 import org.codehaus.wadi.impl.ClusteredManager;
 import org.codehaus.wadi.impl.DummyContextualiser;
 import org.codehaus.wadi.impl.DummyManagerConfig;
@@ -79,7 +79,7 @@ public class TestHttpSession extends TestCase {
     protected final String _clusterName = "WADI.TEST";
     protected Listener _listener;
     protected List _events = new ArrayList();
-    protected ConcurrentMotableMap _sessionMap = new OswegoConcurrentSessionMap();
+    protected ConcurrentMotableMap _sessionMap = new OswegoConcurrentMotableMap();
     protected boolean _accessOnLoad = true;
     protected Router _router = new DummyRouter();
 

@@ -66,7 +66,7 @@ public class MemoryReplicaStorage implements ReplicaStorage {
                 throw new ReplicaKeyNotFoundException(key);
             }
             if (currentReplicaInfo.getVersion() > replicaInfo.getVersion()) {
-                throw new ReplicaKeyAlreadyExistsException(key);
+                return;
             }
             keyToReplica.put(key, replicaInfo);
         }

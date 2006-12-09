@@ -48,7 +48,7 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
     private final Timer timer;
     private TimerTask evictionTask;
 
-    public AbstractExclusiveContextualiser(Contextualiser next, final Evicter evicter, final ConcurrentMotableMap map) {
+    public AbstractExclusiveContextualiser(Contextualiser next, Evicter evicter, ConcurrentMotableMap map) {
         super(next);
         if (null == map) {
             throw new IllegalArgumentException("map is required");
@@ -65,17 +65,28 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
         return true;
     }
     
-    public Motable acquire(String id) {
-        return map.acquire(id);
+    public Motable acquire(String id, boolean exclusiveOnly) {
+        if (exclusiveOnly) {
+            return map.acquireExclusive(id);
+        } else {
+            return map.acquire(id);
+        }
     }
 
-    protected void release(Motable motable) {
-        map.release(motable);
+    protected void release(Motable motable, boolean exclusiveOnly) {
+        if (exclusiveOnly) {
+            map.releaseExclusive(motable);
+        } else {
+            map.release(motable);
+        }
     }
     
-    public final boolean handle(Invocation invocation, String id, Immoter immoter, Sync motionLock)
-            throws InvocationException {
-        Motable emotable = acquire(id);
+    public final boolean handle(Invocation invocation,
+            String id,
+            Immoter immoter,
+            Sync motionLock,
+            boolean exclusiveOnly) throws InvocationException {
+        Motable emotable = acquire(id, exclusiveOnly);
         if (emotable == null) {
             return false;
         }
@@ -86,7 +97,7 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
                 return handleLocally(invocation, id, motionLock, emotable);
             }
         } finally {
-            release(emotable);
+            release(emotable, exclusiveOnly);
         }
     }
 

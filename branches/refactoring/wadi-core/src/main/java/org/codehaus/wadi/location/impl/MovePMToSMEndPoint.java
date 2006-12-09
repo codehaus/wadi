@@ -1,6 +1,5 @@
 /**
- *
- * Copyright 2003-2005 Core Developers Network Ltd.
+ * Copyright 2006 The Apache Software Foundation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -40,6 +39,10 @@ import org.codehaus.wadi.servicespace.ServiceSpace;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
+/**
+ * 
+ * @version $Revision: 1538 $
+ */
 public class MovePMToSMEndPoint implements Lifecycle, MovePMToSMEndPointMessageListener {
     public static final ServiceName NAME = new ServiceName("MovePMToSMEndPoint");
     
@@ -73,11 +76,11 @@ public class MovePMToSMEndPoint implements Lifecycle, MovePMToSMEndPointMessageL
         endpointBuilder.dispose(10, 500);
     }
 
-    public void onMessage(Envelope message1, MovePMToSM request) {
+    public void onMessage(Envelope message, MovePMToSM request) {
         Object key = request.getKey();
         try {
             Peer imPeer = request.getIMPeer();
-            RelocationImmoter promoter = new RelocationImmoter(message1, request);
+            RelocationImmoter promoter = new RelocationImmoter(message, request);
             // if we own session, this will send the correct response...
             contextualiser.contextualise(null, (String) key, promoter, null, true);
             if (!promoter.isFound()) {
@@ -90,7 +93,7 @@ public class MovePMToSMEndPoint implements Lifecycle, MovePMToSMEndPointMessageL
                 log.info("received: " + ignore);
                 // StateMaster replies to PartitionMaster indicating failure...
                 log.info("reporting failure to PM");
-                dispatcher.reply(message1, new MoveSMToPM(false));
+                dispatcher.reply(message, new MoveSMToPM(false));
             }
         } catch (Exception e) {
             log.warn("problem handling relocation request: " + key, e);
@@ -171,14 +174,6 @@ public class MovePMToSMEndPoint implements Lifecycle, MovePMToSMEndPointMessageL
                 assert (response != null && response.getSuccess()); 
                 dispatcher.reply(message, new MoveSMToPM(true));
             }
-        }
-
-        public void demote() {
-            throw new UnsupportedOperationException();
-        }
-
-        public void expire() {
-            throw new UnsupportedOperationException();
         }
 
     }

@@ -95,7 +95,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser {
         }
     }
 
-    public boolean handle(Invocation invocation, String id, Immoter immoter, Sync motionLock)
+    public boolean handle(Invocation invocation, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly)
             throws InvocationException {
         return relocater.relocate(invocation, id, immoter, motionLock, shuttingDown.get());
     }
@@ -103,11 +103,11 @@ public class ClusterContextualiser extends AbstractSharedContextualiser {
     public void load(Emoter emoter, Immoter immoter) {
     }
 
-    public Motable acquire(String name) {
+    protected Motable acquire(String id, boolean exclusiveOnly) {
         throw new UnsupportedOperationException();
     }
-    
-    protected void release(Motable motable) {
+
+    protected void release(Motable motable, boolean exclusiveOnly) {
         throw new UnsupportedOperationException();
     }
     

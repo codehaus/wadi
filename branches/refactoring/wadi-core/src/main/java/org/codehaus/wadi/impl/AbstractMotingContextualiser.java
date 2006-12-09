@@ -38,7 +38,7 @@ public abstract class AbstractMotingContextualiser extends AbstractChainedContex
 	}
 	
 	public boolean contextualise(Invocation invocation, String key, Immoter immoter, Sync invocationLock, boolean exclusiveOnly) throws InvocationException {
-        boolean handled = handle(invocation, key, immoter, invocationLock);
+        boolean handled = handle(invocation, key, immoter, invocationLock, exclusiveOnly);
         if (handled) {
             return true;
         } else if (exclusiveOnly && !next.isExclusive()) {
@@ -80,18 +80,18 @@ public abstract class AbstractMotingContextualiser extends AbstractChainedContex
         return immoter; 
     }
 
-	protected abstract Motable acquire(String id);
+    protected abstract Motable acquire(String id, boolean exclusiveOnly);
 
-    protected abstract void release(Motable motable);
+    protected abstract void release(Motable motable, boolean exclusiveOnly);
 	
-    protected boolean handle(Invocation invocation, String id, Immoter immoter, Sync motionLock) throws InvocationException {
+    protected boolean handle(Invocation invocation, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws InvocationException {
 		if (null != immoter) {
-            Motable emotable = acquire(id);
+            Motable emotable = acquire(id, exclusiveOnly);
             if (null != emotable) {
                 try {
                     return promote(invocation, id, immoter, motionLock, emotable);
                 } finally {
-                    release(emotable);
+                    release(emotable, exclusiveOnly);
                 }
             }
         }

@@ -26,7 +26,7 @@ import org.codehaus.wadi.PoolableInvocationWrapperPool;
 import org.codehaus.wadi.Session;
 import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.core.ConcurrentMotableMap;
-import org.codehaus.wadi.core.OswegoConcurrentSessionMap;
+import org.codehaus.wadi.core.OswegoConcurrentMotableMap;
 import org.codehaus.wadi.impl.AbstractSession;
 import org.codehaus.wadi.impl.DummyContextualiser;
 import org.codehaus.wadi.impl.DummyEvicter;
@@ -113,7 +113,7 @@ public class TestSharedStack extends TestCase {
         // server scope components...
         Contextualiser terminator=new DummyContextualiser();
         Evicter evicter=new DummyEvicter();
-        ConcurrentMotableMap map=new OswegoConcurrentSessionMap();
+        ConcurrentMotableMap map=new OswegoConcurrentMotableMap();
         
         // app specific components... - should be injected via the Invocation...
         SessionPool contextPool=new Tier1ContextPool();

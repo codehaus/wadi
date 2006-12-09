@@ -26,8 +26,8 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.RehydrationException;
 
-import EDU.oswego.cs.dl.util.concurrent.Mutex;
-import EDU.oswego.cs.dl.util.concurrent.Sync;
+import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
+import EDU.oswego.cs.dl.util.concurrent.WriterPreferenceReadWriteLock;
 
 /**
  * Implement all of Motable except for the Bytes field. This is the field most likely to have different representations.
@@ -41,12 +41,16 @@ public abstract class AbstractMotable extends SimpleEvictable implements Motable
 
     protected String _name;
     protected boolean newSession = true;
-    protected transient Sync _lock = new Mutex();
+    protected transient ReadWriteLock readWriteLock;
 
-    public Sync getLock() {
-        return _lock;
+    protected AbstractMotable() {
+        readWriteLock = newReadWriteLock();
     }
 
+    public ReadWriteLock getReadWriteLock() {
+        return readWriteLock;
+    }
+    
     public void init(long creationTime, long lastAccessedTime, int maxInactiveInterval, String name) {
         init(creationTime, lastAccessedTime, maxInactiveInterval);
         _name = name;
@@ -80,12 +84,16 @@ public abstract class AbstractMotable extends SimpleEvictable implements Motable
     public void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
         super.readContent(oi);
         _name = (String) oi.readObject();
-        _lock = new Mutex();
+        readWriteLock = newReadWriteLock();
     }
 
     public void writeContent(ObjectOutput oo) throws IOException {
         super.writeContent(oo);
         oo.writeObject(_name);
+    }
+
+    protected ReadWriteLock newReadWriteLock() {
+        return new WriterPreferenceReadWriteLock();
     }
 
     private void initExisting(long creationTime, long lastAccessedTime, int maxInactiveInterval, String name, byte[] body) throws RehydrationException {
