@@ -59,6 +59,9 @@ public class ReplicaterAdapter implements Replicater {
     public void acquireFromOtherReplicater(Object tmp) {
         WebSession session = castAndEnsureType(tmp);
         WebSession acquiredSession = (WebSession) replicationManager.acquirePrimary(session.getName());
+        if (null == acquiredSession) {
+            return;
+        }
         try {
             session.setBodyAsByteArray(acquiredSession.getBodyAsByteArray());
         } catch (Exception e) {

@@ -142,12 +142,11 @@ public class BasicReplicationManager implements ReplicationManager {
             replicaInfo = replicaStorageProxy.retrieveReplicaInfo(key);
         } catch (ServiceInvocationException e) {
             if (e.isMessageExchangeException()) {
-                throw new InternalReplicationManagerException(e);
+                return null;
             } else {
                 throw new ReplicationKeyNotFoundException(key, e);
             }
         }
-        
         replicaInfo = reOrganizeSecondaries(key, replicaInfo);
         return replicaInfo.getReplica();
     }

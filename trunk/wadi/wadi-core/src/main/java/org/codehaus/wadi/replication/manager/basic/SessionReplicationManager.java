@@ -74,6 +74,9 @@ public class SessionReplicationManager implements ReplicationManager {
         }
         
         byte[] body = (byte[]) replicationManager.acquirePrimary(key);
+        if (null == body) {
+            return null;
+        }
         
         WebSession session = sessionPool.take();
         long time = System.currentTimeMillis();
