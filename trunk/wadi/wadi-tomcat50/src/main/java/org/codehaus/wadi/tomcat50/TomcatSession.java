@@ -78,11 +78,11 @@ public class TomcatSession extends DistributableSession implements Session {
   }
 
   public HttpSession getSession() {
-    return _wrapper;
+    return wrapper;
   }
 
   public Manager getManager() {
-    return (Manager)_config;
+    return (Manager)config;
   }
 
   public void setManager(Manager manager) {
