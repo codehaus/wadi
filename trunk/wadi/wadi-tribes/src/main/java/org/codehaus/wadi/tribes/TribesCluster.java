@@ -29,18 +29,6 @@ import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.PeerInfo;
 
-/**
- * <p>Title: </p>
- *
- * <p>Description: </p>
- *
- * <p>Copyright: Copyright (c) 2006</p>
- *
- * <p>Company: </p>
- *
- * @author not attributable
- * @version 1.0
- */
 public class TribesCluster implements Cluster {
     
     private final byte[] clusterDomain;
@@ -117,7 +105,13 @@ public class TribesCluster implements Cluster {
      * @todo Implement this org.codehaus.wadi.group.Cluster method
      */
     public Address getAddress() {
-        return (Address)channel.getLocalMember(true);
+        Member[] mbrs = channel.getMembers();
+        TribesPeer[] peers = new TribesPeer[mbrs.length + 1];
+        for (int i = 0; i < mbrs.length; i++) {
+            peers[i] = (TribesPeer) mbrs[i];
+        }
+        peers[peers.length - 1] = (TribesPeer) channel.getLocalMember(true);
+        return new TribesClusterAddress(peers);
     }
 
     /**

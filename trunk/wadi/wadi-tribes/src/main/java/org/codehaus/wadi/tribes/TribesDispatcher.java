@@ -14,18 +14,6 @@ import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.PeerInfo;
 import org.codehaus.wadi.group.impl.AbstractDispatcher;
 
-/**
- * <p>Title: </p>
- *
- * <p>Description: </p>
- *
- * <p>Copyright: Copyright (c) 2006</p>
- *
- * <p>Company: </p>
- *
- * @author not attributable
- * @version 1.0
- */
 public class TribesDispatcher extends AbstractDispatcher implements ChannelListener {
     protected TribesCluster cluster;
     protected String localPeerName = null;
@@ -65,8 +53,15 @@ public class TribesDispatcher extends AbstractDispatcher implements ChannelListe
     }
 
     public void send(Address target, Envelope message) throws MessageExchangeException {
+        Member[] peers;
+        if (target instanceof TribesClusterAddress) {
+            TribesClusterAddress clusterAddress = (TribesClusterAddress) target;
+            peers = clusterAddress.getPeers();
+        } else {
+            peers = new Member[] { (TribesPeer) target };
+        }
         try {
-            cluster.channel.send(new Member[] {(TribesPeer)target},message,Channel.SEND_OPTIONS_ASYNCHRONOUS);
+            cluster.channel.send(peers,message,Channel.SEND_OPTIONS_ASYNCHRONOUS);
         }catch ( ChannelException x ) {
             throw new MessageExchangeException(x);
         }
