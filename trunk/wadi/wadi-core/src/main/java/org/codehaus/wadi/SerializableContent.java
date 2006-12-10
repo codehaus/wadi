@@ -27,11 +27,7 @@ import java.io.IOException;
  * @version $Revision$
  */
 public interface SerializableContent {
-    
-  void readContent(java.io.ObjectInput is)
-    throws IOException, ClassNotFoundException;
+    void readContent(java.io.ObjectInput is) throws IOException, ClassNotFoundException;
 
-  void writeContent(java.io.ObjectOutput os)
-    throws IOException;
-  
+    void writeContent(java.io.ObjectOutput os) throws IOException;
 }
