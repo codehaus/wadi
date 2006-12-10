@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationProxy;
@@ -44,6 +46,8 @@ import org.codehaus.wadi.web.impl.DistributableSession;
  */
 public class ClusteredManager extends DistributableManager {
     public static final ServiceName NAME = new ServiceName("ClusteredManager");
+
+    private static final Log log = LogFactory.getLog(StandardManager.class);
     
     private final StateManager stateManager;
     private final PartitionManager partitionManager;
@@ -87,14 +91,12 @@ public class ClusteredManager extends DistributableManager {
     }
 
     public void start() throws Exception {
-        shuttingDown.set(false);
         partitionManager.start();
         stateManager.start();
         super.start();
     }
 
     public void stop() throws Exception {
-        shuttingDown.set(true);
         partitionManager.evacuate();
         super.stop();
         stateManager.stop();
@@ -107,33 +109,25 @@ public class ClusteredManager extends DistributableManager {
         Collection names = new ArrayList((_attributeListeners.length > 0) ? (Collection) session.getAttributeNameSet()
                 : ((DistributableSession) session).getListenerNames());
         for (Iterator i = names.iterator(); i.hasNext();) {
-            // ALLOC ?
             session.removeAttribute((String) i.next());
         }
-
-        // TODO - remove from Contextualiser....at end of initial request ? Think more about this
         String name = session.getName();
-        notifySessionDeletion(name);
+        onSessionDestruction(session);
         _map.remove(name);
         try {
             session.destroy();
         } catch (Exception e) {
-            _log.warn("unexpected problem destroying session", e);
+            log.warn("unexpected problem destroying session", e);
         }
         _sessionPool.put(session);
-        if (_log.isDebugEnabled()) {
-            _log.debug("destroyed: " + name);
+        if (log.isDebugEnabled()) {
+            log.debug("destroyed: " + name);
         }
     }
 
-    public void notifySessionDeletion(String name) {
-        super.notifySessionDeletion(name);
-        stateManager.remove(name);
-    }
-
-    public void notifySessionRelocation(String name) {
-        super.notifySessionRelocation(name);
-        stateManager.relocate(name);
+    protected void onSessionDestruction(WebSession session) {
+        super.onSessionDestruction(session);
+        stateManager.remove(session.getName());
     }
 
     protected boolean validateSessionName(String name) {

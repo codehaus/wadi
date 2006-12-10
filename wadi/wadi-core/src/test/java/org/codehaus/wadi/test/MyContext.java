@@ -20,8 +20,6 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.impl.AbstractSession;
 import org.codehaus.wadi.impl.SimpleStreamer;
@@ -32,31 +30,29 @@ import org.codehaus.wadi.impl.Utils;
  * @version $Revision$
  */
 public class MyContext extends AbstractSession {
-    protected static Log _log = LogFactory.getLog(MyContext.class);
-
-    protected String _val;
-    protected Streamer _streamer = new SimpleStreamer();
+    protected String val;
+    protected Streamer streamer = new SimpleStreamer();
 
     public MyContext(String id, String val) {
-        _name = id;
-        _val = val;
+        name = id;
+        this.val = val;
     }
 
     public MyContext() {
     }
 
     public void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
-        _name = (String) oi.readObject();
-        _val = (String) oi.readObject();
+        name = oi.readUTF();
+        val = oi.readUTF();
     }
 
     public void writeContent(ObjectOutput oo) throws IOException {
-        oo.writeObject(_name);
-        oo.writeObject(_val);
+        oo.writeUTF(name);
+        oo.writeUTF(val);
     }
 
     public void setBodyAsByteArray(byte[] bytes) throws IOException, ClassNotFoundException {
-        Utils.setContent(this, bytes, _streamer);
+        Utils.setContent(this, bytes, streamer);
     }
 
 }

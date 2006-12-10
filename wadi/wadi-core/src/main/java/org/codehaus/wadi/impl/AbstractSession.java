@@ -16,8 +16,6 @@
  */
 package org.codehaus.wadi.impl;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Session;
 
 /**
@@ -27,9 +25,9 @@ import org.codehaus.wadi.Session;
  */
 
 public abstract class AbstractSession extends AbstractMotable implements Session {
-    protected static Log _log = LogFactory.getLog(AbstractSession.class);
 
     public void onEndProcessing() {
+        newSession = false;
     }
     
     public byte[] getBodyAsByteArray() throws Exception {

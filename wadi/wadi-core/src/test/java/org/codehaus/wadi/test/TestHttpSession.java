@@ -256,21 +256,17 @@ public class TestHttpSession extends TestCase {
     }
 
     public void testDestroyHttpSessionWithListener(StandardManager manager) throws Exception {
-        // create session
         WADIHttpSession session = (WADIHttpSession) manager.create(null);
         HttpSession wrapper = session.getWrapper();
 
-        // set up test
         String key = "foo";
         Object val = new Listener();
         wrapper.setAttribute(key, val);
         wrapper.setAttribute("bar", "baz");
         _events.clear();
 
-        // destroy session
-        manager.destroy(null, session);
+        session.destroy();
 
-        // analyse results
         assertTrue(_events.size() == 4);
         {
             Pair pair = (Pair) _events.get(0);
@@ -288,7 +284,6 @@ public class TestHttpSession extends TestCase {
             assertTrue(pair.getType().equals("attributeRemoved"));
             HttpSessionEvent e = pair.getEvent();
             assertTrue(wrapper == e.getSession());
-            // HttpSessionBindingEvent be=(HttpSessionBindingEvent)e;
         }
         {
             Pair pair = (Pair) _events.get(2);
@@ -296,7 +291,6 @@ public class TestHttpSession extends TestCase {
             assertTrue(pair.getType().equals("attributeRemoved"));
             HttpSessionEvent e = pair.getEvent();
             assertTrue(wrapper == e.getSession());
-            // HttpSessionBindingEvent be=(HttpSessionBindingEvent)e;
         }
         {
             Pair pair = (Pair) _events.get(3);
@@ -313,23 +307,19 @@ public class TestHttpSession extends TestCase {
     }
 
     public void testDestroyHttpSessionWithoutListener(StandardManager manager) throws Exception {
-        // remove Listener
         manager.setSessionListeners(new HttpSessionListener[] {});
         manager.setAttributelisteners(new HttpSessionAttributeListener[] {});
 
-        // create session
         WADIHttpSession session = (WADIHttpSession) manager.create(null);
         HttpSession wrapper = session.getWrapper();
 
-        // set up test
         String key = "foo";
         Object val = new Listener();
         wrapper.setAttribute(key, val);
         wrapper.setAttribute("bar", "baz");
         _events.clear();
 
-        // destroy session
-        manager.destroy(null, session);
+        session.destroy();
 
         // analyse results
         assertTrue(_events.size() == 1);
@@ -802,7 +792,7 @@ public class TestHttpSession extends TestCase {
         WADIHttpSession s = (WADIHttpSession) sessionPool.take();
         HttpSession session = s.getWrapper();
         assertTrue(session.isNew());
-        s.setLastAccessedTime(System.currentTimeMillis() + 1);
+        s.onEndProcessing();
         assertTrue(!session.isNew());
     }
 

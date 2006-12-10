@@ -18,7 +18,6 @@
 package org.codehaus.wadi.web.impl;
 
 import org.codehaus.wadi.RehydrationException;
-import org.codehaus.wadi.Replicater;
 import org.codehaus.wadi.web.ReplicableSessionConfig;
 
 
@@ -44,37 +43,28 @@ public class AtomicallyReplicableSession extends AbstractReplicableSession {
         }
     }
 
-    protected transient boolean _dirty;
-    protected transient Semantics _semantics = new ByReferenceSemantics();
-    protected transient Replicater _replicater;
+    protected transient boolean dirty = false;
+    protected transient Semantics semantics = new ByReferenceSemantics();
 
     public AtomicallyReplicableSession(ReplicableSessionConfig config) {
         super(config);
-        _dirty = false;
-        // take ownership of the Replicater - it may carry per-Session state
-        _replicater = ((ReplicableSessionConfig) _config).getReplicater();
     }
 
     public void rehydrate(long creationTime, long lastAccessedTime, int maxInactiveInterval, String name, byte[] body)
             throws RehydrationException {
         super.rehydrate(creationTime, lastAccessedTime, maxInactiveInterval, name, body);
-        _replicater.acquireFromOtherReplicater(this);
+        replicater.acquireFromOtherReplicater(this);
     }
 
-    public void restore(long creationTime, long lastAccessedTime, int maxInactiveInterval, String name, byte[] body)
-            throws RehydrationException {
-        super.restore(creationTime, lastAccessedTime, maxInactiveInterval, name, body);
-    }
-    
     public void onEndProcessing() {
         if (newSession) {
-            _replicater.create(this);
+            replicater.create(this);
             newSession = false;
-            _dirty = false;
+            dirty = false;
         }
-        if (_dirty) {
-            _replicater.update(this);
-            _dirty = false;
+        if (dirty) {
+            replicater.update(this);
+            dirty = false;
         }
     }
 
@@ -87,7 +77,7 @@ public class AtomicallyReplicableSession extends AbstractReplicableSession {
     public void setMaxInactiveInterval(int maxInactiveInterval) {
         if (maxInactiveInterval != maxInactiveInterval) {
             super.setMaxInactiveInterval(maxInactiveInterval);
-            _dirty = true;
+            dirty = true;
         }
     }
 
@@ -98,13 +88,13 @@ public class AtomicallyReplicableSession extends AbstractReplicableSession {
      */
     public Object setAttribute(String name, Object value) {
         Object tmp = super.setAttribute(name, value);
-        _dirty = true;
+        dirty = true;
         return tmp;
     }
 
     public Object removeAttribute(String name) {
         Object tmp = super.removeAttribute(name);
-        _dirty = tmp != null;
+        dirty = tmp != null;
         return tmp;
     }
 
@@ -117,8 +107,8 @@ public class AtomicallyReplicableSession extends AbstractReplicableSession {
      */
     public Object getAttribute(String name) {
         Object tmp = super.getAttribute(name);
-        _dirty = (tmp != null) && _semantics.getAttributeDirties();
-        return _attributes.get(name);
+        dirty = (tmp != null) && semantics.getAttributeDirties();
+        return tmp;
     }
 
 }

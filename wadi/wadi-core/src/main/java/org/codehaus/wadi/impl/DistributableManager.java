@@ -33,16 +33,12 @@ import org.codehaus.wadi.web.Router;
 import org.codehaus.wadi.web.WebSessionPool;
 import org.codehaus.wadi.web.WebSessionWrapperFactory;
 
-import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
-
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * A StandardManager that knows how to Serialise HttpSessions.
  */
 public class DistributableManager extends StandardManager implements ReplicableSessionConfig {
-	
 	protected final List _helpers = new ArrayList();
-    protected final SynchronizedBoolean shuttingDown = new SynchronizedBoolean(false);
     protected final Streamer _streamer;
     protected final boolean _accessOnLoad;
     protected final ReplicaterFactory _replicaterFactory;

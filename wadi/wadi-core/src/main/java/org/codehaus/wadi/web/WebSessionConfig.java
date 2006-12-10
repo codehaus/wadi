@@ -20,9 +20,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSessionAttributeListener;
 import javax.servlet.http.HttpSessionListener;
 
-import org.codehaus.wadi.Config;
 import org.codehaus.wadi.Invocation;
-import org.codehaus.wadi.SessionIdFactory;
 import org.codehaus.wadi.ValuePool;
 
 
@@ -30,7 +28,7 @@ import org.codehaus.wadi.ValuePool;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision: 1885 $
  */
-public interface WebSessionConfig extends Config {
+public interface WebSessionConfig {
     ValuePool getValuePool();
 
     AttributesFactory getAttributesFactory();
@@ -45,8 +43,6 @@ public interface WebSessionConfig extends Config {
     
     WebSessionWrapperFactory getSessionWrapperFactory();
     
-    SessionIdFactory getSessionIdFactory();
-
     int getMaxInactiveInterval();
 
     Router getRouter();

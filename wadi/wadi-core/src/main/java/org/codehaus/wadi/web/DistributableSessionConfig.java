@@ -27,11 +27,9 @@ import org.codehaus.wadi.ValueHelper;
  */
 
 public interface DistributableSessionConfig extends WebSessionConfig {
-
-    // Distributable
     Streamer getStreamer();
+    
     ValueHelper findHelper(Class type);
 
-    // Lazy
     boolean getHttpSessionAttributeListenersRegistered();
 }

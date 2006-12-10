@@ -26,7 +26,7 @@ public class ReplicaAwareContextualiserTest extends RMockTestCase {
         Emoter emoter = contextualiser.getEmoter();
         
         WebSession emotable = new DistributableSession(new DummyDistributableSessionConfig());
-        emotable.init(1, 2, 3);
+        emotable.init(1, 2, 3, "name");
         String attrKey = "attrKey";
         String attrValue = "attrValue";
         emotable.setAttribute(attrKey, attrValue);

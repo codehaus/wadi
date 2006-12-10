@@ -31,57 +31,71 @@ import org.codehaus.wadi.Evictable;
  */
 
 public abstract class SimpleEvictable implements Evictable, Serializable {
+    protected long creationTime;
+    protected long lastAccessedTime;
+    protected int maxInactiveInterval;
 
     public void init(long creationTime, long lastAccessedTime, int maxInactiveInterval) {
-        _creationTime=creationTime;
-        _lastAccessedTime=lastAccessedTime;
-        _maxInactiveInterval=maxInactiveInterval;
+        this.creationTime = creationTime;
+        this.lastAccessedTime = lastAccessedTime;
+        this.maxInactiveInterval = maxInactiveInterval;
     }
-    
+
     public void destroy() throws Exception {
-        _creationTime=0;
-        _lastAccessedTime=0;
-        _maxInactiveInterval=0;
+        creationTime = 0;
+        lastAccessedTime = 0;
+        maxInactiveInterval = 0;
     }
-    
+
     public void copy(Evictable evictable) throws Exception {
-        _creationTime=evictable.getCreationTime();
-        _lastAccessedTime=evictable.getLastAccessedTime();
-        _maxInactiveInterval=evictable.getMaxInactiveInterval();
+        creationTime = evictable.getCreationTime();
+        lastAccessedTime = evictable.getLastAccessedTime();
+        maxInactiveInterval = evictable.getMaxInactiveInterval();
     }
-    
+
     public void mote(Evictable recipient) throws Exception {
-    	recipient.copy(this);
-    	destroy();
+        recipient.copy(this);
+        destroy();
     }
-     
+
+    public long getCreationTime() {
+        return creationTime;
+    }
+
+    public long getLastAccessedTime() {
+        return lastAccessedTime;
+    }
+
+    public void setLastAccessedTime(long lastAccessedTime) {
+        this.lastAccessedTime = lastAccessedTime;
+    }
+
+    public int getMaxInactiveInterval() {
+        return maxInactiveInterval;
+    }
+
+    public void setMaxInactiveInterval(int maxInactiveInterval) {
+        this.maxInactiveInterval = maxInactiveInterval;
+    }
+
+    public long getTimeToLive(long time) {
+        return maxInactiveInterval < 0 ? Long.MAX_VALUE : (maxInactiveInterval * 1000) - (time - lastAccessedTime);
+    }
+
+    public boolean getTimedOut(long time) {
+        return getTimeToLive(time) <= 0;
+    }
+    
     public void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
-        _creationTime=oi.readLong();
-        _lastAccessedTime=oi.readLong();
-        _maxInactiveInterval=oi.readInt();
+        creationTime = oi.readLong();
+        lastAccessedTime = oi.readLong();
+        maxInactiveInterval = oi.readInt();
     }
-    
+
     public void writeContent(ObjectOutput oo) throws IOException {
-        oo.writeLong(_creationTime);
-        oo.writeLong(_lastAccessedTime);
-        oo.writeInt(_maxInactiveInterval);
+        oo.writeLong(creationTime);
+        oo.writeLong(lastAccessedTime);
+        oo.writeInt(maxInactiveInterval);
     }
-    
-    protected long _creationTime;
-	public long getCreationTime() {return _creationTime;}
 
-	protected long _lastAccessedTime;
-	public long getLastAccessedTime(){return _lastAccessedTime;}
-	public void setLastAccessedTime(long lastAccessedTime){_lastAccessedTime=lastAccessedTime;}
-
-	protected int _maxInactiveInterval;
-	public int  getMaxInactiveInterval(){return _maxInactiveInterval;}
-	public void setMaxInactiveInterval(int maxInactiveInterval){_maxInactiveInterval=maxInactiveInterval;}
-    
-    public boolean isNew(){return _lastAccessedTime==_creationTime;} // assumes lastAccessedTime is only updated once per request...
-    
-	public long getTimeToLive(long time) {return _maxInactiveInterval<0?Long.MAX_VALUE:(_maxInactiveInterval*1000)-(time-_lastAccessedTime);}
-
-	public boolean getTimedOut(long time) {return getTimeToLive(time)<=0;}
-	
 }

@@ -20,8 +20,7 @@ import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionEvent;
 
 public interface WADIHttpSession extends WebSession {
-	
-    public HttpSession getWrapper();
-    public HttpSessionEvent getHttpSessionEvent();
-    
+    HttpSession getWrapper();
+
+    HttpSessionEvent getHttpSessionEvent();
 }

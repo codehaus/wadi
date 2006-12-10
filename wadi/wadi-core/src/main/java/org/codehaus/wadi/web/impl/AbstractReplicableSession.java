@@ -28,49 +28,22 @@ import org.codehaus.wadi.web.ReplicableSessionConfig;
  * @version $Revision: 1725 $
  */
 public abstract class AbstractReplicableSession extends DistributableSession {
-	
+    protected final transient Replicater replicater;
+
 	public AbstractReplicableSession(ReplicableSessionConfig config) {
         super(config);
+        
+        replicater = config.getReplicater();
     }
 
     public void mote(Motable recipient) throws Exception {
-        recipient.copy(this); 
-        // this is a transfer, so use special case destructor...
-        destroy(recipient); 
+        recipient.copy(this);
+        destroyForMotion(); 
     }
 
-    /**
-     * We have two destroy usecases :
-     * 
-     * destruction through explicit (by app code) or implicit (by container
-     * timeout) invalidation MUST destroy replicated backups - else we spring a
-     * leak...
-     */
     public void destroy() throws Exception {
-        getReplicater().destroy(this);
+        replicater.destroy(this);
         super.destroy();
-    }
-
-    /**
-     * destruction as our data is transferred to another storage medium.
-     */
-    public void destroy(Motable recipient) throws Exception {
-        super.destroy();
-    }
-
-    // lastAccessedTime NOT replicated - assume that, just as the node died,
-    // requests
-    // were landing for every session that it contained. All the calls the
-    // setLastAccessedTime()
-    // that should have happened were lost. So we have to refresh any session
-    // replicant as it is
-    // promoted from slave to master to make up for this possibility. If we are
-    // going to do this,
-    // then it would be redundant and very expensive to replicate this data,
-    // since it will change
-    // with every request.
-    private Replicater getReplicater() {
-        return ((ReplicableSessionConfig) _config).getReplicater();
     }
 
 }

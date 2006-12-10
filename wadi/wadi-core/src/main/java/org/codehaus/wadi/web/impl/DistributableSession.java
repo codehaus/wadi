@@ -28,44 +28,54 @@ import org.codehaus.wadi.web.DistributableAttributesConfig;
 import org.codehaus.wadi.web.DistributableSessionConfig;
 
 /**
- * A Standard Session enhanced with functionality associated with [de]serialisation - necessary to allow the movement of the session from jvm to jvm/storage.
- *
+ * A Standard Session enhanced with functionality associated with
+ * [de]serialisation - necessary to allow the movement of the session from jvm
+ * to jvm/storage.
+ * 
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision: 1725 $
  */
-
 public class DistributableSession extends StandardSession implements DistributableAttributesConfig {
-
+    private final Streamer streamer;
+    
     public DistributableSession(DistributableSessionConfig config) {
-    	super(config);
+        super(config);
+
+        streamer = config.getStreamer();
     }
 
     public Streamer getStreamer() {
-    	return ((DistributableSessionConfig)_config).getStreamer();
+        return streamer;
     }
-    
+
     public void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
         super.readContent(oi);
-        ((DistributableAttributes)_attributes).readContent(oi);
+        ((DistributableAttributes) attributes).readContent(oi);
     }
-    
+
     public void writeContent(ObjectOutput oo) throws IOException {
         super.writeContent(oo);
-        ((DistributableAttributes)_attributes).writeContent(oo);
+        ((DistributableAttributes) attributes).writeContent(oo);
     }
-    
+
     public byte[] getBodyAsByteArray() throws Exception {
-    	return Utils.getContent(this, getStreamer());
+        return Utils.getContent(this, streamer);
     }
-    
+
     public void setBodyAsByteArray(byte[] bytes) throws IOException, ClassNotFoundException {
-    	Utils.setContent(this, bytes, getStreamer());
+        Utils.setContent(this, bytes, streamer);
     }
-    
-    public ValueHelper findHelper(Class type){return ((DistributableSessionConfig)_config).findHelper(type);}
-    public Set getListenerNames(){return ((DistributableAttributes)_attributes).getListenerNames();}
-    
-    // Lazy
-    public boolean getHttpSessionAttributeListenersRegistered(){return ((DistributableSessionConfig)_config).getHttpSessionAttributeListenersRegistered();}
+
+    public ValueHelper findHelper(Class type) {
+        return ((DistributableSessionConfig) config).findHelper(type);
+    }
+
+    public Set getListenerNames() {
+        return ((DistributableAttributes) attributes).getListenerNames();
+    }
+
+    public boolean getHttpSessionAttributeListenersRegistered() {
+        return ((DistributableSessionConfig) config).getHttpSessionAttributeListenersRegistered();
+    }
 
 }
