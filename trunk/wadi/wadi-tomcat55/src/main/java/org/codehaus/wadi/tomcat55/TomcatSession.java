@@ -80,11 +80,11 @@ public class TomcatSession extends AtomicallyReplicableSession implements Sessio
   }
 
   public HttpSession getSession() {
-    return _wrapper;
+    return wrapper;
   }
 
   public Manager getManager() {
-    return (Manager)_config;
+    return (Manager)config;
   }
 
   public void setManager(Manager manager) {
@@ -212,7 +212,7 @@ public class TomcatSession extends AtomicallyReplicableSession implements Sessio
   // Tomcat 5.5.10 and later
   
   public String getIdInternal() {
-	  return _name;
+	  return name;
   }
 
 }
