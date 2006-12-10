@@ -40,6 +40,8 @@ public interface Motable extends Evictable {
 	void mote(Motable recipient) throws Exception;
 
 	String getName();
+    
+    boolean isNew();
 
     byte[] getBodyAsByteArray() throws Exception;
 

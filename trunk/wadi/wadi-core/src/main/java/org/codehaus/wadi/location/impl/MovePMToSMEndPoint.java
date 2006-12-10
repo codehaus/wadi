@@ -153,22 +153,22 @@ public class MovePMToSMEndPoint implements Lifecycle, MovePMToSMEndPointMessageL
 
         public void setBodyAsByteArray(byte[] bytes) throws Exception {
             Motable immotable = new SimpleMotable();
-            immotable.init(_creationTime, _lastAccessedTime, _maxInactiveInterval, _name);
+            immotable.init(creationTime, lastAccessedTime, maxInactiveInterval, name);
             immotable.setBodyAsByteArray(bytes);
 
             LocalPeer smPeer = dispatcher.getCluster().getLocalPeer();
             Peer imPeer = get.getIMPeer();
             MoveSMToIM request = new MoveSMToIM(immotable);
             // send on state from StateMaster to InvocationMaster...
-            if (_log.isTraceEnabled()) {
-                _log.trace("exchanging MoveSMToIM between [" + smPeer + "]->[" + imPeer + "]");
+            if (log.isTraceEnabled()) {
+                log.trace("exchanging MoveSMToIM between [" + smPeer + "]->[" + imPeer + "]");
             }
             Envelope message2 = dispatcher.exchangeSend(imPeer.getAddress(), request, inactiveTime, get
                     .getIMCorrelationId());
             // should receive response from IM confirming safe receipt...
             if (message2 == null) {
                 // TODO throw exception
-                _log.error("NO REPLY RECEIVED FOR MESSAGE IN TIMEFRAME - PANIC!");
+                log.error("NO REPLY RECEIVED FOR MESSAGE IN TIMEFRAME - PANIC!");
             } else {
                 MoveIMToSM response = (MoveIMToSM) message2.getPayload();
                 assert (response != null && response.getSuccess()); 

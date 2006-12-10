@@ -18,48 +18,20 @@ package org.codehaus.wadi.test;
 
 import java.io.File;
 
-import javax.sql.DataSource;
+import junit.framework.TestCase;
 
-import org.axiondb.jdbc.AxionDataSource;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.Store;
 import org.codehaus.wadi.StoreMotable;
-import org.codehaus.wadi.impl.DatabaseStore;
 import org.codehaus.wadi.impl.DiscStore;
 import org.codehaus.wadi.impl.SimpleMotable;
 import org.codehaus.wadi.impl.SimpleStreamer;
-
-import junit.framework.TestCase;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class TestMotables extends TestCase {
-
-    public TestMotables(String name) {
-        super(name);
-    }
-
-    protected void setUp() throws Exception {
-        super.setUp();
-    }
-
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
-
-    public void testDatabaseMotables() throws Exception {
-        DataSource ds=new AxionDataSource("jdbc:axiondb:testdb");
-        String table="SESSIONS";
-        DatabaseStore store=new DatabaseStore("jdbc:axiondb:testdb", ds, table, false, false, false);
-        store.init();
-        testDatabaseMotables(store);
-//        testDatabaseMotables(new DiscStore(new SimpleStreamer(), new File("/tmp"), true));
-    }
-
-    public void testDatabaseMotables(Store store) throws Exception {
-    }
+public class TestDiscStore extends TestCase {
 
     public void testDiscMotables() throws Exception {
         testDiscMotables(new DiscStore(new SimpleStreamer(), new File("/tmp"), false, false));
@@ -67,38 +39,34 @@ public class TestMotables extends TestCase {
     }
 
     public void testDiscMotables(Store store) throws Exception {
-        assertTrue(true);
-
-        Motable sm0=new SimpleMotable();
-        long creationTime=System.currentTimeMillis();
-        long lastAccessedTime=creationTime+1;
-        int maxInactiveInterval=30*60;
-        String name="foo";
-        byte[] bytes=new byte[]{'a','b','c','d','e','f'};
-
+        Motable sm0 = new SimpleMotable();
+        long creationTime = System.currentTimeMillis();
+        long lastAccessedTime = creationTime + 1;
+        int maxInactiveInterval = 30 * 60;
+        String name = "foo";
+        byte[] bytes = new byte[] { 'a', 'b', 'c', 'd', 'e', 'f' };
         sm0.init(creationTime, lastAccessedTime, maxInactiveInterval, name);
         sm0.setBodyAsByteArray(bytes);
 
-        File file=new File(new File("/tmp"), name+".ser");
+        File file = new File(new File("/tmp"), name + ".ser");
         file.delete();
-        assertTrue(!file.exists());
+        assertFalse(file.exists());
 
-        StoreMotable edm0=store.create();
+        StoreMotable edm0 = store.create();
         edm0.init(store);
-        assertTrue(!file.exists());
-        edm0.copy(sm0); // should create file
-        assertTrue(file.exists());
-        edm0=null;
-
-        StoreMotable edm1=store.create();
-        edm1.init(store, name); // should load file
+        assertFalse(file.exists());
+        edm0.copy(sm0);
         assertTrue(file.exists());
 
-        Motable sm1=new SimpleMotable();
+        StoreMotable edm1 = store.create();
+        edm1.init(store, name);
+        assertTrue(file.exists());
+
+        Motable sm1 = new SimpleMotable();
         sm1.copy(edm1);
         assertTrue(file.exists());
 
-        edm1.destroy(); // should remove file
+        edm1.destroy();
         assertTrue(!file.exists());
 
         assertTrue(sm0.equals(sm1));

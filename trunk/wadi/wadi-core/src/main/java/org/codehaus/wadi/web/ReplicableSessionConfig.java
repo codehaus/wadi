@@ -26,7 +26,5 @@ import org.codehaus.wadi.Replicater;
  * @version $Revision$
  */
 public interface ReplicableSessionConfig extends DistributableSessionConfig {
-
 	Replicater getReplicater();
-	
 }

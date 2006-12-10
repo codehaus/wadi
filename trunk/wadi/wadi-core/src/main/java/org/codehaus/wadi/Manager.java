@@ -79,14 +79,6 @@ public interface Manager extends Lifecycle {
     SessionIdFactory getSessionIdFactory();
 
     /**
-     * Return a flag which indicates whether failure to find the relevant Session for an
-     * Invocation should be considered an error or not.
-     * 
-     * @return whether failure to find a Session should be considered an error
-     */
-    boolean getErrorIfSessionNotAcquired();
-
-    /**
      * Contextualise an Invocation - somehow colocate the Invocation and the relevant Session within the same
      * JVM somewhere in the Cluster, give the Invocation the Session and invoke() it. The Manager possesses
      * a stack of Contextualisers, down which the Invocation is passed in order to achieve this.

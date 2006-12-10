@@ -30,4 +30,5 @@ public class DistributableSessionFactory implements WebSessionFactory {
     public WebSession create(WebSessionConfig config) {
         return new DistributableSession((DistributableSessionConfig)config);
     }
+    
 }

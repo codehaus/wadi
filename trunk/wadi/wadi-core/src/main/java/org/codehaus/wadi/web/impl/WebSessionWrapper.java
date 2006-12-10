@@ -33,48 +33,94 @@ import org.codehaus.wadi.web.WebSession;
  */
 
 public class WebSessionWrapper implements HttpSession {
-
     protected final WebSession _session;
 
     public WebSessionWrapper(WebSession session) {
-        _session=session;
+        _session = session;
     }
 
-    // delegate to Session
-    public long getCreationTime() {return _session.getCreationTime();}
-    public long getLastAccessedTime() {return _session.getLastAccessedTime();} 
-    public void setMaxInactiveInterval(int interval) {_session.setMaxInactiveInterval(interval);}
-    public int getMaxInactiveInterval() {return _session.getMaxInactiveInterval();}
-    public boolean isNew() {return _session.isNew();}
-    public String getId() {return _session.getId();}
+    public long getCreationTime() {
+        return _session.getCreationTime();
+    }
+
+    public long getLastAccessedTime() {
+        return _session.getLastAccessedTime();
+    }
+
+    public void setMaxInactiveInterval(int interval) {
+        _session.setMaxInactiveInterval(interval);
+    }
+
+    public int getMaxInactiveInterval() {
+        return _session.getMaxInactiveInterval();
+    }
+
+    public boolean isNew() {
+        return _session.isNew();
+    }
+
+    public String getId() {
+        return _session.getId();
+    }
 
     public void setAttribute(String name, Object value) {
-        if (null==value)
+        if (null == value) {
             _session.removeAttribute(name);
-        else
+        } else {
             _session.setAttribute(name, value);
+        }
     }
-    
-    public Object getAttribute(String name) {return _session.getAttribute(name);}
-    public void removeAttribute(String name) {_session.removeAttribute(name);}
-    public Enumeration getAttributeNames() {return _session.getAttributeNameEnumeration();}
-    public String[] getValueNames() {return _session.getAttributeNameStringArray();}
-    
-    // delegate to Wrapper
-    public Object getValue(String name) {return getAttribute(name);}
-    public void putValue(String name, Object value) {setAttribute(name, value);}
-    public void removeValue(String name) {removeAttribute(name);}
 
-    // delegate to Manager
-    public ServletContext getServletContext() {return _session.getConfig().getServletContext();}
-    public void invalidate() {_session.getConfig().destroy(null, _session);}
-    
-    // handle ourselves...
-    protected static final HttpSessionContext _httpSessionContext=new HttpSessionContext() {
-        protected final Enumeration _emptyEnumeration=Collections.enumeration(Collections.EMPTY_LIST);
-        public HttpSession getSession(String sessionId) {return null;}
-        public Enumeration getIds() {return _emptyEnumeration;}
+    public Object getAttribute(String name) {
+        return _session.getAttribute(name);
+    }
+
+    public void removeAttribute(String name) {
+        _session.removeAttribute(name);
+    }
+
+    public Enumeration getAttributeNames() {
+        return _session.getAttributeNameEnumeration();
+    }
+
+    public String[] getValueNames() {
+        return _session.getAttributeNameStringArray();
+    }
+
+    public Object getValue(String name) {
+        return getAttribute(name);
+    }
+
+    public void putValue(String name, Object value) {
+        setAttribute(name, value);
+    }
+
+    public void removeValue(String name) {
+        removeAttribute(name);
+    }
+
+    public ServletContext getServletContext() {
+        return _session.getConfig().getServletContext();
+    }
+
+    public void invalidate() {
+        _session.getConfig().destroy(null, _session);
+    }
+
+    protected static final HttpSessionContext _httpSessionContext = new HttpSessionContext() {
+        protected final Enumeration _emptyEnumeration = Collections.enumeration(Collections.EMPTY_LIST);
+
+        public HttpSession getSession(String sessionId) {
+            return null;
+        }
+
+        public Enumeration getIds() {
+            return _emptyEnumeration;
+        }
     };
-    public HttpSessionContext getSessionContext(){return _httpSessionContext;}
+
+    public HttpSessionContext getSessionContext() {
+        return _httpSessionContext;
+    }
 
 }

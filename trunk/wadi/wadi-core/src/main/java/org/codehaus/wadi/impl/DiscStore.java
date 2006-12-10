@@ -32,88 +32,94 @@ import org.codehaus.wadi.Streamer;
  * @version $Revision$
  */
 public class DiscStore implements Store, DiscMotableConfig {
+    private final Log _log = LogFactory.getLog(DiscStore.class);
 
-    protected final Log _log=LogFactory.getLog(getClass());
     protected final Streamer _streamer;
     protected final File _dir;
     protected final boolean _useNIO;
-    protected final DirectByteBufferCache _cache=new DirectByteBufferCache();
+    protected final DirectByteBufferCache _cache = new DirectByteBufferCache();
     protected final boolean _reusingStore;
 
     public DiscStore(Streamer streamer, File dir, boolean useNIO, boolean reusingStore) throws Exception {
-        _streamer=streamer;
-        _dir=dir;
-        _useNIO=useNIO;
-        _reusingStore=reusingStore;
+        _streamer = streamer;
+        _dir = dir;
+        _useNIO = useNIO;
+        _reusingStore = reusingStore;
 
         if (!dir.exists()) {
-            _log.info("Creating directory: "+_dir.getCanonicalPath());
-            if (!dir.mkdirs())
-            throw new IOException("Couldn't create directory "+_dir.getCanonicalPath());
+            _log.info("Creating directory: " + _dir.getCanonicalPath());
+            if (!dir.mkdirs()) {
+                throw new IOException("Couldn't create directory " + _dir.getCanonicalPath());
+            }
         }
-
 
         try {
-        	File.createTempFile("DiscStore_WriteTest",null , _dir).delete();
+            File.createTempFile("DiscStore_WriteTest", null, _dir).delete();
         } catch (IOException e) {
-            if (_log.isErrorEnabled()) _log.error("bad directory: " + _dir, e);
-        	throw e;
+            _log.error("bad directory: " + _dir, e);
+            throw e;
         }
-
-        // TODO - for use by a SharedStoreContextualiser we need to figure out concurrency issues...
     }
 
     public void clean() {
-        File[] files=_dir.listFiles();
-        int l=files.length;
-        for (int i=0; i<l; i++) {
+        File[] files = _dir.listFiles();
+        for (int i = 0; i < files.length; i++) {
             files[i].delete();
         }
-        if (_log.isInfoEnabled()) _log.info("removed (exclusive disc): " + l + " files");
+        if (_log.isInfoEnabled()) {
+            _log.info("removed (exclusive disc): " + files.length + " files");
+        }
     }
 
     public void load(Putter putter, boolean accessOnLoad) {
-        // if our last incarnation suffered a catastrophic failure there may be some sessions
-        // in our directory - FIXME - if replicating, we may not want to reload these...
-        long time=System.currentTimeMillis();
-        String[] list=_dir.list();
-        int l=list.length;
-        int suffixLength=".".length()+_streamer.getSuffix().length();
-        for (int i=0; i<l; i++) {
-            String name=list[i];
-            String id=name.substring(0, name.length()-suffixLength);
-            DiscMotable motable=new DiscMotable();
+        long time = System.currentTimeMillis();
+        String[] list = _dir.list();
+        int suffixLength = ".".length() + _streamer.getSuffix().length();
+        for (int i = 0; i < list.length; i++) {
+            String name = list[i];
+            String id = name.substring(0, name.length() - suffixLength);
+            DiscMotable motable = new DiscMotable();
             try {
                 motable.init(this, id);
                 if (accessOnLoad) {
                     motable.setLastAccessedTime(time);
-                } else {
-                    if (motable.getTimedOut(time)) {
-                        _log.warn("LOADED DEAD SESSION: "+motable.getName());
-                        // TODO - something cleverer...
-                    }
                 }
-                putter.put(id, motable);
+                if (!motable.getTimedOut(time)) {
+                    putter.put(id, motable);
+                }
             } catch (Exception e) {
-                _log.error("failed to load: "+name);
+                _log.error("failed to load [" + name + "]", e);
             }
         }
-        _log.info("loaded (exclusive disc): "+list.length);
+        _log.info("loaded (exclusive disc): " + list.length);
     }
 
     public StoreMotable create() {
         return new DiscMotable();
     }
 
-    // ExclusiveDiscMotableConfig
-    public File getDirectory() {return _dir;}
-    public String getSuffix() {return _streamer.getSuffixWithDot();}
-    public boolean getUseNIO() {return _useNIO;}
-    public ByteBuffer take(int size) {return _cache.take(size);}
-    public void put(ByteBuffer buffer) {_cache.put(buffer);}
+    public File getDirectory() {
+        return _dir;
+    }
+
+    public String getSuffix() {
+        return _streamer.getSuffixWithDot();
+    }
+
+    public boolean getUseNIO() {
+        return _useNIO;
+    }
+
+    public ByteBuffer take(int size) {
+        return _cache.take(size);
+    }
+
+    public void put(ByteBuffer buffer) {
+        _cache.put(buffer);
+    }
 
     public boolean getReusingStore() {
-    	return _reusingStore;
+        return _reusingStore;
     }
 
 }

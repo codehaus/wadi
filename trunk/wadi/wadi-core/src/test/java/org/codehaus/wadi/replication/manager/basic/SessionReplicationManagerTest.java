@@ -44,7 +44,7 @@ public class SessionReplicationManagerTest extends RMockTestCase {
     }
     
     public void testCreate() throws Exception {
-        WebSession session = new DistributableSession(new DummyDistributableSessionConfig());
+        WebSession session = newWebSession();
         
         repManager.create(key, session.getBodyAsByteArray());
         startVerification();
@@ -54,7 +54,7 @@ public class SessionReplicationManagerTest extends RMockTestCase {
     }
 
     public void testUpdate() throws Exception {
-        WebSession session = new DistributableSession(new DummyDistributableSessionConfig());
+        WebSession session = newWebSession();
         
         repManager.update(key, session.getBodyAsByteArray());
         startVerification();
@@ -72,8 +72,8 @@ public class SessionReplicationManagerTest extends RMockTestCase {
     }
 
     public void testAcquirePrimary() throws Exception {
-        WebSession session = new DistributableSession(new DummyDistributableSessionConfig());
-        
+        WebSession session = newWebSession();
+
         repManager.acquirePrimary(key);
         modify().returnValue(session.getBodyAsByteArray());
 
@@ -116,5 +116,11 @@ public class SessionReplicationManagerTest extends RMockTestCase {
         boolean manage = manager.managePrimary(key);
         assertTrue(manage);
     }
-    
+
+    private WebSession newWebSession() {
+        WebSession session = new DistributableSession(new DummyDistributableSessionConfig());
+        session.init(1, 2, 3, "name");
+        return session;
+    }
+
 }

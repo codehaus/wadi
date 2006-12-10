@@ -22,13 +22,11 @@ import javax.servlet.http.HttpSessionAttributeListener;
 import javax.servlet.http.HttpSessionListener;
 
 import org.codehaus.wadi.Invocation;
-import org.codehaus.wadi.SessionIdFactory;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValueHelper;
 import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.impl.SimpleStreamer;
 import org.codehaus.wadi.impl.SimpleValuePool;
-import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 import org.codehaus.wadi.web.AttributesFactory;
 import org.codehaus.wadi.web.DistributableSessionConfig;
 import org.codehaus.wadi.web.Router;
@@ -49,7 +47,6 @@ public class DummyDistributableSessionConfig implements DistributableSessionConf
     private final ValuePool _valuePool = new SimpleValuePool(new DistributableValueFactory());
     private final AttributesFactory _attributesFactory = new DistributableAttributesFactory();
     private final WebSessionWrapperFactory _sessionWrapperFactory = new StandardSessionWrapperFactory();
-    private final SessionIdFactory _sessionIdFactory = new TomcatSessionIdFactory();
     private final int _maxInactiveInterval = 30 * 60;
     private final Router _router = new DummyRouter();
 
@@ -95,10 +92,6 @@ public class DummyDistributableSessionConfig implements DistributableSessionConf
 
     public WebSessionWrapperFactory getSessionWrapperFactory() {
         return _sessionWrapperFactory;
-    }
-
-    public SessionIdFactory getSessionIdFactory() {
-        return _sessionIdFactory;
     }
 
     public int getMaxInactiveInterval() {

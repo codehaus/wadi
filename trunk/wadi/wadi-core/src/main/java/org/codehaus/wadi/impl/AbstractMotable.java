@@ -21,8 +21,6 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.RehydrationException;
 
@@ -35,11 +33,8 @@ import EDU.oswego.cs.dl.util.concurrent.WriterPreferenceReadWriteLock;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-
 public abstract class AbstractMotable extends SimpleEvictable implements Motable, Serializable {
-    protected static Log _log = LogFactory.getLog(AbstractMotable.class);
-
-    protected String _name;
+    protected String name;
     protected boolean newSession = true;
     protected transient ReadWriteLock readWriteLock;
 
@@ -53,7 +48,7 @@ public abstract class AbstractMotable extends SimpleEvictable implements Motable
     
     public void init(long creationTime, long lastAccessedTime, int maxInactiveInterval, String name) {
         init(creationTime, lastAccessedTime, maxInactiveInterval);
-        _name = name;
+        this.name = name;
     }
 
     public void rehydrate(long creationTime, long lastAccessedTime, int maxInactiveInterval, String name, byte[] body)
@@ -68,7 +63,8 @@ public abstract class AbstractMotable extends SimpleEvictable implements Motable
 
     public void copy(Motable motable) throws Exception {
         super.copy(motable);
-        _name = motable.getName();
+        name = motable.getName();
+        newSession = false;
         setBodyAsByteArray(motable.getBodyAsByteArray());
     }
 
@@ -78,25 +74,34 @@ public abstract class AbstractMotable extends SimpleEvictable implements Motable
     }
 
     public String getName() {
-        return _name;
+        return name;
+    }
+    
+    public boolean isNew() {
+        return newSession;
     }
 
     public void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
         super.readContent(oi);
-        _name = (String) oi.readObject();
+        name = oi.readUTF();
+        newSession = false;
         readWriteLock = newReadWriteLock();
     }
 
     public void writeContent(ObjectOutput oo) throws IOException {
         super.writeContent(oo);
-        oo.writeObject(_name);
+        oo.writeUTF(name);
     }
 
     protected ReadWriteLock newReadWriteLock() {
         return new WriterPreferenceReadWriteLock();
     }
 
-    private void initExisting(long creationTime, long lastAccessedTime, int maxInactiveInterval, String name, byte[] body) throws RehydrationException {
+    protected void initExisting(long creationTime,
+            long lastAccessedTime,
+            int maxInactiveInterval,
+            String name,
+            byte[] body) throws RehydrationException {
         newSession = false;
         init(creationTime, lastAccessedTime, maxInactiveInterval, name);
         try {
@@ -106,6 +111,10 @@ public abstract class AbstractMotable extends SimpleEvictable implements Motable
         }
     }
 
+    protected void destroyForMotion() throws Exception {
+        super.destroy();
+    }
+    
 }
 
 

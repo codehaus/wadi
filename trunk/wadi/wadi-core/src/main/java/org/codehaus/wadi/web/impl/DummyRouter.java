@@ -18,19 +18,12 @@ package org.codehaus.wadi.web.impl;
 
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.web.Router;
-import org.codehaus.wadi.web.RouterConfig;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
 public class DummyRouter implements Router {
-
-	protected RouterConfig _config;
-
-	public void init(RouterConfig config) {
-		_config=config;
-	}
 
 	public String strip(String session) {
 		return session;
