@@ -80,7 +80,7 @@ public class SimplePartitionManagerSmokeTest extends RMockTestCase {
             loadThread.start();
         }
         
-        boolean success = failureLatch.attempt(20000);
+        boolean success = failureLatch.attempt(10000);
         rebalanceThread.interrupt();
         for (Iterator iter = loadThreads.iterator(); iter.hasNext();) {
             Thread loadThread = (Thread) iter.next();
@@ -130,7 +130,7 @@ public class SimplePartitionManagerSmokeTest extends RMockTestCase {
         public void run() {
             while (!Thread.interrupted()) {
                 try {
-                    Thread.sleep(3000);
+                    Thread.sleep(100);
                     version++;
                     doRun();
                     nbRebalancing++;

@@ -33,6 +33,7 @@ import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.impl.ServiceEndpointBuilder;
 import org.codehaus.wadi.location.Partition;
 import org.codehaus.wadi.location.PartitionManager;
+import org.codehaus.wadi.location.impl.local.LocalPartition;
 import org.codehaus.wadi.location.partition.BasicPartitionRepopulateTask;
 import org.codehaus.wadi.location.partition.PartitionEvacuationRequest;
 import org.codehaus.wadi.location.partition.PartitionEvacuationResponse;
@@ -350,6 +351,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionManage
                 PartitionInfo partitionInfo = (PartitionInfo) iter.next();
                 PartitionFacade facade = partitions[partitionInfo.getIndex()];
                 LocalPartition localPartition = (LocalPartition) facade.setContentRemote(partitionInfo, peer);
+                localPartition.waitForClientCompletion();
                 partitionInfoToLocalPartition.put(partitionInfo, localPartition);
             }
             PartitionTransferRequest request = new PartitionTransferRequest(partitionInfoToLocalPartition);

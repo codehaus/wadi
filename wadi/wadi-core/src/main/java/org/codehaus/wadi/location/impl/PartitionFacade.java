@@ -18,6 +18,7 @@ package org.codehaus.wadi.location.impl;
 
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.location.Partition;
+import org.codehaus.wadi.location.impl.local.LocalPartition;
 import org.codehaus.wadi.partition.PartitionInfo;
 
 /**
