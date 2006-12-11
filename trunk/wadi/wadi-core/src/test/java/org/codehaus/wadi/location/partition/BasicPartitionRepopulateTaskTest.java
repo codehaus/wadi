@@ -28,7 +28,7 @@ import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.Quipu;
-import org.codehaus.wadi.location.impl.LocalPartition;
+import org.codehaus.wadi.location.impl.local.LocalPartition;
 
 import com.agical.rmock.core.describe.ExpressionDescriber;
 import com.agical.rmock.core.match.Expression;

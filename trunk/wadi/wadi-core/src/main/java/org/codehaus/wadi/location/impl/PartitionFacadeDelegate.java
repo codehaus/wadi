@@ -24,6 +24,7 @@ import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.PeerInfo;
 import org.codehaus.wadi.location.Partition;
 import org.codehaus.wadi.location.SessionRequestMessage;
+import org.codehaus.wadi.location.impl.local.LocalPartition;
 import org.codehaus.wadi.location.session.DeleteIMToPM;
 import org.codehaus.wadi.location.session.EvacuateIMToPM;
 import org.codehaus.wadi.location.session.InsertIMToPM;

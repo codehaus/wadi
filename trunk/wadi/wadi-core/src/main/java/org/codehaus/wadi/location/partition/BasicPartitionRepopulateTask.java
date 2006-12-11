@@ -25,7 +25,7 @@ import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.Quipu;
-import org.codehaus.wadi.location.impl.LocalPartition;
+import org.codehaus.wadi.location.impl.local.LocalPartition;
 
 /**
  * 

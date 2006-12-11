@@ -28,7 +28,7 @@ import org.codehaus.wadi.group.ServiceEndpoint;
 import org.codehaus.wadi.group.impl.AbstractMsgDispatcher;
 import org.codehaus.wadi.group.impl.RendezVousMsgDispatcher;
 import org.codehaus.wadi.location.Partition;
-import org.codehaus.wadi.location.impl.LocalPartition;
+import org.codehaus.wadi.location.impl.local.LocalPartition;
 import org.codehaus.wadi.location.session.MoveIMToPM;
 import org.codehaus.wadi.location.session.MovePMToIM;
 
