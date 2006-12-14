@@ -16,7 +16,6 @@
  */
 package org.codehaus.wadi;
 
-import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
  * Abstracts out a strategy for either request or state relocation. This is necessary to
@@ -31,9 +30,8 @@ public interface Relocater {
      * @param invocation
 	 * @param name
 	 * @param immoter
-	 * @param motionLock
 	 * @param b 
 	 * @return - whether, or not, the request was contextualised
 	 */
-    boolean relocate(Invocation invocation, String name, Immoter immoter, Sync motionLock, boolean shuttingDown) throws InvocationException;
+    boolean relocate(Invocation invocation, String name, Immoter immoter, boolean shuttingDown) throws InvocationException;
 }

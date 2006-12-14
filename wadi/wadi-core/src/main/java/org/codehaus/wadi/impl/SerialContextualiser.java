@@ -51,11 +51,10 @@ public class SerialContextualiser extends AbstractDelegatingContextualiser {
     public boolean contextualise(Invocation invocation,
             String key,
             Immoter immoter,
-            Sync invocationLock,
             boolean exclusiveOnly) throws InvocationException {
+        Sync invocationLock = collapser.getLock(key);
         try {
             // the promotion begins here. allocate a lock and continue...
-            invocationLock = collapser.getLock(key);
             try {
                 Utils.acquireUninterrupted("Invocation(SerialContextualiser)", key, invocationLock);
             } catch (TimeoutException e) {
@@ -76,7 +75,7 @@ public class SerialContextualiser extends AbstractDelegatingContextualiser {
                 // session in memory, then run the request
                 // and release the lock.
                 try {
-                    return immoter.contextualise(invocation, key, context, invocationLock);
+                    return immoter.contextualise(invocation, key, context);
                 } finally {
                     map.release(context);
                 }
@@ -87,7 +86,7 @@ public class SerialContextualiser extends AbstractDelegatingContextualiser {
             // it may be below us...
             // lock is to be released as soon as context is available to
             // subsequent contextualisations...
-            return next.contextualise(invocation, key, immoter, invocationLock, exclusiveOnly);
+            return next.contextualise(invocation, key, immoter, exclusiveOnly);
         } finally {
             Utils.release("Invocation", key, invocationLock);
         }

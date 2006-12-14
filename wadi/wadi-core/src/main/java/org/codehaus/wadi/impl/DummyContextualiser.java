@@ -23,8 +23,6 @@ import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.Motable;
 
-import EDU.oswego.cs.dl.util.concurrent.Sync;
-
 /**
  * A Contextualiser that does no contextualising
  *
@@ -32,12 +30,11 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * @version $Revision$
  */
 public class DummyContextualiser extends AbstractContextualiser {
-	
     protected final Evicter _evicter = new DummyEvicter();
     protected final Immoter _immoter = new DummyImmoter();
 
-    public boolean contextualise(Invocation invocation, String key, Immoter immoter, Sync invocationLock,
-            boolean exclusiveOnly) throws InvocationException {
+    public boolean contextualise(Invocation invocation, String key, Immoter immoter, boolean exclusiveOnly)
+            throws InvocationException {
         return false;
     }
 
@@ -58,7 +55,7 @@ public class DummyContextualiser extends AbstractContextualiser {
             return new SimpleMotable();
         }
 
-        public boolean contextualise(Invocation invocation, String id, Motable immotable, Sync motionLock)
+        public boolean contextualise(Invocation invocation, String id, Motable immotable)
                 throws InvocationException {
             return false;
         }

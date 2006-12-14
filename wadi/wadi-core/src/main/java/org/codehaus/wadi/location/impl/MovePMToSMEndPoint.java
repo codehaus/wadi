@@ -37,7 +37,6 @@ import org.codehaus.wadi.location.session.MoveSMToPM;
 import org.codehaus.wadi.servicespace.ServiceName;
 import org.codehaus.wadi.servicespace.ServiceSpace;
 
-import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
  * 
@@ -82,7 +81,7 @@ public class MovePMToSMEndPoint implements Lifecycle, MovePMToSMEndPointMessageL
             Peer imPeer = request.getIMPeer();
             RelocationImmoter promoter = new RelocationImmoter(message, request);
             // if we own session, this will send the correct response...
-            contextualiser.contextualise(null, (String) key, promoter, null, true);
+            contextualiser.contextualise(null, (String) key, promoter, true);
             if (!promoter.isFound()) {
                 log.warn("state not found - perhaps it has just been destroyed: " + key);
                 MoveSMToIM req = new MoveSMToIM(null);
@@ -127,7 +126,7 @@ public class MovePMToSMEndPoint implements Lifecycle, MovePMToSMEndPointMessageL
             return true;
         }
         
-        public boolean contextualise(Invocation invocation, String id, Motable immotable, Sync motionLock)
+        public boolean contextualise(Invocation invocation, String id, Motable immotable)
                 throws InvocationException {
             return false;
         }

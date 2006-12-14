@@ -29,8 +29,6 @@ import org.codehaus.wadi.Session;
 import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.core.ConcurrentMotableMap;
 
-import EDU.oswego.cs.dl.util.concurrent.Sync;
-
 /**
  * A Contextualiser that stores its state in Memory as Java Objects
  *
@@ -58,7 +56,7 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
         _evictionEmoter = _emoter;
     }
 
-    protected boolean handleLocally(Invocation invocation, String id, Sync invocationLock, Motable motable) throws InvocationException {
+    protected boolean handleLocally(Invocation invocation, String id, Motable motable) throws InvocationException {
         motable.setLastAccessedTime(System.currentTimeMillis());
         // we need a solution - MemoryContextualiser needs to separate Contexts and Motables cleanly...
         invocation.setSession((Session) motable); 
@@ -85,9 +83,9 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
             return _pool.take();
         }
 
-        public boolean contextualise(Invocation invocation, String id, Motable immotable, Sync motionLock)
+        public boolean contextualise(Invocation invocation, String id, Motable immotable)
                 throws InvocationException {
-            return handleLocally(invocation, id, motionLock, immotable);
+            return handleLocally(invocation, id, immotable);
         }
 
     }

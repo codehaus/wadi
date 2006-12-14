@@ -90,7 +90,7 @@ public class HybridRelocaterTest extends RMockTestCase {
         startVerification();
         
         HybridRelocater relocater = new HybridRelocater(serviceSpace, manager, timeout);
-        boolean relocated = relocater.relocate(invocation, key, immoter, null, shuttingDown);
+        boolean relocated = relocater.relocate(invocation, key, immoter, shuttingDown);
         assertFalse(relocated);
     }
 

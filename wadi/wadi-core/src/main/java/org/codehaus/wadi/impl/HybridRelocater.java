@@ -72,13 +72,13 @@ public class HybridRelocater implements Relocater {
         localPeer = dispatcher.getCluster().getLocalPeer();
     }
 
-    public boolean relocate(Invocation invocation, String name, Immoter immoter, Sync motionLock, boolean shuttingDown) throws InvocationException {
+    public boolean relocate(Invocation invocation, String name, Immoter immoter, boolean shuttingDown) throws InvocationException {
         try {
             Motable immotable = doRelocate(invocation, name, shuttingDown, resTimeout, immoter);
             if (null == immotable) {
                 return false;
             }
-            return immoter.contextualise(invocation, name, immotable, motionLock);
+            return immoter.contextualise(invocation, name, immotable);
         } catch (Exception e) {
             log.error("unexpected error", e);
             return false;
@@ -152,8 +152,8 @@ public class HybridRelocater implements Relocater {
             this.emotable = emotable;
         }
 
-        public boolean contextualise(Invocation invocation, String id, Motable immotable, Sync motionLock) throws InvocationException {
-            return delegate.contextualise(invocation, id, immotable, motionLock);
+        public boolean contextualise(Invocation invocation, String id, Motable immotable) throws InvocationException {
+            return delegate.contextualise(invocation, id, immotable);
         }
 
         public boolean immote(Motable emotable, Motable immotable) {

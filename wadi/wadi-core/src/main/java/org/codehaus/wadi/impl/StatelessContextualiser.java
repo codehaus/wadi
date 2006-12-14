@@ -30,8 +30,6 @@ import org.codehaus.wadi.web.PoolableHttpServletRequestWrapper;
 import org.codehaus.wadi.web.impl.StatelessHttpServletRequestWrapper;
 import org.codehaus.wadi.web.impl.WebInvocation;
 
-import EDU.oswego.cs.dl.util.concurrent.Sync;
-
 //N.B.
 //Ultimately this should support pluggable and combinable 'Tests' - i.e. URIPatternTest
 //MethodPatternTest & AndTest...
@@ -82,17 +80,13 @@ public class StatelessContextualiser extends AbstractDelegatingContextualiser {
 		}
 	};
 
-	public boolean contextualise(Invocation invocation, String key, Immoter immoter, Sync invocationLock, boolean exclusiveOnly) throws InvocationException {
+	public boolean contextualise(Invocation invocation, String key, Immoter immoter, boolean exclusiveOnly) throws InvocationException {
 		WebInvocation context = (WebInvocation) invocation;
 		HttpServletRequest hreq = context.getHreq();
 		if (hreq==null || isStateful(hreq)) {
 			// we cannot optimise...
-			return next.contextualise(invocation, key, immoter, invocationLock, exclusiveOnly);
+			return next.contextualise(invocation, key, immoter, exclusiveOnly);
 		} else {
-			// we know that we can run the request locally...
-			if (invocationLock!=null) {
-				Utils.release("Invocation", key, invocationLock);
-			}
 			// wrap the request so that session is inaccessible and process here...
 			PoolableHttpServletRequestWrapper wrapper=(PoolableHttpServletRequestWrapper)_wrapper.get();
 			wrapper.init(invocation, null);
