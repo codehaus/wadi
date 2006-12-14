@@ -63,7 +63,7 @@ public class AbstractTestRelocation extends TestCase {
             return _key;
         }
 
-        public boolean getRelocatable() {
+        public boolean isRelocatable() {
             return true;
         }
 

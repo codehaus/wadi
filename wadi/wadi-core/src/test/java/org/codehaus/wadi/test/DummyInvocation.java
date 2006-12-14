@@ -43,7 +43,7 @@ public class DummyInvocation implements Invocation {
         throw new UnsupportedOperationException("NYI");
     }
 
-    public boolean getRelocatable() {
+    public boolean isRelocatable() {
         return false;
     }
     

@@ -68,7 +68,7 @@ public interface Invocation {
      * 
      * @return whether the Invocation is capable of relocating itself.
      */
-    boolean getRelocatable();
+    boolean isRelocatable();
     
     /**
      * Ask this Invocation to relocate itself to a given EndPoint

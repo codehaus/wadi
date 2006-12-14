@@ -86,42 +86,59 @@ public class HybridRelocater implements Relocater {
     }
     
     protected Motable doRelocate(Invocation invocation, String sessionName, boolean shuttingDown, long timeout, Immoter immoter) throws Exception {
-        MoveIMToPM request = new MoveIMToPM(localPeer, sessionName, !shuttingDown, invocation.getRelocatable());
+        MoveIMToPM request = new MoveIMToPM(localPeer, sessionName, !shuttingDown, invocation.isRelocatable());
         Envelope message = partitionManager.getPartition(sessionName).exchange(request, timeout);
 
         if (message == null) {
-            log.error("Something went wrong");
+            log.error("Something went wrong during a session relocation.");
             return null;
         }
 
         Serializable dm = message.getPayload();
         if (dm instanceof MoveSMToIM) {
-            // We are receiving an incoming state migration...
-            MoveSMToIM req = (MoveSMToIM) dm;
-            // insert motable into contextualiser stack...
-            Motable emotable = req.getMotable();
-            if (emotable == null) {
-                log.warn("failed relocation - 0 bytes arrived: " + sessionName);
-                return null;
-            } else {
-                Emoter emoter = new SMToIMEmoter(message);
-                immoter = new SMToIMImmoter(immoter, emotable);
-                Motable immotable = Utils.mote(emoter, immoter, emotable, sessionName);
-                return immotable;
-            }
+            return handleSessionRelocation(sessionName, immoter, message, dm);
         } else if (dm instanceof MovePMToIM) {
-            // The Partition manager had no record of our session key - either the session
-            // has already been destroyed, or never existed...
-            log.info("Unknown session [" + sessionName + "]");
-            return null;
+            return handleUnknownSession(sessionName);
         } else if (dm instanceof MovePMToIMInvocation) {
-            // we are going to relocate our Invocation to the SM...
-            Peer smPeer = ((MovePMToIMInvocation) dm).getStateMaster();
-            EndPoint endPoint=smPeer.getPeerInfo().getEndPoint();
-            invocation.relocate(endPoint);
+            return handleInvocationRelocation(invocation, dm);
+        } else {
+            throw new WADIRuntimeException("unexpected response returned [" + dm + "]");
+        }
+    }
+
+    protected Motable handleInvocationRelocation(Invocation invocation, Serializable dm) throws InvocationException {
+        // we are going to relocate our Invocation to the SM...
+        Peer smPeer = ((MovePMToIMInvocation) dm).getStateMaster();
+        EndPoint endPoint = smPeer.getPeerInfo().getEndPoint();
+        invocation.relocate(endPoint);
+        return null;
+    }
+
+    protected Motable handleUnknownSession(String sessionName) {
+        // The Partition manager had no record of our session key - either the session
+        // has already been destroyed, or never existed...
+        log.info("Unknown session [" + sessionName + "]");
+        return null;
+    }
+
+    protected Motable handleSessionRelocation(String sessionName, Immoter immoter, Envelope message, Serializable dm) {
+        MoveSMToIM req = (MoveSMToIM) dm;
+        Motable emotable = req.getMotable();
+        if (emotable == null) {
+            log.warn("failed relocation - 0 bytes arrived: " + sessionName);
+            try {
+                MoveIMToSM response = new MoveIMToSM(false);
+                dispatcher.reply(message, response);
+            } catch (Exception e) {
+                log.warn(e);
+            }
             return null;
         } else {
-            throw new WADIRuntimeException("unexpected response returned - what should I do? : " + dm);
+            // We are receiving an incoming state migration. Insert motable into contextualiser stack...
+            Emoter emoter = new SMToIMEmoter(message);
+            immoter = new SMToIMImmoter(immoter, emotable);
+            Motable immotable = Utils.mote(emoter, immoter, emotable, sessionName);
+            return immotable;
         }
     }
 
