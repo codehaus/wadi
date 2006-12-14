@@ -29,29 +29,21 @@ import org.codehaus.wadi.location.impl.SessionRequestImpl;
 public class MovePMToSM extends SessionRequestImpl implements Serializable {
 
 	protected final Peer _im;
-    protected final Peer _pm;
     protected final String _imCorrelationId;
 
-    public MovePMToSM(Object key, Peer im, Peer pm, String imCorrelationId) {
+    public MovePMToSM(Object key, Peer im, String imCorrelationId) {
         super(key);
         if (null == im) {
             throw new IllegalArgumentException("im is required");
-        } else if (null == pm) {
-            throw new IllegalArgumentException("pm is required");
         } else if (null == imCorrelationId) {
             throw new IllegalArgumentException("imCorrelationId is required");
         }
         _im = im;
-        _pm = im;
         _imCorrelationId = imCorrelationId;
     }
 
     public Peer getIMPeer() {
         return _im;
-    }
-
-    public Peer getPMPeer() {
-        return _pm;
     }
 
     public String getIMCorrelationId() {

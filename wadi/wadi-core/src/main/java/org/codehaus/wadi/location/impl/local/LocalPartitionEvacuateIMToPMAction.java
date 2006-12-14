@@ -54,20 +54,23 @@ public class LocalPartitionEvacuateIMToPMAction extends AbstractLocalPartitionAc
             Sync lock = location.getExclusiveLock();
             try {
                 lock.acquire();
-                oldPeer = location.getSMPeer();
-                if (oldPeer == newPeer) {
-                    log.warn("evacuate [" + key + "]@[" + newPeer + "] failed; evacuee is already there");
-                } else {
-                    location.setPeer(newPeer);
-                    if (log.isDebugEnabled()) {
-                        log.debug("evacuate [" + request.getKey() + "] [" + oldPeer + "]->[" + newPeer + "]");
+                try {
+                    oldPeer = location.getSMPeer();
+                    if (oldPeer == newPeer) {
+                        log.warn("evacuate [" + key + "]@[" + newPeer + "] failed; evacuee is already there");
+                    } else {
+                        location.setPeer(newPeer);
+                        if (log.isDebugEnabled()) {
+                            log.debug("evacuate [" + request.getKey() + "] [" + oldPeer + "]->[" + newPeer + "]");
+                        }
+                        success = true;
                     }
-                    success = true;
+                } finally {
+                    lock.release();
                 }
             } catch (InterruptedException e) {
                 log.error("unexpected interruption waiting to perform relocation: " + key, e);
-            } finally {
-                lock.release();
+                Thread.currentThread().interrupt();
             }
         }
 

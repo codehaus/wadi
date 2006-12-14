@@ -253,7 +253,7 @@ public class StackContext {
 
     protected Contextualiser newReplicaAwareContextualiser(Contextualiser next) {
         ReplicationManager sessionRepManager = new SessionReplicationManager(replicationManager, sessionPool);
-        return new ReplicaAwareContextualiser(next, sessionRepManager);
+        return new ReplicaAwareContextualiser(next, sessionRepManager, stateManager);
     }
 
     public PartitionManager getPartitionManager() {

@@ -68,13 +68,12 @@ public class LocalPartitionMoveIMToPMAction extends AbstractLocalPartitionAction
             // if the InvocationMaster is shuttingDown, we know we should relocate the Invocation - lets go with that 
             // for now...
             // if the StateMaster is shuttingDown, we know we should relocate the session - but how would we know ?
-            
             Peer imPeer = request.getIMPeer();
             Peer pmPeer = dispatcher.getCluster().getLocalPeer();
             String sourceCorrelationId = message.getSourceCorrelationId();
             boolean relocateSession = request.isRelocateSession();
             if (relocateSession) {
-                relocateSession(location, imPeer, pmPeer, sourceCorrelationId);
+                relocateSession(location, imPeer, sourceCorrelationId);
             } else {
                 relocateInvocation(location, imPeer, pmPeer, sourceCorrelationId);
             }
@@ -83,7 +82,7 @@ public class LocalPartitionMoveIMToPMAction extends AbstractLocalPartitionAction
         }
     }
 
-    protected void relocateSession(Location location, Peer imPeer, Peer pmPeer, String imCorrelationId)
+    protected void relocateSession(Location location, Peer imPeer, String imCorrelationId)
             throws MessageExchangeException {
         Object key = location.getKey();
         // session does exist - we need to ask SM to move it to IM
@@ -91,44 +90,52 @@ public class LocalPartitionMoveIMToPMAction extends AbstractLocalPartitionAction
         try {
             // ensures that no-one else tries to relocate session whilst we are doing so...
             // wait til we have a lock on Location before retrieving the SM
-            lock.acquire(); 
-            Peer smPeer = location.getSMPeer();
-            if (smPeer == imPeer) {
-                // session does exist - but is already located at the IM
-                // whilst we were waiting for the partition lock, another thread
-                // must have migrated the session to the IM...
-                // How can this happen - the first Thread should have been
-                // holding the InvocationLock...
-                throw new WADIRuntimeException("session [" + key + "] already at [" + imPeer + "]; should not happen");
-            }
-
-            MovePMToSM request = new MovePMToSM(key, imPeer, pmPeer, imCorrelationId);
-            Envelope tmp;
+            lock.acquire();
             try {
-                tmp = dispatcher.exchangeSend(smPeer.getAddress(), request, relocationTimeout);
-            } catch (MessageExchangeException e) {
-                log.error("move [" + key + "]@[" + smPeer + "]->[" + imPeer + "] failed", e);
-                return;
-            }
-
-            MoveSMToPM response = (MoveSMToPM) tmp.getPayload();
-            if (response.getSuccess()) {
-                // alter location
-                location.setPeer(imPeer);
-                if (log.isDebugEnabled()) {
-                    log.debug("move [" + key + "]@[" + smPeer + "]->[" + imPeer + "]");
-                }
-            } else {
-                log.warn("move [" + key + "]@[" + smPeer + "]->[" + imPeer + "] failed");
+                doRelocateSession(location, imPeer, imCorrelationId);
+            } finally {
+                lock.release();
             }
         } catch (InterruptedException e) {
             log.error("unexpected interruption waiting to perform Session relocation: " + key, e);
             Thread.currentThread().interrupt();
-        } finally {
-            lock.release();
         }
     }
 
+    protected void doRelocateSession(Location location, Peer imPeer, String imCorrelationId)
+            throws MessageExchangeException {
+        Object key = location.getKey();
+        Peer smPeer = location.getSMPeer();
+        if (smPeer == imPeer) {
+            // session does exist - but is already located at the IM
+            // whilst we were waiting for the partition lock, another thread
+            // must have migrated the session to the IM...
+            // How can this happen - the first Thread should have been
+            // holding the InvocationLock...
+            throw new WADIRuntimeException("session [" + key + "] already at [" + imPeer + "]; should not happen");
+        }
+        
+        MovePMToSM request = new MovePMToSM(key, imPeer, imCorrelationId);
+        Envelope tmp;
+        try {
+            tmp = dispatcher.exchangeSend(smPeer.getAddress(), request, relocationTimeout);
+        } catch (MessageExchangeException e) {
+            log.error("move [" + key + "]@[" + smPeer + "]->[" + imPeer + "] failed", e);
+            return;
+        }
+        
+        MoveSMToPM response = (MoveSMToPM) tmp.getPayload();
+        if (response.getSuccess()) {
+            // alter location
+            location.setPeer(imPeer);
+            if (log.isDebugEnabled()) {
+                log.debug("move [" + key + "]@[" + smPeer + "]->[" + imPeer + "]");
+            }
+        } else {
+            log.warn("move [" + key + "]@[" + smPeer + "]->[" + imPeer + "] failed");
+        }
+    }
+    
     protected void relocateInvocation(Location location, Peer imPeer, Peer pmPeer, String imCorrelationId)
             throws MessageExchangeException {
         Object key = location.getKey();
