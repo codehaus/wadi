@@ -80,7 +80,7 @@ public class WebInvocation implements Invocation {
         }
     }
 
-    public boolean getRelocatable() {
+    public boolean isRelocatable() {
         return true;
     }
 
