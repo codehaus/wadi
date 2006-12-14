@@ -121,6 +121,9 @@ public class LocalPartitionMoveIMToPMAction extends AbstractLocalPartitionAction
             tmp = dispatcher.exchangeSend(smPeer.getAddress(), request, relocationTimeout);
         } catch (MessageExchangeException e) {
             log.error("move [" + key + "]@[" + smPeer + "]->[" + imPeer + "] failed", e);
+            synchronized (nameToLocation) {
+                location = (Location) nameToLocation.remove(key);
+            }
             return;
         }
         
@@ -132,6 +135,9 @@ public class LocalPartitionMoveIMToPMAction extends AbstractLocalPartitionAction
                 log.debug("move [" + key + "]@[" + smPeer + "]->[" + imPeer + "]");
             }
         } else {
+            synchronized (nameToLocation) {
+                location = (Location) nameToLocation.remove(key);
+            }
             log.warn("move [" + key + "]@[" + smPeer + "]->[" + imPeer + "] failed");
         }
     }
