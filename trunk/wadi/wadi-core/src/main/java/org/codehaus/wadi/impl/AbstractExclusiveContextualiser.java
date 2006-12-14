@@ -33,8 +33,6 @@ import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.PartitionMapper;
 import org.codehaus.wadi.core.ConcurrentMotableMap;
 
-import EDU.oswego.cs.dl.util.concurrent.Sync;
-
 /**
  * Basic implementation for Contextualisers which maintain a local Map of references
  * to Motables.
@@ -88,7 +86,6 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
     public final boolean handle(Invocation invocation,
             String id,
             Immoter immoter,
-            Sync motionLock,
             boolean exclusiveOnly) throws InvocationException {
         Motable emotable = acquire(id, exclusiveOnly);
         if (emotable == null) {
@@ -96,9 +93,9 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
         }
         try {
             if (null != immoter) {
-                return promote(invocation, id, immoter, motionLock, emotable);
+                return promote(invocation, id, immoter, emotable);
             } else {
-                return handleLocally(invocation, id, motionLock, emotable);
+                return handleLocally(invocation, id, emotable);
             }
         } finally {
             release(emotable, exclusiveOnly);
@@ -145,8 +142,7 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
         }
     }
 
-    protected boolean handleLocally(Invocation invocation, String id, Sync invocationLock, Motable motable)
-            throws InvocationException {
+    protected boolean handleLocally(Invocation invocation, String id, Motable motable) throws InvocationException {
         return false;
     }
 

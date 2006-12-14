@@ -23,8 +23,6 @@ import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.Motable;
 
-import EDU.oswego.cs.dl.util.concurrent.Sync;
-
 /**
  * Abstract base for Contextualisers that are 'chained' - in other words - arranged in a single linked list
  *
@@ -37,14 +35,14 @@ public abstract class AbstractMotingContextualiser extends AbstractChainedContex
 		super(next);
 	}
 	
-	public boolean contextualise(Invocation invocation, String key, Immoter immoter, Sync invocationLock, boolean exclusiveOnly) throws InvocationException {
-        boolean handled = handle(invocation, key, immoter, invocationLock, exclusiveOnly);
+	public boolean contextualise(Invocation invocation, String key, Immoter immoter, boolean exclusiveOnly) throws InvocationException {
+        boolean handled = handle(invocation, key, immoter, exclusiveOnly);
         if (handled) {
             return true;
         } else if (exclusiveOnly && !next.isExclusive()) {
             return false;
         }
-        return next.contextualise(invocation, key, getPromoter(immoter), invocationLock, exclusiveOnly);
+        return next.contextualise(invocation, key, getPromoter(immoter), exclusiveOnly);
 	}
 	
     public void promoteToExclusive(Immoter immoter) {
@@ -82,21 +80,21 @@ public abstract class AbstractMotingContextualiser extends AbstractChainedContex
 
     protected abstract Motable get(String id, boolean exclusiveOnly);
 
-    protected boolean handle(Invocation invocation, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws InvocationException {
+    protected boolean handle(Invocation invocation, String id, Immoter immoter, boolean exclusiveOnly) throws InvocationException {
 		if (null != immoter) {
             Motable emotable = get(id, exclusiveOnly);
             if (null != emotable) {
-                return promote(invocation, id, immoter, motionLock, emotable);
+                return promote(invocation, id, immoter, emotable);
             }
         }
         return false;
 	}
 
-    protected boolean promote(Invocation invocation, String id, Immoter immoter, Sync motionLock, Motable emotable) throws InvocationException {
+    protected boolean promote(Invocation invocation, String id, Immoter immoter, Motable emotable) throws InvocationException {
         Emoter emoter = getEmoter();
         Motable immotable = Utils.mote(emoter, immoter, emotable, id);
         if (immotable != null) {
-            return immoter.contextualise(invocation, id, immotable, motionLock);
+            return immoter.contextualise(invocation, id, immotable);
         } else {
             return false;
         }

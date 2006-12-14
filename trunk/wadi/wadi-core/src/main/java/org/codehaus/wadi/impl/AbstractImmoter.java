@@ -21,8 +21,6 @@ import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.Motable;
 
-import EDU.oswego.cs.dl.util.concurrent.Sync;
-
 /**
  * Abstract base for Immoters
  *
@@ -36,7 +34,7 @@ public abstract class AbstractImmoter implements Immoter {
         return true;
     }
     
-	public boolean contextualise(Invocation invocation, String id, Motable immotable, Sync motionLock) throws InvocationException {
+	public boolean contextualise(Invocation invocation, String id, Motable immotable) throws InvocationException {
 		// most Contextualisers cannot contextualise locally...
 		return false;
 	}

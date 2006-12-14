@@ -32,7 +32,6 @@ import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.Lifecycle;
 import org.codehaus.wadi.Manager;
 import org.codehaus.wadi.ManagerConfig;
-import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.PoolableInvocationWrapper;
 import org.codehaus.wadi.PoolableInvocationWrapperPool;
 import org.codehaus.wadi.SessionAlreadyExistException;
@@ -229,7 +228,7 @@ public class StandardManager implements Lifecycle, WebSessionConfig, Manager {
             // already associated with a session. strip off any routing info.
             String name = _router.strip(key);
             invocation.setRouter(_router);
-            if (!_contextualiser.contextualise(invocation, name, null, null, false)) {
+            if (!_contextualiser.contextualise(invocation, name, null, false)) {
                 log.error("could not acquire session: " + name);
                 if (_errorIfSessionNotAcquired) {
                     // send the client a 503...

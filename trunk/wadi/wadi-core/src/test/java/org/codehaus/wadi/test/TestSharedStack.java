@@ -132,7 +132,7 @@ public class TestSharedStack extends TestCase {
                 return true;
             }
         };
-        memory.contextualise(invocation, key, null, null, true);
+        memory.contextualise(invocation, key, null, true);
     }
     
 }

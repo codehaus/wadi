@@ -18,8 +18,6 @@ package org.codehaus.wadi;
 
 import java.util.Map;
 
-import EDU.oswego.cs.dl.util.concurrent.Sync;
-
 /**
  * Contextualising an Invocation is colocating it and the relevant Session within the same JVM and then
  * invoke()-ing the Invocation...
@@ -52,12 +50,11 @@ public interface Contextualiser extends Lifecycle {
      * @param invocation the Invocation
      * @param key the Session key
      * @param immoter an Immoter that can be used to promote the Session when found
-     * @param invocationLock a Lock that can be used to prevent more than one Invocation going to shared storage at the same time
      * @param exclusiveOnly whether we should only look in exclusive stores, or descend to shared ones as well
      * @return whether or not the Invocation was contextualised.
      * @throws InvocationException
      */
-    public boolean contextualise(Invocation invocation, String key, Immoter immoter, Sync invocationLock, boolean exclusiveOnly) throws InvocationException;
+    public boolean contextualise(Invocation invocation, String key, Immoter immoter, boolean exclusiveOnly) throws InvocationException;
 
     /**
      * Does this Contextualiser exclusively own, or share, the store in which it keeps its Sessions ?

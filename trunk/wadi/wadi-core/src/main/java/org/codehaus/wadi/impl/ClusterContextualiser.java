@@ -26,7 +26,6 @@ import org.codehaus.wadi.Relocater;
 import org.codehaus.wadi.location.PartitionManager;
 import org.codehaus.wadi.location.StateManager;
 
-import EDU.oswego.cs.dl.util.concurrent.Sync;
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
 
 /**
@@ -95,9 +94,9 @@ public class ClusterContextualiser extends AbstractSharedContextualiser {
         }
     }
 
-    public boolean handle(Invocation invocation, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly)
+    public boolean handle(Invocation invocation, String id, Immoter immoter, boolean exclusiveOnly)
             throws InvocationException {
-        return relocater.relocate(invocation, id, immoter, motionLock, shuttingDown.get());
+        return relocater.relocate(invocation, id, immoter, shuttingDown.get());
     }
 
     public void load(Emoter emoter, Immoter immoter) {
@@ -126,7 +125,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser {
             return stateManager.offerEmigrant(immotable);
         }
 
-        public boolean contextualise(Invocation invocation, String id, Motable immotable, Sync motionLock)
+        public boolean contextualise(Invocation invocation, String id, Motable immotable)
                 throws InvocationException {
             return false;
         }

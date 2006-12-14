@@ -16,7 +16,6 @@
  */
 package org.codehaus.wadi;
 
-import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
  * Basic API for motion of Motables IN to a container
@@ -30,5 +29,5 @@ public interface Immoter {
     
     Motable newMotable();
 
-    boolean contextualise(Invocation invocation, String id, Motable immotable, Sync motionLock) throws InvocationException;
+    boolean contextualise(Invocation invocation, String id, Motable immotable) throws InvocationException;
 }
