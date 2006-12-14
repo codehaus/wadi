@@ -80,19 +80,13 @@ public abstract class AbstractMotingContextualiser extends AbstractChainedContex
         return immoter; 
     }
 
-    protected abstract Motable acquire(String id, boolean exclusiveOnly);
+    protected abstract Motable get(String id, boolean exclusiveOnly);
 
-    protected abstract void release(Motable motable, boolean exclusiveOnly);
-	
     protected boolean handle(Invocation invocation, String id, Immoter immoter, Sync motionLock, boolean exclusiveOnly) throws InvocationException {
 		if (null != immoter) {
-            Motable emotable = acquire(id, exclusiveOnly);
+            Motable emotable = get(id, exclusiveOnly);
             if (null != emotable) {
-                try {
-                    return promote(invocation, id, immoter, motionLock, emotable);
-                } finally {
-                    release(emotable, exclusiveOnly);
-                }
+                return promote(invocation, id, immoter, motionLock, emotable);
             }
         }
         return false;

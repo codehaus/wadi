@@ -73,14 +73,10 @@ public class SharedStoreContextualiser extends AbstractSharedContextualiser {
         return new SharedJDBCImmoter();
     }
 
-    protected Motable acquire(String id, boolean exclusiveOnly) {
+    protected Motable get(String id, boolean exclusiveOnly) {
         throw new UnsupportedOperationException();
     }
 
-    protected void release(Motable motable, boolean exclusiveOnly) {
-        throw new UnsupportedOperationException();
-    }
-    
     /**
      * An Emoter that deals in terms of SharedJDBCMotables
      * 

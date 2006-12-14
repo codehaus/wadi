@@ -103,14 +103,10 @@ public class ClusterContextualiser extends AbstractSharedContextualiser {
     public void load(Emoter emoter, Immoter immoter) {
     }
 
-    protected Motable acquire(String id, boolean exclusiveOnly) {
+    protected Motable get(String id, boolean exclusiveOnly) {
         throw new UnsupportedOperationException();
     }
 
-    protected void release(Motable motable, boolean exclusiveOnly) {
-        throw new UnsupportedOperationException();
-    }
-    
     /**
      * Manage the immotion of a session into the cluster tier from another and
      * its emigration thence to another node.

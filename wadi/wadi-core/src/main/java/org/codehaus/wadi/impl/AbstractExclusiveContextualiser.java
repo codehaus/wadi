@@ -65,6 +65,10 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
         return true;
     }
     
+    protected Motable get(String id, boolean exclusiveOnly) {
+        throw new UnsupportedOperationException();
+    }
+    
     public Motable acquire(String id, boolean exclusiveOnly) {
         if (exclusiveOnly) {
             return map.acquireExclusive(id);
