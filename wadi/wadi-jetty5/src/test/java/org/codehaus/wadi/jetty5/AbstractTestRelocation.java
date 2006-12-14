@@ -42,8 +42,6 @@ import org.codehaus.wadi.web.impl.CommonsHttpProxy;
 import org.codehaus.wadi.web.impl.StandardHttpProxy;
 import org.codehaus.wadi.web.impl.WebHybridRelocater;
 
-import EDU.oswego.cs.dl.util.concurrent.Sync;
-
 /**
  * Unit Tests requiring a pair of Jetty's. Each one is set up with a Filter and Servlet placeholder.
  * These are injected with actual Filter and Servlet instances before the running of each test. This
@@ -76,13 +74,13 @@ public abstract class AbstractTestRelocation extends TestCase {
 			_delegate=delegate;
 		}
 		
-        public boolean relocate(Invocation invocation, String name, Immoter immoter, Sync motionLock, boolean shuttingDown) throws InvocationException {
-			return _delegate.relocate(invocation, name, immoter, motionLock, shuttingDown);
+        public boolean relocate(Invocation invocation, String name, Immoter immoter, boolean shuttingDown) throws InvocationException {
+			return _delegate.relocate(invocation, name, immoter, shuttingDown);
 		}
 	}
 	
 	class DummyRelocater implements Relocater {
-        public boolean relocate(Invocation invocation, String name, Immoter immoter, Sync motionLock, boolean shuttingDown) throws InvocationException {
+        public boolean relocate(Invocation invocation, String name, Immoter immoter, boolean shuttingDown) throws InvocationException {
 			return false;
 		}
 	}
