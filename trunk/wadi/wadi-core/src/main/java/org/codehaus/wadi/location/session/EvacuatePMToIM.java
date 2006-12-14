@@ -28,8 +28,12 @@ public class EvacuatePMToIM extends AbstractSessionResponseMessage {
         _success = success;
     }
 
+    public boolean isSuccess() {
+        return _success;
+    }
+
     public String toString() {
         return "<EvacuatePMToIM: " + _success + ">";
     }
-
+    
 }

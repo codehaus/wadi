@@ -20,6 +20,7 @@ import org.codehaus.wadi.Emoter;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.impl.AbstractSharedContextualiser;
+import org.codehaus.wadi.location.StateManager;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
 
 /**
@@ -28,13 +29,19 @@ import org.codehaus.wadi.replication.manager.ReplicationManager;
  */
 public class ReplicaAwareContextualiser extends AbstractSharedContextualiser {
     private final ReplicationManager replicationManager;
+    private final StateManager stateManager;
     
-    public ReplicaAwareContextualiser(Contextualiser next, ReplicationManager replicationManager) {
+    public ReplicaAwareContextualiser(Contextualiser next,
+            ReplicationManager replicationManager,
+            StateManager stateManager) {
         super(next);
         if (null == replicationManager) {
             throw new IllegalArgumentException("replicationManager is required");
+        } else if (null == stateManager) {
+            throw new IllegalArgumentException("stateManager is required");
         }
         this.replicationManager = replicationManager;
+        this.stateManager = stateManager;
     }
 
     public Emoter getEmoter() {
@@ -45,19 +52,20 @@ public class ReplicaAwareContextualiser extends AbstractSharedContextualiser {
         return next.getSharedDemoter();
     }
     
-    protected Motable acquire(String id, boolean exclusiveOnly) {
+    protected Motable get(String id, boolean exclusiveOnly) {
         Object object;
         try {
             object = replicationManager.acquirePrimary(id);
         } catch (Exception e) {
             return null;
         }
-        return (Motable) object;
+        Motable motable = (Motable) object;
+        if (null != motable) {
+            stateManager.relocate(motable.getName());
+        }
+        return motable;
     }
 
-    protected void release(Motable motable, boolean exclusiveOnly) {
-    }
-    
     public void load(Emoter emoter, Immoter immoter) {
     }
     
