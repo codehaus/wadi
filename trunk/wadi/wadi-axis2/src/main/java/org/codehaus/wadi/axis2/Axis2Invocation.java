@@ -106,7 +106,7 @@ public class Axis2Invocation implements Invocation, Runnable {
         _log.error(code+" : "+message);
     }
     
-    public boolean getRelocatable() {
+    public boolean isRelocatable() {
         return false;
     }
     
