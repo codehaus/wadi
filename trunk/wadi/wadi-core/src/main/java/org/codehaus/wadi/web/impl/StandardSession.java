@@ -62,7 +62,7 @@ public class StandardSession extends AbstractSession implements WADIHttpSession,
         httpSessionEvent = new HttpSessionEvent(wrapper);
     }
 
-    public void destroy() throws Exception {
+    public synchronized void destroy() throws Exception {
         config.destroy(null, this);
         super.destroy();
         attributes.clear();
@@ -84,27 +84,27 @@ public class StandardSession extends AbstractSession implements WADIHttpSession,
         return httpSessionEvent;
     }
 
-    public Object getAttribute(String name) {
+    public synchronized Object getAttribute(String name) {
         if (null == name) {
             throw new IllegalArgumentException("HttpSession attribute names must be non-null (see SRV.15.1.7.1)");
         }
         return attributes.get(name);
     }
 
-    public Set getAttributeNameSet() {
+    public synchronized Set getAttributeNameSet() {
         return attributes.keySet();
     }
 
-    public Enumeration getAttributeNameEnumeration() {
+    public synchronized Enumeration getAttributeNameEnumeration() {
         return attributes.size() == 0 ? EMPTY_ENUMERATION : Collections.enumeration(attributes.keySet());
     }
 
-    public String[] getAttributeNameStringArray() {
+    public synchronized String[] getAttributeNameStringArray() {
         return attributes.size() == 0 ? EMPTY_STRING_ARRAY : (String[]) attributes.keySet()
                 .toArray(new String[attributes.size()]);
     }
 
-    public Object setAttribute(String name, Object newValue) {
+    public synchronized Object setAttribute(String name, Object newValue) {
         if (null == name) {
             throw new IllegalArgumentException("HttpSession attribute names must be non-null (see SRV.15.1.7.1)");
         }
@@ -113,7 +113,7 @@ public class StandardSession extends AbstractSession implements WADIHttpSession,
         return oldValue;
     }
 
-    public Object removeAttribute(String name) {
+    public synchronized Object removeAttribute(String name) {
         if (null == name) {
             throw new IllegalArgumentException("HttpSession attribute names must be non-null (see SRV.15.1.7.1)");
         }
@@ -134,7 +134,7 @@ public class StandardSession extends AbstractSession implements WADIHttpSession,
         return config.getRouter().augment(name);
     }
     
-    protected void destroyForMotion() throws Exception {
+    protected synchronized void destroyForMotion() throws Exception {
         super.destroyForMotion();
         attributes.clear();
     }

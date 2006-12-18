@@ -50,19 +50,18 @@ public class AtomicallyReplicableSession extends AbstractReplicableSession {
         super(config);
     }
 
-    public void rehydrate(long creationTime, long lastAccessedTime, int maxInactiveInterval, String name, byte[] body)
+    public synchronized void rehydrate(long creationTime, long lastAccessedTime, int maxInactiveInterval, String name, byte[] body)
             throws RehydrationException {
         super.rehydrate(creationTime, lastAccessedTime, maxInactiveInterval, name, body);
         replicater.acquireFromOtherReplicater(this);
     }
 
-    public void onEndProcessing() {
+    public synchronized void onEndProcessing() {
         if (newSession) {
             replicater.create(this);
             newSession = false;
             dirty = false;
-        }
-        if (dirty) {
+        } else if (dirty) {
             replicater.update(this);
             dirty = false;
         }
@@ -74,7 +73,7 @@ public class AtomicallyReplicableSession extends AbstractReplicableSession {
      * are no object reference issues - it would be crazy to send the whole
      * session to update this.
      */
-    public void setMaxInactiveInterval(int maxInactiveInterval) {
+    public synchronized void setMaxInactiveInterval(int maxInactiveInterval) {
         if (maxInactiveInterval != maxInactiveInterval) {
             super.setMaxInactiveInterval(maxInactiveInterval);
             dirty = true;
@@ -86,13 +85,13 @@ public class AtomicallyReplicableSession extends AbstractReplicableSession {
      * new value is the same as the old one. We would be second guessing
      * application code. I think it is up to the developer to make this check.
      */
-    public Object setAttribute(String name, Object value) {
+    public synchronized Object setAttribute(String name, Object value) {
         Object tmp = super.setAttribute(name, value);
         dirty = true;
         return tmp;
     }
 
-    public Object removeAttribute(String name) {
+    public synchronized Object removeAttribute(String name) {
         Object tmp = super.removeAttribute(name);
         dirty = tmp != null;
         return tmp;
@@ -105,10 +104,15 @@ public class AtomicallyReplicableSession extends AbstractReplicableSession {
      * using ByReference semantics, this dirties. If we are using
      * ByValue semantics, it does not.
      */
-    public Object getAttribute(String name) {
+    public synchronized Object getAttribute(String name) {
         Object tmp = super.getAttribute(name);
         dirty = (tmp != null) && semantics.getAttributeDirties();
         return tmp;
     }
 
+    public synchronized void destroy() throws Exception {
+        super.destroy();
+        dirty = false;
+    }
+    
 }

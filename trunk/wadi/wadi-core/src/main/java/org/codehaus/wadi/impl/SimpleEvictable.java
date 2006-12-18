@@ -35,64 +35,64 @@ public abstract class SimpleEvictable implements Evictable, Serializable {
     protected long lastAccessedTime;
     protected int maxInactiveInterval;
 
-    public void init(long creationTime, long lastAccessedTime, int maxInactiveInterval) {
+    public synchronized void init(long creationTime, long lastAccessedTime, int maxInactiveInterval) {
         this.creationTime = creationTime;
         this.lastAccessedTime = lastAccessedTime;
         this.maxInactiveInterval = maxInactiveInterval;
     }
 
-    public void destroy() throws Exception {
+    public synchronized void destroy() throws Exception {
         creationTime = 0;
         lastAccessedTime = 0;
         maxInactiveInterval = 0;
     }
 
-    public void copy(Evictable evictable) throws Exception {
+    public synchronized void copy(Evictable evictable) throws Exception {
         creationTime = evictable.getCreationTime();
         lastAccessedTime = evictable.getLastAccessedTime();
         maxInactiveInterval = evictable.getMaxInactiveInterval();
     }
 
-    public void mote(Evictable recipient) throws Exception {
+    public synchronized void mote(Evictable recipient) throws Exception {
         recipient.copy(this);
         destroy();
     }
 
-    public long getCreationTime() {
+    public synchronized long getCreationTime() {
         return creationTime;
     }
 
-    public long getLastAccessedTime() {
+    public synchronized long getLastAccessedTime() {
         return lastAccessedTime;
     }
 
-    public void setLastAccessedTime(long lastAccessedTime) {
+    public synchronized void setLastAccessedTime(long lastAccessedTime) {
         this.lastAccessedTime = lastAccessedTime;
     }
 
-    public int getMaxInactiveInterval() {
+    public synchronized int getMaxInactiveInterval() {
         return maxInactiveInterval;
     }
 
-    public void setMaxInactiveInterval(int maxInactiveInterval) {
+    public synchronized void setMaxInactiveInterval(int maxInactiveInterval) {
         this.maxInactiveInterval = maxInactiveInterval;
     }
 
-    public long getTimeToLive(long time) {
+    public synchronized long getTimeToLive(long time) {
         return maxInactiveInterval < 0 ? Long.MAX_VALUE : (maxInactiveInterval * 1000) - (time - lastAccessedTime);
     }
 
-    public boolean getTimedOut(long time) {
+    public synchronized boolean getTimedOut(long time) {
         return getTimeToLive(time) <= 0;
     }
     
-    public void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
+    public synchronized void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
         creationTime = oi.readLong();
         lastAccessedTime = oi.readLong();
         maxInactiveInterval = oi.readInt();
     }
 
-    public void writeContent(ObjectOutput oo) throws IOException {
+    public synchronized void writeContent(ObjectOutput oo) throws IOException {
         oo.writeLong(creationTime);
         oo.writeLong(lastAccessedTime);
         oo.writeInt(maxInactiveInterval);

@@ -29,19 +29,18 @@ import org.codehaus.wadi.web.AttributesConfig;
  * @version $Revision: 1497 $
  */
 public class StandardAttributes implements Attributes, ValueConfig {
-
     protected final Map _map;
     protected final AttributesConfig _config;
 
     public StandardAttributes(AttributesConfig config, Map map) {
         super();
-        _map=map; // could be inherited ?
-        _config=config;
+        _map = map;
+        _config = config;
     }
 
     public Object get(Object key) {
-        Value a=(Value)_map.get(key);
-        if (a==null){
+        Value a = (Value) _map.get(key);
+        if (a == null) {
             return null;
         } else {
             return a.getValue();
@@ -49,11 +48,11 @@ public class StandardAttributes implements Attributes, ValueConfig {
     }
 
     public Object remove(Object key) {
-        Value a=(Value)_map.remove(key);
-        if (a==null) {
+        Value a = (Value) _map.remove(key);
+        if (a == null) {
             return null;
         } else {
-            Object tmp=a.getValue();
+            Object tmp = a.getValue();
             a.setValue(null);
             _config.getValuePool().put(a);
             return tmp;
@@ -61,24 +60,28 @@ public class StandardAttributes implements Attributes, ValueConfig {
     }
 
     public Object put(Object key, Object newValue) {
-        Value in=_config.getValuePool().take(this);
+        Value in = _config.getValuePool().take(this);
         in.setValue(newValue);
-        Value out=(Value)_map.put(key, in);
-        if (out==null) {
+        Value out = (Value) _map.put(key, in);
+        if (out == null) {
             return null;
         } else {
-            Object tmp=out.getValue();
+            Object tmp = out.getValue();
             out.setValue(null);
             _config.getValuePool().put(out);
             return tmp;
         }
     }
 
-    public int size() {return _map.size();}
-    public Set keySet() {return _map.keySet();}
+    public int size() {
+        return _map.size();
+    }
+
+    public Set keySet() {
+        return _map.keySet();
+    }
 
     public void clear() {
-        // should we null-out all Attributes - TODO
         _map.clear();
     }
 

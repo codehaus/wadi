@@ -48,21 +48,21 @@ public class DistributableSession extends StandardSession implements Distributab
         return streamer;
     }
 
-    public void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
+    public synchronized void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
         super.readContent(oi);
         ((DistributableAttributes) attributes).readContent(oi);
     }
 
-    public void writeContent(ObjectOutput oo) throws IOException {
+    public synchronized void writeContent(ObjectOutput oo) throws IOException {
         super.writeContent(oo);
         ((DistributableAttributes) attributes).writeContent(oo);
     }
 
-    public byte[] getBodyAsByteArray() throws Exception {
+    public synchronized byte[] getBodyAsByteArray() throws Exception {
         return Utils.getContent(this, streamer);
     }
 
-    public void setBodyAsByteArray(byte[] bytes) throws IOException, ClassNotFoundException {
+    public synchronized void setBodyAsByteArray(byte[] bytes) throws IOException, ClassNotFoundException {
         Utils.setContent(this, bytes, streamer);
     }
 
@@ -70,7 +70,7 @@ public class DistributableSession extends StandardSession implements Distributab
         return ((DistributableSessionConfig) config).findHelper(type);
     }
 
-    public Set getListenerNames() {
+    public synchronized Set getListenerNames() {
         return ((DistributableAttributes) attributes).getListenerNames();
     }
 

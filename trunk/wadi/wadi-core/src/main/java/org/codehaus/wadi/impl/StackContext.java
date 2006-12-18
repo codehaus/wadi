@@ -40,10 +40,13 @@ import org.codehaus.wadi.partition.BasicPartitionBalancer;
 import org.codehaus.wadi.replication.contextualizer.ReplicaAwareContextualiser;
 import org.codehaus.wadi.replication.manager.ReplicaterAdapterFactory;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
+import org.codehaus.wadi.replication.manager.ReplicationManagerFactory;
 import org.codehaus.wadi.replication.manager.basic.BasicReplicationManagerFactory;
 import org.codehaus.wadi.replication.manager.basic.SessionReplicationManager;
 import org.codehaus.wadi.replication.storage.ReplicaStorage;
-import org.codehaus.wadi.replication.storage.basic.MemoryReplicaStorage;
+import org.codehaus.wadi.replication.storage.ReplicaStorageFactory;
+import org.codehaus.wadi.replication.storage.basic.BasicReplicaStorageFactory;
+import org.codehaus.wadi.replication.strategy.BackingStrategyFactory;
 import org.codehaus.wadi.replication.strategy.RoundRobinBackingStrategyFactory;
 import org.codehaus.wadi.servicespace.ServiceAlreadyRegisteredException;
 import org.codehaus.wadi.servicespace.ServiceRegistry;
@@ -51,11 +54,12 @@ import org.codehaus.wadi.servicespace.ServiceSpace;
 import org.codehaus.wadi.servicespace.ServiceSpaceName;
 import org.codehaus.wadi.servicespace.SingletonServiceHolder;
 import org.codehaus.wadi.servicespace.basic.BasicServiceSpace;
+import org.codehaus.wadi.web.Router;
 import org.codehaus.wadi.web.impl.AtomicallyReplicableSessionFactory;
 import org.codehaus.wadi.web.impl.DistributableAttributesFactory;
 import org.codehaus.wadi.web.impl.DistributableValueFactory;
-import org.codehaus.wadi.web.impl.DummyRouter;
 import org.codehaus.wadi.web.impl.DummyStatefulHttpServletRequestWrapperPool;
+import org.codehaus.wadi.web.impl.JkRouter;
 import org.codehaus.wadi.web.impl.StandardHttpProxy;
 import org.codehaus.wadi.web.impl.StandardSessionWrapperFactory;
 import org.codehaus.wadi.web.impl.WebSessionToSessionPoolAdapter;
@@ -70,19 +74,25 @@ public class StackContext {
     private final ServiceSpaceName serviceSpaceName;
     private final Dispatcher underlyingDispatcher;
     private final int sessionTimeout;
+    private final int sweepInterval;
+    private final int numPartitions;
+    private final ReplicationManagerFactory repManagerFactory;
+    private final ReplicaStorageFactory repStorageFactory;
+    private final BackingStrategyFactory backingStrategyFactory;
     
     protected ServiceSpace serviceSpace;
     protected PartitionMapper partitionMapper;
     protected PartitionManager partitionManager;
     protected StateManager stateManager;
     protected Timer timer;
-    private SessionPool contextPool;
-    private ReplicationManager replicationManager;
-    private SimpleSessionPool sessionPool;
-    private ClusteredManager manager;
-    private ConcurrentMotableMap memoryMap;
+    protected SessionPool contextPool;
+    protected ReplicationManager replicationManager;
+    protected SimpleSessionPool sessionPool;
+    protected ClusteredManager manager;
+    protected ConcurrentMotableMap memoryMap;
 
-    public static PartitionBalancerSingletonServiceHolder newPartitionBalancerSingletonServiceHolder(ServiceSpace serviceSpace, int nbPartitions) throws ServiceAlreadyRegisteredException {
+    public static PartitionBalancerSingletonServiceHolder newPartitionBalancerSingletonServiceHolder(ServiceSpace serviceSpace,
+            int nbPartitions) throws ServiceAlreadyRegisteredException {
         ServiceRegistry serviceRegistry = serviceSpace.getServiceRegistry();
         SingletonServiceHolder holder = serviceRegistry.registerSingleton(PartitionBalancerSingletonService.NAME,
                 new BasicPartitionBalancerSingletonService(
@@ -96,16 +106,49 @@ public class StackContext {
     }
 
     public StackContext(ServiceSpaceName serviceSpaceName, Dispatcher underlyingDispatcher, int sessionTimeout) {
+        this(serviceSpaceName,
+                underlyingDispatcher,
+                sessionTimeout,
+                24,
+                1000 * 60 * 60 * 24,
+                new BasicReplicationManagerFactory(),
+                new BasicReplicaStorageFactory(),
+                new RoundRobinBackingStrategyFactory(1));
+    }
+    
+    public StackContext(ServiceSpaceName serviceSpaceName,
+            Dispatcher underlyingDispatcher,
+            int sessionTimeout,
+            int numPartitions,
+            int sweepInterval,
+            ReplicationManagerFactory repManagerFactory,
+            ReplicaStorageFactory repStorageFactory,
+            BackingStrategyFactory backingStrategyFactory) {
         if (null == serviceSpaceName) {
             throw new IllegalArgumentException("serviceSpaceName is required");
         } else if (null == underlyingDispatcher) {
             throw new IllegalArgumentException("underlyingDispatcher is required");            
         } else if (1 > sessionTimeout) {
             throw new IllegalArgumentException("sessionTimeout must be > 0");            
+        } else if (1 > numPartitions) {
+            throw new IllegalArgumentException("numPartitions must be > 0");            
+        } else if (1 > sweepInterval) {
+            throw new IllegalArgumentException("sweepInterval must be > 0");            
+        } else if (null == repManagerFactory) {
+            throw new IllegalArgumentException("repManagerFactory is required");
+        } else if (null == repStorageFactory) {
+            throw new IllegalArgumentException("repStorageFactory is required");
+        } else if (null == backingStrategyFactory) {
+            throw new IllegalArgumentException("backingStrategyFactory is required");
         }
         this.serviceSpaceName = serviceSpaceName;
         this.underlyingDispatcher = underlyingDispatcher;
         this.sessionTimeout = sessionTimeout;
+        this.numPartitions = numPartitions;
+        this.sweepInterval = sweepInterval;
+        this.repManagerFactory = repManagerFactory;
+        this.repStorageFactory = repStorageFactory;
+        this.backingStrategyFactory = backingStrategyFactory;
     }
 
     public void build() throws ServiceAlreadyRegisteredException {
@@ -139,7 +182,7 @@ public class StackContext {
                         new TomcatSessionIdFactory(),
                         contextualiser,
                         memoryMap,
-                        new DummyRouter(),
+                        newRouter(),
                         true,
                         new SimpleStreamer(),
                         true,
@@ -166,7 +209,7 @@ public class StackContext {
     }
 
     protected void registerReplicaStorage() throws ServiceAlreadyRegisteredException {
-        ReplicaStorage replicaStorage = new MemoryReplicaStorage();
+        ReplicaStorage replicaStorage = repStorageFactory.factory(serviceSpace);
         
         ServiceRegistry serviceRegistry = serviceSpace.getServiceRegistry();
         serviceRegistry.register(ReplicaStorage.NAME, replicaStorage);
@@ -198,6 +241,11 @@ public class StackContext {
         serviceRegistry.register(PartitionRepopulationEndPoint.NAME, repopulationEndPoint);
     }
 
+    protected Router newRouter() {
+        String nodeName = underlyingDispatcher.getCluster().getLocalPeer().getName();
+        return new JkRouter(nodeName);
+    }
+
     protected SimpleSessionPool newWebSessionPool() {
         return new SimpleSessionPool(new AtomicallyReplicableSessionFactory());
     }
@@ -206,40 +254,39 @@ public class StackContext {
         return new SimpleStateManager(serviceSpace, partitionManager, 2000);
     }
 
-    protected int getNbPartitions() {
-        return 24;
-    }
-
     protected PartitionMapper newPartitionMapper() {
-        return new SimplePartitionMapper(getNbPartitions());
+        return new SimplePartitionMapper(numPartitions);
     }
     
     protected PartitionManager newPartitionManager() throws ServiceAlreadyRegisteredException {
         PartitionBalancerSingletonServiceHolder balancerHolder = newPartitionBalancerSingletonServiceHolder(serviceSpace,
-                getNbPartitions());
+                numPartitions);
 
         return new SimplePartitionManager(serviceSpace, 
-                getNbPartitions(),
+                numPartitions,
                 partitionMapper, 
                 balancerHolder, 
                 new SimplePartitionManagerTiming());
     }
 
     protected ReplicationManager newReplicationManager() {
-        BasicReplicationManagerFactory managerFactory = new BasicReplicationManagerFactory();
-        ReplicationManager replicationManager = managerFactory.factory(serviceSpace,
-                new RoundRobinBackingStrategyFactory(1));
-        return replicationManager;
+        return repManagerFactory.factory(serviceSpace, backingStrategyFactory);
     }
-    
+
     protected Contextualiser newCollapserContextualiser(Contextualiser contextualiser, ConcurrentMotableMap mmap) {
         return new SerialContextualiser(contextualiser, new HashingCollapser(1024, 2000), mmap);
     }
     
     protected Contextualiser newMemoryContextualiser(Contextualiser next, ConcurrentMotableMap mmap) {
-        int sweepInterval = 1000 * 60 * 60 * 24;
         Evicter mevicter = new AbsoluteEvicter(sweepInterval, true, sessionTimeout);
         PoolableInvocationWrapperPool requestPool = new DummyStatefulHttpServletRequestWrapperPool();
+        return newMemoryContextualiser(next, mmap, mevicter, requestPool);
+    }
+
+    protected MemoryContextualiser newMemoryContextualiser(Contextualiser next,
+            ConcurrentMotableMap mmap,
+            Evicter mevicter,
+            PoolableInvocationWrapperPool requestPool) {
         return new MemoryContextualiser(next, mevicter, mmap, contextPool, requestPool);
     }
 
