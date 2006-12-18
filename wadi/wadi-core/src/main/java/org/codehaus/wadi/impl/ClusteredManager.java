@@ -114,11 +114,6 @@ public class ClusteredManager extends DistributableManager {
         String name = session.getName();
         onSessionDestruction(session);
         _map.remove(name);
-        try {
-            session.destroy();
-        } catch (Exception e) {
-            log.warn("unexpected problem destroying session", e);
-        }
         _sessionPool.put(session);
         if (log.isDebugEnabled()) {
             log.debug("destroyed: " + name);
