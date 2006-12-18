@@ -170,7 +170,7 @@ public class CGLIBServiceProxyFactory implements ServiceProxyFactory {
             InvocationInfo invocationInfo =
                 new InvocationInfo(method.getName(), method.getParameterTypes(), args, invocationMetaData);
             InvocationResult result = serviceInvoker.invoke(invocationInfo);
-            if (metaData.isOneWay()) {
+            if (invocationMetaData.isOneWay()) {
                 return null;
             }
             if (result.isSuccess()) {
