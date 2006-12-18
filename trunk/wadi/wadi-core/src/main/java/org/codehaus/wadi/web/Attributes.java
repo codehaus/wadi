@@ -26,14 +26,15 @@ import java.util.Set;
  */
 
 public interface Attributes {
-
-    // Map-like
     Object get(Object key);
+
     Object remove(Object key);
+    
     Object put(Object key, Object newValue);
     
     int size();
-    Set keySet();
-    void clear();
     
+    Set keySet();
+    
+    void clear();
 }
