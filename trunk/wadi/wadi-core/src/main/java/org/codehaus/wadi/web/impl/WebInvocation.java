@@ -89,15 +89,12 @@ public class WebInvocation implements Invocation {
         // make some decisions about how we would like to relocate the Invocation :
         // via redirection
         // via proxy
-        // via ...
-
         // lets go for proxy first:
     	try {
     		proxy.proxy(wep, this);
     	} catch (ProxyingException e) {
     		throw new InvocationException("unexpected Invocation relocation failure: ", e);
     	}
-
         // thoughts :
         // will it be restuck at the other end ?
     }
@@ -113,7 +110,9 @@ public class WebInvocation implements Invocation {
         } catch (Exception e) {
             throw new InvocationException(e);
         } finally {
-            session.onEndProcessing();
+            if (null != session) {
+                session.onEndProcessing();
+            }
         }
     }
 
