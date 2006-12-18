@@ -60,11 +60,14 @@ public class Utils {
 	 */
 	public static Motable mote(Emoter emoter, Immoter immoter, Motable emotable, String name) {
         Motable immotable = immoter.newMotable();
-        boolean immotionOK = immoter.immote(emotable, immotable);
-        if (!immotionOK) {
+        boolean success = emoter.emote(emotable, immotable);
+        if (!success) {
             return null;
         }
-        emoter.emote(emotable, immotable);
+        success = immoter.immote(emotable, immotable);
+        if (!success) {
+            return null;
+        }
         return immotable;
     }
 
