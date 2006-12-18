@@ -32,7 +32,9 @@ import org.codehaus.wadi.servicespace.ServiceSpace;
 import org.codehaus.wadi.servicespace.ServiceSpaceName;
 import org.codehaus.wadi.test.MockInvocation;
 import org.codehaus.wadi.test.MyHttpServletRequest;
+import org.codehaus.wadi.web.Router;
 import org.codehaus.wadi.web.WebSession;
+import org.codehaus.wadi.web.impl.DummyRouter;
 
 /**
  * 
@@ -113,7 +115,11 @@ public abstract class AbstractReplicationContextualiserTest extends TestCase {
         Dispatcher dispatcher = createDispatcher(CLUSTER_NAME, nodeName, TIMEOUT);
         dispatcher.start();
         
-        StackContext stackContext = new StackContext(new ServiceSpaceName(new URI("name")), dispatcher);
+        StackContext stackContext = new StackContext(new ServiceSpaceName(new URI("name")), dispatcher) {
+            protected Router newRouter() {
+                return new DummyRouter();
+            }
+        };
         stackContext.build();
         return new NodeInfo(stackContext.getServiceSpace(), stackContext.getManager(), stackContext.getMemoryMap());
     }

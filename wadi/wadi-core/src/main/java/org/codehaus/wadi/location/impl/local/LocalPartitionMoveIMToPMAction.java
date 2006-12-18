@@ -56,8 +56,7 @@ public class LocalPartitionMoveIMToPMAction extends AbstractLocalPartitionAction
                 location = (Location) nameToLocation.get(key);
             }
             if (location == null) {
-                // session does not exist - tell IM
-                dispatcher.reply(message, new MovePMToIM());
+                replyWithUnknownLocation(message);
                 return;
             }
             // we need to make a decision here - based on the info available to us...
@@ -73,7 +72,7 @@ public class LocalPartitionMoveIMToPMAction extends AbstractLocalPartitionAction
             String sourceCorrelationId = message.getSourceCorrelationId();
             boolean relocateSession = request.isRelocateSession();
             if (relocateSession) {
-                relocateSession(location, imPeer, sourceCorrelationId);
+                relocateSession(message, location, imPeer, sourceCorrelationId);
             } else {
                 relocateInvocation(location, imPeer, pmPeer, sourceCorrelationId);
             }
@@ -82,7 +81,7 @@ public class LocalPartitionMoveIMToPMAction extends AbstractLocalPartitionAction
         }
     }
 
-    protected void relocateSession(Location location, Peer imPeer, String imCorrelationId)
+    protected void relocateSession(Envelope message, Location location, Peer imPeer, String imCorrelationId)
             throws MessageExchangeException {
         Object key = location.getKey();
         // session does exist - we need to ask SM to move it to IM
@@ -92,7 +91,7 @@ public class LocalPartitionMoveIMToPMAction extends AbstractLocalPartitionAction
             // wait til we have a lock on Location before retrieving the SM
             lock.acquire();
             try {
-                doRelocateSession(location, imPeer, imCorrelationId);
+                doRelocateSession(message, location, imPeer, imCorrelationId);
             } finally {
                 lock.release();
             }
@@ -102,7 +101,7 @@ public class LocalPartitionMoveIMToPMAction extends AbstractLocalPartitionAction
         }
     }
 
-    protected void doRelocateSession(Location location, Peer imPeer, String imCorrelationId)
+    protected void doRelocateSession(Envelope message, Location location, Peer imPeer, String imCorrelationId)
             throws MessageExchangeException {
         Object key = location.getKey();
         Peer smPeer = location.getSMPeer();
@@ -121,6 +120,7 @@ public class LocalPartitionMoveIMToPMAction extends AbstractLocalPartitionAction
             tmp = dispatcher.exchangeSend(smPeer.getAddress(), request, relocationTimeout);
         } catch (MessageExchangeException e) {
             log.error("move [" + key + "]@[" + smPeer + "]->[" + imPeer + "] failed", e);
+            replyWithUnknownLocation(message);
             synchronized (nameToLocation) {
                 location = (Location) nameToLocation.remove(key);
             }
@@ -135,13 +135,14 @@ public class LocalPartitionMoveIMToPMAction extends AbstractLocalPartitionAction
                 log.debug("move [" + key + "]@[" + smPeer + "]->[" + imPeer + "]");
             }
         } else {
+            replyWithUnknownLocation(message);
             synchronized (nameToLocation) {
                 location = (Location) nameToLocation.remove(key);
             }
             log.warn("move [" + key + "]@[" + smPeer + "]->[" + imPeer + "] failed");
         }
     }
-    
+
     protected void relocateInvocation(Location location, Peer imPeer, Peer pmPeer, String imCorrelationId)
             throws MessageExchangeException {
         Object key = location.getKey();
@@ -161,6 +162,10 @@ public class LocalPartitionMoveIMToPMAction extends AbstractLocalPartitionAction
         } catch (InterruptedException e) {
             log.error("unexpected interruption waiting to perform Invocation relocation: " + key, e);
         }
+    }
+
+    protected void replyWithUnknownLocation(Envelope message) throws MessageExchangeException {
+        dispatcher.reply(message, new MovePMToIM());
     }
     
 }

@@ -46,58 +46,63 @@ public abstract class AbstractMotable extends SimpleEvictable implements Motable
         return readWriteLock;
     }
     
-    public void init(long creationTime, long lastAccessedTime, int maxInactiveInterval, String name) {
+    public synchronized void init(long creationTime, long lastAccessedTime, int maxInactiveInterval, String name) {
         init(creationTime, lastAccessedTime, maxInactiveInterval);
         this.name = name;
     }
 
-    public void rehydrate(long creationTime, long lastAccessedTime, int maxInactiveInterval, String name, byte[] body)
+    public synchronized void rehydrate(long creationTime, long lastAccessedTime, int maxInactiveInterval, String name, byte[] body)
             throws RehydrationException {
         initExisting(creationTime, lastAccessedTime, maxInactiveInterval, name, body);
     }
 
-    public void restore(long creationTime, long lastAccessedTime, int maxInactiveInterval, String name, byte[] body)
+    public synchronized void restore(long creationTime, long lastAccessedTime, int maxInactiveInterval, String name, byte[] body)
             throws RehydrationException {
         initExisting(creationTime, lastAccessedTime, maxInactiveInterval, name, body);
     }
 
-    public void copy(Motable motable) throws Exception {
+    public synchronized void copy(Motable motable) throws Exception {
         super.copy(motable);
         name = motable.getName();
         newSession = false;
         setBodyAsByteArray(motable.getBodyAsByteArray());
     }
 
-    public void mote(Motable recipient) throws Exception {
+    public synchronized void mote(Motable recipient) throws Exception {
         recipient.copy(this);
         destroy();
     }
 
-    public String getName() {
+    public synchronized String getName() {
         return name;
     }
     
-    public boolean isNew() {
+    public synchronized boolean isNew() {
         return newSession;
     }
 
-    public void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
+    public synchronized void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
         super.readContent(oi);
         name = oi.readUTF();
         newSession = false;
         readWriteLock = newReadWriteLock();
     }
 
-    public void writeContent(ObjectOutput oo) throws IOException {
+    public synchronized void writeContent(ObjectOutput oo) throws IOException {
         super.writeContent(oo);
         oo.writeUTF(name);
     }
 
+    public synchronized void destroy() throws Exception {
+        super.destroy();
+        newSession = false;
+    }
+    
     protected ReadWriteLock newReadWriteLock() {
         return new WriterPreferenceReadWriteLock();
     }
 
-    protected void initExisting(long creationTime,
+    protected synchronized void initExisting(long creationTime,
             long lastAccessedTime,
             int maxInactiveInterval,
             String name,

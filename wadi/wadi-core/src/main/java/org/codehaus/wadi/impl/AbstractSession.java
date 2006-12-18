@@ -26,11 +26,11 @@ import org.codehaus.wadi.Session;
 
 public abstract class AbstractSession extends AbstractMotable implements Session {
 
-    public void onEndProcessing() {
+    public synchronized void onEndProcessing() {
         newSession = false;
     }
     
-    public byte[] getBodyAsByteArray() throws Exception {
+    public synchronized byte[] getBodyAsByteArray() throws Exception {
         return Utils.getContent(this, new SimpleStreamer());
     }
 

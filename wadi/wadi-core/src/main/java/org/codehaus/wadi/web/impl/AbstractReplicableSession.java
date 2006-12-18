@@ -36,12 +36,12 @@ public abstract class AbstractReplicableSession extends DistributableSession {
         replicater = config.getReplicater();
     }
 
-    public void mote(Motable recipient) throws Exception {
+    public synchronized void mote(Motable recipient) throws Exception {
         recipient.copy(this);
         destroyForMotion(); 
     }
 
-    public void destroy() throws Exception {
+    public synchronized void destroy() throws Exception {
         replicater.destroy(this);
         super.destroy();
     }
