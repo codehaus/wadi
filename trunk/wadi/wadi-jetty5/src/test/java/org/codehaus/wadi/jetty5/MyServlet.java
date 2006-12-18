@@ -32,6 +32,8 @@ import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.impl.StackContext;
 import org.codehaus.wadi.servicespace.ServiceSpaceName;
+import org.codehaus.wadi.web.Router;
+import org.codehaus.wadi.web.impl.DummyRouter;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -51,7 +53,11 @@ public class MyServlet implements Servlet {
             Dispatcher dispatcher) throws Exception {
         log = LogFactory.getLog(getClass().getName() + "#" + nodeName);
         
-        StackContext stackContext = new StackContext(new ServiceSpaceName(URI.create("name")), dispatcher);
+        StackContext stackContext = new StackContext(new ServiceSpaceName(URI.create("name")), dispatcher) {
+            protected Router newRouter() {
+                return new DummyRouter();
+            }
+        };
         stackContext.build();
     }
 
