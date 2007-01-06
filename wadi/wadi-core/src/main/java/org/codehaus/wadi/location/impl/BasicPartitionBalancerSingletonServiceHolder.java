@@ -67,9 +67,6 @@ public class BasicPartitionBalancerSingletonServiceHolder implements PartitionBa
         delegate.stop();
     }
     
-    /* (non-Javadoc)
-     * @see org.codehaus.wadi.location.impl.PartitionBalancerSingletonServiceHolder#getPartitionBalancerSingletonService()
-     */
     public PartitionBalancerSingletonService getPartitionBalancerSingletonService() {
         return balancerSingletonService;
     }
