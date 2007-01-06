@@ -151,8 +151,4 @@ public class Axis2Invocation implements Invocation, Runnable {
         return false;
     }
     
-    public void setRouter(Router router) {
-        throw new UnsupportedOperationException("NYI");
-    }
-
 }
