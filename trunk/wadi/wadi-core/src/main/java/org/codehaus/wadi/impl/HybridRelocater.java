@@ -30,6 +30,7 @@ import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.EndPoint;
 import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.LocalPeer;
+import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.location.PartitionManager;
 import org.codehaus.wadi.location.session.MoveIMToPM;
@@ -87,7 +88,12 @@ public class HybridRelocater implements Relocater {
     
     protected Motable doRelocate(Invocation invocation, String sessionName, boolean shuttingDown, long timeout, Immoter immoter) throws Exception {
         MoveIMToPM request = new MoveIMToPM(localPeer, sessionName, !shuttingDown, invocation.isRelocatable());
-        Envelope message = partitionManager.getPartition(sessionName).exchange(request, timeout);
+        Envelope message;
+        try {
+            message = partitionManager.getPartition(sessionName).exchange(request, timeout);
+        } catch (MessageExchangeException e) {
+            return null;
+        }
 
         if (message == null) {
             log.error("Something went wrong during a session relocation.");
@@ -96,19 +102,19 @@ public class HybridRelocater implements Relocater {
 
         Serializable dm = message.getPayload();
         if (dm instanceof MoveSMToIM) {
-            return handleSessionRelocation(sessionName, immoter, message, dm);
+            return handleSessionRelocation(sessionName, immoter, message, (MoveSMToIM) dm);
         } else if (dm instanceof MovePMToIM) {
             return handleUnknownSession(sessionName);
         } else if (dm instanceof MovePMToIMInvocation) {
-            return handleInvocationRelocation(invocation, dm);
+            return handleInvocationRelocation(invocation, (MovePMToIMInvocation) dm);
         } else {
             throw new WADIRuntimeException("unexpected response returned [" + dm + "]");
         }
     }
 
-    protected Motable handleInvocationRelocation(Invocation invocation, Serializable dm) throws InvocationException {
+    protected Motable handleInvocationRelocation(Invocation invocation, MovePMToIMInvocation dm) throws InvocationException {
         // we are going to relocate our Invocation to the SM...
-        Peer smPeer = ((MovePMToIMInvocation) dm).getStateMaster();
+        Peer smPeer = dm.getStateMaster();
         EndPoint endPoint = smPeer.getPeerInfo().getEndPoint();
         invocation.relocate(endPoint);
         return null;
@@ -121,8 +127,7 @@ public class HybridRelocater implements Relocater {
         return null;
     }
 
-    protected Motable handleSessionRelocation(String sessionName, Immoter immoter, Envelope message, Serializable dm) {
-        MoveSMToIM req = (MoveSMToIM) dm;
+    protected Motable handleSessionRelocation(String sessionName, Immoter immoter, Envelope message, MoveSMToIM req) {
         Motable emotable = req.getMotable();
         if (emotable == null) {
             log.warn("failed relocation - 0 bytes arrived: " + sessionName);
