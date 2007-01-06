@@ -90,6 +90,7 @@ public class StackContext {
     protected SimpleSessionPool sessionPool;
     protected ClusteredManager manager;
     protected ConcurrentMotableMap memoryMap;
+    private SimplePartitionManagerTiming simplePartitionManagerTiming;
 
     public static PartitionBalancerSingletonServiceHolder newPartitionBalancerSingletonServiceHolder(ServiceSpace serviceSpace,
             int nbPartitions) throws ServiceAlreadyRegisteredException {
@@ -102,7 +103,7 @@ public class StackContext {
     }
     
     public StackContext(ServiceSpaceName serviceSpaceName, Dispatcher underlyingDispatcher) {
-        this(serviceSpaceName, underlyingDispatcher, 30);
+        this(serviceSpaceName, underlyingDispatcher, 30 * 60);
     }
 
     public StackContext(ServiceSpaceName serviceSpaceName, Dispatcher underlyingDispatcher, int sessionTimeout) {
@@ -152,8 +153,10 @@ public class StackContext {
     }
 
     public void build() throws ServiceAlreadyRegisteredException {
-        timer = new Timer();
+        simplePartitionManagerTiming = new SimplePartitionManagerTiming();
         
+        timer = new Timer();
+
         serviceSpace = new BasicServiceSpace(serviceSpaceName, underlyingDispatcher);
 
         partitionMapper = newPartitionMapper();
@@ -251,7 +254,8 @@ public class StackContext {
     }
     
     protected StateManager newStateManager() {
-        return new SimpleStateManager(serviceSpace, partitionManager, 2000);
+        // TODO - revert to 2000 ms
+        return new SimpleStateManager(serviceSpace, partitionManager, 1000 * 60 * 60);
     }
 
     protected PartitionMapper newPartitionMapper() {
@@ -266,7 +270,7 @@ public class StackContext {
                 numPartitions,
                 partitionMapper, 
                 balancerHolder, 
-                new SimplePartitionManagerTiming());
+                simplePartitionManagerTiming);
     }
 
     protected ReplicationManager newReplicationManager() {
@@ -292,7 +296,9 @@ public class StackContext {
 
     protected Contextualiser newClusteredContextualiser(Contextualiser contextualiser) {
         return new ClusterContextualiser(contextualiser, 
-                new HybridRelocater(serviceSpace, partitionManager, 1000), 
+                new HybridRelocater(serviceSpace,
+                        partitionManager,
+                        simplePartitionManagerTiming.getSessionRelocationWaitTimeForRelocater()),
                 partitionManager, 
                 stateManager, 
                 new SynchronizedBoolean(false));

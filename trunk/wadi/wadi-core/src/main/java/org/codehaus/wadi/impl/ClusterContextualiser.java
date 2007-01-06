@@ -116,12 +116,6 @@ public class ClusterContextualiser extends AbstractSharedContextualiser {
         }
 
         public boolean immote(Motable emotable, Motable immotable) {
-            try {
-                immotable.copy(emotable);
-            } catch (Exception e) {
-                _log.warn("problem sending emigration request for [" + emotable + "]", e);
-                return false;
-            }
             return stateManager.offerEmigrant(immotable);
         }
 

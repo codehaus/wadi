@@ -50,7 +50,6 @@ public class WebInvocation implements Invocation {
     private boolean proxiedInvocation = true;
     private InvocationProxy proxy;
     private Session session;
-    private Router router;
 
     /**
      * Initialise this WebInvocation for action after being taken from a Pool
@@ -137,17 +136,8 @@ public class WebInvocation implements Invocation {
     }
 
     public void setSession(Session session) {
-        if (null == router) {
-            throw new IllegalStateException("No router has been set");
-        }
-        // restick clients whose session is here, but whose routing info points elsewhere...
-        router.reroute(this);
         this.session = session;
         
     }
 
-    public void setRouter(Router router) {
-        this.router = router;
-    }
-    
 }

@@ -67,8 +67,4 @@ public class DummyInvocation implements Invocation {
         // not used
     }
     
-    public void setRouter(Router router) {
-        throw new UnsupportedOperationException("NYI");
-    }
-    
 }

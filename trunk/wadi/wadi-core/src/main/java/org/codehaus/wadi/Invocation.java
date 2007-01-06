@@ -89,6 +89,4 @@ public interface Invocation {
     void invoke(PoolableInvocationWrapper wrapper) throws InvocationException;
     
 	boolean isProxiedInvocation();
-    
-    void setRouter(Router router);
 }
