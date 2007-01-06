@@ -83,13 +83,17 @@ public class SimplePartitionManagerTiming {
         return sessionRelocationWaitTime;
     }
 
+    public long getSessionRelocationWaitTimeForRelocater() {
+        return (long) (sessionRelocationWaitTime * 1.5);
+    }
+    
     public void setSessionRelocationWaitTime(long sessionRelocationWaitTime) {
         if (1 > sessionRelocationWaitTime) {
             throw new IllegalArgumentException("sessionRelocationWaitTime must be > 0");
         }
         this.sessionRelocationWaitTime = sessionRelocationWaitTime;
     }
-
+    
     public long getWaitForRepopulationTime() {
         return waitForRepopulationTime;
     }

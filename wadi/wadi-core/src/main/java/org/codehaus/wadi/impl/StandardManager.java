@@ -227,7 +227,6 @@ public class StandardManager implements Lifecycle, WebSessionConfig, Manager {
         } else {
             // already associated with a session. strip off any routing info.
             String name = _router.strip(key);
-            invocation.setRouter(_router);
             if (!_contextualiser.contextualise(invocation, name, null, false)) {
                 log.error("could not acquire session: " + name);
                 if (_errorIfSessionNotAcquired) {

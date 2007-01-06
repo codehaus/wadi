@@ -91,10 +91,6 @@ public class AbstractTestRelocation extends TestCase {
             throw new UnsupportedOperationException("NYI");
         }
 
-        public void setRouter(Router router) {
-            throw new UnsupportedOperationException("NYI");
-        }
-
     }
 
     public void testSessionRelocation(Dispatcher redD, Dispatcher greenD) throws Exception {
