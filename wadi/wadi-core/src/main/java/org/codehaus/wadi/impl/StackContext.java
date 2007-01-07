@@ -186,7 +186,7 @@ public class StackContext {
                         contextualiser,
                         memoryMap,
                         newRouter(),
-                        true,
+                        false,
                         new SimpleStreamer(),
                         true,
                         new ReplicaterAdapterFactory(replicationManager, sessionPool),
