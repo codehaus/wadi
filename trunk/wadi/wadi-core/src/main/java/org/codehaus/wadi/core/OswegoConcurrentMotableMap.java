@@ -19,7 +19,6 @@ import java.util.Collection;
 import java.util.Set;
 
 import org.codehaus.wadi.Motable;
-import org.codehaus.wadi.impl.WADIRuntimeException;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
@@ -38,8 +37,9 @@ public class OswegoConcurrentMotableMap implements ConcurrentMotableMap {
                 getSharedLock(motable).acquire();
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                throw new WADIRuntimeException(e);
+                return null;
             }
+            motable = (Motable) delegate.get(id);
         }
         return motable;
     }
@@ -51,8 +51,9 @@ public class OswegoConcurrentMotableMap implements ConcurrentMotableMap {
                 getExclusiveLock(motable).acquire();
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                throw new WADIRuntimeException(e);
+                return null;
             }
+            motable = (Motable) delegate.get(id);
         }
         return motable;
     }
