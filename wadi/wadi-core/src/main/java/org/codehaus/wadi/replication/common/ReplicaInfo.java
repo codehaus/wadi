@@ -46,12 +46,14 @@ public class ReplicaInfo implements Serializable {
         version = 0;
     }
 
-    public ReplicaInfo(ReplicaInfo prototype) {
+    public ReplicaInfo(ReplicaInfo prototype, Peer[] secondaries) {
         if (null == prototype) {
             throw new IllegalArgumentException("prototype is required");
+        } else if (null == secondaries) {
+            throw new IllegalArgumentException("secondaries is required");
         }
+        this.secondaries = secondaries;
         primary = prototype.primary;
-        secondaries = prototype.secondaries;
         replica = prototype.replica;
         version = prototype.version + 1;
     }
