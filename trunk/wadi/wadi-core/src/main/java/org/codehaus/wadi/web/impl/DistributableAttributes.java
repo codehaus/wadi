@@ -47,73 +47,82 @@ import org.codehaus.wadi.web.DistributableAttributesConfig;
  */
 public class DistributableAttributes extends StandardAttributes implements SerializableContent, DistributableValueConfig {
 
+    protected Set _listenerNames = new HashSet();
+    
     public DistributableAttributes(AttributesConfig config, Map map) {
         super(config, map);
     }
-    
-    protected Set _listenerNames=new HashSet();
-    public Set getListenerNames() {return _listenerNames;}
-    
-    public Object remove(Object key) {
-        Object oldValue=super.remove(key);
-        // TODO - is it faster to test and fail, or to remove and fail ?
-        // TODO - we could also check size of listener set ?
+
+    public Set getListenerNames() {
+        return _listenerNames;
+    }
+
+    public synchronized Object remove(Object key) {
+        Object oldValue = super.remove(key);
         if (isListener(oldValue))
             _listenerNames.remove(key);
-        
+
         return oldValue;
     }
-    
-    public Object put(Object key, Object newValue) {
-        Object oldValue=super.put(key, newValue);
-        boolean wasListener=isListener(oldValue);
-        boolean isListener=(newValue==oldValue)?wasListener:isListener(newValue);
-        
-        if (wasListener==isListener)
+
+    public synchronized Object put(Object key, Object newValue) {
+        Object oldValue = super.put(key, newValue);
+        boolean wasListener = isListener(oldValue);
+        boolean isListener = (newValue == oldValue) ? wasListener : isListener(newValue);
+
+        if (wasListener == isListener)
             return oldValue;
-        
+
         if (wasListener)
             _listenerNames.remove(key);
         if (isListener)
             _listenerNames.add(key);
-        
+
         return oldValue;
     }
-    
+
     protected boolean isListener(Object o) {
-        return (!((DistributableAttributesConfig)_config).getHttpSessionAttributeListenersRegistered() && // first test should not be done dynamically
-        (o instanceof HttpSessionActivationListener || o instanceof HttpSessionBindingListener)); // TODO
+        return (!((DistributableAttributesConfig) _config).getHttpSessionAttributeListenersRegistered() && 
+                (o instanceof HttpSessionActivationListener || o instanceof HttpSessionBindingListener));
     }
 
-    public void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
-        _listenerNames=(Set)oi.readObject();
-        int size=oi.readInt();
-        for (int i=0; i<size; i++) {
-            Object key=oi.readObject();
-            DistributableValue val=(DistributableValue)_config.getValuePool().take(this);
+    public synchronized void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
+        _listenerNames = (Set) oi.readObject();
+        int size = oi.readInt();
+        for (int i = 0; i < size; i++) {
+            Object key = oi.readObject();
+            DistributableValue val = (DistributableValue) _config.getValuePool().take(this);
             val.readContent(oi);
             _map.put(key, val);
         }
     }
 
-    public void writeContent(ObjectOutput oo) throws IOException {
-        oo.writeObject(_listenerNames); // TODO - could be smaller...
+    public synchronized void writeContent(ObjectOutput oo) throws IOException {
+        oo.writeObject(_listenerNames);
         oo.writeInt(size());
-        for (Iterator i=_map.entrySet().iterator(); i.hasNext();) {
-            Map.Entry e=(Map.Entry)i.next();
-            Object key=e.getKey();
+        for (Iterator i = _map.entrySet().iterator(); i.hasNext();) {
+            Map.Entry e = (Map.Entry) i.next();
+            Object key = e.getKey();
             oo.writeObject(key);
-            DistributableValue val=(DistributableValue)e.getValue();
+            DistributableValue val = (DistributableValue) e.getValue();
             val.writeContent(oo);
         }
     }
 
-    public ValueHelper findHelper(Class type) {return ((DistributableAttributesConfig)_config).findHelper(type);}
+    public ValueHelper findHelper(Class type) {
+        return ((DistributableAttributesConfig) _config).findHelper(type);
+    }
 
-    public boolean getHttpSessionAttributeListenersRegistered() {return ((DistributableAttributesConfig)_config).getHttpSessionAttributeListenersRegistered();}
+    public boolean getHttpSessionAttributeListenersRegistered() {
+        return ((DistributableAttributesConfig) _config).getHttpSessionAttributeListenersRegistered();
+    }
 
-    public HttpSessionEvent getHttpSessionEvent() {return ((DistributableAttributesConfig)_config).getHttpSessionEvent();}
-    
-    public Streamer getStreamer(){return ((DistributableAttributesConfig)_config).getStreamer();}
-    
+    public HttpSessionEvent getHttpSessionEvent() {
+        return ((DistributableAttributesConfig) _config).getHttpSessionEvent();
+    }
+
+    public Streamer getStreamer() {
+        return ((DistributableAttributesConfig) _config).getStreamer();
+    }
+
 }
