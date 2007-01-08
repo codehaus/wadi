@@ -34,7 +34,7 @@ public class OswegoConcurrentMotableMapTest extends TestCase {
             readers[i].start();
         }
         
-        Thread.sleep(300);
+        Thread.sleep(200);
         
         Motable motable = map.acquireExclusive(id);
         map.remove(id);
