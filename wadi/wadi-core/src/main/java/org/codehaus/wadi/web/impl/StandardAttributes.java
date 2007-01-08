@@ -16,6 +16,7 @@
  */
 package org.codehaus.wadi.web.impl;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -33,12 +34,11 @@ public class StandardAttributes implements Attributes, ValueConfig {
     protected final AttributesConfig _config;
 
     public StandardAttributes(AttributesConfig config, Map map) {
-        super();
         _map = map;
         _config = config;
     }
 
-    public Object get(Object key) {
+    public synchronized Object get(Object key) {
         Value a = (Value) _map.get(key);
         if (a == null) {
             return null;
@@ -47,7 +47,7 @@ public class StandardAttributes implements Attributes, ValueConfig {
         }
     }
 
-    public Object remove(Object key) {
+    public synchronized Object remove(Object key) {
         Value a = (Value) _map.remove(key);
         if (a == null) {
             return null;
@@ -59,7 +59,7 @@ public class StandardAttributes implements Attributes, ValueConfig {
         }
     }
 
-    public Object put(Object key, Object newValue) {
+    public synchronized Object put(Object key, Object newValue) {
         Value in = _config.getValuePool().take(this);
         in.setValue(newValue);
         Value out = (Value) _map.put(key, in);
@@ -73,15 +73,15 @@ public class StandardAttributes implements Attributes, ValueConfig {
         }
     }
 
-    public int size() {
+    public synchronized int size() {
         return _map.size();
     }
 
-    public Set keySet() {
-        return _map.keySet();
+    public synchronized Set keySet() {
+        return new HashSet(_map.keySet());
     }
 
-    public void clear() {
+    public synchronized void clear() {
         _map.clear();
     }
 
