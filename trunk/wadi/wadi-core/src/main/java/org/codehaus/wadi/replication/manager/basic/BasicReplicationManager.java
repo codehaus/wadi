@@ -200,7 +200,7 @@ public class BasicReplicationManager implements ReplicationManager {
         } catch (ServiceInvocationException e) {
             if (e.isMessageExchangeException()) {
                 log.warn("Update has not been properly cascaded due to a communication failure. If a targeted node " +
-                        "has been lost, state will be re-balance automatically.", e);
+                        "has been lost, state will be re-balanced automatically.", e);
             } else {
                 throw new InternalReplicationManagerException(e);
             }
@@ -336,7 +336,7 @@ public class BasicReplicationManager implements ReplicationManager {
             if (null == replicaInfo) {
                 replicaInfo = new ReplicaInfo(localPeer, secondaries, tmp);
             } else {
-                replicaInfo = new ReplicaInfo(replicaInfo);
+                replicaInfo = new ReplicaInfo(replicaInfo, secondaries);
             }
             if (secondaries.length != 0) {
                 cascadeCreate(key, replicaInfo, this);

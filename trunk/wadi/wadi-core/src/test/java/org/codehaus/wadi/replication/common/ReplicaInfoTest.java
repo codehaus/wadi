@@ -28,10 +28,10 @@ public class ReplicaInfoTest extends TestCase {
     public void testCreateWithPrototpye() {
         Object replica = new Object();
         ReplicaInfo info = new ReplicaInfo(peer1, new Peer[] {peer2}, replica);
-        info = new ReplicaInfo(info);
+        info = new ReplicaInfo(info, new Peer[] {peer3});
         assertSame(peer1, info.getPrimary());
         assertEquals(1, info.getSecondaries().length);
-        assertSame(peer2, info.getSecondaries()[0]);
+        assertSame(peer3, info.getSecondaries()[0]);
         assertSame(replica, info.getReplica());
         assertEquals(1, info.getVersion());
     }
