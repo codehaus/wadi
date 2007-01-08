@@ -30,8 +30,14 @@ import org.codehaus.wadi.Motable;
 public class SimpleMotable extends AbstractMotable implements Serializable {
 
 	protected byte[] _bytes;
-	public byte[] getBodyAsByteArray() {return _bytes;}
-	public void setBodyAsByteArray(byte[] bytes){_bytes=bytes;}
+
+    public synchronized byte[] getBodyAsByteArray() {
+        return _bytes;
+    }
+
+    public synchronized void setBodyAsByteArray(byte[] bytes) {
+        _bytes = bytes;
+    }
     
     public boolean equals(Object object) {
         if (this==object)
