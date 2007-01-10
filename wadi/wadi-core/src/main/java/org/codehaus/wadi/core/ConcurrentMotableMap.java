@@ -15,7 +15,6 @@
  */
 package org.codehaus.wadi.core;
 
-import java.util.Collection;
 import java.util.Set;
 
 import org.codehaus.wadi.Motable;
@@ -42,10 +41,4 @@ public interface ConcurrentMotableMap {
     boolean isEmpty();
 
     Set getNames();
-
-    Collection getMotables();
-
-    void acquireAll();
-    
-    void releaseAll();
 }

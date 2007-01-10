@@ -56,7 +56,7 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
         this.map = map;
         this.evicter = evicter;
         
-        timer = new Timer();
+        timer = new Timer(getClass().getName() + " Evicter");
     }
 
     public final boolean isExclusive() {
@@ -123,7 +123,7 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
 
     public Immoter getDemoter(String name, Motable motable) {
         long time = System.currentTimeMillis();
-        if (evicter.test(motable, time, motable.getTimeToLive(time))) {
+        if (evicter.testForDemotion(motable, time, motable.getTimeToLive(time))) {
             return next.getDemoter(name, motable);
         } else {
             return getImmoter();
@@ -149,25 +149,27 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
     protected void unload() {
         Emoter emoter = getEmoter();
 
-        map.acquireAll();
-        try {
-            int i = 0;
-            for (Iterator iter = map.getMotables().iterator(); iter.hasNext();) {
-                Motable emotable = (Motable) iter.next();
-                String name = emotable.getName();
+        int i = 0;
+        for (Iterator iter = map.getNames().iterator(); iter.hasNext();) {
+            String id = (String) iter.next();
+            Motable motable = map.acquireExclusive(id);
+            if (null == motable) {
+                continue;
+            }
+            try {
                 try {
                     Immoter immoter = next.getSharedDemoter();
-                    Utils.mote(emoter, immoter, emotable, name);
+                    Utils.mote(emoter, immoter, motable, id);
                     i++;
                 } catch (Exception e) {
                     _log.warn("unexpected problem while unloading session", e);
                 }
-                map.remove(name);
+                map.remove(id);
+            } finally {
+                map.releaseExclusive(motable);
             }
-            _log.info("unloaded sessions: " + i);
-        } finally {
-            map.releaseAll();
         }
+        _log.info("Unloaded sessions=[" + i + "]");
     }
 
     protected class BasicEvictionStrategy implements EvictionStrategy {

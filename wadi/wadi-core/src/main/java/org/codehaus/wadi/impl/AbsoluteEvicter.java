@@ -16,7 +16,7 @@
  */
 package org.codehaus.wadi.impl;
 
-import org.codehaus.wadi.Evictable;
+import org.codehaus.wadi.Motable;
 
 /**
  * An Evicter which evicts Evictables if they have timed out or after an absolute period of inactivity.
@@ -33,8 +33,8 @@ public class AbsoluteEvicter extends AbstractBestEffortEvicter {
         _inactiveInterval = inactivityInterval * 1000;
     }
 
-    public boolean test(Evictable evictable, long time, long ttl) {
-        return time - evictable.getLastAccessedTime() >= _inactiveInterval;
+    public boolean testForDemotion(Motable motable, long time, long ttl) {
+        return time - motable.getLastAccessedTime() >= _inactiveInterval;
     }
     
 }
