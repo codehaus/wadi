@@ -16,7 +16,7 @@
  */
 package org.codehaus.wadi.impl;
 
-import org.codehaus.wadi.Evictable;
+import org.codehaus.wadi.Motable;
 
 /**
  * An Evicter which also evicts Evictables with less than a certain time to live remaining.
@@ -33,7 +33,7 @@ public class TimeToLiveEvicter extends AbstractBestEffortEvicter {
         _ttl = ttl * 1000;
     }
 
-    public boolean test(Evictable evictable, long time, long ttl) {
+    public boolean testForDemotion(Motable motable, long time, long ttl) {
         return ttl <= _ttl;
     }
 

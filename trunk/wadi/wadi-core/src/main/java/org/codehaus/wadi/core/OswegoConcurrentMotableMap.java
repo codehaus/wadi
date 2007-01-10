@@ -58,13 +58,6 @@ public class OswegoConcurrentMotableMap implements ConcurrentMotableMap {
         return motable;
     }
 
-    public void acquireAll() {
-    }
-
-    public Collection getMotables() {
-        return delegate.values();
-    }
-
     public Set getNames() {
         return delegate.keySet();
     }
@@ -85,9 +78,6 @@ public class OswegoConcurrentMotableMap implements ConcurrentMotableMap {
         getExclusiveLock(motable).release();
     }
     
-    public void releaseAll() {
-    }
-
     public void remove(String name) {
         delegate.remove(name);
     }

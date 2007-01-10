@@ -34,93 +34,93 @@ import org.codehaus.wadi.core.ConcurrentMotableMap;
  * @version $Revision$
  */
 public abstract class AbstractBestEffortEvicter extends AbstractEvicter {
-    protected final Log _log = LogFactory.getLog(getClass());
-    protected final boolean _strictOrdering;
+    protected final Log log = LogFactory.getLog(getClass());
+    protected final boolean strictOrdering;
 
     public AbstractBestEffortEvicter(int sweepInterval, boolean strictOrdering) {
         super(sweepInterval);
-        _strictOrdering = strictOrdering;
+        this.strictOrdering = strictOrdering;
     }
     
     public void evict(ConcurrentMotableMap idToEvictable, EvictionStrategy evictionStrategy) {
-        _log.trace("sweep started");
+        log.debug("Sweep started");
 
-        // get candidates
-        long time = System.currentTimeMillis();
-
-        // perform a cheap first pass, remembering those candidates
-        // which look as if they should be expired/demoted...
         List toExpireList = new ArrayList();
         List toDemoteList = new ArrayList();
-
-        idToEvictable.acquireAll();
+        identifyDemotionsAndExpirations(idToEvictable, toExpireList, toDemoteList);
         
-        int expirations;
-        int demotions;
-        try {
-            scanForExpireAndDemoteCandidates(idToEvictable, time, toExpireList, toDemoteList);
-            
-            Object[] toExpire = toExpireList.toArray();
-            Object[] toDemote = toDemoteList.toArray();
-            sortCandidates(time, toExpire, toDemote);
-            
-            expirations = expire(time, toExpire, evictionStrategy);
-            demotions = demote(time, toDemote, evictionStrategy);
-        } finally {
-            idToEvictable.releaseAll();
-        }
+        Motable[] toExpire = (Motable[]) toExpireList.toArray(new Motable[0]);
+        Motable[] toDemote = (Motable[]) toDemoteList.toArray(new Motable[0]);
+        sortCandidates(toExpire, toDemote);
+        
+        expire(toExpire, evictionStrategy);
+        demote(toDemote, evictionStrategy);
 
-        if (_log.isDebugEnabled()) {
-            _log.debug("sweep completed (" + (System.currentTimeMillis() - time) + " millis) - expirations:"
-                    + expirations + ", demotions:" + demotions);
+        if (log.isDebugEnabled()) {
+            log.debug("Sweep completed - expirations=[" + toExpire.length + "], demotions=[" + toDemote.length + "]");
         }
     }
 
-    private void sortCandidates(long time, Object[] toExpire, Object[] toDemote) {
-        // if strict ordering is required we sort the candidate lists
-        // before the next stage.
-        if (_strictOrdering) {
+    protected void identifyDemotionsAndExpirations(ConcurrentMotableMap idToEvictable, List toExpire, List toDemote) {
+        long time = System.currentTimeMillis();
+        for (Iterator iter = idToEvictable.getNames().iterator(); iter.hasNext();) {
+            String id = (String) iter.next();
+            Motable motable = idToEvictable.acquireExclusive(id);
+            if (null == motable) {
+                continue;
+            }
+            try {
+                if (isReadyToExpire(motable, time)) {
+                    toExpire.add(motable);
+                    idToEvictable.remove(id);
+                } else if (isReadyToDemote(motable, time)) {
+                    toDemote.add(motable);
+                    idToEvictable.remove(id);
+                }
+            } finally {
+                idToEvictable.releaseExclusive(motable);
+            }
+        }
+    }
+
+    protected boolean isReadyToExpire(Motable motable, long time) {
+        long ttl = motable.getTimeToLive(time);
+        if (ttl <= 0) {
+            return true;
+        }
+        return false;
+    }
+
+    protected boolean isReadyToDemote(Motable motable, long time) {
+        long ttl = motable.getTimeToLive(time);
+        if (testForDemotion(motable, time, ttl)) {
+            return true;
+        }
+        return false;
+    }
+
+    protected void sortCandidates(Motable[] toExpire, Motable[] toDemote) {
+        long time = System.currentTimeMillis();
+        // if strict ordering is required we sort the candidate lists before the next stage.
+        if (strictOrdering) {
             Comparator comparator = getComparator(time);
             Arrays.sort(toExpire, comparator);
             Arrays.sort(toDemote, comparator);
         }
     }
 
-    protected void scanForExpireAndDemoteCandidates(ConcurrentMotableMap idToMotable, long time, List toExpireList, List toDemoteList) {
-        for (Iterator i = idToMotable.getMotables().iterator(); i.hasNext();) {
-            // no locking on this pass...
-            Evictable e = (Evictable) i.next();
-            long ttl = e.getTimeToLive(time);
-            if (ttl < 0) {
-                // if ttl==0, we do NOT expire - this avoids any problems with
-                // sessions that are being recycled...
-                toExpireList.add(e);
-            } else if (test(e, time, ttl)) {
-                toDemoteList.add(e);
-            }
-        }
-    }
-
-    protected int demote(long time, Object[] toDemote, EvictionStrategy evictionStrategy) {
-        int demotions = 0;
-        int l = toDemote.length;
-        for (int i = 0; i < l; i++) {
-            Motable motable = (Motable) toDemote[i];
+    protected void demote(Motable[] toDemote, EvictionStrategy evictionStrategy) {
+        for (int i = 0; i < toDemote.length; i++) {
+            Motable motable = toDemote[i];
             evictionStrategy.demote(motable);
-            demotions++;
         }
-        return demotions;
     }
     
-    protected int expire(long time, Object[] toExpire, EvictionStrategy evictionStrategy) {
-        int expirations = 0;
-        int l = toExpire.length;
-        for (int i = 0; i < l; i++) {
-            Motable motable = (Motable) toExpire[i];
+    protected void expire(Motable[] toExpire, EvictionStrategy evictionStrategy) {
+        for (int i = 0; i < toExpire.length; i++) {
+            Motable motable = toExpire[i];
             evictionStrategy.expire(motable);
-            expirations++;
         }
-        return expirations;
     }
 
     protected Comparator getComparator(long time) {

@@ -34,5 +34,5 @@ public interface Evicter {
     
     void evict(ConcurrentMotableMap idToEvictable, EvictionStrategy evictionStrategy);
     
-    boolean test(Evictable evictable, long time, long ttl);
+    boolean testForDemotion(Motable motable, long time, long ttl);
 }

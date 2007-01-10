@@ -16,7 +16,7 @@
  */
 package org.codehaus.wadi.impl;
 
-import org.codehaus.wadi.Evictable;
+import org.codehaus.wadi.Motable;
 
 /**
  * An Evicter which always evicts
@@ -30,7 +30,7 @@ public class AlwaysEvicter extends AbstractBestEffortEvicter {
         super(sweepInterval, strictOrdering);
     }
     
-	public boolean test(Evictable evictable, long time, long ttl) {
+	public boolean testForDemotion(Motable motable, long time, long ttl) {
         return true;
     }
 
