@@ -16,19 +16,49 @@
  */
 package org.codehaus.wadi.web.impl;
 
-import org.codehaus.wadi.web.ReplicableSessionConfig;
+import org.codehaus.wadi.Replicater;
+import org.codehaus.wadi.ReplicaterFactory;
+import org.codehaus.wadi.Streamer;
+import org.codehaus.wadi.ValuePool;
+import org.codehaus.wadi.web.AttributesFactory;
+import org.codehaus.wadi.web.Router;
+import org.codehaus.wadi.web.ValueHelperRegistry;
 import org.codehaus.wadi.web.WebSession;
-import org.codehaus.wadi.web.WebSessionConfig;
-import org.codehaus.wadi.web.WebSessionFactory;
+import org.codehaus.wadi.web.WebSessionWrapperFactory;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision: 1885 $
  */
-public class AtomicallyReplicableSessionFactory implements WebSessionFactory {
+public class AtomicallyReplicableSessionFactory extends DistributableSessionFactory {
 
-    public WebSession create(WebSessionConfig config) {
-        return new AtomicallyReplicableSession((ReplicableSessionConfig)config);
+    protected final Replicater replicater;
+    
+    public AtomicallyReplicableSessionFactory(AttributesFactory attributesFactory,
+            WebSessionWrapperFactory wrapperFactory,
+            ValuePool valuePool,
+            Router router,
+            Streamer streamer,
+            ValueHelperRegistry valueHelperRegistry,
+            ReplicaterFactory replicaterFactory) {
+        super(attributesFactory, wrapperFactory, valuePool, router, streamer, valueHelperRegistry);
+        if (null == replicaterFactory) {
+            throw new IllegalArgumentException("replicaterFactory is required");
+        }
+        this.replicater = replicaterFactory.create();
     }
+
+    public WebSession create() {
+        return new AtomicallyReplicableSession(config,
+                attributesFactory,
+                wrapperFactory,
+                valuePool,
+                router,
+                getManager(),
+                streamer,
+                valueHelperRegistry,
+                replicater);
+    }
+    
 }
 

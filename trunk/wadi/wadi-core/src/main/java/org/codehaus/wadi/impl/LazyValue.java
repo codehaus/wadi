@@ -77,8 +77,7 @@ public class LazyValue extends DistributableValue {
 
     public synchronized Object setValue(Object newValue) {
         if (_bytes!=null) {
-            if (_listener || ((DistributableValueConfig)_config).getHttpSessionAttributeListenersRegistered())
-                deserialise(); // oldValue needs deserialising before it is chucked...
+            deserialise(); // oldValue needs deserialising before it is chucked...
         }
 
         Object tmp=super.setValue(newValue);

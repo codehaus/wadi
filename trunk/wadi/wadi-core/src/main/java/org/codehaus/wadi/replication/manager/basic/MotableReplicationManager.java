@@ -15,38 +15,34 @@
  */
 package org.codehaus.wadi.replication.manager.basic;
 
+import org.codehaus.wadi.Motable;
+import org.codehaus.wadi.impl.SimpleMotable;
 import org.codehaus.wadi.replication.common.ReplicaInfo;
 import org.codehaus.wadi.replication.manager.InternalReplicationManagerException;
 import org.codehaus.wadi.replication.manager.ReplicationKeyNotFoundException;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
-import org.codehaus.wadi.web.WebSession;
-import org.codehaus.wadi.web.WebSessionPool;
 
 /**
  * 
  * @version $Revision: 1603 $
  */
-public class SessionReplicationManager implements ReplicationManager {
+public class MotableReplicationManager implements ReplicationManager {
     private static final int maxInactiveInterval =  30 * 60;
     
     private final ReplicationManager replicationManager;
-    private final WebSessionPool sessionPool;
     
-    public SessionReplicationManager(ReplicationManager replicationManager, WebSessionPool sessionPool) {
+    public MotableReplicationManager(ReplicationManager replicationManager) {
         if (null == replicationManager) {
             throw new IllegalArgumentException("replicationManager is required");
-        } else if (null == sessionPool) {
-            throw new IllegalArgumentException("sessionPool is required");
         }
         this.replicationManager = replicationManager;
-        this.sessionPool = sessionPool;
     }
 
     public void create(Object key, Object tmp) {
-        WebSession session = castAndEnsureType(tmp);
+        Motable motable = castAndEnsureType(tmp);
         byte[] body;
         try {
-            body = session.getBodyAsByteArray();
+            body = motable.getBodyAsByteArray();
         } catch (Exception e) {
             throw new InternalReplicationManagerException(e);
         }
@@ -54,10 +50,10 @@ public class SessionReplicationManager implements ReplicationManager {
     }
 
     public void update(Object key, Object tmp) {
-        WebSession session = castAndEnsureType(tmp);
+        Motable motable = castAndEnsureType(tmp);
         byte[] body;
         try {
-            body = session.getBodyAsByteArray();
+            body = motable.getBodyAsByteArray();
         } catch (Exception e) {
             throw new InternalReplicationManagerException(e);
         }
@@ -78,14 +74,14 @@ public class SessionReplicationManager implements ReplicationManager {
             return null;
         }
         
-        WebSession session = sessionPool.take();
+        SimpleMotable motable = new SimpleMotable();
         long time = System.currentTimeMillis();
         try {
-            session.restore(time, time, maxInactiveInterval, (String) key, body);
+            motable.restore(time, time, maxInactiveInterval, (String) key, body);
         } catch (Exception e) {
             throw new InternalReplicationManagerException(e);
         }
-        return session;
+        return motable;
     }
 
     public boolean releasePrimary(Object key) {
@@ -108,10 +104,10 @@ public class SessionReplicationManager implements ReplicationManager {
         replicationManager.stop();
     }
 
-    private WebSession castAndEnsureType(Object tmp) {
-        if (false == tmp instanceof WebSession) {
-            throw new IllegalArgumentException("tmp is not a Session");
+    private Motable castAndEnsureType(Object tmp) {
+        if (false == tmp instanceof Motable) {
+            throw new IllegalArgumentException("tmp is not a Motable");
         }
-        return (WebSession) tmp;
+        return (Motable) tmp;
     }
 }

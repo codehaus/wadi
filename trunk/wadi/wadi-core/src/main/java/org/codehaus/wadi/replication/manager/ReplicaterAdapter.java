@@ -15,6 +15,7 @@
  */
 package org.codehaus.wadi.replication.manager;
 
+import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.Replicater;
 import org.codehaus.wadi.ReplicaterException;
 import org.codehaus.wadi.web.WebSession;
@@ -58,12 +59,12 @@ public class ReplicaterAdapter implements Replicater {
 
     public void acquireFromOtherReplicater(Object tmp) {
         WebSession session = castAndEnsureType(tmp);
-        WebSession acquiredSession = (WebSession) replicationManager.acquirePrimary(session.getName());
-        if (null == acquiredSession) {
+        Motable acquiredMotable = (Motable) replicationManager.acquirePrimary(session.getName());
+        if (null == acquiredMotable) {
             return;
         }
         try {
-            session.setBodyAsByteArray(acquiredSession.getBodyAsByteArray());
+            session.setBodyAsByteArray(acquiredMotable.getBodyAsByteArray());
         } catch (Exception e) {
             throw new ReplicaterException(e);
         }

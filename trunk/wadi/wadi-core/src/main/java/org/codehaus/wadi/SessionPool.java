@@ -23,8 +23,7 @@ package org.codehaus.wadi;
  * @version $Revision$
  */
 public interface SessionPool {
-
 	void put(Session context);
-	Session take();
 
+    Session take();
 }

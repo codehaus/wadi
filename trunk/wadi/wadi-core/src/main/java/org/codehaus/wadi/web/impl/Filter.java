@@ -27,9 +27,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.codehaus.wadi.InvocationException;
-import org.codehaus.wadi.InvocationProxy;
 import org.codehaus.wadi.Manager;
-import org.codehaus.wadi.impl.ClusteredManager;
 import org.codehaus.wadi.impl.StandardManager;
 
 /**
@@ -55,8 +53,7 @@ public class Filter implements javax.servlet.Filter {
             ServletException {
         if (request instanceof HttpServletRequest) {
             WebInvocation invocation=WebInvocation.getThreadLocalInstance();
-            InvocationProxy proxy=(_manager instanceof ClusteredManager)?((ClusteredManager)_manager).getInvocationProxy():null; // TODO - yeugh
-            invocation.init((HttpServletRequest)request, (HttpServletResponse)response, filterChain, proxy);
+            invocation.init((HttpServletRequest)request, (HttpServletResponse)response, filterChain);
             try {
                 _manager.contextualise(invocation);
             } catch (InvocationException e) {

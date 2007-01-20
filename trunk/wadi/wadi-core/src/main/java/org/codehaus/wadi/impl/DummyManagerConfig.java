@@ -20,6 +20,8 @@ import javax.servlet.ServletContext;
 
 import org.codehaus.wadi.Manager;
 import org.codehaus.wadi.ManagerConfig;
+import org.codehaus.wadi.SessionMonitor;
+import org.codehaus.wadi.web.WebSessionConfig;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -31,8 +33,7 @@ public class DummyManagerConfig implements ManagerConfig {
 		return null;
 	}
 
-	public void callback(Manager manager) {
-	// do nothing - should install Listeners
+    public void callback(Manager manager, SessionMonitor sessionMonitor, WebSessionConfig sessionConfig) {
 	}
 
 }

@@ -24,7 +24,6 @@ import org.codehaus.wadi.core.ConcurrentMotableMap;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-
 public abstract class AbstractMappedImmoter extends AbstractImmoter {
     private final ConcurrentMotableMap map;
 

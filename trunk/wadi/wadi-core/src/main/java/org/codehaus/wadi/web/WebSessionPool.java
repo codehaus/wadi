@@ -17,13 +17,12 @@
 package org.codehaus.wadi.web;
 
 
+
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision: 1885 $
  */
 public interface WebSessionPool {
-    void init(WebSessionConfig config);
-
     WebSession take();
 
     void put(WebSession session);

@@ -36,7 +36,6 @@ public interface Motable extends Evictable {
 
     void copy(Motable motable) throws Exception;
 	
-	// transfers all our content into recipient. If this succeeds without an exception, remove our own content...
 	void mote(Motable recipient) throws Exception;
 
 	String getName();

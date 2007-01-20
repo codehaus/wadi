@@ -52,10 +52,10 @@ public class SpringManagerFactory {
     }
 
     public Manager create() throws FileNotFoundException {
-        return create(_descriptor, _beanName, _sessionFactory, _sessionWrapperFactory);
+        return create(_descriptor, _beanName);
     }
 
-    public static Manager create(InputStream descriptor, String beanName, WebSessionFactory sessionFactory, WebSessionWrapperFactory sessionWrapperFactory) throws FileNotFoundException {
+    public static Manager create(InputStream descriptor, String beanName) throws FileNotFoundException {
     	DefaultListableBeanFactory dlbf=new DefaultListableBeanFactory();
         String wadiPropsName = System.getProperty("wadi.properties");
         FileSystemResource props = null;
@@ -75,9 +75,6 @@ public class SpringManagerFactory {
         xbdr.loadBeanDefinitions(new InputStreamResource(descriptor));
     	cfg.setSystemPropertiesMode(PropertyPlaceholderConfigurer.SYSTEM_PROPERTIES_MODE_FALLBACK);
     	cfg.postProcessBeanFactory(dlbf);
-
-    	dlbf.registerSingleton("SessionFactory", sessionFactory);
-    	dlbf.registerSingleton("SessionWrapperFactory", sessionWrapperFactory);
 
     	//dlbf.getBean("exporter");
     	//dlbf.getBean("serverConnector");

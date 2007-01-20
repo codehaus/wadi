@@ -23,6 +23,8 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionContext;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.web.WebSession;
 
 /**
@@ -33,6 +35,8 @@ import org.codehaus.wadi.web.WebSession;
  */
 
 public class WebSessionWrapper implements HttpSession {
+    private static final Log log = LogFactory.getLog(WebSessionWrapper.class);
+    
     protected final WebSession _session;
 
     public WebSessionWrapper(WebSession session) {
@@ -104,7 +108,11 @@ public class WebSessionWrapper implements HttpSession {
     }
 
     public void invalidate() {
-        _session.getConfig().destroy(null, _session);
+        try {
+            _session.destroy();
+        } catch (Exception e) {
+            log.error(e);
+        }
     }
 
     protected static final HttpSessionContext _httpSessionContext = new HttpSessionContext() {

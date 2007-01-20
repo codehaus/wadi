@@ -78,7 +78,8 @@ public class ProxyServlet implements Servlet {
             URI uri = new URI(req.getServerName() + ":" + req.getServerPort());
 			location=new URIEndPoint(uri);
 			WebInvocation invocation=new WebInvocation();
-			invocation.init(hreq, hres, null, _proxy);
+			invocation.init(hreq, hres, null);
+            invocation.setInvocationProxy(_proxy);
 			invocation.relocate(location);
 		} catch (Exception e) {
 			hres.setHeader("Date", null);

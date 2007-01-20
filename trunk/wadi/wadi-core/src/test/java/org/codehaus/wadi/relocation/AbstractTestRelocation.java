@@ -28,6 +28,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
+import org.codehaus.wadi.InvocationProxy;
 import org.codehaus.wadi.PoolableInvocationWrapper;
 import org.codehaus.wadi.Session;
 import org.codehaus.wadi.group.Dispatcher;
@@ -38,7 +39,6 @@ import org.codehaus.wadi.test.MyHttpServletRequest;
 import org.codehaus.wadi.test.MyHttpServletResponse;
 import org.codehaus.wadi.test.MyStack;
 import org.codehaus.wadi.test.TestUtil;
-import org.codehaus.wadi.web.Router;
 import org.codehaus.wadi.web.WebSession;
 
 /**
@@ -91,6 +91,10 @@ public class AbstractTestRelocation extends TestCase {
             throw new UnsupportedOperationException("NYI");
         }
 
+        public void setInvocationProxy(InvocationProxy proxy) {
+            throw new UnsupportedOperationException("NYI");
+        }
+        
     }
 
     public void testSessionRelocation(Dispatcher redD, Dispatcher greenD) throws Exception {

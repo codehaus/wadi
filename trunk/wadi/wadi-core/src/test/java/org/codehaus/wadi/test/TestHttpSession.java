@@ -37,24 +37,25 @@ import junit.framework.TestCase;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.BasicSessionMonitor;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Manager;
 import org.codehaus.wadi.SessionIdFactory;
+import org.codehaus.wadi.SessionMonitor;
 import org.codehaus.wadi.ValueFactory;
-import org.codehaus.wadi.ValueHelper;
 import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.core.ConcurrentMotableMap;
 import org.codehaus.wadi.core.OswegoConcurrentMotableMap;
 import org.codehaus.wadi.impl.ClusteredManager;
 import org.codehaus.wadi.impl.DummyContextualiser;
 import org.codehaus.wadi.impl.DummyManagerConfig;
-import org.codehaus.wadi.impl.SimpleSessionPool;
 import org.codehaus.wadi.impl.SimpleValuePool;
 import org.codehaus.wadi.impl.StandardManager;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 import org.codehaus.wadi.web.AttributesFactory;
 import org.codehaus.wadi.web.Router;
 import org.codehaus.wadi.web.WADIHttpSession;
+import org.codehaus.wadi.web.WADIHttpSessionListener;
 import org.codehaus.wadi.web.WebSession;
 import org.codehaus.wadi.web.WebSessionFactory;
 import org.codehaus.wadi.web.WebSessionPool;
@@ -84,24 +85,26 @@ public class TestHttpSession extends TestCase {
     protected Router _router = new DummyRouter();
 
     // Standard
+    protected SessionMonitor sessionMonitor = new BasicSessionMonitor();
     protected Contextualiser _standardContextualiser = new DummyContextualiser();
     protected WebSessionWrapperFactory _standardSessionWrapperFactory = new StandardSessionWrapperFactory();
     protected SessionIdFactory _standardSessionIdFactory = new TomcatSessionIdFactory();
-    protected AttributesFactory _standardAttributesFactory = new StandardAttributesFactory();
-    protected WebSessionFactory _standardSessionFactory = new StandardSessionFactory();
-    protected WebSessionPool _standardSessionPool = new SimpleSessionPool(_standardSessionFactory);
     protected ValueFactory _standardValueFactory = new StandardValueFactory();
     protected ValuePool _standardValuePool = new SimpleValuePool(_standardValueFactory);
-    protected StandardManager _standardManager = new StandardManager(_standardSessionPool,
-            _standardAttributesFactory,
-            _standardValuePool,
+    protected AttributesFactory _standardAttributesFactory = new StandardAttributesFactory();
+    protected WebSessionFactory _standardSessionFactory = new StandardSessionFactory(_standardAttributesFactory,
             _standardSessionWrapperFactory,
+            _standardValuePool,
+            _router);
+    protected StandardManager _standardManager = new StandardManager(_standardSessionFactory,
             _standardSessionIdFactory,
             _standardContextualiser,
             _sessionMap,
             _router,
+            sessionMonitor,
             true);
     protected DummyManagerConfig _standardConfig = new DummyManagerConfig();
+    private WADIHttpSessionListener wadiHttpSessionListener;
 
     public TestHttpSession(String name) {
         super(name);
@@ -219,15 +222,17 @@ public class TestHttpSession extends TestCase {
     protected void setUp() throws Exception {
         _listener = new Listener();
         HttpSessionListener[] sessionListeners = new HttpSessionListener[] { _listener };
+        wadiHttpSessionListener = new WADIHttpSessionListener(sessionListeners);
+        sessionMonitor.addSessionListener(wadiHttpSessionListener);
+
         HttpSessionAttributeListener[] attributeListeners = new HttpSessionAttributeListener[] { _listener };
-        _standardManager.setSessionListeners(sessionListeners);
-        _standardManager.setAttributelisteners(attributeListeners);
+        _standardSessionFactory.getWebSessionConfig().setAttributeListeners(attributeListeners);
         _standardManager.init(_standardConfig);
     }
 
     protected void tearDown() {
-        _standardManager.setSessionListeners(null);
-        _standardManager.setAttributelisteners(null);
+        sessionMonitor.removeSessionListener(wadiHttpSessionListener);
+        _standardSessionFactory.getWebSessionConfig().setAttributeListeners(null);
         _listener = null;
     }
 
@@ -303,13 +308,15 @@ public class TestHttpSession extends TestCase {
     }
 
     public void testDestroyHttpSessionWithoutListener() throws Exception {
+        _standardSessionFactory.getWebSessionConfig().setAttributeListeners(null);
+        sessionMonitor.removeSessionListener(wadiHttpSessionListener);
+        wadiHttpSessionListener = new WADIHttpSessionListener(new HttpSessionListener[0]);
+        sessionMonitor.addSessionListener(wadiHttpSessionListener);
         testDestroyHttpSessionWithoutListener(_standardManager);
+        sessionMonitor.removeSessionListener(wadiHttpSessionListener);
     }
 
     public void testDestroyHttpSessionWithoutListener(StandardManager manager) throws Exception {
-        manager.setSessionListeners(new HttpSessionListener[] {});
-        manager.setAttributelisteners(new HttpSessionAttributeListener[] {});
-
         WADIHttpSession session = (WADIHttpSession) manager.create(null);
         HttpSession wrapper = session.getWrapper();
 
@@ -784,16 +791,12 @@ public class TestHttpSession extends TestCase {
         }
     }
 
-    public void testIsNew() {
-        testIsNew(_standardManager, _standardSessionPool);
-    }
-
-    public void testIsNew(Manager manager, WebSessionPool sessionPool) {
-        WADIHttpSession s = (WADIHttpSession) sessionPool.take();
-        HttpSession session = s.getWrapper();
-        assertTrue(session.isNew());
-        s.onEndProcessing();
-        assertTrue(!session.isNew());
+    public void testIsNew() throws Exception {
+        WADIHttpSession session = (WADIHttpSession) _standardManager.createWithName("name");
+        HttpSession httpSession = session.getWrapper();
+        assertTrue(httpSession.isNew());
+        session.onEndProcessing();
+        assertTrue(!httpSession.isNew());
     }
 
     public void testNullName() {
@@ -920,8 +923,6 @@ public class TestHttpSession extends TestCase {
     }
 
     public void testDeserialisationOnReplacementWithoutListener(ClusteredManager manager) throws Exception {
-        manager.setSessionListeners(new HttpSessionListener[] {});
-        manager.setAttributelisteners(new HttpSessionAttributeListener[] {});
         testDeserialisationOnReplacement(manager);
         // TODO - test context level events here...
     }
@@ -1011,56 +1012,6 @@ public class TestHttpSession extends TestCase {
         } catch (IllegalArgumentException ignore) {
             // expected
         }
-    }
-
-    static class NotSerializable {
-        final String _content;
-
-        public NotSerializable(String content) {
-            _content = content;
-        }
-    }
-
-    static class IsSerializable implements Serializable {
-        String _content;
-
-        public IsSerializable() {/* empty */
-        } // for Serialising...
-
-        public IsSerializable(String content) {
-            _content = content;
-        } // for Helper
-
-        private Object readResolve() {
-            return new NotSerializable(_content);
-        }
-    }
-
-    static class NotSerializableHelper implements ValueHelper {
-        public Serializable replace(Object object) {
-            return new IsSerializable(((NotSerializable) object)._content);
-        }
-    }
-
-    public void testCustomSerialisation(ClusteredManager manager) throws Exception {
-        String content = "foo";
-        NotSerializable val0 = new NotSerializable(content);
-        Class type = val0.getClass();
-        manager.registerHelper(Integer.class, new NotSerializableHelper());
-        manager.registerHelper(type, new NotSerializableHelper());
-
-        WebSession s0 = manager.create(null);
-        s0.setAttribute(content, val0);
-        WebSession s1 = manager.create(null);
-        s1.setBodyAsByteArray(s0.getBodyAsByteArray());
-        NotSerializable val1 = (NotSerializable) s1.getAttribute(content);
-        assertTrue(val0._content.equals(val1._content));
-
-        assertTrue(manager.deregisterHelper(type));
-        assertTrue(!manager.deregisterHelper(type));
-        assertTrue(manager.deregisterHelper(Integer.class));
-        assertTrue(!manager.deregisterHelper(Integer.class));
-
     }
 
     public void testSeparateAttributes(Manager manager) throws Exception {

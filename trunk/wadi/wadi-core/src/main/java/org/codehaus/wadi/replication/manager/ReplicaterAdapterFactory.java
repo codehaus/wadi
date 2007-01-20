@@ -17,9 +17,7 @@ package org.codehaus.wadi.replication.manager;
 
 import org.codehaus.wadi.Replicater;
 import org.codehaus.wadi.ReplicaterFactory;
-import org.codehaus.wadi.impl.DistributableManager;
-import org.codehaus.wadi.replication.manager.basic.SessionReplicationManager;
-import org.codehaus.wadi.web.WebSessionPool;
+import org.codehaus.wadi.replication.manager.basic.MotableReplicationManager;
 
 /**
  * 
@@ -27,20 +25,16 @@ import org.codehaus.wadi.web.WebSessionPool;
  */
 public class ReplicaterAdapterFactory implements ReplicaterFactory {
     private final ReplicationManager replicationManager;
-    private final WebSessionPool sessionPool;
     
-    public ReplicaterAdapterFactory(ReplicationManager replicationManager, WebSessionPool sessionPool) {
+    public ReplicaterAdapterFactory(ReplicationManager replicationManager) {
         if (null == replicationManager) {
             throw new IllegalArgumentException("replicationManager is required");
-        } else if (null == sessionPool) {
-            throw new IllegalArgumentException("sessionPool is required");
         }
         this.replicationManager = replicationManager;
-        this.sessionPool = sessionPool;
     }
 
-    public Replicater create(DistributableManager manager) {
-        ReplicationManager sessionRepManager = new SessionReplicationManager(replicationManager, sessionPool);
+    public Replicater create() {
+        ReplicationManager sessionRepManager = new MotableReplicationManager(replicationManager);
         return new ReplicaterAdapter(sessionRepManager);
     }
     

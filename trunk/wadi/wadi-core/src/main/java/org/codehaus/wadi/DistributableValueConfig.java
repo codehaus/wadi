@@ -27,15 +27,9 @@ import javax.servlet.http.HttpSessionEvent;
  */
 
 public interface DistributableValueConfig extends ValueConfig {
-
-    // Distributable
     HttpSessionEvent getHttpSessionEvent();
+
     ValueHelper findHelper(Class type);
     
-    // Lazy
-    boolean getHttpSessionAttributeListenersRegistered();
-
-    // not yet used
     Streamer getStreamer();
-
 }

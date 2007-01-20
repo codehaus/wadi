@@ -16,9 +16,15 @@
  */
 package org.codehaus.wadi.web.impl;
 
+import org.codehaus.wadi.Manager;
+import org.codehaus.wadi.ValuePool;
+import org.codehaus.wadi.web.AttributesFactory;
+import org.codehaus.wadi.web.BasicWebSessionConfig;
+import org.codehaus.wadi.web.Router;
 import org.codehaus.wadi.web.WebSession;
 import org.codehaus.wadi.web.WebSessionConfig;
 import org.codehaus.wadi.web.WebSessionFactory;
+import org.codehaus.wadi.web.WebSessionWrapperFactory;
 
 
 /**
@@ -27,7 +33,48 @@ import org.codehaus.wadi.web.WebSessionFactory;
  */
 public class StandardSessionFactory implements WebSessionFactory {
 
-    public WebSession create(WebSessionConfig config) {
-        return new StandardSession(config);
+    protected final WebSessionConfig config;
+    protected final AttributesFactory attributesFactory;
+    protected final WebSessionWrapperFactory wrapperFactory;
+    protected final ValuePool valuePool;
+    protected final Router router;
+
+    public StandardSessionFactory(AttributesFactory attributesFactory,
+            WebSessionWrapperFactory wrapperFactory,
+            ValuePool valuePool,
+            Router router) {
+        if (null == attributesFactory) {
+            throw new IllegalArgumentException("attributesFactory is required");
+        } else if (null == wrapperFactory) {
+            throw new IllegalArgumentException("wrapperFactory is required");
+        } else if (null == valuePool) {
+            throw new IllegalArgumentException("valuePool is required");
+        } else if (null == router) {
+            throw new IllegalArgumentException("router is required");
+        }
+        this.attributesFactory = attributesFactory;
+        this.wrapperFactory = wrapperFactory;
+        this.valuePool = valuePool;
+        this.router = router;
+        
+        config = new BasicWebSessionConfig();
     }
+
+    public WebSessionConfig getWebSessionConfig() {
+        return config;
+    }
+    
+    public WebSession create() {
+        return new StandardSession(config,
+                attributesFactory,
+                wrapperFactory,
+                valuePool,
+                router,
+                getManager());
+    }
+
+    protected Manager getManager() {
+        return config.getManager();
+    }
+    
 }

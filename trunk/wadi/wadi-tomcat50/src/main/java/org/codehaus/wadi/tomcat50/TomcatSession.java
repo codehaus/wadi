@@ -31,7 +31,13 @@ import org.apache.catalina.Session;
 import org.apache.catalina.SessionListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.web.DistributableSessionConfig;
+import org.codehaus.wadi.Streamer;
+import org.codehaus.wadi.ValuePool;
+import org.codehaus.wadi.web.AttributesFactory;
+import org.codehaus.wadi.web.Router;
+import org.codehaus.wadi.web.ValueHelperRegistry;
+import org.codehaus.wadi.web.WebSessionConfig;
+import org.codehaus.wadi.web.WebSessionWrapperFactory;
 import org.codehaus.wadi.web.impl.DistributableSession;
 
 /**
@@ -47,8 +53,15 @@ public class TomcatSession extends DistributableSession implements Session {
 
   protected static final Log _log = LogFactory.getLog(TomcatSession.class);
 
-  public TomcatSession(DistributableSessionConfig config) {
-    super(config);
+  public TomcatSession(WebSessionConfig config,
+          AttributesFactory attributesFactory,
+          WebSessionWrapperFactory wrapperFactory,
+          ValuePool valuePool,
+          Router router,
+          org.codehaus.wadi.Manager manager,
+          Streamer streamer,
+          ValueHelperRegistry valueHelperRegistry) {
+      super(config, attributesFactory, wrapperFactory, valuePool, router, manager, streamer, valueHelperRegistry);
   }
 
   public void destroy() {

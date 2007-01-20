@@ -16,19 +16,39 @@
  */
 package org.codehaus.wadi.tomcat50;
 
-import org.codehaus.wadi.web.DistributableSessionConfig;
+import org.codehaus.wadi.Streamer;
+import org.codehaus.wadi.ValuePool;
+import org.codehaus.wadi.web.AttributesFactory;
+import org.codehaus.wadi.web.Router;
+import org.codehaus.wadi.web.ValueHelperRegistry;
 import org.codehaus.wadi.web.WebSession;
-import org.codehaus.wadi.web.WebSessionConfig;
-import org.codehaus.wadi.web.WebSessionFactory;
+import org.codehaus.wadi.web.WebSessionWrapperFactory;
+import org.codehaus.wadi.web.impl.DistributableSessionFactory;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class TomcatSessionFactory implements WebSessionFactory {
+public class TomcatSessionFactory extends DistributableSessionFactory {
 
-    public WebSession create(WebSessionConfig config) {
-        return new TomcatSession((DistributableSessionConfig)config);
+    public TomcatSessionFactory(AttributesFactory attributesFactory,
+            WebSessionWrapperFactory wrapperFactory,
+            ValuePool valuePool,
+            Router router,
+            Streamer streamer,
+            ValueHelperRegistry valueHelperRegistry) {
+        super(attributesFactory, wrapperFactory, valuePool, router, streamer, valueHelperRegistry);
+    }
+
+    public WebSession create() {
+        return new TomcatSession(config,
+                attributesFactory,
+                wrapperFactory,
+                valuePool,
+                router,
+                getManager(),
+                streamer,
+                valueHelperRegistry);
     }
 
 }

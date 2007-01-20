@@ -20,13 +20,9 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Random;
 
-import javax.servlet.http.HttpSession;
 
 import org.codehaus.wadi.Manager;
 import org.codehaus.wadi.impl.SpringManagerFactory;
-import org.codehaus.wadi.web.WebSession;
-import org.codehaus.wadi.web.WebSessionWrapperFactory;
-import org.codehaus.wadi.web.impl.AtomicallyReplicableSessionFactory;
 
 import junit.framework.TestCase;
 
@@ -47,13 +43,7 @@ public class TestWadiWebXml extends TestCase {
 		Manager manager=null;
 		try {
 			InputStream descriptor=new FileInputStream("src/webapp/WEB-INF/wadi-web.xml");
-			manager=SpringManagerFactory.create(descriptor,
-					"SessionManager",
-					new AtomicallyReplicableSessionFactory(),
-					new WebSessionWrapperFactory() {
-						public HttpSession create(WebSession arg0) {
-							return null;
-						}});
+			manager=SpringManagerFactory.create(descriptor, "SessionManager");
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}

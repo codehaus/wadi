@@ -78,8 +78,8 @@ public class OswegoConcurrentMotableMap implements ConcurrentMotableMap {
         getExclusiveLock(motable).release();
     }
     
-    public void remove(String name) {
-        delegate.remove(name);
+    public Motable remove(String name) {
+        return (Motable) delegate.remove(name);
     }
 
     public int size() {

@@ -16,7 +16,8 @@
  */
 package org.codehaus.wadi;
 
-import javax.servlet.ServletContext;
+import org.codehaus.wadi.web.WebSessionConfig;
+
 
 
 /**
@@ -24,8 +25,5 @@ import javax.servlet.ServletContext;
  * @version $Revision$
  */
 public interface ManagerConfig {
-
-	ServletContext getServletContext();
-	void callback(Manager manager);
-
+    void callback(Manager manager, SessionMonitor sessionMonitor, WebSessionConfig sessionConfig);
 }
