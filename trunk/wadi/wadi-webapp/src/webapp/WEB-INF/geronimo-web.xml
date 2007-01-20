@@ -6,7 +6,7 @@
         <moduleId>
             <groupId>org.codehaus.wadi</groupId>
             <artifactId>wadi-webapp</artifactId>
-            <version>2.0M2-SNAPSHOT</version>
+            <version>2.0M3-SNAPSHOT</version>
             <type>war</type>
         </moduleId>
     </environment>
