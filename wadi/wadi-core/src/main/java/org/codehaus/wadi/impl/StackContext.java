@@ -17,11 +17,12 @@ package org.codehaus.wadi.impl;
 
 import java.util.Timer;
 
+import org.codehaus.wadi.BasicSessionMonitor;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Evicter;
 import org.codehaus.wadi.PartitionMapper;
 import org.codehaus.wadi.PoolableInvocationWrapperPool;
-import org.codehaus.wadi.SessionPool;
+import org.codehaus.wadi.SessionMonitor;
 import org.codehaus.wadi.core.ConcurrentMotableMap;
 import org.codehaus.wadi.core.OswegoConcurrentMotableMap;
 import org.codehaus.wadi.group.Dispatcher;
@@ -42,7 +43,7 @@ import org.codehaus.wadi.replication.manager.ReplicaterAdapterFactory;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
 import org.codehaus.wadi.replication.manager.ReplicationManagerFactory;
 import org.codehaus.wadi.replication.manager.basic.BasicReplicationManagerFactory;
-import org.codehaus.wadi.replication.manager.basic.SessionReplicationManager;
+import org.codehaus.wadi.replication.manager.basic.MotableReplicationManager;
 import org.codehaus.wadi.replication.storage.ReplicaStorage;
 import org.codehaus.wadi.replication.storage.ReplicaStorageFactory;
 import org.codehaus.wadi.replication.storage.basic.BasicReplicaStorageFactory;
@@ -54,7 +55,9 @@ import org.codehaus.wadi.servicespace.ServiceSpace;
 import org.codehaus.wadi.servicespace.ServiceSpaceName;
 import org.codehaus.wadi.servicespace.SingletonServiceHolder;
 import org.codehaus.wadi.servicespace.basic.BasicServiceSpace;
+import org.codehaus.wadi.web.BasicValueHelperRegistry;
 import org.codehaus.wadi.web.Router;
+import org.codehaus.wadi.web.WebSessionFactory;
 import org.codehaus.wadi.web.impl.AtomicallyReplicableSessionFactory;
 import org.codehaus.wadi.web.impl.DistributableAttributesFactory;
 import org.codehaus.wadi.web.impl.DistributableValueFactory;
@@ -62,7 +65,6 @@ import org.codehaus.wadi.web.impl.DummyStatefulHttpServletRequestWrapperPool;
 import org.codehaus.wadi.web.impl.JkRouter;
 import org.codehaus.wadi.web.impl.StandardHttpProxy;
 import org.codehaus.wadi.web.impl.StandardSessionWrapperFactory;
-import org.codehaus.wadi.web.impl.WebSessionToSessionPoolAdapter;
 
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
 
@@ -85,12 +87,13 @@ public class StackContext {
     protected PartitionManager partitionManager;
     protected StateManager stateManager;
     protected Timer timer;
-    protected SessionPool contextPool;
     protected ReplicationManager replicationManager;
-    protected SimpleSessionPool sessionPool;
+    protected WebSessionFactory sessionFactory;
     protected ClusteredManager manager;
     protected ConcurrentMotableMap memoryMap;
+    protected Router router;
     private SimplePartitionManagerTiming simplePartitionManagerTiming;
+    private BasicSessionMonitor sessionMonitor;
 
     public static PartitionBalancerSingletonServiceHolder newPartitionBalancerSingletonServiceHolder(ServiceSpace serviceSpace,
             int nbPartitions) throws ServiceAlreadyRegisteredException {
@@ -154,42 +157,32 @@ public class StackContext {
 
     public void build() throws ServiceAlreadyRegisteredException {
         simplePartitionManagerTiming = new SimplePartitionManagerTiming();
-        
         timer = new Timer();
-
         serviceSpace = new BasicServiceSpace(serviceSpaceName, underlyingDispatcher);
-
+        sessionMonitor = newSessionMonitor();
         partitionMapper = newPartitionMapper();
         partitionManager = newPartitionManager();
         stateManager = newStateManager();
-        
-        sessionPool = newWebSessionPool();
-        contextPool = new WebSessionToSessionPoolAdapter(sessionPool);
-
         replicationManager = newReplicationManager();
+        router = newRouter();
+        sessionFactory = newWebSessionFactory();
+
         Contextualiser contextualiser = newReplicaAwareContextualiser(new DummyContextualiser());
-        
         contextualiser = newClusteredContextualiser(contextualiser);
 
         memoryMap = new OswegoConcurrentMotableMap();
         contextualiser = newCollapserContextualiser(contextualiser, memoryMap);
-        
         contextualiser = newMemoryContextualiser(contextualiser, memoryMap);
-
+        
         manager = new ClusteredManager(stateManager,
                         partitionManager,
-                        sessionPool, 
-                        new DistributableAttributesFactory(),
-                        new SimpleValuePool(new DistributableValueFactory()),
-                        new StandardSessionWrapperFactory(),
+                        sessionFactory, 
                         new TomcatSessionIdFactory(),
                         contextualiser,
                         memoryMap,
-                        newRouter(),
+                        router,
+                        sessionMonitor,
                         false,
-                        new SimpleStreamer(),
-                        true,
-                        new ReplicaterAdapterFactory(replicationManager, sessionPool),
                         new StandardHttpProxy("jsessionid"));
         manager.init(new DummyManagerConfig());
 
@@ -199,6 +192,10 @@ public class StackContext {
         registerReplicaStorage();
         registerReplicationManager();
         registerClusteredManager(manager);
+    }
+
+    protected BasicSessionMonitor newSessionMonitor() {
+        return new BasicSessionMonitor();
     }
 
     protected void registerClusteredManager(ClusteredManager manager) throws ServiceAlreadyRegisteredException {
@@ -249,8 +246,14 @@ public class StackContext {
         return new JkRouter(nodeName);
     }
 
-    protected SimpleSessionPool newWebSessionPool() {
-        return new SimpleSessionPool(new AtomicallyReplicableSessionFactory());
+    protected WebSessionFactory newWebSessionFactory() {
+        return new AtomicallyReplicableSessionFactory(new DistributableAttributesFactory(),
+                   new StandardSessionWrapperFactory(),
+                   new SimpleValuePool(new DistributableValueFactory()),
+                   router,
+                   new SimpleStreamer(),
+                   new BasicValueHelperRegistry(),
+                   new ReplicaterAdapterFactory(replicationManager));
     }
     
     protected StateManager newStateManager() {
@@ -291,7 +294,7 @@ public class StackContext {
             ConcurrentMotableMap mmap,
             Evicter mevicter,
             PoolableInvocationWrapperPool requestPool) {
-        return new MemoryContextualiser(next, mevicter, mmap, contextPool, requestPool);
+        return new MemoryContextualiser(next, mevicter, mmap, sessionFactory, requestPool);
     }
 
     protected Contextualiser newClusteredContextualiser(Contextualiser contextualiser) {
@@ -305,7 +308,7 @@ public class StackContext {
     }
 
     protected Contextualiser newReplicaAwareContextualiser(Contextualiser next) {
-        ReplicationManager sessionRepManager = new SessionReplicationManager(replicationManager, sessionPool);
+        ReplicationManager sessionRepManager = new MotableReplicationManager(replicationManager);
         return new ReplicaAwareContextualiser(next, sessionRepManager, stateManager);
     }
 
@@ -339,6 +342,10 @@ public class StackContext {
 
     public ConcurrentMotableMap getMemoryMap() {
         return memoryMap;
+    }
+
+    public SessionMonitor getSessionMonitor() {
+        return sessionMonitor;
     }
 
 }

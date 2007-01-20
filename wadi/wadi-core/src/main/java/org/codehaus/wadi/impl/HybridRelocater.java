@@ -75,36 +75,32 @@ public class HybridRelocater implements Relocater {
 
     public boolean relocate(Invocation invocation, String name, Immoter immoter, boolean shuttingDown) throws InvocationException {
         try {
-            Motable immotable = doRelocate(invocation, name, shuttingDown, resTimeout, immoter);
-            if (null == immotable) {
-                return false;
-            }
-            return immoter.contextualise(invocation, name, immotable);
+            return doRelocate(invocation, name, immoter, shuttingDown);
         } catch (Exception e) {
             log.error("unexpected error", e);
             return false;
         }
     }
     
-    protected Motable doRelocate(Invocation invocation, String sessionName, boolean shuttingDown, long timeout, Immoter immoter) throws Exception {
-        MoveIMToPM request = new MoveIMToPM(localPeer, sessionName, !shuttingDown, invocation.isRelocatable());
+    protected boolean doRelocate(Invocation invocation, String name, Immoter immoter, boolean shuttingDown) throws Exception {
+        MoveIMToPM request = new MoveIMToPM(localPeer, name, !shuttingDown, invocation.isRelocatable());
         Envelope message;
         try {
-            message = partitionManager.getPartition(sessionName).exchange(request, timeout);
+            message = partitionManager.getPartition(name).exchange(request, resTimeout);
         } catch (MessageExchangeException e) {
-            return null;
+            return false;
         }
 
         if (message == null) {
             log.error("Something went wrong during a session relocation.");
-            return null;
+            return false;
         }
 
         Serializable dm = message.getPayload();
         if (dm instanceof MoveSMToIM) {
-            return handleSessionRelocation(sessionName, immoter, message, (MoveSMToIM) dm);
+            return handleSessionRelocation(invocation, name, immoter, message, (MoveSMToIM) dm);
         } else if (dm instanceof MovePMToIM) {
-            return handleUnknownSession(sessionName);
+            return handleUnknownSession(name);
         } else if (dm instanceof MovePMToIMInvocation) {
             return handleInvocationRelocation(invocation, (MovePMToIMInvocation) dm);
         } else {
@@ -112,75 +108,41 @@ public class HybridRelocater implements Relocater {
         }
     }
 
-    protected Motable handleInvocationRelocation(Invocation invocation, MovePMToIMInvocation dm) throws InvocationException {
+    protected boolean handleInvocationRelocation(Invocation invocation, MovePMToIMInvocation dm) throws InvocationException {
         // we are going to relocate our Invocation to the SM...
         Peer smPeer = dm.getStateMaster();
         EndPoint endPoint = smPeer.getPeerInfo().getEndPoint();
         invocation.relocate(endPoint);
-        return null;
+        return true;
     }
 
-    protected Motable handleUnknownSession(String sessionName) {
+    protected boolean handleUnknownSession(String sessionName) {
         // The Partition manager had no record of our session key - either the session
         // has already been destroyed, or never existed...
         log.info("Unknown session [" + sessionName + "]");
-        return null;
+        return false;
     }
 
-    protected Motable handleSessionRelocation(String sessionName, Immoter immoter, Envelope message, MoveSMToIM req) {
+    protected boolean handleSessionRelocation(Invocation invocation, String name, Immoter immoter, Envelope message, MoveSMToIM req) throws InvocationException {
         Motable emotable = req.getMotable();
         if (emotable == null) {
-            log.warn("failed relocation - 0 bytes arrived: " + sessionName);
+            log.warn("failed relocation - 0 bytes arrived: " + name);
             try {
                 MoveIMToSM response = new MoveIMToSM(false);
                 dispatcher.reply(message, response);
             } catch (Exception e) {
                 log.warn(e);
             }
-            return null;
+            return false;
         } else {
             // We are receiving an incoming state migration. Insert motable into contextualiser stack...
             Emoter emoter = new SMToIMEmoter(message);
-            immoter = new SMToIMImmoter(immoter, emotable);
-            Motable immotable = Utils.mote(emoter, immoter, emotable, sessionName);
-            return immotable;
+            immoter = new RehydrationImmoter(immoter, emotable);
+            Motable immotable = Utils.mote(emoter, immoter, emotable, name);
+            return immoter.contextualise(invocation, name, immotable);
         }
     }
 
-    class SMToIMImmoter implements Immoter {
-        protected final Log _log = LogFactory.getLog(SMToIMImmoter.class);
-        private final Immoter delegate;
-        private final Motable emotable;
-        
-        public SMToIMImmoter(Immoter delegate, Motable emotable) {
-            this.delegate = delegate;
-            this.emotable = emotable;
-        }
-
-        public boolean contextualise(Invocation invocation, String id, Motable immotable) throws InvocationException {
-            return delegate.contextualise(invocation, id, immotable);
-        }
-
-        public boolean immote(Motable emotable, Motable immotable) {
-            return delegate.immote(emotable, immotable);
-        }
-
-        public Motable newMotable() {
-            Motable immotable = delegate.newMotable();
-            try {
-                immotable.rehydrate(emotable.getCreationTime(),
-                        emotable.getLastAccessedTime(),
-                        emotable.getMaxInactiveInterval(),
-                        emotable.getName(),
-                        emotable.getBodyAsByteArray());
-            } catch (Exception e) {
-                throw new WADIRuntimeException(e);
-            }
-            return immotable;
-        }
-        
-    }
-    
     class SMToIMEmoter extends AbstractChainedEmoter {
         protected final Log _log = LogFactory.getLog(SMToIMEmoter.class);
         protected final Envelope _message;

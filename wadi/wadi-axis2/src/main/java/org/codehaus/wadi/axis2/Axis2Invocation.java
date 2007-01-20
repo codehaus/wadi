@@ -18,6 +18,7 @@ package org.codehaus.wadi.axis2;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.InvocationProxy;
 import org.codehaus.wadi.Session;
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
@@ -149,6 +150,9 @@ public class Axis2Invocation implements Invocation, Runnable {
     
     public boolean isProxiedInvocation() {
         return false;
+    }
+
+    public void setInvocationProxy(InvocationProxy proxy) {
     }
     
 }

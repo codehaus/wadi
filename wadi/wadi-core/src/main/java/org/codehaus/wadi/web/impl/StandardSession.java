@@ -28,12 +28,16 @@ import javax.servlet.http.HttpSessionBindingEvent;
 import javax.servlet.http.HttpSessionBindingListener;
 import javax.servlet.http.HttpSessionEvent;
 
+import org.codehaus.wadi.Manager;
 import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.impl.AbstractSession;
 import org.codehaus.wadi.web.Attributes;
 import org.codehaus.wadi.web.AttributesConfig;
+import org.codehaus.wadi.web.AttributesFactory;
+import org.codehaus.wadi.web.Router;
 import org.codehaus.wadi.web.WADIHttpSession;
 import org.codehaus.wadi.web.WebSessionConfig;
+import org.codehaus.wadi.web.WebSessionWrapperFactory;
 
 /**
  * Our internal representation of any Web Session
@@ -48,22 +52,41 @@ public class StandardSession extends AbstractSession implements WADIHttpSession,
 
     protected final WebSessionConfig config;
     protected final Attributes attributes;
+    protected final ValuePool valuePool;
+    protected final Router router;
     protected final HttpSession wrapper;
     protected final HttpSessionEvent httpSessionEvent;
+    protected final Manager manager;
 
-    public StandardSession(WebSessionConfig config) {
-        if (null == config) {
-            throw new IllegalArgumentException("config is required.");
+    public StandardSession(WebSessionConfig config,
+            AttributesFactory attributesFactory,
+            WebSessionWrapperFactory wrapperFactory,
+            ValuePool valuePool,
+            Router router,
+            Manager manager) {
+        if (null == attributesFactory) {
+            throw new IllegalArgumentException("attributesFactory is required.");
+        } else if (null == wrapperFactory) {
+            throw new IllegalArgumentException("wrapperFactory is required.");
+        } else if (null == valuePool) {
+            throw new IllegalArgumentException("valuePool is required.");
+        } else if (null == router) {
+            throw new IllegalArgumentException("router is required.");
+        } else if (null == manager) {
+            throw new IllegalArgumentException("manager is required.");
         }
         this.config = config;
+        this.valuePool = valuePool;
+        this.router = router;
+        this.manager = manager;
         
-        attributes = config.getAttributesFactory().create(this);
-        wrapper = config.getSessionWrapperFactory().create(this);
+        attributes = attributesFactory.create(this);
+        wrapper = wrapperFactory.create(this);
         httpSessionEvent = new HttpSessionEvent(wrapper);
     }
 
     public synchronized void destroy() throws Exception {
-        config.destroy(null, this);
+        manager.destroy(this);
         super.destroy();
         attributes.clear();
     }
@@ -127,11 +150,11 @@ public class StandardSession extends AbstractSession implements WADIHttpSession,
     }
 
     public ValuePool getValuePool() {
-        return config.getValuePool();
+        return valuePool;
     }
 
     public String getId() {
-        return config.getRouter().augment(name);
+        return router.augment(name);
     }
     
     protected synchronized void destroyForMotion() throws Exception {
@@ -149,18 +172,15 @@ public class StandardSession extends AbstractSession implements WADIHttpSession,
 
         boolean replaced = oldValue != null;
         HttpSessionAttributeListener[] listeners = config.getAttributeListeners();
-        int l = listeners.length;
-        if (l > 0) {
-            if (replaced) {
-                HttpSessionBindingEvent hsbe = new HttpSessionBindingEvent(wrapper, name, oldValue);
-                for (int i = 0; i < l; i++) {
-                    listeners[i].attributeReplaced(hsbe);
-                }
-            } else {
-                HttpSessionBindingEvent hsbe = new HttpSessionBindingEvent(wrapper, name, newValue);
-                for (int i = 0; i < l; i++) {
-                    listeners[i].attributeAdded(hsbe);
-                }
+        if (replaced) {
+            HttpSessionBindingEvent hsbe = new HttpSessionBindingEvent(wrapper, name, oldValue);
+            for (int i = 0; i < listeners.length; i++) {
+                listeners[i].attributeReplaced(hsbe);
+            }
+        } else {
+            HttpSessionBindingEvent hsbe = new HttpSessionBindingEvent(wrapper, name, newValue);
+            for (int i = 0; i < listeners.length; i++) {
+                listeners[i].attributeAdded(hsbe);
             }
         }
     }
@@ -172,12 +192,9 @@ public class StandardSession extends AbstractSession implements WADIHttpSession,
 
         if (null != oldValue) {
             HttpSessionAttributeListener[] listeners = config.getAttributeListeners();
-            int l = listeners.length;
-            if (l > 0) {
-                HttpSessionBindingEvent hsbe = new HttpSessionBindingEvent(wrapper, name, oldValue);
-                for (int i = 0; i < l; i++) {
-                    listeners[i].attributeRemoved(hsbe);
-                }
+            HttpSessionBindingEvent hsbe = new HttpSessionBindingEvent(wrapper, name, oldValue);
+            for (int i = 0; i < listeners.length; i++) {
+                listeners[i].attributeRemoved(hsbe);
             }
         }
     }

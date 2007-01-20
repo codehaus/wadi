@@ -30,7 +30,7 @@ public class StatelessReplicaterFactory implements ReplicaterFactory {
 		_replicater = replicater;
 	}
 
-    public Replicater create(DistributableManager manager) {
+    public Replicater create() {
 		return _replicater;
 	}
 }

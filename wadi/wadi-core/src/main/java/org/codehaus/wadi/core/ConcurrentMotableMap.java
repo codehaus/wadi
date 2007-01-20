@@ -26,7 +26,7 @@ import org.codehaus.wadi.Motable;
 public interface ConcurrentMotableMap {
     void put(String name, Motable motable);
 
-    void remove(String name);
+    Motable remove(String name);
 
     Motable acquire(String id);
 

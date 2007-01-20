@@ -60,7 +60,7 @@ public class MyFilter implements Filter {
 			boolean found;
 			try {
 				WebInvocation invocation=new WebInvocation();
-				invocation.init(hreq, hres, chain, null);
+				invocation.init(hreq, hres, chain);
 				found = _servlet.getStackContext().getManager().contextualise(invocation);
 			} catch (InvocationException e) {
 				throw new ServletException(e);

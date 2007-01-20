@@ -21,11 +21,17 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Set;
 
+import org.codehaus.wadi.Manager;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValueHelper;
+import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.impl.Utils;
+import org.codehaus.wadi.web.AttributesFactory;
 import org.codehaus.wadi.web.DistributableAttributesConfig;
-import org.codehaus.wadi.web.DistributableSessionConfig;
+import org.codehaus.wadi.web.Router;
+import org.codehaus.wadi.web.ValueHelperRegistry;
+import org.codehaus.wadi.web.WebSessionConfig;
+import org.codehaus.wadi.web.WebSessionWrapperFactory;
 
 /**
  * A Standard Session enhanced with functionality associated with
@@ -36,12 +42,25 @@ import org.codehaus.wadi.web.DistributableSessionConfig;
  * @version $Revision: 1725 $
  */
 public class DistributableSession extends StandardSession implements DistributableAttributesConfig {
-    private final Streamer streamer;
+    private final transient Streamer streamer;
+    private final transient ValueHelperRegistry valueHelperRegistry;
     
-    public DistributableSession(DistributableSessionConfig config) {
-        super(config);
-
-        streamer = config.getStreamer();
+    public DistributableSession(WebSessionConfig config,
+            AttributesFactory attributesFactory,
+            WebSessionWrapperFactory wrapperFactory,
+            ValuePool valuePool,
+            Router router,
+            Manager manager,
+            Streamer streamer,
+            ValueHelperRegistry valueHelperRegistry) {
+        super(config, attributesFactory, wrapperFactory, valuePool, router, manager);
+        if (null == streamer) {
+            throw new IllegalArgumentException("streamer is required");
+        } else if (null == valueHelperRegistry) {
+            throw new IllegalArgumentException("valueHelperRegistry is required");
+        }
+        this.streamer = streamer;
+        this.valueHelperRegistry = valueHelperRegistry;
     }
 
     public Streamer getStreamer() {
@@ -67,15 +86,11 @@ public class DistributableSession extends StandardSession implements Distributab
     }
 
     public ValueHelper findHelper(Class type) {
-        return ((DistributableSessionConfig) config).findHelper(type);
+        return valueHelperRegistry.findHelper(type);
     }
 
     public synchronized Set getListenerNames() {
         return ((DistributableAttributes) attributes).getListenerNames();
-    }
-
-    public boolean getHttpSessionAttributeListenersRegistered() {
-        return ((DistributableSessionConfig) config).getHttpSessionAttributeListenersRegistered();
     }
 
 }

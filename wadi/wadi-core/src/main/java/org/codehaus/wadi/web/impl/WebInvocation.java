@@ -29,7 +29,6 @@ import org.codehaus.wadi.PoolableInvocationWrapper;
 import org.codehaus.wadi.Session;
 import org.codehaus.wadi.group.EndPoint;
 import org.codehaus.wadi.web.PoolableHttpServletRequestWrapper;
-import org.codehaus.wadi.web.Router;
 
 /**
  * @version $Revision: 1430 $
@@ -57,16 +56,18 @@ public class WebInvocation implements Invocation {
      * @param hreq
      * @param hres
      * @param chain
-     * @param proxy
      */
-    public void init(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain, InvocationProxy proxy) {
+    public void init(HttpServletRequest hreq, HttpServletResponse hres, FilterChain chain) {
         this.hreq = hreq;
         this.hres = hres;
         this.chain = chain;
         this.proxiedInvocation = (null == hreq);
-        this.proxy=proxy;
     }
 
+    public void setInvocationProxy(InvocationProxy proxy) {
+        this.proxy=proxy;
+    }
+    
     public String getSessionKey() {
         return hreq.getRequestedSessionId();
     }

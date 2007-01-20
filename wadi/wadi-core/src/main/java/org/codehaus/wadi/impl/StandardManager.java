@@ -16,14 +16,6 @@
  */
 package org.codehaus.wadi.impl;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpSessionAttributeListener;
-import javax.servlet.http.HttpSessionEvent;
-import javax.servlet.http.HttpSessionListener;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Contextualiser;
@@ -32,19 +24,16 @@ import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.Lifecycle;
 import org.codehaus.wadi.Manager;
 import org.codehaus.wadi.ManagerConfig;
+import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.PoolableInvocationWrapper;
 import org.codehaus.wadi.PoolableInvocationWrapperPool;
 import org.codehaus.wadi.SessionAlreadyExistException;
 import org.codehaus.wadi.SessionIdFactory;
-import org.codehaus.wadi.ValuePool;
+import org.codehaus.wadi.SessionMonitor;
 import org.codehaus.wadi.core.ConcurrentMotableMap;
-import org.codehaus.wadi.web.AttributesFactory;
 import org.codehaus.wadi.web.Router;
-import org.codehaus.wadi.web.WADIHttpSession;
 import org.codehaus.wadi.web.WebSession;
-import org.codehaus.wadi.web.WebSessionConfig;
-import org.codehaus.wadi.web.WebSessionPool;
-import org.codehaus.wadi.web.WebSessionWrapperFactory;
+import org.codehaus.wadi.web.WebSessionFactory;
 import org.codehaus.wadi.web.impl.DummyStatefulHttpServletRequestWrapperPool;
 import org.codehaus.wadi.web.impl.Filter;
 
@@ -55,64 +44,60 @@ import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class StandardManager implements Lifecycle, WebSessionConfig, Manager {
+public class StandardManager implements Lifecycle, Manager {
 	private static final Log log = LogFactory.getLog(StandardManager.class);
 
-    protected final WebSessionPool _sessionPool;
-    protected final AttributesFactory _attributesFactory;
-    protected final ValuePool _valuePool;
-    protected final WebSessionWrapperFactory _sessionWrapperFactory;
+    private final WebSessionFactory sessionFactory;
     protected final SessionIdFactory _sessionIdFactory;
     protected final Contextualiser _contextualiser;
     protected final ConcurrentMotableMap _map;
     protected final Router _router;
     protected final boolean _errorIfSessionNotAcquired;
     protected final SynchronizedBoolean _acceptingSessions = new SynchronizedBoolean(true);
-    protected HttpSessionListener[] _sessionListeners;
-    protected HttpSessionAttributeListener[] _attributeListeners;
+    private final SessionMonitor sessionMonitor;
     protected PoolableInvocationWrapperPool _pool = new DummyStatefulHttpServletRequestWrapperPool();
     protected ManagerConfig _config;
+    protected int _maxInactiveInterval = 30 * 60;
+    protected Filter _filter;
 
-    public StandardManager(WebSessionPool sessionPool,
-            AttributesFactory attributesFactory,
-            ValuePool valuePool,
-            WebSessionWrapperFactory sessionWrapperFactory,
+    public StandardManager(WebSessionFactory sessionFactory,
             SessionIdFactory sessionIdFactory,
             Contextualiser contextualiser,
             ConcurrentMotableMap map,
             Router router,
+            SessionMonitor sessionMonitor,
             boolean errorIfSessionNotAcquired) {
-        _sessionPool = sessionPool;
-        _attributesFactory = attributesFactory;
-        _valuePool = valuePool;
-        _sessionWrapperFactory = sessionWrapperFactory;
+        if (null == sessionFactory) {
+            throw new IllegalArgumentException("sessionFactory is required");
+        } else if (null == sessionIdFactory) {
+            throw new IllegalArgumentException("sessionIdFactory is required");
+        } else if (null == contextualiser) {
+            throw new IllegalArgumentException("contextualiser is required");
+        } else if (null == map) {
+            throw new IllegalArgumentException("map is required");
+        } else if (null == router) {
+            throw new IllegalArgumentException("router is required");
+        } else if (null == sessionMonitor) {
+            throw new IllegalArgumentException("sessionMonitor is required");
+        }
+        this.sessionFactory = sessionFactory;
         _sessionIdFactory = sessionIdFactory;
         _contextualiser = contextualiser;
         _map = map;
         _router = router;
         _errorIfSessionNotAcquired = errorIfSessionNotAcquired;
+        this.sessionMonitor = sessionMonitor;
+        
+        sessionFactory.getWebSessionConfig().setManager(this);
     }
 
     public void init(ManagerConfig config) {
-        if (_sessionListeners == null) {
-            _sessionListeners = new HttpSessionListener[0];
-        }
-        if (_attributeListeners == null) {
-            _attributeListeners = new HttpSessionAttributeListener[0];
-        }
         _config = config;
-        _sessionPool.init(this);
     }
 
     public void start() throws Exception {
         _contextualiser.promoteToExclusive(null);
         _contextualiser.start();
-        ServletContext context = getServletContext();
-        if (context == null) {
-            log.warn("null ServletContext");
-        } else {
-            context.setAttribute(Manager.class.getName(), this);
-        }
         String version = getClass().getPackage().getImplementationVersion();
         version = (version == null ? System.getProperty("wadi.version") : version);
         log.info("WADI-" + version + " successfully installed");
@@ -138,51 +123,17 @@ public class StandardManager implements Lifecycle, WebSessionConfig, Manager {
         return createSession(name);
     }
 
-    public void destroy(Invocation invocation, WebSession session) {
+    public void destroy(WebSession session) {
         if (log.isDebugEnabled()) {
             log.debug("Destroy [" + session + "]");
         }
-        for (Iterator i = new ArrayList(session.getAttributeNameSet()).iterator(); i.hasNext();) {
-            session.removeAttribute((String) i.next());
+        Motable motable = _map.remove(session.getName());
+        if (null == motable) {
+            return;
         }
+        sessionMonitor.notifySessionDestruction(session);
         onSessionDestruction(session);
-        _map.remove(session.getName());
-        _sessionPool.put(session);
     }
-
-    public HttpSessionListener[] getSessionListeners() {
-        return _sessionListeners;
-    }
-
-    public void setSessionListeners(HttpSessionListener[] sessionListeners) {
-        _sessionListeners = sessionListeners;
-    }
-
-    public HttpSessionAttributeListener[] getAttributeListeners() {
-        return _attributeListeners;
-    }
-
-    public void setAttributelisteners(HttpSessionAttributeListener[] attributeListeners) {
-        _attributeListeners = attributeListeners;
-    }
-
-    public ServletContext getServletContext() {
-        return _config.getServletContext();
-    }
-
-    public AttributesFactory getAttributesFactory() {
-        return _attributesFactory;
-    }
-
-    public ValuePool getValuePool() {
-        return _valuePool;
-    }
-
-    public WebSessionWrapperFactory getSessionWrapperFactory() {
-        return _sessionWrapperFactory;
-    }
-
-    protected int _maxInactiveInterval = 30 * 60;
 
     public int getMaxInactiveInterval() {
         return _maxInactiveInterval;
@@ -197,52 +148,37 @@ public class StandardManager implements Lifecycle, WebSessionConfig, Manager {
     }
 
     // integrate with Filter instance
-    protected Filter _filter;
-
     public void setFilter(Filter filter) {
         _filter = filter;
-        _config.callback(this);
-    }
-
-    public boolean getDistributable() {
-        return false;
-    }
-
-    public Contextualiser getContextualiser() {
-        return _contextualiser;
-    }
-
-    public WebSessionPool getSessionPool() {
-        return _sessionPool;
-    }
-
-    public Router getRouter() {
-        return _router;
+        _config.callback(this, sessionMonitor, sessionFactory.getWebSessionConfig());
     }
 
     public boolean contextualise(Invocation invocation) throws InvocationException {
         String key = invocation.getSessionKey();
-        if (key == null) {
-            processStateless(invocation);
+        if (null == key) {
+            return processStateless(invocation);
         } else {
-            // already associated with a session. strip off any routing info.
-            String name = _router.strip(key);
-            if (!_contextualiser.contextualise(invocation, name, null, false)) {
-                log.error("could not acquire session: " + name);
-                if (_errorIfSessionNotAcquired) {
-                    // send the client a 503...
-                    invocation.sendError(503, "session " + name + " is not known");
-                } else {
-                    // process request without session - it may create a new one...
-                    processStateless(invocation);
-                }
-                return false;
-            }
+            return processStateful(invocation);
         }
-        return true;
     }
 
-    protected void processStateless(Invocation invocation) throws InvocationException {
+    protected boolean processStateful(Invocation invocation) throws InvocationException {
+        String key = invocation.getSessionKey();
+        // already associated with a session. strip off any routing info.
+        String name = _router.strip(key);
+        boolean contextualised = _contextualiser.contextualise(invocation, name, null, false);
+        if (!contextualised) {
+            log.error("Could not acquire session [" + name + "]");
+            if (_errorIfSessionNotAcquired) {
+                invocation.sendError(503, "Session [" + name + "] is not known");
+            } else {
+                contextualised = processStateless(invocation);
+            }
+        }
+        return contextualised;
+    }
+
+    protected boolean processStateless(Invocation invocation) throws InvocationException {
         // are we accepting sessions ? - otherwise relocate to another node...
         // sync point - expensive, but will only hit sessionless requests...
         if (!_acceptingSessions.get()) {
@@ -256,6 +192,7 @@ public class StandardManager implements Lifecycle, WebSessionConfig, Manager {
         invocation.invoke(wrapper);
         wrapper.destroy();
         _pool.put(wrapper);
+        return true;
     }
 
     protected boolean validateSessionName(String name) {
@@ -263,10 +200,11 @@ public class StandardManager implements Lifecycle, WebSessionConfig, Manager {
     }
 
     protected WebSession createSession(String name) {
-        WebSession session = _sessionPool.take();
+        WebSession session = sessionFactory.create();
         long time = System.currentTimeMillis();
         session.init(time, time, _maxInactiveInterval, name);
         _map.put(name, session);
+        sessionMonitor.notifySessionCreation(session);
         onSessionCreation(session);
         if (log.isDebugEnabled()) {
             log.debug("creation: " + name);
@@ -275,29 +213,9 @@ public class StandardManager implements Lifecycle, WebSessionConfig, Manager {
     }
     
     protected void onSessionCreation(WebSession session) {
-        WADIHttpSession httpSession = ensureTypeAndCast(session);
-        int l = _sessionListeners.length;
-        HttpSessionEvent hse = httpSession.getHttpSessionEvent();
-        for (int i = 0; i < l; i++) {
-            _sessionListeners[i].sessionCreated(hse);
-        }
     }
 
     protected void onSessionDestruction(WebSession session) {
-        WADIHttpSession httpSession = ensureTypeAndCast(session);
-        int l = _sessionListeners.length;
-        HttpSessionEvent hse = httpSession.getHttpSessionEvent();
-        for (int i = 0; i < l; i++) {
-            _sessionListeners[i].sessionDestroyed(hse);
-        }
     }
-
-    protected WADIHttpSession ensureTypeAndCast(WebSession session) {
-        if (!(session instanceof WADIHttpSession)) {
-            throw new IllegalArgumentException(WADIHttpSession.class + " instance is expected.");
-        }
-        WADIHttpSession httpSession = (WADIHttpSession) session;
-        return httpSession;
-    }
-
+    
 }

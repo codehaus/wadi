@@ -17,8 +17,16 @@
 
 package org.codehaus.wadi.web.impl;
 
+import org.codehaus.wadi.Manager;
 import org.codehaus.wadi.RehydrationException;
-import org.codehaus.wadi.web.ReplicableSessionConfig;
+import org.codehaus.wadi.Replicater;
+import org.codehaus.wadi.Streamer;
+import org.codehaus.wadi.ValuePool;
+import org.codehaus.wadi.web.AttributesFactory;
+import org.codehaus.wadi.web.Router;
+import org.codehaus.wadi.web.ValueHelperRegistry;
+import org.codehaus.wadi.web.WebSessionConfig;
+import org.codehaus.wadi.web.WebSessionWrapperFactory;
 
 
 /**
@@ -46,8 +54,24 @@ public class AtomicallyReplicableSession extends AbstractReplicableSession {
     protected transient boolean dirty = false;
     protected transient Semantics semantics = new ByReferenceSemantics();
 
-    public AtomicallyReplicableSession(ReplicableSessionConfig config) {
-        super(config);
+    public AtomicallyReplicableSession(WebSessionConfig config,
+            AttributesFactory attributesFactory,
+            WebSessionWrapperFactory wrapperFactory,
+            ValuePool valuePool,
+            Router router,
+            Manager manager,
+            Streamer streamer,
+            ValueHelperRegistry valueHelperRegistry,
+            Replicater replicater) {
+        super(config,
+                attributesFactory,
+                wrapperFactory,
+                valuePool,
+                router,
+                manager,
+                streamer,
+                valueHelperRegistry,
+                replicater);
     }
 
     public synchronized void rehydrate(long creationTime, long lastAccessedTime, int maxInactiveInterval, String name, byte[] body)

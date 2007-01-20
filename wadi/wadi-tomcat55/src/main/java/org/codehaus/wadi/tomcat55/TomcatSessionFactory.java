@@ -16,19 +16,42 @@
  */
 package org.codehaus.wadi.tomcat55;
 
-import org.codehaus.wadi.web.ReplicableSessionConfig;
+import org.codehaus.wadi.ReplicaterFactory;
+import org.codehaus.wadi.Streamer;
+import org.codehaus.wadi.ValuePool;
+import org.codehaus.wadi.web.AttributesFactory;
+import org.codehaus.wadi.web.Router;
+import org.codehaus.wadi.web.ValueHelperRegistry;
 import org.codehaus.wadi.web.WebSession;
-import org.codehaus.wadi.web.WebSessionConfig;
-import org.codehaus.wadi.web.WebSessionFactory;
+import org.codehaus.wadi.web.WebSessionWrapperFactory;
+import org.codehaus.wadi.web.impl.AtomicallyReplicableSessionFactory;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class TomcatSessionFactory implements WebSessionFactory {
+public class TomcatSessionFactory extends AtomicallyReplicableSessionFactory {
 
-    public WebSession create(WebSessionConfig config) {
-        return new TomcatSession((ReplicableSessionConfig)config);
+    public TomcatSessionFactory(AttributesFactory attributesFactory,
+            WebSessionWrapperFactory wrapperFactory,
+            ValuePool valuePool,
+            Router router,
+            Streamer streamer,
+            ValueHelperRegistry valueHelperRegistry,
+            ReplicaterFactory replicaterFactory) {
+        super(attributesFactory, wrapperFactory, valuePool, router, streamer, valueHelperRegistry, replicaterFactory);
+    }
+
+    public WebSession create() {
+        return new TomcatSession(config,
+                attributesFactory,
+                wrapperFactory,
+                valuePool,
+                router,
+                getManager(),
+                streamer,
+                valueHelperRegistry,
+                replicater);
     }
 
 }

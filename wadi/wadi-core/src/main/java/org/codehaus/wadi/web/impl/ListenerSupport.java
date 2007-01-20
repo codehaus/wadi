@@ -25,7 +25,10 @@ import javax.servlet.http.HttpSessionListener;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.SessionMonitor;
 import org.codehaus.wadi.impl.StandardManager;
+import org.codehaus.wadi.web.WADIHttpSessionListener;
+import org.codehaus.wadi.web.WebSessionConfig;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -79,9 +82,13 @@ public class ListenerSupport {
 			if (_log.isWarnEnabled()) _log.warn("EventListener not registered: "+listener);
 	}
 
-	public void installListeners(StandardManager manager) {
-		manager.setSessionListeners((HttpSessionListener[])_sessionListeners.toArray(new HttpSessionListener[_sessionListeners.size()]));
-		manager.setAttributelisteners((HttpSessionAttributeListener[])_attributeListeners.toArray(new HttpSessionAttributeListener[_attributeListeners.size()]));
+	public void installListeners(StandardManager manager, SessionMonitor sessionMonitor, WebSessionConfig sessionConfig) {
+	    HttpSessionListener[] listeners = (HttpSessionListener[])_sessionListeners.toArray(new HttpSessionListener[_sessionListeners.size()]);
+        sessionMonitor.addSessionListener(new WADIHttpSessionListener(listeners));
+        
+        HttpSessionAttributeListener[] attributeListeners = (HttpSessionAttributeListener[]) _attributeListeners
+                .toArray(new HttpSessionAttributeListener[_attributeListeners.size()]);
+        sessionConfig.setAttributeListeners(attributeListeners);
 	}
 
 }

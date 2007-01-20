@@ -15,14 +15,13 @@
  */
 package org.codehaus.wadi.replication.manager.basic;
 
+import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.vm.VMPeer;
 import org.codehaus.wadi.replication.common.ReplicaInfo;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
-import org.codehaus.wadi.test.DummyDistributableSessionConfig;
 import org.codehaus.wadi.web.WebSession;
 import org.codehaus.wadi.web.WebSessionPool;
-import org.codehaus.wadi.web.impl.DistributableSession;
 
 import com.agical.rmock.core.match.Expression;
 import com.agical.rmock.extension.junit.RMockTestCase;
@@ -31,67 +30,62 @@ import com.agical.rmock.extension.junit.RMockTestCase;
  * 
  * @version $Revision: 1538 $
  */
-public class SessionReplicationManagerTest extends RMockTestCase {
+public class MotableReplicationManagerTest extends RMockTestCase {
 
     private ReplicationManager repManager;
     private WebSessionPool sessionPool;
     private String key;
+    private Motable motable;
+    private byte[] webSessionBody = new byte[0];
 
     protected void setUp() throws Exception {
         key = "key";
         repManager = (ReplicationManager) mock(ReplicationManager.class);
-        sessionPool = (WebSessionPool) mock(WebSessionPool.class);
+        
+        motable = (Motable) mock(Motable.class);
+        motable.getBodyAsByteArray();
+        modify().multiplicity(expect.from(0)).returnValue(webSessionBody);
     }
     
     public void testCreate() throws Exception {
-        WebSession session = newWebSession();
-        
-        repManager.create(key, session.getBodyAsByteArray());
+        repManager.create(key, webSessionBody);
         startVerification();
         
-        SessionReplicationManager manager = new SessionReplicationManager(repManager, sessionPool);
-        manager.create(key, session);
+        MotableReplicationManager manager = new MotableReplicationManager(repManager);
+        manager.create(key, motable);
     }
 
     public void testUpdate() throws Exception {
-        WebSession session = newWebSession();
-        
-        repManager.update(key, session.getBodyAsByteArray());
+        repManager.update(key, webSessionBody);
         startVerification();
 
-        SessionReplicationManager manager = new SessionReplicationManager(repManager, sessionPool);
-        manager.update(key, session);
+        MotableReplicationManager manager = new MotableReplicationManager(repManager);
+        manager.update(key, motable);
     }
 
     public void testDestroy() {
         repManager.destroy(key);
         startVerification();
         
-        SessionReplicationManager manager = new SessionReplicationManager(repManager, sessionPool);
+        MotableReplicationManager manager = new MotableReplicationManager(repManager);
         manager.destroy(key);
     }
 
     public void testAcquirePrimary() throws Exception {
-        WebSession session = newWebSession();
-
         repManager.acquirePrimary(key);
-        modify().returnValue(session.getBodyAsByteArray());
-
-        WebSession webSession = sessionPool.take();
-        webSession.restore(0, 0, 0, key, session.getBodyAsByteArray());
-        modify().args(new Expression[] {is.ANYTHING, is.ANYTHING, is.ANYTHING, is.AS_RECORDED, is.AS_RECORDED});
+        modify().returnValue(webSessionBody);
         startVerification();
         
-        SessionReplicationManager manager = new SessionReplicationManager(repManager, sessionPool);
-        Object actualSession = manager.acquirePrimary(key);
-        assertSame(webSession, actualSession);
+        MotableReplicationManager manager = new MotableReplicationManager(repManager);
+        Motable actualMotable = (Motable) manager.acquirePrimary(key);
+        assertSame(webSessionBody, actualMotable.getBodyAsByteArray());
     }
 
     public void testReleasePrimary() {
         repManager.releasePrimary(key);
         startVerification();
 
-        SessionReplicationManager manager = new SessionReplicationManager(repManager, sessionPool);
+        MotableReplicationManager manager = new MotableReplicationManager(repManager);
         manager.releasePrimary(key);
     }
 
@@ -102,7 +96,7 @@ public class SessionReplicationManagerTest extends RMockTestCase {
         modify().returnValue(replicaInfo);
         startVerification();
         
-        SessionReplicationManager manager = new SessionReplicationManager(repManager, sessionPool);
+        MotableReplicationManager manager = new MotableReplicationManager(repManager);
         ReplicaInfo actualReplicaInfo = manager.retrieveReplicaInfo(key);
         assertSame(replicaInfo, actualReplicaInfo);
     }
@@ -112,15 +106,9 @@ public class SessionReplicationManagerTest extends RMockTestCase {
         modify().returnValue(true);
         startVerification();
 
-        SessionReplicationManager manager = new SessionReplicationManager(repManager, sessionPool);
+        MotableReplicationManager manager = new MotableReplicationManager(repManager);
         boolean manage = manager.managePrimary(key);
         assertTrue(manage);
-    }
-
-    private WebSession newWebSession() {
-        WebSession session = new DistributableSession(new DummyDistributableSessionConfig());
-        session.init(1, 2, 3, "name");
-        return session;
     }
 
 }

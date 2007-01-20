@@ -56,7 +56,7 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
         this.map = map;
         this.evicter = evicter;
         
-        timer = new Timer(getClass().getName() + " Evicter");
+        timer = new Timer();
     }
 
     public final boolean isExclusive() {
@@ -182,7 +182,11 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
         }
 
         public void expire(Motable motable) {
-            throw new UnsupportedOperationException("NYI");
+            try {
+                motable.destroy();
+            } catch (Exception e) {
+                _log.warn("Problem while destroying motable", e);
+            }
         }
         
     }

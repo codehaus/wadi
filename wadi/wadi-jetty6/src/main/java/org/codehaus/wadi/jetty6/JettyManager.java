@@ -18,7 +18,6 @@ package org.codehaus.wadi.jetty6;
 
 import java.io.InputStream;
 import java.util.EventListener;
-//import java.util.regex.Pattern;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.Cookie;
@@ -29,19 +28,18 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Manager;
 import org.codehaus.wadi.ManagerConfig;
+import org.codehaus.wadi.SessionMonitor;
 import org.codehaus.wadi.impl.SpringManagerFactory;
 import org.codehaus.wadi.impl.StandardManager;
 import org.codehaus.wadi.web.WADIHttpSession;
-import org.codehaus.wadi.web.impl.AtomicallyReplicableSessionFactory;
+import org.codehaus.wadi.web.WebSessionConfig;
 import org.codehaus.wadi.web.impl.ListenerSupport;
-import org.mortbay.jetty.handler.ContextHandler;
-import org.mortbay.jetty.servlet.SessionHandler;
-//import org.mortbay.jetty.Handler;
+import org.mortbay.component.AbstractLifeCycle;
 import org.mortbay.jetty.HttpOnlyCookie;
 import org.mortbay.jetty.SessionIdManager;
-//import org.mortbay.jetty.Server;
 import org.mortbay.jetty.SessionManager;
-import org.mortbay.component.AbstractLifeCycle;
+import org.mortbay.jetty.handler.ContextHandler;
+import org.mortbay.jetty.servlet.SessionHandler;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -64,8 +62,8 @@ public class JettyManager extends AbstractLifeCycle implements ManagerConfig, Se
 		return _context;
 	}
 
-	public void callback(Manager manager) {
-		_listeners.installListeners((StandardManager)manager); // TODO - http://jira.codehaus.org/browse/WADI-81
+    public void callback(Manager manager, SessionMonitor sessionMonitor, WebSessionConfig sessionConfig) {
+		_listeners.installListeners((StandardManager) manager, sessionMonitor, sessionConfig);
 	}
 
 	// org.mortbay.thread.AbstractLifecycle
@@ -75,7 +73,7 @@ public class JettyManager extends AbstractLifeCycle implements ManagerConfig, Se
 
 		try {
 			InputStream descriptor=_context.getContextHandler().getBaseResource().addPath("WEB-INF/wadi-web.xml").getInputStream();
-			_wadi=SpringManagerFactory.create(descriptor, "SessionManager", new AtomicallyReplicableSessionFactory(), new JettySessionWrapperFactory());
+			_wadi=SpringManagerFactory.create(descriptor, "SessionManager");
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}

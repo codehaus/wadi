@@ -27,9 +27,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Manager;
 import org.codehaus.wadi.ManagerConfig;
+import org.codehaus.wadi.SessionMonitor;
 import org.codehaus.wadi.impl.SpringManagerFactory;
 import org.codehaus.wadi.web.WADIHttpSession;
-import org.codehaus.wadi.web.impl.AtomicallyReplicableSessionFactory;
+import org.codehaus.wadi.web.WebSessionConfig;
+
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 import EDU.oswego.cs.dl.util.concurrent.Rendezvous;
 
@@ -55,7 +57,7 @@ public class Axis2Manager implements SessionManager, ManagerConfig {
             // we should probably acquire this through some backptr from the container...
             String path=System.getProperty("axis2.repo")+"/server/wadi-axis2.xml";
             InputStream descriptor=new FileInputStream(path);
-            _wadi=SpringManagerFactory.create(descriptor, "SessionManager", new AtomicallyReplicableSessionFactory(), new Axis2SessionWrapperFactory());
+            _wadi=SpringManagerFactory.create(descriptor, "SessionManager");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -82,7 +84,7 @@ public class Axis2Manager implements SessionManager, ManagerConfig {
         return null; // Not relevant to Axis2 - this should not be on the Manager interface
     }
     
-    public void callback(Manager arg0) {
+    public void callback(Manager manager, SessionMonitor sessionMonitor, WebSessionConfig sessionConfig) {
         _log.debug("callback()");
     }
     

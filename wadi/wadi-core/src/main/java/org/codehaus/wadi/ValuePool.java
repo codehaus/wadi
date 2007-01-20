@@ -17,15 +17,13 @@
 package org.codehaus.wadi;
 
 /**
- * TODO - JavaDoc this type
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
 
 public interface ValuePool {
-
-    public Value take(ValueConfig config);
-    public void put(Value attribute);
+    Value take(ValueConfig config);
     
+    void put(Value attribute);
 }

@@ -42,42 +42,56 @@ import org.codehaus.wadi.ValueHelper;
  */
 
 public class DistributableValue extends StandardValue implements SerializableContent  {
+    protected ValueHelper valueHelper;
+    protected DistributableValueConfig config;
     
-    public DistributableValue(DistributableValueConfig config) {super(config);}
-    
-    protected ValueHelper _helper;
-    
-    public synchronized Object setValue(Object newValue) {
-    	// set up helper if needed or warn if needed but not available...
-        if (newValue!=null && !(newValue instanceof Serializable) && (_helper=((DistributableValueConfig)_config).findHelper(newValue.getClass()))==null)
-            throw new IllegalArgumentException("Distributable HttpSession attribute values must be Serializable or of other designated type (see SRV.7.7.2)");
+    public DistributableValue(DistributableValueConfig config) {
+        super(config);
+        this.config = config;
+    }
 
+    public synchronized Object setValue(Object newValue) {
+        // set up helper if needed or warn if needed but not available...
+        if (null != newValue && !(newValue instanceof Serializable) && !initValueHelper(newValue)) {
+            throw new IllegalArgumentException("Distributable HttpSession attribute values must be Serializable " +
+                    "or of other designated type (see SRV.7.7.2)");
+        }
         return super.setValue(newValue);
     }
-     
+
     public synchronized void writeContent(ObjectOutput oo) throws IOException {
-    	// make necessary notification
-        if (_value!=null && _value instanceof HttpSessionActivationListener) {
-            ((HttpSessionActivationListener)_value).sessionWillPassivate(_config==null?null:((DistributableValueConfig)_config).getHttpSessionEvent());
+        // make necessary notification
+        if (_value instanceof HttpSessionActivationListener) {
+            HttpSessionActivationListener listener = (HttpSessionActivationListener) _value;
+            listener.sessionWillPassivate(config.getHttpSessionEvent());
         }
 
         // use helper, if present, to serialise
-        Object value=(_helper==null?_value:_helper.replace(_value));
-        
+        Object value = _value;
+        if (null != valueHelper) {
+            value = valueHelper.replace(_value);
+        }
         oo.writeObject(value);
     }
-    
-    public synchronized void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
-    	_value=oi.readObject();
-    	
-        // reinstate helper, if one was used.
-        if (_value!=null && !(_value instanceof Serializable))
-            _helper=((DistributableValueConfig)_config).findHelper(_value.getClass());
 
-    	// make necessary notification
-        if (_value!=null && _value instanceof HttpSessionActivationListener) {
-            ((HttpSessionActivationListener)_value).sessionDidActivate(_config==null?null:((DistributableValueConfig)_config).getHttpSessionEvent());
+    public synchronized void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
+        _value = oi.readObject();
+
+        // reinstate helper, if one was used.
+        if (null != _value && !(_value instanceof Serializable)) {
+            initValueHelper(_value);
         }
+
+        // make necessary notification
+        if (_value instanceof HttpSessionActivationListener) {
+            HttpSessionActivationListener listener = (HttpSessionActivationListener) _value;
+            listener.sessionDidActivate(config.getHttpSessionEvent());
+        }
+    }
+
+    protected boolean initValueHelper(Object value) {
+        valueHelper = config.findHelper(value.getClass());
+        return null != valueHelper;
     }
 
 }

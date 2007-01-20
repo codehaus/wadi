@@ -16,74 +16,51 @@
  */
 package org.codehaus.wadi.impl;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Invocation;
+import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.InvocationProxy;
-import org.codehaus.wadi.ReplicaterFactory;
 import org.codehaus.wadi.SessionIdFactory;
-import org.codehaus.wadi.Streamer;
-import org.codehaus.wadi.ValuePool;
+import org.codehaus.wadi.SessionMonitor;
 import org.codehaus.wadi.core.ConcurrentMotableMap;
 import org.codehaus.wadi.location.PartitionManager;
 import org.codehaus.wadi.location.StateManager;
-import org.codehaus.wadi.servicespace.ServiceName;
-import org.codehaus.wadi.web.AttributesFactory;
 import org.codehaus.wadi.web.Router;
 import org.codehaus.wadi.web.WebSession;
-import org.codehaus.wadi.web.WebSessionPool;
-import org.codehaus.wadi.web.WebSessionWrapperFactory;
-import org.codehaus.wadi.web.impl.DistributableSession;
+import org.codehaus.wadi.web.WebSessionFactory;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
 public class ClusteredManager extends DistributableManager {
-    public static final ServiceName NAME = new ServiceName("ClusteredManager");
-
-    private static final Log log = LogFactory.getLog(StandardManager.class);
-    
     private final StateManager stateManager;
     private final PartitionManager partitionManager;
     private final InvocationProxy proxy;
 
     public ClusteredManager(StateManager stateManager,
             PartitionManager partitionManager,
-            WebSessionPool sessionPool, 
-            AttributesFactory attributesFactory, 
-            ValuePool valuePool,
-            WebSessionWrapperFactory sessionWrapperFactory, 
+            WebSessionFactory sessionFactory, 
             SessionIdFactory sessionIdFactory,
             Contextualiser contextualiser, 
             ConcurrentMotableMap sessionMap, 
             Router router, 
+            SessionMonitor sessionMonitor,
             boolean errorIfSessionNotAcquired,
-            Streamer streamer, 
-            boolean accessOnLoad, 
-            ReplicaterFactory replicaterFactory, 
             InvocationProxy proxy) {
-        super(sessionPool, 
-                attributesFactory, 
-                valuePool, 
-                sessionWrapperFactory, 
+        super(sessionFactory,
                 sessionIdFactory, 
                 contextualiser,
                 sessionMap, 
                 router, 
-                errorIfSessionNotAcquired, 
-                streamer, 
-                accessOnLoad, 
-                replicaterFactory);
+                sessionMonitor,
+                errorIfSessionNotAcquired);
         if (null == stateManager) {
             throw new IllegalArgumentException("stateManager is required");
         } else if (null == partitionManager) {
             throw new IllegalArgumentException("partitionManager is required");
+        } else if (null == proxy) {
+            throw new IllegalArgumentException("proxy is required");
         }
         this.stateManager = stateManager;
         this.partitionManager = partitionManager;
@@ -103,23 +80,6 @@ public class ClusteredManager extends DistributableManager {
         partitionManager.stop();
     }
 
-    public void destroy(Invocation invocation, WebSession session) {
-        // this destroySession method must not chain the one in super - otherwise the notification aspect fires twice 
-        // - once around each invocation... - DOH !
-        Collection names = new ArrayList((_attributeListeners.length > 0) ? (Collection) session.getAttributeNameSet()
-                : ((DistributableSession) session).getListenerNames());
-        for (Iterator i = names.iterator(); i.hasNext();) {
-            session.removeAttribute((String) i.next());
-        }
-        String name = session.getName();
-        onSessionDestruction(session);
-        _map.remove(name);
-        _sessionPool.put(session);
-        if (log.isDebugEnabled()) {
-            log.debug("destroyed: " + name);
-        }
-    }
-
     protected void onSessionDestruction(WebSession session) {
         super.onSessionDestruction(session);
         stateManager.remove(session.getName());
@@ -128,9 +88,10 @@ public class ClusteredManager extends DistributableManager {
     protected boolean validateSessionName(String name) {
         return stateManager.insert(name);
     }
-
-    public InvocationProxy getInvocationProxy() {
-        return proxy;
+    
+    public boolean contextualise(Invocation invocation) throws InvocationException {
+        invocation.setInvocationProxy(proxy);
+        return super.contextualise(invocation);
     }
 
 }

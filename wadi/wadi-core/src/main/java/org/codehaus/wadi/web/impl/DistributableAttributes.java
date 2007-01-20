@@ -82,8 +82,7 @@ public class DistributableAttributes extends StandardAttributes implements Seria
     }
 
     protected boolean isListener(Object o) {
-        return (!((DistributableAttributesConfig) _config).getHttpSessionAttributeListenersRegistered() && 
-                (o instanceof HttpSessionActivationListener || o instanceof HttpSessionBindingListener));
+        return o instanceof HttpSessionActivationListener || o instanceof HttpSessionBindingListener;
     }
 
     public synchronized void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
@@ -111,10 +110,6 @@ public class DistributableAttributes extends StandardAttributes implements Seria
 
     public ValueHelper findHelper(Class type) {
         return ((DistributableAttributesConfig) _config).findHelper(type);
-    }
-
-    public boolean getHttpSessionAttributeListenersRegistered() {
-        return ((DistributableAttributesConfig) _config).getHttpSessionAttributeListenersRegistered();
     }
 
     public HttpSessionEvent getHttpSessionEvent() {

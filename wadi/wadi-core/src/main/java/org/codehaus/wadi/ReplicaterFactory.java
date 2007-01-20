@@ -16,12 +16,11 @@
  */
 package org.codehaus.wadi;
 
-import org.codehaus.wadi.impl.DistributableManager;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
 public interface ReplicaterFactory {
-	Replicater create(DistributableManager manager);
+	Replicater create();
 }

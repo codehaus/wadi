@@ -16,19 +16,49 @@
  */
 package org.codehaus.wadi.web.impl;
 
-import org.codehaus.wadi.web.DistributableSessionConfig;
+import org.codehaus.wadi.Manager;
+import org.codehaus.wadi.Streamer;
+import org.codehaus.wadi.ValuePool;
+import org.codehaus.wadi.web.AttributesFactory;
+import org.codehaus.wadi.web.Router;
+import org.codehaus.wadi.web.ValueHelperRegistry;
 import org.codehaus.wadi.web.WebSession;
-import org.codehaus.wadi.web.WebSessionConfig;
-import org.codehaus.wadi.web.WebSessionFactory;
+import org.codehaus.wadi.web.WebSessionWrapperFactory;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision: 1885 $
  */
-public class DistributableSessionFactory implements WebSessionFactory {
+public class DistributableSessionFactory extends StandardSessionFactory {
 
-    public WebSession create(WebSessionConfig config) {
-        return new DistributableSession((DistributableSessionConfig)config);
+    protected final Streamer streamer;
+    protected final ValueHelperRegistry valueHelperRegistry;
+
+    public DistributableSessionFactory(AttributesFactory attributesFactory,
+            WebSessionWrapperFactory wrapperFactory,
+            ValuePool valuePool,
+            Router router,
+            Streamer streamer,
+            ValueHelperRegistry valueHelperRegistry) {
+        super(attributesFactory, wrapperFactory, valuePool, router);
+        if (null == streamer) {
+            throw new IllegalArgumentException("streamer is required");
+        } else if (null == valueHelperRegistry) {
+            throw new IllegalArgumentException("valueHelperRegistry is required");
+        }
+        this.streamer = streamer;
+        this.valueHelperRegistry = valueHelperRegistry;
+    }
+
+    public WebSession create() {
+        return new DistributableSession(config,
+                attributesFactory,
+                wrapperFactory,
+                valuePool,
+                router,
+                getManager(),
+                streamer,
+                valueHelperRegistry);
     }
     
 }

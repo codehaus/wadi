@@ -16,9 +16,8 @@
  */
 package org.codehaus.wadi;
 
+import org.codehaus.wadi.servicespace.ServiceName;
 import org.codehaus.wadi.web.WebSession;
-import org.codehaus.wadi.web.WebSessionPool;
-import org.codehaus.wadi.web.WebSessionWrapperFactory;
 
 /**
  * Manager - A Session Manager abstraction. Responsibilities include Session creation, destruction, storage
@@ -28,6 +27,7 @@ import org.codehaus.wadi.web.WebSessionWrapperFactory;
  * @version $Revision$
  */
 public interface Manager extends Lifecycle {
+    public static final ServiceName NAME = new ServiceName("Manager");
     
     /**
      * Initialise the Manager with information not readily available at construction time.
@@ -44,15 +44,14 @@ public interface Manager extends Lifecycle {
      * @param invocation the Invocation
      * @return the Session  
      */
-    WebSession create(Invocation invocation); // should return Session, not WebSession
+    WebSession create(Invocation invocation);
     
     /**
      * Destroy a Session
      * 
-     * @param invocation the Invocation
      * @param session the Session
      */
-    void destroy(Invocation invocation, WebSession session);
+    void destroy(WebSession session);
 
     /**
      * @return The maximum amount of time (in seconds) that a Session
@@ -69,11 +68,6 @@ public interface Manager extends Lifecycle {
     void setMaxInactiveInterval(int interval);
 
     /**
-     * @return The Pool from/to which Sessions are allocated/returned
-     */
-    WebSessionPool getSessionPool(); // should be a SessionPool, not a WebSessionPool
-    
-    /**
      * @return The factory responsible for the generation of Session IDs
      */
     SessionIdFactory getSessionIdFactory();
@@ -87,6 +81,4 @@ public interface Manager extends Lifecycle {
      * @throws InvocationException
      */
     boolean contextualise(Invocation invocation) throws InvocationException;
-    
-    WebSessionWrapperFactory getSessionWrapperFactory();
 }

@@ -31,7 +31,14 @@ import org.apache.catalina.Session;
 import org.apache.catalina.SessionListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.web.ReplicableSessionConfig;
+import org.codehaus.wadi.Replicater;
+import org.codehaus.wadi.Streamer;
+import org.codehaus.wadi.ValuePool;
+import org.codehaus.wadi.web.AttributesFactory;
+import org.codehaus.wadi.web.Router;
+import org.codehaus.wadi.web.ValueHelperRegistry;
+import org.codehaus.wadi.web.WebSessionConfig;
+import org.codehaus.wadi.web.WebSessionWrapperFactory;
 import org.codehaus.wadi.web.impl.AtomicallyReplicableSession;
 
 /**
@@ -49,8 +56,24 @@ public class TomcatSession extends AtomicallyReplicableSession implements Sessio
 
   protected static final Log _log = LogFactory.getLog(TomcatSession.class);
 
-  public TomcatSession(ReplicableSessionConfig config) {
-    super(config);
+  public TomcatSession(WebSessionConfig config,
+          AttributesFactory attributesFactory,
+          WebSessionWrapperFactory wrapperFactory,
+          ValuePool valuePool,
+          Router router,
+          org.codehaus.wadi.Manager manager,
+          Streamer streamer,
+          ValueHelperRegistry valueHelperRegistry,
+          Replicater replicater) {
+    super(config,
+                attributesFactory,
+                wrapperFactory,
+                valuePool,
+                router,
+                manager,
+                streamer,
+                valueHelperRegistry,
+                replicater);
   }
 
   public void destroy() {

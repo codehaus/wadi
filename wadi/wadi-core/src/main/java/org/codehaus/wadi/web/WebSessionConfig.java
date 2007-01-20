@@ -18,10 +18,9 @@ package org.codehaus.wadi.web;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSessionAttributeListener;
-import javax.servlet.http.HttpSessionListener;
 
-import org.codehaus.wadi.Invocation;
-import org.codehaus.wadi.ValuePool;
+import org.codehaus.wadi.Manager;
+
 
 
 /**
@@ -29,21 +28,15 @@ import org.codehaus.wadi.ValuePool;
  * @version $Revision: 1885 $
  */
 public interface WebSessionConfig {
-    ValuePool getValuePool();
-
-    AttributesFactory getAttributesFactory();
-    
-    HttpSessionListener[] getSessionListeners();
-    
     HttpSessionAttributeListener[] getAttributeListeners();
+
+    void setAttributeListeners(HttpSessionAttributeListener[] listeners);
     
     ServletContext getServletContext();
-
-    void destroy(Invocation invocation, WebSession session);
     
-    WebSessionWrapperFactory getSessionWrapperFactory();
+    void setServletContext(ServletContext servletContext);
     
-    int getMaxInactiveInterval();
-
-    Router getRouter();
+    Manager getManager();
+    
+    void setManager(Manager manager);
 }

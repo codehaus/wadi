@@ -20,9 +20,6 @@ import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.impl.DummyContextualiser;
 import org.codehaus.wadi.location.StateManager;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
-import org.codehaus.wadi.test.DummyDistributableSessionConfig;
-import org.codehaus.wadi.web.WebSession;
-import org.codehaus.wadi.web.impl.DistributableSession;
 
 import com.agical.rmock.extension.junit.RMockTestCase;
 
@@ -40,38 +37,45 @@ public class ReplicaAwareContextualiserTest extends RMockTestCase {
     }
     
     public void testEmoter() throws Exception {
+        Motable emotable = (Motable) mock(Motable.class);
+        emotable.getCreationTime();
+        int creationTime = 1;
+        modify().returnValue(creationTime);
+        emotable.getLastAccessedTime();
+        int lastAccessedTime = 2;
+        modify().returnValue(lastAccessedTime);
+        emotable.getMaxInactiveInterval();
+        int maxInactiveInterval = 3;
+        modify().returnValue(maxInactiveInterval);
+        emotable.getName();
+        String name = "name";
+        modify().returnValue(name);
+        emotable.getBodyAsByteArray();
+        byte[] body = new byte[0];
+        modify().returnValue(body);
+        
+        Motable immotable = (Motable) mock(Motable.class);
+        immotable.restore(creationTime, lastAccessedTime, maxInactiveInterval, name, body);
+        
+        startVerification();
+        
         ReplicaAwareContextualiser contextualiser = new ReplicaAwareContextualiser(new DummyContextualiser(),
                 manager,
                 stateManager);
         
-        startVerification();
-        
         Emoter emoter = contextualiser.getEmoter();
-        
-        WebSession emotable = new DistributableSession(new DummyDistributableSessionConfig());
-        emotable.init(1, 2, 3, "name");
-        String attrKey = "attrKey";
-        String attrValue = "attrValue";
-        emotable.setAttribute(attrKey, attrValue);
-        WebSession immotable = new DistributableSession(new DummyDistributableSessionConfig());
         emoter.emote(emotable, immotable);
-        
-        assertEquals(emotable.getCreationTime(), immotable.getCreationTime());
-        assertEquals(emotable.getLastAccessedTime(), immotable.getLastAccessedTime());
-        assertEquals(emotable.getMaxInactiveInterval(), immotable.getMaxInactiveInterval());
-        assertEquals(attrValue, immotable.getAttribute(attrKey));
     }
 
     public void testGet() throws Exception {
-        WebSession motable = new DistributableSession(new DummyDistributableSessionConfig());
+        Motable motable = (Motable) mock(Motable.class);
+        motable.getName();
         String key = "id";
-        motable.init(1, 2, 3, key);
-        
+        modify().returnValue(key);
         manager.acquirePrimary(key);
         modify().returnValue(motable);
         
         stateManager.relocate(key);
-        
         startVerification();
         
         ReplicaAwareContextualiser contextualiser = new ReplicaAwareContextualiser(new DummyContextualiser(),

@@ -43,9 +43,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Manager;
 import org.codehaus.wadi.ManagerConfig;
+import org.codehaus.wadi.SessionMonitor;
 import org.codehaus.wadi.impl.SpringManagerFactory;
-import org.codehaus.wadi.impl.StandardManager;
-import org.codehaus.wadi.web.impl.StandardSessionWrapperFactory;
+import org.codehaus.wadi.web.WADIHttpSessionListener;
+import org.codehaus.wadi.web.WebSessionConfig;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -70,7 +71,7 @@ public class TomcatManager implements ManagerConfig, Lifecycle, org.apache.catal
     return ((Context)_container).getServletContext();
   }
 
-  public void callback(org.codehaus.wadi.Manager manager) {
+  public void callback(Manager manager, SessionMonitor sessionMonitor, WebSessionConfig sessionConfig) {
     // install Listeners ...
     Context context=((Context)_container);
 
@@ -81,7 +82,10 @@ public class TomcatManager implements ManagerConfig, Lifecycle, org.apache.catal
       if (listener instanceof HttpSessionListener)
 	sll.add(listener);
     }
-    ((StandardManager)manager).setSessionListeners((HttpSessionListener[])sll.toArray(new HttpSessionListener[sll.size()]));  // TODO - http://jira.codehaus.org/browse/WADI-81
+    
+    HttpSessionListener[] listeners = (HttpSessionListener[])sll.toArray(new HttpSessionListener[sll.size()]);
+    WADIHttpSessionListener wadiHttpSessionListener = new WADIHttpSessionListener(listeners);
+    sessionMonitor.addSessionListener(wadiHttpSessionListener);
 
     Object[] attributeListeners=context.getApplicationEventListeners();
     List all=new ArrayList();
@@ -90,7 +94,7 @@ public class TomcatManager implements ManagerConfig, Lifecycle, org.apache.catal
       if (listener instanceof HttpSessionAttributeListener)
 	all.add(listener);
     }
-    ((StandardManager)manager).setAttributelisteners((HttpSessionAttributeListener[])all.toArray(new HttpSessionAttributeListener[all.size()]));  // TODO - http://jira.codehaus.org/browse/WADI-81
+    sessionConfig.setAttributeListeners((HttpSessionAttributeListener[])all.toArray(new HttpSessionAttributeListener[all.size()]));
   }
 
   // org.apache.catalina.Lifecycle
@@ -113,7 +117,7 @@ public class TomcatManager implements ManagerConfig, Lifecycle, org.apache.catal
   public void start() throws LifecycleException {
 	  try {
 		  InputStream is=getServletContext().getResourceAsStream("/WEB-INF/wadi-web.xml");
-		  _wadi=SpringManagerFactory.create(is, "SessionManager", new TomcatSessionFactory(), new StandardSessionWrapperFactory());
+		  _wadi=SpringManagerFactory.create(is, "SessionManager");
 	  } catch (Exception e) {
 		  throw new RuntimeException("Required resource: '/WEB-INF/wadi-web.xml' not found - please check the web app.", e);
 	  }

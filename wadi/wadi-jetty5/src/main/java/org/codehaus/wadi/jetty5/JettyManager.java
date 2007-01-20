@@ -28,10 +28,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Manager;
 import org.codehaus.wadi.ManagerConfig;
+import org.codehaus.wadi.SessionMonitor;
 import org.codehaus.wadi.impl.SpringManagerFactory;
 import org.codehaus.wadi.impl.StandardManager;
 import org.codehaus.wadi.web.WADIHttpSession;
-import org.codehaus.wadi.web.impl.AtomicallyReplicableSessionFactory;
+import org.codehaus.wadi.web.WebSessionConfig;
 import org.codehaus.wadi.web.impl.Filter;
 import org.codehaus.wadi.web.impl.ListenerSupport;
 import org.mortbay.jetty.servlet.Dispatcher;
@@ -62,8 +63,8 @@ public class JettyManager implements ManagerConfig, SessionManager {
 		return _handler.getServletContext();
 	}
 
-	public void callback(Manager manager) {
-		_listeners.installListeners((StandardManager)manager); // TODO - http://jira.codehaus.org/browse/WADI-81
+    public void callback(Manager manager, SessionMonitor sessionMonitor, WebSessionConfig sessionConfig) {
+		_listeners.installListeners((StandardManager)manager, sessionMonitor, sessionConfig);
 	}
 
 	// org.mortbay.jetty.servlet.SessionManager
@@ -72,7 +73,7 @@ public class JettyManager implements ManagerConfig, SessionManager {
 		_handler=handler;
 		try {
 			InputStream descriptor=_handler.getHttpContext().getResource("WEB-INF/wadi-web.xml").getInputStream();
-			_wadi=SpringManagerFactory.create(descriptor, "SessionManager", new AtomicallyReplicableSessionFactory(), new JettySessionWrapperFactory());
+			_wadi=SpringManagerFactory.create(descriptor, "SessionManager");
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}

@@ -28,13 +28,9 @@ import org.codehaus.wadi.ValueHelper;
  */
 
 public interface DistributableAttributesConfig extends AttributesConfig {
-    
-    // Distributable
     Streamer getStreamer();
-    ValueHelper findHelper(Class type);
-    HttpSessionEvent getHttpSessionEvent();
     
-    // Lazy
-    boolean getHttpSessionAttributeListenersRegistered();
+    ValueHelper findHelper(Class type);
 
+    HttpSessionEvent getHttpSessionEvent();
 }

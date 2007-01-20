@@ -19,7 +19,6 @@ package org.codehaus.wadi.web.impl;
 import org.codehaus.wadi.Session;
 import org.codehaus.wadi.SessionPool;
 import org.codehaus.wadi.web.WebSession;
-import org.codehaus.wadi.web.WebSessionConfig;
 import org.codehaus.wadi.web.WebSessionPool;
 
 
@@ -34,21 +33,20 @@ import org.codehaus.wadi.web.WebSessionPool;
 public class WebSessionToSessionPoolAdapter implements SessionPool {
 
     protected final WebSessionPool _pool;
-    
+
     public WebSessionToSessionPoolAdapter(WebSessionPool pool) {
-        super();
-        _pool=pool;
-    }
-    
-    public void init(WebSessionConfig config) {
-        _pool.init(config);
+        if (null == pool) {
+            throw new IllegalArgumentException("pool is required");
+        }
+        _pool = pool;
     }
 
     public void put(Session context) {
-        _pool.put((WebSession)context);
+        _pool.put((WebSession) context);
     }
 
     public Session take() {
         return _pool.take();
     }
+
 }

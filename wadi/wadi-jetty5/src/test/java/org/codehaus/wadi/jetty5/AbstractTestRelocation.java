@@ -37,10 +37,10 @@ import org.codehaus.wadi.InvocationProxy;
 import org.codehaus.wadi.Relocater;
 import org.codehaus.wadi.core.ConcurrentMotableMap;
 import org.codehaus.wadi.group.Dispatcher;
+import org.codehaus.wadi.impl.HybridRelocater;
 import org.codehaus.wadi.test.MyContext;
 import org.codehaus.wadi.web.impl.CommonsHttpProxy;
 import org.codehaus.wadi.web.impl.StandardHttpProxy;
-import org.codehaus.wadi.web.impl.WebHybridRelocater;
 
 /**
  * Unit Tests requiring a pair of Jetty's. Each one is set up with a Filter and Servlet placeholder.
@@ -381,11 +381,11 @@ public abstract class AbstractTestRelocation extends TestCase {
 	}
 	
     private void setUpRelocaters() {
-        _relocater0.setRelocationStrategy(new WebHybridRelocater(
+        _relocater0.setRelocationStrategy(new HybridRelocater(
                 _servlet0.getStackContext().getServiceSpace(),
                 _servlet0.getStackContext().getPartitionManager(),
                 2000));
-        _relocater1.setRelocationStrategy(new WebHybridRelocater(
+        _relocater1.setRelocationStrategy(new HybridRelocater(
                 _servlet1.getStackContext().getServiceSpace(),
                 _servlet1.getStackContext().getPartitionManager(),
                 2000));

@@ -17,7 +17,6 @@
 package org.codehaus.wadi;
 
 import org.codehaus.wadi.group.EndPoint;
-import org.codehaus.wadi.web.Router;
 
 
 /**
@@ -89,4 +88,6 @@ public interface Invocation {
     void invoke(PoolableInvocationWrapper wrapper) throws InvocationException;
     
 	boolean isProxiedInvocation();
+    
+    void setInvocationProxy(InvocationProxy proxy);
 }

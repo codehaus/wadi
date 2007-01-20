@@ -17,7 +17,6 @@
 package org.codehaus.wadi.impl;
 
 import org.codehaus.wadi.web.WebSession;
-import org.codehaus.wadi.web.WebSessionConfig;
 import org.codehaus.wadi.web.WebSessionFactory;
 import org.codehaus.wadi.web.WebSessionPool;
 
@@ -26,25 +25,20 @@ import org.codehaus.wadi.web.WebSessionPool;
  * @version $Revision$
  */
 public class SimpleSessionPool implements WebSessionPool {
-    protected final WebSessionFactory _factory;
-    protected WebSessionConfig _config;
-
+    protected final WebSessionFactory factory;
+    
     public SimpleSessionPool(WebSessionFactory factory) {
-        super();
-        _factory=factory;
-    }
-
-    public void init(WebSessionConfig config) {
-      assert (_config==null);
-        _config=config;
+        if (null == factory) {
+            throw new IllegalArgumentException("factory is required");
+        }
+        this.factory = factory;
     }
 
     public WebSession take() {
-        return _factory.create(_config);
+        return factory.create();
     }
 
     public void put(WebSession session) {
-        // just drop the session - truly pool later
     }
 
 }
