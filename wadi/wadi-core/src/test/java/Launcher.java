@@ -40,7 +40,6 @@ import EDU.oswego.cs.dl.util.concurrent.Latch;
  */
 public class Launcher {
     private static final String SESSION_ID = "myID";
-    private static final String EXPECTED_ATTRIBUTE = "cool";
 
     public static void main(String[] args) throws Exception {
         Launcher launcher = new Launcher();
@@ -53,6 +52,7 @@ public class Launcher {
     private ClusteredManager redManager;
     private ClusteredManager greenManager;
     private ClusteredManager yellowManager;
+    private volatile Long cpt;
     
     private Launcher() {
         broker = new VMBroker("brokerName");
@@ -61,10 +61,14 @@ public class Launcher {
             public void doFilter(ServletRequest request, ServletResponse response) throws IOException, ServletException {
                 HttpServletRequest httpServletRequest = (HttpServletRequest) request;
                 HttpSession session = httpServletRequest.getSession(false);
-                Object attribute = session.getAttribute("attr1");
-                if (null == attribute) {
+                Long currCpt = (Long) session.getAttribute("attr1");
+                if (null == currCpt) {
                     throw new IllegalStateException();
+                } else if (cpt.longValue() != currCpt.longValue()) {
+                    throw new IllegalStateException("cpt [" + cpt + "]; currCpt [" + currCpt + "]");
                 }
+                cpt = new Long(currCpt.longValue() + 1);
+                session.setAttribute("attr1", cpt);
             }
         };
         
@@ -77,11 +81,12 @@ public class Launcher {
         yellowManager = newClusteredManager(broker, "yellow");
         
         WebSession session = greenManager.createWithName(SESSION_ID);
-        session.setAttribute("attr1", EXPECTED_ATTRIBUTE);
+        cpt = new Long(0);
+        session.setAttribute("attr1", cpt);
         session.onEndProcessing();
         
         ClusteredManager managers[] = new ClusteredManager[] {redManager, greenManager, yellowManager};
-        Thread threads[] = new Thread[9];
+        Thread threads[] = new Thread[2];
         for (int i = 0; i < threads.length; i++) {
             threads[i] = new ThreadRunner(managers[i % 3], filterChain);
         }
@@ -100,6 +105,7 @@ public class Launcher {
         long end = System.currentTimeMillis();
 
         System.out.println("Done in [" + (end - start) + "]");
+        System.out.println(cpt.longValue());
         System.exit(0);
     }
 
@@ -151,10 +157,12 @@ public class Launcher {
                 MockHttpServletRequest request = newRequest();
                 MockHttpServletResponse response = newResponse();
                 WebInvocation invocation = new WebInvocation();
-                invocation.init(request, response, filterChain, null);
+                invocation.init(request, response, filterChain);
                 try {
                     manager.contextualise(invocation);
                 } catch (InvocationException e) {
+                    e.printStackTrace();
+                    System.out.println("loop [" + i + "]");
                     break;
                 }
             }
