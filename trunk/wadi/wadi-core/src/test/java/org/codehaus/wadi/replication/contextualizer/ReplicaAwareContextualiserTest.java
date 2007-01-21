@@ -75,7 +75,7 @@ public class ReplicaAwareContextualiserTest extends RMockTestCase {
         manager.acquirePrimary(key);
         modify().returnValue(motable);
         
-        stateManager.relocate(key);
+        stateManager.insert(key);
         startVerification();
         
         ReplicaAwareContextualiser contextualiser = new ReplicaAwareContextualiser(new DummyContextualiser(),

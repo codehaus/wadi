@@ -61,7 +61,7 @@ public class ReplicaAwareContextualiser extends AbstractSharedContextualiser {
         }
         Motable motable = (Motable) object;
         if (null != motable) {
-            stateManager.relocate(motable.getName());
+            stateManager.insert(motable.getName());
         }
         return motable;
     }
