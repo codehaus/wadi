@@ -32,6 +32,7 @@ class DestroyStorageCommand extends AbstractStorageCommand {
         ReplicaStorage storage = (ReplicaStorage) serviceProxy.getProxy();
         InvocationMetaData invocationMetaData = ((ServiceProxy) storage).getInvocationMetaData();
         invocationMetaData.setTargets(targets);
+        invocationMetaData.setOneWay(true);
         storage.mergeDestroy(key);
     }
     
