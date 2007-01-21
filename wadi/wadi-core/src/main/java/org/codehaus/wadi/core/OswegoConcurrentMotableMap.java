@@ -15,7 +15,6 @@
  */
 package org.codehaus.wadi.core;
 
-import java.util.Collection;
 import java.util.Set;
 
 import org.codehaus.wadi.Motable;
@@ -78,8 +77,8 @@ public class OswegoConcurrentMotableMap implements ConcurrentMotableMap {
         getExclusiveLock(motable).release();
     }
     
-    public Motable remove(String name) {
-        return (Motable) delegate.remove(name);
+    public void remove(String name) {
+        delegate.remove(name);
     }
 
     public int size() {

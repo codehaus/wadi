@@ -24,7 +24,6 @@ import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.Lifecycle;
 import org.codehaus.wadi.Manager;
 import org.codehaus.wadi.ManagerConfig;
-import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.PoolableInvocationWrapper;
 import org.codehaus.wadi.PoolableInvocationWrapperPool;
 import org.codehaus.wadi.SessionAlreadyExistException;
@@ -127,10 +126,7 @@ public class StandardManager implements Lifecycle, Manager {
         if (log.isDebugEnabled()) {
             log.debug("Destroy [" + session + "]");
         }
-        Motable motable = _map.remove(session.getName());
-        if (null == motable) {
-            return;
-        }
+        _map.remove(session.getName());
         sessionMonitor.notifySessionDestruction(session);
         onSessionDestruction(session);
     }
