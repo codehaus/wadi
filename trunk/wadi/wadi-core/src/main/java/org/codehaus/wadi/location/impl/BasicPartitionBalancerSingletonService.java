@@ -15,10 +15,16 @@
  */
 package org.codehaus.wadi.location.impl;
 
+import java.util.Set;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.partition.PartitionBalancer;
+import org.codehaus.wadi.servicespace.LifecycleState;
+import org.codehaus.wadi.servicespace.ServiceSpace;
+import org.codehaus.wadi.servicespace.ServiceSpaceLifecycleEvent;
+import org.codehaus.wadi.servicespace.ServiceSpaceListener;
 
 import EDU.oswego.cs.dl.util.concurrent.Slot;
 
@@ -28,26 +34,36 @@ import EDU.oswego.cs.dl.util.concurrent.Slot;
 public class BasicPartitionBalancerSingletonService implements PartitionBalancerSingletonService {
     private static final Log log = LogFactory.getLog(BasicPartitionBalancerSingletonService.class);
 
+    private final ServiceSpace serviceSpace;
 	private final PartitionBalancer partitionBalancer;
     private final Slot rebalancingFlag;
     private Thread thread;
 
-    public BasicPartitionBalancerSingletonService(PartitionBalancer partitionBalancer) {
-        if (null == partitionBalancer) {
+    private LeavingServiceSpaceMonitor leavingServiceSpaceMonitor;
+
+    public BasicPartitionBalancerSingletonService(ServiceSpace serviceSpace, PartitionBalancer partitionBalancer) {
+        if (null == serviceSpace) {
+            throw new IllegalArgumentException("serviceSpace is required");
+        } else if (null == partitionBalancer) {
             throw new IllegalArgumentException("partitionBalancer is required");
         }
+        this.serviceSpace = serviceSpace;
         this.partitionBalancer = partitionBalancer;
 
         rebalancingFlag = new Slot();
+        leavingServiceSpaceMonitor = new LeavingServiceSpaceMonitor();
     }
 
     public void start() throws Exception {
         partitionBalancer.start();
         thread = new Thread(this, "WADI Partition Balancer");
         thread.start();
+        
+        serviceSpace.addServiceSpaceListener(leavingServiceSpaceMonitor);
     }
 
     public void stop() throws Exception {
+        serviceSpace.removeServiceSpaceListener(leavingServiceSpaceMonitor);
         rebalancingFlag.put(Boolean.FALSE);
         thread.join();
         partitionBalancer.stop();
@@ -86,6 +102,16 @@ public class BasicPartitionBalancerSingletonService implements PartitionBalancer
             Thread.currentThread().interrupt();
         }
         queueRebalancing();
+    }
+    
+    private class LeavingServiceSpaceMonitor implements ServiceSpaceListener {
+
+        public void receive(ServiceSpaceLifecycleEvent event, Set newHostingPeers) {
+            if (event.getState() == LifecycleState.FAILED) {
+                queueRebalancing();
+            }
+        }
+        
     }
     
 }

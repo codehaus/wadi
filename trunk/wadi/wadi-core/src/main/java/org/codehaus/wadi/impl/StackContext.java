@@ -99,7 +99,7 @@ public class StackContext {
             int nbPartitions) throws ServiceAlreadyRegisteredException {
         ServiceRegistry serviceRegistry = serviceSpace.getServiceRegistry();
         SingletonServiceHolder holder = serviceRegistry.registerSingleton(PartitionBalancerSingletonService.NAME,
-                new BasicPartitionBalancerSingletonService(
+                new BasicPartitionBalancerSingletonService(serviceSpace,
                         new BasicPartitionBalancer(serviceSpace.getDispatcher(), nbPartitions)));
         BasicPartitionBalancerSingletonServiceHolder balancerHolder = new BasicPartitionBalancerSingletonServiceHolder(holder);
         return balancerHolder;
