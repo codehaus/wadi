@@ -29,7 +29,7 @@
 <%
 }
 
-url="./session.jsp?insert=false";
+url="./session.jsp;jsessionid=" + session.getId() + "?insert=false";
 
 // acquire session history
 Counter counter=null;
