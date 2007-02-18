@@ -296,7 +296,6 @@
     <module>wadi-tomcat50</module>
     <module>wadi-tomcat55</module>
     <module>wadi-axis2</module>
-    <module>wadi-openejb</module>
     <module>wadi-jboss4</module>
     <module>wadi-webapp</module>
     <module>wadi-assembly</module>
