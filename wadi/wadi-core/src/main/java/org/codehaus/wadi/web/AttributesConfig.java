@@ -16,15 +16,12 @@
  */
 package org.codehaus.wadi.web;
 
-import org.codehaus.wadi.Config;
 import org.codehaus.wadi.ValuePool;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public interface AttributesConfig extends Config {
-
+public interface AttributesConfig {
     ValuePool getValuePool();
-
 }
