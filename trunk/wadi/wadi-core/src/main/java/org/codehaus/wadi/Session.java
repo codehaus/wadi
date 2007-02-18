@@ -16,6 +16,8 @@
  */
 package org.codehaus.wadi;
 
+import java.io.Externalizable;
+
 
 
 /**
@@ -28,6 +30,6 @@ package org.codehaus.wadi;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public interface Session extends Motable, SerializableContent {
+public interface Session extends Motable, Externalizable {
     void onEndProcessing();
 }

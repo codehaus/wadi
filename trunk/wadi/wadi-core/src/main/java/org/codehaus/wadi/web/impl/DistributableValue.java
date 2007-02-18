@@ -16,6 +16,7 @@
  */
 package org.codehaus.wadi.web.impl;
 
+import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
@@ -24,7 +25,6 @@ import java.io.Serializable;
 import javax.servlet.http.HttpSessionActivationListener;
 
 import org.codehaus.wadi.DistributableValueConfig;
-import org.codehaus.wadi.SerializableContent;
 import org.codehaus.wadi.ValueHelper;
 
 /**
@@ -40,8 +40,7 @@ import org.codehaus.wadi.ValueHelper;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision: 1181 $
  */
-
-public class DistributableValue extends StandardValue implements SerializableContent  {
+public class DistributableValue extends StandardValue implements Externalizable  {
     protected ValueHelper valueHelper;
     protected DistributableValueConfig config;
     
@@ -59,7 +58,7 @@ public class DistributableValue extends StandardValue implements SerializableCon
         return super.setValue(newValue);
     }
 
-    public synchronized void writeContent(ObjectOutput oo) throws IOException {
+    public synchronized void writeExternal(ObjectOutput oo) throws IOException {
         // make necessary notification
         if (_value instanceof HttpSessionActivationListener) {
             HttpSessionActivationListener listener = (HttpSessionActivationListener) _value;
@@ -74,7 +73,7 @@ public class DistributableValue extends StandardValue implements SerializableCon
         oo.writeObject(value);
     }
 
-    public synchronized void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
+    public synchronized void readExternal(ObjectInput oi) throws IOException, ClassNotFoundException {
         _value = oi.readObject();
 
         // reinstate helper, if one was used.

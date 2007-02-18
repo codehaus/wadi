@@ -67,14 +67,14 @@ public class DistributableSession extends StandardSession implements Distributab
         return streamer;
     }
 
-    public synchronized void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
-        super.readContent(oi);
-        ((DistributableAttributes) attributes).readContent(oi);
+    public synchronized void readExternal(ObjectInput oi) throws IOException, ClassNotFoundException {
+        super.readExternal(oi);
+        ((DistributableAttributes) attributes).readExternal(oi);
     }
 
-    public synchronized void writeContent(ObjectOutput oo) throws IOException {
-        super.writeContent(oo);
-        ((DistributableAttributes) attributes).writeContent(oo);
+    public synchronized void writeExternal(ObjectOutput oo) throws IOException {
+        super.writeExternal(oo);
+        ((DistributableAttributes) attributes).writeExternal(oo);
     }
 
     public synchronized byte[] getBodyAsByteArray() throws Exception {

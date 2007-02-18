@@ -81,15 +81,15 @@ public abstract class AbstractMotable extends SimpleEvictable implements Motable
         return newSession;
     }
 
-    public synchronized void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
-        super.readContent(oi);
+    public synchronized void readExternal(ObjectInput oi) throws IOException, ClassNotFoundException {
+        super.readExternal(oi);
         name = oi.readUTF();
         newSession = false;
         readWriteLock = newReadWriteLock();
     }
 
-    public synchronized void writeContent(ObjectOutput oo) throws IOException {
-        super.writeContent(oo);
+    public synchronized void writeExternal(ObjectOutput oo) throws IOException {
+        super.writeExternal(oo);
         oo.writeUTF(name);
     }
 

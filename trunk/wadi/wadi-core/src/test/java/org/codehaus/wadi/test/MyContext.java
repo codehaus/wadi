@@ -41,12 +41,12 @@ public class MyContext extends AbstractSession {
     public MyContext() {
     }
 
-    public void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
+    public void readExternal(ObjectInput oi) throws IOException, ClassNotFoundException {
         name = oi.readUTF();
         val = oi.readUTF();
     }
 
-    public void writeContent(ObjectOutput oo) throws IOException {
+    public void writeExternal(ObjectOutput oo) throws IOException {
         oo.writeUTF(name);
         oo.writeUTF(val);
     }
