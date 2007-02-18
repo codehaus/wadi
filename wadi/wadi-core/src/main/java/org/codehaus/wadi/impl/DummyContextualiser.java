@@ -16,7 +16,6 @@
  */
 package org.codehaus.wadi.impl;
 
-import org.codehaus.wadi.Emoter;
 import org.codehaus.wadi.Evicter;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Invocation;
@@ -40,10 +39,6 @@ public class DummyContextualiser extends AbstractContextualiser {
 
     public Evicter getEvicter() {
         return _evicter;
-    }
-
-    public boolean isExclusive() {
-        return false;
     }
 
     public static class DummyImmoter implements Immoter {
@@ -70,11 +65,6 @@ public class DummyContextualiser extends AbstractContextualiser {
     }
 
     public void promoteToExclusive(Immoter immoter) {
-        /* empty */
-    }
-
-    public void load(Emoter emoter, Immoter immoter) {
-        /* empty */
     }
 
 }

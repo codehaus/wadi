@@ -66,9 +66,6 @@ public class ReplicaAwareContextualiser extends AbstractSharedContextualiser {
         return motable;
     }
 
-    public void load(Emoter emoter, Immoter immoter) {
-    }
-    
     private final class PromotionEmoter implements Emoter {
         public boolean emote(Motable emotable, Motable immotable) {
             try {

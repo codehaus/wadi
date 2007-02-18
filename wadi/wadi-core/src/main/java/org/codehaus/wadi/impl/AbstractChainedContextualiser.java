@@ -47,9 +47,7 @@ public abstract class AbstractChainedContextualiser extends AbstractContextualis
 
     public void findRelevantSessionNames(PartitionMapper mapper, Map keyToSessionNames) {
         super.findRelevantSessionNames(mapper, keyToSessionNames);
-        if (next.isExclusive()) {
-            next.findRelevantSessionNames(mapper, keyToSessionNames);
-        }
+        next.findRelevantSessionNames(mapper, keyToSessionNames);
     }
     
 }

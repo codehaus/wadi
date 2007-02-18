@@ -16,26 +16,52 @@
  */
 package org.codehaus.wadi.impl;
 
+import java.util.Map;
+
 import org.codehaus.wadi.Contextualiser;
+import org.codehaus.wadi.Emoter;
 import org.codehaus.wadi.Immoter;
+import org.codehaus.wadi.Invocation;
+import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.Motable;
+import org.codehaus.wadi.PartitionMapper;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
 public abstract class AbstractSharedContextualiser extends AbstractMotingContextualiser {
-
+    
     public AbstractSharedContextualiser(Contextualiser next) {
         super(next);
     }
 
+    public boolean contextualise(Invocation invocation, String key, Immoter immoter, boolean exclusiveOnly)
+            throws InvocationException {
+        if (exclusiveOnly) {
+            return false;
+        }
+        return super.contextualise(invocation, key, immoter, exclusiveOnly);
+    }
+    
+    public void promoteToExclusive(Immoter immoter) {
+        Emoter emoter = getEmoter();
+        load(emoter, immoter);
+        next.promoteToExclusive(immoter);
+    }
+    
+    public Immoter getSharedDemoter() {
+        return getImmoter();
+    }
+    
     public Immoter getDemoter(String name, Motable motable) {
         return getImmoter();
     }
 
-    public boolean isExclusive() {
-        return false;
+    protected void load(Emoter emoter, Immoter immoter) {
     }
 
+    public void findRelevantSessionNames(PartitionMapper mapper, Map keyToSessionNames) {
+    }
+    
 }
