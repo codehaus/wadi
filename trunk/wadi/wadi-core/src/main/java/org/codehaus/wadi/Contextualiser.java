@@ -56,13 +56,6 @@ public interface Contextualiser extends Lifecycle {
      */
     public boolean contextualise(Invocation invocation, String key, Immoter immoter, boolean exclusiveOnly) throws InvocationException;
 
-    /**
-     * Does this Contextualiser exclusively own, or share, the store in which it keeps its Sessions ?
-     * 
-	 * @return whether or not our store is exclusively owned
-	 */
-	boolean isExclusive();
-	
 	/**
 	 * Return an immoter to the first Contextualiser below us, which would be happy to accept this Motable -
      * in other words - would not evict() it.
@@ -87,7 +80,5 @@ public interface Contextualiser extends Lifecycle {
 	 */
 	void promoteToExclusive(Immoter immoter);
     
-	void load(Emoter emoter, Immoter immoter);
-	
 	void findRelevantSessionNames(PartitionMapper mapper, Map keyToSessionNames);
 }

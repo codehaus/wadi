@@ -39,28 +39,8 @@ public abstract class AbstractMotingContextualiser extends AbstractChainedContex
         boolean handled = handle(invocation, key, immoter, exclusiveOnly);
         if (handled) {
             return true;
-        } else if (exclusiveOnly && !next.isExclusive()) {
-            return false;
         }
         return next.contextualise(invocation, key, getPromoter(immoter), exclusiveOnly);
-	}
-	
-    public void promoteToExclusive(Immoter immoter) {
-        if (isExclusive()) {
-            next.promoteToExclusive(next.isExclusive() ? null : getImmoter());
-        } else {
-            Emoter emoter = getEmoter();
-            load(emoter, immoter);
-            next.promoteToExclusive(immoter);
-        }
-    }
-	
-	public Immoter getSharedDemoter() {
-		if (isExclusive()) {
-		    return next.getSharedDemoter();
-        } else {
-            return getImmoter();
-        }
 	}
 	
     /**

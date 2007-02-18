@@ -17,7 +17,6 @@
 package org.codehaus.wadi.impl;
 
 import org.codehaus.wadi.Contextualiser;
-import org.codehaus.wadi.Emoter;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Motable;
 
@@ -32,10 +31,6 @@ public abstract class AbstractDelegatingContextualiser extends AbstractChainedCo
         super(next);
     }
 
-    public boolean isExclusive() {
-        return next.isExclusive();
-    }
-
     public Immoter getDemoter(String name, Motable motable) {
         return next.getDemoter(name, motable);
     }
@@ -46,10 +41,6 @@ public abstract class AbstractDelegatingContextualiser extends AbstractChainedCo
 
     public void promoteToExclusive(Immoter immoter) {
         next.promoteToExclusive(immoter);
-    }
-
-    public void load(Emoter emoter, Immoter immoter) {
-        next.load(emoter, immoter);
     }
 
 }

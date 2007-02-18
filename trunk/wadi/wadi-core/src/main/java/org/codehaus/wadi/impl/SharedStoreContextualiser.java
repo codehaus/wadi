@@ -43,7 +43,10 @@ public class SharedStoreContextualiser extends AbstractSharedContextualiser {
     private final Emoter _emoter;
     private final boolean accessOnLoad;
 
-	public SharedStoreContextualiser(Contextualiser next, boolean clean, DatabaseStore store, boolean accessOnLoad) {
+	public SharedStoreContextualiser(Contextualiser next,
+            boolean clean,
+            DatabaseStore store,
+            boolean accessOnLoad) {
 		super(next);
         this.clean = clean;
         _store = store;
@@ -109,7 +112,7 @@ public class SharedStoreContextualiser extends AbstractSharedContextualiser {
         }
     }
 
-    public void load(Emoter emoter, Immoter immoter) {
+    protected void load(Emoter emoter, Immoter immoter) {
         // this should only happen when we are the first node in the cluster...
         _store.load(new SharedPutter(emoter, immoter), accessOnLoad);
     }

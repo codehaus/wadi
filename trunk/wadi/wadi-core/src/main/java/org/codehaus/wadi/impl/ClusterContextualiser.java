@@ -99,9 +99,6 @@ public class ClusterContextualiser extends AbstractSharedContextualiser {
         return relocater.relocate(invocation, id, immoter, shuttingDown.get());
     }
 
-    public void load(Emoter emoter, Immoter immoter) {
-    }
-
     protected Motable get(String id, boolean exclusiveOnly) {
         throw new UnsupportedOperationException();
     }

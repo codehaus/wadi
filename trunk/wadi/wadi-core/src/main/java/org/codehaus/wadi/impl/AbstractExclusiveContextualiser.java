@@ -59,8 +59,12 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
         timer = new Timer();
     }
 
-    public final boolean isExclusive() {
-        return true;
+    public void promoteToExclusive(Immoter immoter) {
+        next.promoteToExclusive(getImmoter());
+    }
+    
+    public Immoter getSharedDemoter() {
+        return next.getSharedDemoter();
     }
     
     protected Motable get(String id, boolean exclusiveOnly) {
@@ -116,9 +120,6 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
         unload();
         evicter.cancel(evictionTask);
         super.stop();
-    }
-
-    public void load(Emoter emoter, Immoter immoter) {
     }
 
     public Immoter getDemoter(String name, Motable motable) {
