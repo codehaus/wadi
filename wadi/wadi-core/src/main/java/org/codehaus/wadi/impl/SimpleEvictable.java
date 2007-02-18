@@ -86,13 +86,13 @@ public abstract class SimpleEvictable implements Evictable, Serializable {
         return getTimeToLive(time) <= 0;
     }
     
-    public synchronized void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
+    public synchronized void readExternal(ObjectInput oi) throws IOException, ClassNotFoundException {
         creationTime = oi.readLong();
         lastAccessedTime = oi.readLong();
         maxInactiveInterval = oi.readInt();
     }
 
-    public synchronized void writeContent(ObjectOutput oo) throws IOException {
+    public synchronized void writeExternal(ObjectOutput oo) throws IOException {
         oo.writeLong(creationTime);
         oo.writeLong(lastAccessedTime);
         oo.writeInt(maxInactiveInterval);

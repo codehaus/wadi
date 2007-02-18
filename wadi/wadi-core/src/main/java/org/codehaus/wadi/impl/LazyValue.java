@@ -51,7 +51,7 @@ public class LazyValue extends DistributableValue {
             // deserialise content at last minute ...
             ByteArrayInputStream bais=new ByteArrayInputStream(_bytes);
             ObjectInputStream ois=new ObjectInputStream(bais);
-            super.readContent(ois);
+            super.readExternal(ois);
             ois.close();
         } catch (Exception e) {
 	  _log.error("unexpected problem lazily deserialising session attribute value - data lost", e);
@@ -63,7 +63,7 @@ public class LazyValue extends DistributableValue {
     protected void serialise() throws IOException {
         ByteArrayOutputStream baos=new ByteArrayOutputStream(); // TODO - pool these objects...
         ObjectOutputStream oos=new ObjectOutputStream(baos);
-        super.writeContent(oos);
+        super.writeExternal(oos);
         oos.close();
         _bytes=baos.toByteArray();
     }
@@ -85,7 +85,7 @@ public class LazyValue extends DistributableValue {
         return tmp;
     }
 
-    public synchronized void writeContent(ObjectOutput oo) throws IOException {
+    public synchronized void writeExternal(ObjectOutput oo) throws IOException {
         if (_bytes==null)
             serialise(); // rebuild cache
 
@@ -94,7 +94,7 @@ public class LazyValue extends DistributableValue {
         oo.write(_bytes);
     }
 
-    public synchronized void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
+    public synchronized void readExternal(ObjectInput oi) throws IOException, ClassNotFoundException {
         _listener=oi.readBoolean();
         int length=oi.readInt();
         _bytes=new byte[length];

@@ -47,13 +47,13 @@ public class DistributableValueTest extends RMockTestCase {
         
         DistributableValue value1  = new DistributableValue(config);
         value1.setValue(expectedValue);
-        value1.writeContent(oo);
+        value1.writeExternal(oo);
         
         ByteArrayInputStream memIn = new ByteArrayInputStream(memOut.toByteArray());
         ObjectInputStream oi = new ObjectInputStream(memIn);
         
         DistributableValue value2 = new DistributableValue(config);
-        value2.readContent(oi);
+        value2.readExternal(oi);
         
         Object value = value2.getValue();
         assertTrue(value instanceof NotSerializable);

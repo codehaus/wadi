@@ -16,6 +16,7 @@
  */
 package org.codehaus.wadi.web.impl;
 
+import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
@@ -29,7 +30,6 @@ import javax.servlet.http.HttpSessionBindingListener;
 import javax.servlet.http.HttpSessionEvent;
 
 import org.codehaus.wadi.DistributableValueConfig;
-import org.codehaus.wadi.SerializableContent;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValueHelper;
 import org.codehaus.wadi.web.AttributesConfig;
@@ -45,7 +45,7 @@ import org.codehaus.wadi.web.DistributableAttributesConfig;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision: 1139 $
  */
-public class DistributableAttributes extends StandardAttributes implements SerializableContent, DistributableValueConfig {
+public class DistributableAttributes extends StandardAttributes implements Externalizable, DistributableValueConfig {
 
     protected Set _listenerNames = new HashSet();
     
@@ -85,18 +85,18 @@ public class DistributableAttributes extends StandardAttributes implements Seria
         return o instanceof HttpSessionActivationListener || o instanceof HttpSessionBindingListener;
     }
 
-    public synchronized void readContent(ObjectInput oi) throws IOException, ClassNotFoundException {
+    public synchronized void readExternal(ObjectInput oi) throws IOException, ClassNotFoundException {
         _listenerNames = (Set) oi.readObject();
         int size = oi.readInt();
         for (int i = 0; i < size; i++) {
             Object key = oi.readObject();
             DistributableValue val = (DistributableValue) _config.getValuePool().take(this);
-            val.readContent(oi);
+            val.readExternal(oi);
             _map.put(key, val);
         }
     }
 
-    public synchronized void writeContent(ObjectOutput oo) throws IOException {
+    public synchronized void writeExternal(ObjectOutput oo) throws IOException {
         oo.writeObject(_listenerNames);
         oo.writeInt(size());
         for (Iterator i = _map.entrySet().iterator(); i.hasNext();) {
@@ -104,7 +104,7 @@ public class DistributableAttributes extends StandardAttributes implements Seria
             Object key = e.getKey();
             oo.writeObject(key);
             DistributableValue val = (DistributableValue) e.getValue();
-            val.writeContent(oo);
+            val.writeExternal(oo);
         }
     }
 

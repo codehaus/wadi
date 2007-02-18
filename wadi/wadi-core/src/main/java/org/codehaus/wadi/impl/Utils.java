@@ -18,6 +18,7 @@ package org.codehaus.wadi.impl;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.Externalizable;
 import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -28,7 +29,6 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Emoter;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Motable;
-import org.codehaus.wadi.SerializableContent;
 import org.codehaus.wadi.Streamer;
 
 import EDU.oswego.cs.dl.util.concurrent.Puttable;
@@ -185,15 +185,15 @@ public class Utils {
         }
     }
 
-    public static byte[] getContent(SerializableContent object, Streamer streamer) throws IOException {
+    public static byte[] getContent(Externalizable object, Streamer streamer) throws IOException {
         ByteArrayOutputStream baos=new ByteArrayOutputStream();
         ObjectOutput oo=streamer.getOutputStream(baos);
-        object.writeContent(oo);
+        object.writeExternal(oo);
         oo.close();
         return baos.toByteArray();
     }
 
-    public static byte[] safeGetContent(SerializableContent object, Streamer streamer) {
+    public static byte[] safeGetContent(Externalizable object, Streamer streamer) {
         try {
             return getContent(object, streamer);
         } catch (Exception e) {
@@ -202,15 +202,15 @@ public class Utils {
         }
     }
 
-    public static SerializableContent setContent(SerializableContent object, byte[] content, Streamer streamer) throws IOException, ClassNotFoundException {
+    public static Externalizable setContent(Externalizable object, byte[] content, Streamer streamer) throws IOException, ClassNotFoundException {
         ByteArrayInputStream bais=new ByteArrayInputStream(content);
         ObjectInput oi=streamer.getInputStream(bais);
-        object.readContent(oi);
+        object.readExternal(oi);
         oi.close();
         return object;
     }
 
-    public static SerializableContent safeSetContent(SerializableContent object, byte[] content, Streamer streamer) {
+    public static Externalizable safeSetContent(Externalizable object, byte[] content, Streamer streamer) {
         try {
             return setContent(object, content, streamer);
         } catch (Exception e) {
