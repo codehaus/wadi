@@ -272,8 +272,6 @@
     <geronimo-spec-servlet.version>2.4-rc4</geronimo-spec-servlet.version>
     <jboss4.version>4.0.2</jboss4.version>
     <jee.version>1.4</jee.version>
-    <jetty5.version>5.1.10</jetty5.version>
-    <jetty6.version>6.0.0beta12</jetty6.version>
     <jse.version>1.4</jse.version>
     <junit.version>3.8.1</junit.version>
     <mx4j.version>3.0.1</mx4j.version>
@@ -291,8 +289,6 @@
     <module>wadi-activecluster</module>
     <module>wadi-jgroups</module>
     <module>wadi-tribes</module>
-    <module>wadi-jetty5</module>
-    <module>wadi-jetty6</module>
     <module>wadi-tomcat50</module>
     <module>wadi-tomcat55</module>
     <module>wadi-axis2</module>
@@ -331,7 +327,7 @@
 	<artifactId>concurrent</artifactId>
 	<version>${concurrent.version}</version>
       </dependency>
-      <!-- core, tc*, jetty*, axis -->
+      <!-- core, tc*, axis -->
       <dependency>
 	<groupId>geronimo-spec</groupId>
 	<artifactId>geronimo-spec-servlet</artifactId>
@@ -432,11 +428,6 @@
       <id>wadi-dependencies</id>
       <name>WADI Dependencies Repository at the Haus</name>
       <url>http://dist.codehaus.org/wadi/dependencies/maven2</url><!-- TODO: should be moved over to WadiReleaseRepository -->
-    </pluginRepository>
-    <pluginRepository>
-      <id>mortbay-repo</id>
-      <name>mortbay-repo</name>
-      <url>http://jetty.mortbay.org/maven2/release</url><!-- org.mortbay -->
     </pluginRepository>
   </pluginRepositories>
 
