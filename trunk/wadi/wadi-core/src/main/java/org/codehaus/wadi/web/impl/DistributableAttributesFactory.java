@@ -16,20 +16,35 @@
  */
 package org.codehaus.wadi.web.impl;
 
-import java.util.HashMap;
+import org.codehaus.wadi.Streamer;
+import org.codehaus.wadi.ValueFactory;
 import org.codehaus.wadi.web.Attributes;
-import org.codehaus.wadi.web.AttributesConfig;
-import org.codehaus.wadi.web.AttributesFactory;
+import org.codehaus.wadi.web.ValueHelperRegistry;
 
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision: 1497 $
  */
-public class DistributableAttributesFactory implements AttributesFactory {
+public class DistributableAttributesFactory extends StandardAttributesFactory {
+    protected final ValueHelperRegistry valueHelperRegistry;
+    protected final Streamer streamer;
 
-    public Attributes create(AttributesConfig config) {
-        return new DistributableAttributes(config, new HashMap());
+    public DistributableAttributesFactory(ValueFactory valueFactory,
+            ValueHelperRegistry valueHelperRegistry,
+            Streamer streamer) {
+        super(valueFactory);
+        if (null == streamer) {
+            throw new IllegalArgumentException("streamer is required");
+        } else if (null == valueHelperRegistry) {
+            throw new IllegalArgumentException("valueHelperRegistry is required");
+        }
+        this.valueHelperRegistry = valueHelperRegistry;
+        this.streamer = streamer;
+    }
+
+    public Attributes create() {
+        return new DistributableAttributes(valueFactory, valueHelperRegistry, streamer);
     }
 
 }

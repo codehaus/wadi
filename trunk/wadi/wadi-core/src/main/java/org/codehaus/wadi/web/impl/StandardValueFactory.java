@@ -17,24 +17,17 @@
 package org.codehaus.wadi.web.impl;
 
 import org.codehaus.wadi.Value;
-import org.codehaus.wadi.ValueConfig;
 import org.codehaus.wadi.ValueFactory;
 
 /**
- * TODO - JavaDoc this type
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision: 1139 $
  */
-
 public class StandardValueFactory implements ValueFactory {
 
-    public StandardValueFactory() {
-        super();
-    }
-
-    public Value create(ValueConfig config) {
-        return new StandardValue(config);
+    public Value create() {
+        return new StandardValue();
     }
 
 }

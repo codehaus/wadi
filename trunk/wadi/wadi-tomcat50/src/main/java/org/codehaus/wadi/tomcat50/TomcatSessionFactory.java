@@ -17,10 +17,8 @@
 package org.codehaus.wadi.tomcat50;
 
 import org.codehaus.wadi.Streamer;
-import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.web.AttributesFactory;
 import org.codehaus.wadi.web.Router;
-import org.codehaus.wadi.web.ValueHelperRegistry;
 import org.codehaus.wadi.web.WebSession;
 import org.codehaus.wadi.web.WebSessionWrapperFactory;
 import org.codehaus.wadi.web.impl.DistributableSessionFactory;
@@ -33,22 +31,18 @@ public class TomcatSessionFactory extends DistributableSessionFactory {
 
     public TomcatSessionFactory(AttributesFactory attributesFactory,
             WebSessionWrapperFactory wrapperFactory,
-            ValuePool valuePool,
             Router router,
-            Streamer streamer,
-            ValueHelperRegistry valueHelperRegistry) {
-        super(attributesFactory, wrapperFactory, valuePool, router, streamer, valueHelperRegistry);
+            Streamer streamer) {
+        super(attributesFactory, wrapperFactory, router, streamer);
     }
 
     public WebSession create() {
         return new TomcatSession(config,
-                attributesFactory,
+                newAttributes(),
                 wrapperFactory,
-                valuePool,
                 router,
                 getManager(),
-                streamer,
-                valueHelperRegistry);
+                streamer);
     }
 
 }

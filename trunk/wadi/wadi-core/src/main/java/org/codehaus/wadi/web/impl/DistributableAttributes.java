@@ -27,13 +27,11 @@ import java.util.Set;
 
 import javax.servlet.http.HttpSessionActivationListener;
 import javax.servlet.http.HttpSessionBindingListener;
-import javax.servlet.http.HttpSessionEvent;
 
-import org.codehaus.wadi.DistributableValueConfig;
 import org.codehaus.wadi.Streamer;
+import org.codehaus.wadi.ValueFactory;
 import org.codehaus.wadi.ValueHelper;
-import org.codehaus.wadi.web.AttributesConfig;
-import org.codehaus.wadi.web.DistributableAttributesConfig;
+import org.codehaus.wadi.web.ValueHelperRegistry;
 
 /**
  * A DistributableAttributes object needs to be Listener aware. When a Session is invalidated in Serialised
@@ -45,12 +43,22 @@ import org.codehaus.wadi.web.DistributableAttributesConfig;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision: 1139 $
  */
-public class DistributableAttributes extends StandardAttributes implements Externalizable, DistributableValueConfig {
-
+public class DistributableAttributes extends StandardAttributes implements Externalizable {
     protected Set _listenerNames = new HashSet();
+    private final transient Streamer streamer;
+    private final transient ValueHelperRegistry valueHelperRegistry;
     
-    public DistributableAttributes(AttributesConfig config, Map map) {
-        super(config, map);
+    public DistributableAttributes(ValueFactory valueFactory,
+            ValueHelperRegistry valueHelperRegistry,
+            Streamer streamer) {
+        super(valueFactory);
+        if (null == valueHelperRegistry) {
+            throw new IllegalArgumentException("valueHelperRegistry is required");
+        } else if (null == streamer) {
+            throw new IllegalArgumentException("streamer is required");
+        }
+        this.valueHelperRegistry = valueHelperRegistry;
+        this.streamer = streamer;
     }
 
     public Set getListenerNames() {
@@ -59,16 +67,16 @@ public class DistributableAttributes extends StandardAttributes implements Exter
 
     public synchronized Object remove(Object key) {
         Object oldValue = super.remove(key);
-        if (isListener(oldValue))
+        if (isListener(oldValue)) {
             _listenerNames.remove(key);
-
+        }
         return oldValue;
     }
 
     public synchronized Object put(Object key, Object newValue) {
         Object oldValue = super.put(key, newValue);
         boolean wasListener = isListener(oldValue);
-        boolean isListener = (newValue == oldValue) ? wasListener : isListener(newValue);
+        boolean isListener = isListener(newValue);
 
         if (wasListener == isListener)
             return oldValue;
@@ -90,16 +98,16 @@ public class DistributableAttributes extends StandardAttributes implements Exter
         int size = oi.readInt();
         for (int i = 0; i < size; i++) {
             Object key = oi.readObject();
-            DistributableValue val = (DistributableValue) _config.getValuePool().take(this);
+            DistributableValue val = (DistributableValue) valueFactory.create();
             val.readExternal(oi);
-            _map.put(key, val);
+            attributes.put(key, val);
         }
     }
 
     public synchronized void writeExternal(ObjectOutput oo) throws IOException {
         oo.writeObject(_listenerNames);
         oo.writeInt(size());
-        for (Iterator i = _map.entrySet().iterator(); i.hasNext();) {
+        for (Iterator i = attributes.entrySet().iterator(); i.hasNext();) {
             Map.Entry e = (Map.Entry) i.next();
             Object key = e.getKey();
             oo.writeObject(key);
@@ -109,15 +117,11 @@ public class DistributableAttributes extends StandardAttributes implements Exter
     }
 
     public ValueHelper findHelper(Class type) {
-        return ((DistributableAttributesConfig) _config).findHelper(type);
-    }
-
-    public HttpSessionEvent getHttpSessionEvent() {
-        return ((DistributableAttributesConfig) _config).getHttpSessionEvent();
+        return valueHelperRegistry.findHelper(type);
     }
 
     public Streamer getStreamer() {
-        return ((DistributableAttributesConfig) _config).getStreamer();
+        return streamer;
     }
 
 }

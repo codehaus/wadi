@@ -21,10 +21,8 @@ import org.codehaus.wadi.Manager;
 import org.codehaus.wadi.RehydrationException;
 import org.codehaus.wadi.Replicater;
 import org.codehaus.wadi.Streamer;
-import org.codehaus.wadi.ValuePool;
-import org.codehaus.wadi.web.AttributesFactory;
+import org.codehaus.wadi.web.Attributes;
 import org.codehaus.wadi.web.Router;
-import org.codehaus.wadi.web.ValueHelperRegistry;
 import org.codehaus.wadi.web.WebSessionConfig;
 import org.codehaus.wadi.web.WebSessionWrapperFactory;
 
@@ -55,22 +53,18 @@ public class AtomicallyReplicableSession extends AbstractReplicableSession {
     protected transient Semantics semantics = new ByReferenceSemantics();
 
     public AtomicallyReplicableSession(WebSessionConfig config,
-            AttributesFactory attributesFactory,
+            Attributes attributes,
             WebSessionWrapperFactory wrapperFactory,
-            ValuePool valuePool,
             Router router,
             Manager manager,
             Streamer streamer,
-            ValueHelperRegistry valueHelperRegistry,
             Replicater replicater) {
         super(config,
-                attributesFactory,
+                attributes,
                 wrapperFactory,
-                valuePool,
                 router,
                 manager,
                 streamer,
-                valueHelperRegistry,
                 replicater);
     }
 

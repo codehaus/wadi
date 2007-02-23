@@ -17,14 +17,10 @@
 package org.codehaus.wadi;
 
 /**
- * TODO - JavaDoc this type
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-
 public interface ValueFactory {
-
-    public Value create(ValueConfig config);
-    
+    Value create();
 }

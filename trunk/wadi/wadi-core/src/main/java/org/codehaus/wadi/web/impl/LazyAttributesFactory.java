@@ -16,20 +16,23 @@
  */
 package org.codehaus.wadi.web.impl;
 
-import java.util.HashMap;
-
+import org.codehaus.wadi.Streamer;
+import org.codehaus.wadi.ValueFactory;
 import org.codehaus.wadi.web.Attributes;
-import org.codehaus.wadi.web.AttributesConfig;
-import org.codehaus.wadi.web.AttributesFactory;
+import org.codehaus.wadi.web.ValueHelperRegistry;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class LazyAttributesFactory implements AttributesFactory {
+public class LazyAttributesFactory extends DistributableAttributesFactory {
 
-    public Attributes create(AttributesConfig config) {
-        return new LazyAttributes(config, new HashMap());
+    public LazyAttributesFactory(ValueFactory valueFactory, ValueHelperRegistry valueHelperRegistry, Streamer streamer) {
+        super(valueFactory, valueHelperRegistry, streamer);
+    }
+
+    public Attributes create() {
+        return new LazyAttributes(valueFactory, valueHelperRegistry, streamer);
     }
 
 }

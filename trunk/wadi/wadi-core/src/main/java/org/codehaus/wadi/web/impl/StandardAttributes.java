@@ -16,30 +16,34 @@
  */
 package org.codehaus.wadi.web.impl;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 import org.codehaus.wadi.Value;
-import org.codehaus.wadi.ValueConfig;
+import org.codehaus.wadi.ValueFactory;
 import org.codehaus.wadi.web.Attributes;
-import org.codehaus.wadi.web.AttributesConfig;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision: 1497 $
  */
-public class StandardAttributes implements Attributes, ValueConfig {
-    protected final Map _map;
-    protected final AttributesConfig _config;
+public class StandardAttributes implements Attributes {
+    protected final Map attributes;
+    protected final ValueFactory valueFactory;
 
-    public StandardAttributes(AttributesConfig config, Map map) {
-        _map = map;
-        _config = config;
+    public StandardAttributes(ValueFactory valueFactory) {
+        if (null == valueFactory) {
+            throw new IllegalArgumentException("valueFactory is required");
+        }
+        this.valueFactory = valueFactory;
+        
+        attributes = new HashMap();
     }
 
     public synchronized Object get(Object key) {
-        Value a = (Value) _map.get(key);
+        Value a = (Value) attributes.get(key);
         if (a == null) {
             return null;
         } else {
@@ -48,41 +52,35 @@ public class StandardAttributes implements Attributes, ValueConfig {
     }
 
     public synchronized Object remove(Object key) {
-        Value a = (Value) _map.remove(key);
+        Value a = (Value) attributes.remove(key);
         if (a == null) {
             return null;
         } else {
-            Object tmp = a.getValue();
-            a.setValue(null);
-            _config.getValuePool().put(a);
-            return tmp;
+            return a.getValue();
         }
     }
 
     public synchronized Object put(Object key, Object newValue) {
-        Value in = _config.getValuePool().take(this);
+        Value in = valueFactory.create();
         in.setValue(newValue);
-        Value out = (Value) _map.put(key, in);
+        Value out = (Value) attributes.put(key, in);
         if (out == null) {
             return null;
         } else {
-            Object tmp = out.getValue();
-            out.setValue(null);
-            _config.getValuePool().put(out);
-            return tmp;
+            return out.getValue();
         }
     }
 
     public synchronized int size() {
-        return _map.size();
+        return attributes.size();
     }
 
     public synchronized Set keySet() {
-        return new HashSet(_map.keySet());
+        return new HashSet(attributes.keySet());
     }
 
     public synchronized void clear() {
-        _map.clear();
+        attributes.clear();
     }
 
 }

@@ -23,6 +23,7 @@ import org.codehaus.wadi.Evicter;
 import org.codehaus.wadi.PartitionMapper;
 import org.codehaus.wadi.PoolableInvocationWrapperPool;
 import org.codehaus.wadi.SessionMonitor;
+import org.codehaus.wadi.ValueFactory;
 import org.codehaus.wadi.core.ConcurrentMotableMap;
 import org.codehaus.wadi.core.OswegoConcurrentMotableMap;
 import org.codehaus.wadi.group.Dispatcher;
@@ -57,6 +58,7 @@ import org.codehaus.wadi.servicespace.SingletonServiceHolder;
 import org.codehaus.wadi.servicespace.basic.BasicServiceSpace;
 import org.codehaus.wadi.web.BasicValueHelperRegistry;
 import org.codehaus.wadi.web.Router;
+import org.codehaus.wadi.web.ValueHelperRegistry;
 import org.codehaus.wadi.web.WebSessionFactory;
 import org.codehaus.wadi.web.impl.AtomicallyReplicableSessionFactory;
 import org.codehaus.wadi.web.impl.DistributableAttributesFactory;
@@ -247,13 +249,15 @@ public class StackContext {
     }
 
     protected WebSessionFactory newWebSessionFactory() {
-        return new AtomicallyReplicableSessionFactory(new DistributableAttributesFactory(),
-                   new StandardSessionWrapperFactory(),
-                   new SimpleValuePool(new DistributableValueFactory()),
-                   router,
-                   new SimpleStreamer(),
-                   new BasicValueHelperRegistry(),
-                   new ReplicaterAdapterFactory(replicationManager));
+        ValueHelperRegistry valueHelperRegistry = new BasicValueHelperRegistry();
+        ValueFactory valueFactory = new DistributableValueFactory(valueHelperRegistry);
+        SimpleStreamer streamer = new SimpleStreamer();
+        return new AtomicallyReplicableSessionFactory(
+                new DistributableAttributesFactory(valueFactory, valueHelperRegistry, streamer),
+                new StandardSessionWrapperFactory(),
+                router,
+                streamer,
+                new ReplicaterAdapterFactory(replicationManager));
     }
     
     protected StateManager newStateManager() {

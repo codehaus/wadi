@@ -18,10 +18,8 @@ package org.codehaus.wadi.tomcat55;
 
 import org.codehaus.wadi.ReplicaterFactory;
 import org.codehaus.wadi.Streamer;
-import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.web.AttributesFactory;
 import org.codehaus.wadi.web.Router;
-import org.codehaus.wadi.web.ValueHelperRegistry;
 import org.codehaus.wadi.web.WebSession;
 import org.codehaus.wadi.web.WebSessionWrapperFactory;
 import org.codehaus.wadi.web.impl.AtomicallyReplicableSessionFactory;
@@ -34,23 +32,19 @@ public class TomcatSessionFactory extends AtomicallyReplicableSessionFactory {
 
     public TomcatSessionFactory(AttributesFactory attributesFactory,
             WebSessionWrapperFactory wrapperFactory,
-            ValuePool valuePool,
             Router router,
             Streamer streamer,
-            ValueHelperRegistry valueHelperRegistry,
             ReplicaterFactory replicaterFactory) {
-        super(attributesFactory, wrapperFactory, valuePool, router, streamer, valueHelperRegistry, replicaterFactory);
+        super(attributesFactory, wrapperFactory, router, streamer, replicaterFactory);
     }
 
     public WebSession create() {
         return new TomcatSession(config,
-                attributesFactory,
+                newAttributes(),
                 wrapperFactory,
-                valuePool,
                 router,
                 getManager(),
                 streamer,
-                valueHelperRegistry,
                 replicater);
     }
 

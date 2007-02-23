@@ -16,12 +16,9 @@
  */
 package org.codehaus.wadi.web.impl;
 
-import org.codehaus.wadi.Manager;
 import org.codehaus.wadi.Streamer;
-import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.web.AttributesFactory;
 import org.codehaus.wadi.web.Router;
-import org.codehaus.wadi.web.ValueHelperRegistry;
 import org.codehaus.wadi.web.WebSession;
 import org.codehaus.wadi.web.WebSessionWrapperFactory;
 
@@ -32,33 +29,25 @@ import org.codehaus.wadi.web.WebSessionWrapperFactory;
 public class DistributableSessionFactory extends StandardSessionFactory {
 
     protected final Streamer streamer;
-    protected final ValueHelperRegistry valueHelperRegistry;
 
     public DistributableSessionFactory(AttributesFactory attributesFactory,
             WebSessionWrapperFactory wrapperFactory,
-            ValuePool valuePool,
             Router router,
-            Streamer streamer,
-            ValueHelperRegistry valueHelperRegistry) {
-        super(attributesFactory, wrapperFactory, valuePool, router);
+            Streamer streamer) {
+        super(attributesFactory, wrapperFactory, router);
         if (null == streamer) {
             throw new IllegalArgumentException("streamer is required");
-        } else if (null == valueHelperRegistry) {
-            throw new IllegalArgumentException("valueHelperRegistry is required");
         }
         this.streamer = streamer;
-        this.valueHelperRegistry = valueHelperRegistry;
     }
 
     public WebSession create() {
         return new DistributableSession(config,
-                attributesFactory,
+                newAttributes(),
                 wrapperFactory,
-                valuePool,
                 router,
                 getManager(),
-                streamer,
-                valueHelperRegistry);
+                streamer);
     }
     
 }

@@ -16,9 +16,8 @@
  */
 package org.codehaus.wadi.web.impl;
 
-import java.util.HashMap;
+import org.codehaus.wadi.ValueFactory;
 import org.codehaus.wadi.web.Attributes;
-import org.codehaus.wadi.web.AttributesConfig;
 import org.codehaus.wadi.web.AttributesFactory;
 
 
@@ -27,9 +26,17 @@ import org.codehaus.wadi.web.AttributesFactory;
  * @version $Revision: 1497 $
  */
 public class StandardAttributesFactory implements AttributesFactory {
+    protected final ValueFactory valueFactory;
 
-    public Attributes create(AttributesConfig config) {
-        return new StandardAttributes(config, new HashMap());
+    public StandardAttributesFactory(ValueFactory valueFactory) {
+        if (null == valueFactory) {
+            throw new IllegalArgumentException("valueFactory is required");
+        }
+        this.valueFactory = valueFactory;
     }
 
+    public Attributes create() {
+        return new StandardAttributes(valueFactory);
+    }
+    
 }
