@@ -27,9 +27,7 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValueFactory;
-import org.codehaus.wadi.web.ValueHelperRegistry;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -40,8 +38,8 @@ public class LazyAttributes extends DistributableAttributes {
 
     protected transient byte[] _bytes;
 
-    public LazyAttributes(ValueFactory valueFactory, ValueHelperRegistry valueHelperRegistry, Streamer streamer) {
-        super(valueFactory, valueHelperRegistry, streamer);
+    public LazyAttributes(ValueFactory valueFactory) {
+        super(valueFactory);
     }
 
     protected void deserialise() {
