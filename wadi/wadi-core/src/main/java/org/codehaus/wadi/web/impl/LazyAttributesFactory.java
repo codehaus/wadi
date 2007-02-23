@@ -16,10 +16,8 @@
  */
 package org.codehaus.wadi.web.impl;
 
-import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValueFactory;
 import org.codehaus.wadi.web.Attributes;
-import org.codehaus.wadi.web.ValueHelperRegistry;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -27,12 +25,12 @@ import org.codehaus.wadi.web.ValueHelperRegistry;
  */
 public class LazyAttributesFactory extends DistributableAttributesFactory {
 
-    public LazyAttributesFactory(ValueFactory valueFactory, ValueHelperRegistry valueHelperRegistry, Streamer streamer) {
-        super(valueFactory, valueHelperRegistry, streamer);
+    public LazyAttributesFactory(ValueFactory valueFactory) {
+        super(valueFactory);
     }
 
     public Attributes create() {
-        return new LazyAttributes(valueFactory, valueHelperRegistry, streamer);
+        return new LazyAttributes(valueFactory);
     }
 
 }

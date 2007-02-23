@@ -16,10 +16,8 @@
  */
 package org.codehaus.wadi.web.impl;
 
-import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValueFactory;
 import org.codehaus.wadi.web.Attributes;
-import org.codehaus.wadi.web.ValueHelperRegistry;
 
 
 /**
@@ -27,24 +25,13 @@ import org.codehaus.wadi.web.ValueHelperRegistry;
  * @version $Revision: 1497 $
  */
 public class DistributableAttributesFactory extends StandardAttributesFactory {
-    protected final ValueHelperRegistry valueHelperRegistry;
-    protected final Streamer streamer;
 
-    public DistributableAttributesFactory(ValueFactory valueFactory,
-            ValueHelperRegistry valueHelperRegistry,
-            Streamer streamer) {
+    public DistributableAttributesFactory(ValueFactory valueFactory) {
         super(valueFactory);
-        if (null == streamer) {
-            throw new IllegalArgumentException("streamer is required");
-        } else if (null == valueHelperRegistry) {
-            throw new IllegalArgumentException("valueHelperRegistry is required");
-        }
-        this.valueHelperRegistry = valueHelperRegistry;
-        this.streamer = streamer;
     }
 
     public Attributes create() {
-        return new DistributableAttributes(valueFactory, valueHelperRegistry, streamer);
+        return new DistributableAttributes(valueFactory);
     }
 
 }

@@ -28,10 +28,7 @@ import java.util.Set;
 import javax.servlet.http.HttpSessionActivationListener;
 import javax.servlet.http.HttpSessionBindingListener;
 
-import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.ValueFactory;
-import org.codehaus.wadi.ValueHelper;
-import org.codehaus.wadi.web.ValueHelperRegistry;
 
 /**
  * A DistributableAttributes object needs to be Listener aware. When a Session is invalidated in Serialised
@@ -45,20 +42,9 @@ import org.codehaus.wadi.web.ValueHelperRegistry;
  */
 public class DistributableAttributes extends StandardAttributes implements Externalizable {
     protected Set _listenerNames = new HashSet();
-    private final transient Streamer streamer;
-    private final transient ValueHelperRegistry valueHelperRegistry;
     
-    public DistributableAttributes(ValueFactory valueFactory,
-            ValueHelperRegistry valueHelperRegistry,
-            Streamer streamer) {
+    public DistributableAttributes(ValueFactory valueFactory) {
         super(valueFactory);
-        if (null == valueHelperRegistry) {
-            throw new IllegalArgumentException("valueHelperRegistry is required");
-        } else if (null == streamer) {
-            throw new IllegalArgumentException("streamer is required");
-        }
-        this.valueHelperRegistry = valueHelperRegistry;
-        this.streamer = streamer;
     }
 
     public Set getListenerNames() {
@@ -114,14 +100,6 @@ public class DistributableAttributes extends StandardAttributes implements Exter
             DistributableValue val = (DistributableValue) e.getValue();
             val.writeExternal(oo);
         }
-    }
-
-    public ValueHelper findHelper(Class type) {
-        return valueHelperRegistry.findHelper(type);
-    }
-
-    public Streamer getStreamer() {
-        return streamer;
     }
 
 }

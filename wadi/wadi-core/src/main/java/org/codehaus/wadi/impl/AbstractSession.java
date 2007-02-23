@@ -34,6 +34,16 @@ public abstract class AbstractSession extends AbstractMotable implements Session
         this.attributes = attributes;
     }
 
+    public synchronized void destroy() throws Exception {
+        super.destroy();
+        attributes.clear();
+    }
+
+    protected synchronized void destroyForMotion() throws Exception {
+        super.destroyForMotion();
+        attributes.clear();
+    }
+
     public synchronized void onEndProcessing() {
         newSession = false;
     }
@@ -41,5 +51,26 @@ public abstract class AbstractSession extends AbstractMotable implements Session
     public synchronized byte[] getBodyAsByteArray() throws Exception {
         return Utils.getContent(this, new SimpleStreamer());
     }
+    
+    public synchronized Object addState(String key, Object value) {
+        Object oldValue = attributes.put(key, value);
+        onAddSate(key, oldValue, value);
+        return oldValue;
+    }
 
+    public synchronized Object getState(String key) {
+        return attributes.get(name);
+    }
+
+    public synchronized Object removeState(String key) {
+        Object oldValue = attributes.remove(key);
+        onRemoveState(key, oldValue);
+        return oldValue;
+    }
+    
+    protected void onAddSate(String name, Object oldValue, Object newValue) {
+    }
+
+    protected void onRemoveState(String name, Object oldValue) {
+    }
 }

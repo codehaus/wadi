@@ -253,7 +253,7 @@ public class StackContext {
         ValueFactory valueFactory = new DistributableValueFactory(valueHelperRegistry);
         SimpleStreamer streamer = new SimpleStreamer();
         return new AtomicallyReplicableSessionFactory(
-                new DistributableAttributesFactory(valueFactory, valueHelperRegistry, streamer),
+                new DistributableAttributesFactory(valueFactory),
                 new StandardSessionWrapperFactory(),
                 router,
                 streamer,

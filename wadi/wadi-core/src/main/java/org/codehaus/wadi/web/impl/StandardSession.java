@@ -77,7 +77,6 @@ public class StandardSession extends AbstractSession implements WADIHttpSession 
     public synchronized void destroy() throws Exception {
         manager.destroy(this);
         super.destroy();
-        attributes.clear();
     }
 
     public byte[] getBodyAsByteArray() throws Exception {
@@ -120,18 +119,14 @@ public class StandardSession extends AbstractSession implements WADIHttpSession 
         if (null == name) {
             throw new IllegalArgumentException("HttpSession attribute names must be non-null (see SRV.15.1.7.1)");
         }
-        Object oldValue = attributes.put(name, newValue);
-        onSetAttribute(name, oldValue, newValue);
-        return oldValue;
+        return super.addState(name, newValue);
     }
 
     public synchronized Object removeAttribute(String name) {
         if (null == name) {
             throw new IllegalArgumentException("HttpSession attribute names must be non-null (see SRV.15.1.7.1)");
         }
-        Object oldValue = attributes.remove(name);
-        onRemoveAttribute(name, oldValue);
-        return oldValue;
+        return super.removeState(name);
     }
 
     public WebSessionConfig getConfig() {
@@ -142,12 +137,7 @@ public class StandardSession extends AbstractSession implements WADIHttpSession 
         return router.augment(name);
     }
     
-    protected synchronized void destroyForMotion() throws Exception {
-        super.destroyForMotion();
-        attributes.clear();
-    }
-    
-    protected void onSetAttribute(String name, Object oldValue, Object newValue) {
+    protected void onAddSate(String name, Object oldValue, Object newValue) {
         if (oldValue instanceof HttpSessionBindingListener) {
             ((HttpSessionBindingListener) oldValue).valueUnbound(new HttpSessionBindingEvent(wrapper, name, oldValue));
         }
@@ -170,7 +160,7 @@ public class StandardSession extends AbstractSession implements WADIHttpSession 
         }
     }
     
-    protected void onRemoveAttribute(String name, Object oldValue) {
+    protected void onRemoveState(String name, Object oldValue) {
         if (oldValue instanceof HttpSessionBindingListener) {
             ((HttpSessionBindingListener) oldValue).valueUnbound(new HttpSessionBindingEvent(wrapper, name, oldValue));
         }
