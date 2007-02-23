@@ -29,7 +29,7 @@ import javax.servlet.http.HttpSessionBindingListener;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.DistributableValueConfig;
+import org.codehaus.wadi.web.ValueHelperRegistry;
 import org.codehaus.wadi.web.impl.DistributableValue;
 
 /**
@@ -42,8 +42,8 @@ public class LazyValue extends DistributableValue {
     protected transient boolean _listener;
     protected transient byte[] _bytes;
 
-    public LazyValue(DistributableValueConfig config) {
-        super(config);
+    public LazyValue(ValueHelperRegistry valueHelperRegistry) {
+        super(valueHelperRegistry);
     }
 
     protected void deserialise() {
@@ -81,7 +81,7 @@ public class LazyValue extends DistributableValue {
         }
 
         Object tmp=super.setValue(newValue);
-        _listener=(_value instanceof HttpSessionActivationListener) || (_value instanceof HttpSessionBindingListener); // doubles up on test in super...
+        _listener=(value instanceof HttpSessionActivationListener) || (value instanceof HttpSessionBindingListener); // doubles up on test in super...
         return tmp;
     }
 
@@ -100,11 +100,9 @@ public class LazyValue extends DistributableValue {
         _bytes=new byte[length];
         if (oi.read(_bytes)!=length)
             throw new IOException("data truncated whilst reading Session attribute value - data lost");
-        _value=null;
+        value=null;
     }
 
     public boolean isListener(){return _listener;}
-
-    // should we register Listeners with our Attributes ?
 
 }

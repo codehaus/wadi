@@ -24,5 +24,5 @@ package org.codehaus.wadi.web;
  */
 
 public interface AttributesFactory {
-    Attributes create(AttributesConfig config);
+    Attributes create();
 }

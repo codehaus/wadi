@@ -29,11 +29,8 @@ import javax.servlet.http.HttpSessionBindingListener;
 import javax.servlet.http.HttpSessionEvent;
 
 import org.codehaus.wadi.Manager;
-import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.impl.AbstractSession;
 import org.codehaus.wadi.web.Attributes;
-import org.codehaus.wadi.web.AttributesConfig;
-import org.codehaus.wadi.web.AttributesFactory;
 import org.codehaus.wadi.web.Router;
 import org.codehaus.wadi.web.WADIHttpSession;
 import org.codehaus.wadi.web.WebSessionConfig;
@@ -46,41 +43,33 @@ import org.codehaus.wadi.web.WebSessionWrapperFactory;
  * @version $Revision: 1886 $
  */
 
-public class StandardSession extends AbstractSession implements WADIHttpSession, AttributesConfig {
+public class StandardSession extends AbstractSession implements WADIHttpSession {
     private static final String[] EMPTY_STRING_ARRAY = new String[0];
     private static final Enumeration EMPTY_ENUMERATION = Collections.enumeration(Collections.EMPTY_LIST);
 
     protected final WebSessionConfig config;
-    protected final Attributes attributes;
-    protected final ValuePool valuePool;
     protected final Router router;
     protected final HttpSession wrapper;
     protected final HttpSessionEvent httpSessionEvent;
     protected final Manager manager;
 
     public StandardSession(WebSessionConfig config,
-            AttributesFactory attributesFactory,
+            Attributes attributes,
             WebSessionWrapperFactory wrapperFactory,
-            ValuePool valuePool,
             Router router,
             Manager manager) {
-        if (null == attributesFactory) {
-            throw new IllegalArgumentException("attributesFactory is required.");
-        } else if (null == wrapperFactory) {
+        super(attributes);
+        if (null == wrapperFactory) {
             throw new IllegalArgumentException("wrapperFactory is required.");
-        } else if (null == valuePool) {
-            throw new IllegalArgumentException("valuePool is required.");
         } else if (null == router) {
             throw new IllegalArgumentException("router is required.");
         } else if (null == manager) {
             throw new IllegalArgumentException("manager is required.");
         }
         this.config = config;
-        this.valuePool = valuePool;
         this.router = router;
         this.manager = manager;
         
-        attributes = attributesFactory.create(this);
         wrapper = wrapperFactory.create(this);
         httpSessionEvent = new HttpSessionEvent(wrapper);
     }
@@ -147,10 +136,6 @@ public class StandardSession extends AbstractSession implements WADIHttpSession,
 
     public WebSessionConfig getConfig() {
         return config;
-    }
-
-    public ValuePool getValuePool() {
-        return valuePool;
     }
 
     public String getId() {

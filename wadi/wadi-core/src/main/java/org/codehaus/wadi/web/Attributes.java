@@ -24,7 +24,6 @@ import java.util.Set;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-
 public interface Attributes {
     Object get(Object key);
 

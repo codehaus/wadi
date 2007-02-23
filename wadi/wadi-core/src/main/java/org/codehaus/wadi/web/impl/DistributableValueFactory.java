@@ -16,26 +16,26 @@
  */
 package org.codehaus.wadi.web.impl;
 
-import org.codehaus.wadi.DistributableValueConfig;
 import org.codehaus.wadi.Value;
-import org.codehaus.wadi.ValueConfig;
-import org.codehaus.wadi.ValueFactory;
+import org.codehaus.wadi.web.ValueHelperRegistry;
 
 /**
- * TODO - JavaDoc this type
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision: 1139 $
  */
-
-public class DistributableValueFactory implements ValueFactory {
-
-    public DistributableValueFactory() {
-        super();
+public class DistributableValueFactory extends StandardValueFactory {
+    protected final ValueHelperRegistry valueHelperRegistry;
+    
+    public DistributableValueFactory(ValueHelperRegistry valueHelperRegistry) {
+        if (null == valueHelperRegistry) {
+            throw new IllegalArgumentException("valueHelperRegistry is required");
+        }
+        this.valueHelperRegistry = valueHelperRegistry;
     }
 
-    public Value create(ValueConfig config) {
-        return new DistributableValue((DistributableValueConfig)config);
+    public Value create() {
+        return new DistributableValue(valueHelperRegistry);
     }
 
 }

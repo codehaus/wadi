@@ -21,8 +21,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
-import org.codehaus.wadi.DistributableValueConfig;
 import org.codehaus.wadi.ValueHelper;
+import org.codehaus.wadi.web.ValueHelperRegistry;
 
 import com.agical.rmock.extension.junit.RMockTestCase;
 
@@ -33,8 +33,8 @@ import com.agical.rmock.extension.junit.RMockTestCase;
 public class DistributableValueTest extends RMockTestCase {
 
     public void testCustomSerization() throws Exception {
-        DistributableValueConfig config = (DistributableValueConfig) mock(DistributableValueConfig.class);
-        config.findHelper(NotSerializable.class);
+        ValueHelperRegistry valueHelperRegistry = (ValueHelperRegistry) mock(ValueHelperRegistry.class);
+        valueHelperRegistry.findHelper(NotSerializable.class);
         modify().multiplicity(expect.exactly(2)).returnValue(new NotSerializableHelper());
         
         startVerification();
@@ -45,14 +45,14 @@ public class DistributableValueTest extends RMockTestCase {
         ByteArrayOutputStream memOut = new ByteArrayOutputStream();
         ObjectOutputStream oo = new ObjectOutputStream(memOut);
         
-        DistributableValue value1  = new DistributableValue(config);
+        DistributableValue value1  = new DistributableValue(valueHelperRegistry);
         value1.setValue(expectedValue);
         value1.writeExternal(oo);
         
         ByteArrayInputStream memIn = new ByteArrayInputStream(memOut.toByteArray());
         ObjectInputStream oi = new ObjectInputStream(memIn);
         
-        DistributableValue value2 = new DistributableValue(config);
+        DistributableValue value2 = new DistributableValue(valueHelperRegistry);
         value2.readExternal(oi);
         
         Object value = value2.getValue();

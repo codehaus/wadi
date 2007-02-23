@@ -19,10 +19,8 @@ package org.codehaus.wadi.web.impl;
 import org.codehaus.wadi.Replicater;
 import org.codehaus.wadi.ReplicaterFactory;
 import org.codehaus.wadi.Streamer;
-import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.web.AttributesFactory;
 import org.codehaus.wadi.web.Router;
-import org.codehaus.wadi.web.ValueHelperRegistry;
 import org.codehaus.wadi.web.WebSession;
 import org.codehaus.wadi.web.WebSessionWrapperFactory;
 
@@ -36,12 +34,10 @@ public class AtomicallyReplicableSessionFactory extends DistributableSessionFact
     
     public AtomicallyReplicableSessionFactory(AttributesFactory attributesFactory,
             WebSessionWrapperFactory wrapperFactory,
-            ValuePool valuePool,
             Router router,
             Streamer streamer,
-            ValueHelperRegistry valueHelperRegistry,
             ReplicaterFactory replicaterFactory) {
-        super(attributesFactory, wrapperFactory, valuePool, router, streamer, valueHelperRegistry);
+        super(attributesFactory, wrapperFactory, router, streamer);
         if (null == replicaterFactory) {
             throw new IllegalArgumentException("replicaterFactory is required");
         }
@@ -50,13 +46,11 @@ public class AtomicallyReplicableSessionFactory extends DistributableSessionFact
 
     public WebSession create() {
         return new AtomicallyReplicableSession(config,
-                attributesFactory,
+                newAttributes(),
                 wrapperFactory,
-                valuePool,
                 router,
                 getManager(),
                 streamer,
-                valueHelperRegistry,
                 replicater);
     }
     

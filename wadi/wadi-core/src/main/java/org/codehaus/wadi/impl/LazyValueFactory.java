@@ -16,23 +16,22 @@
  */
 package org.codehaus.wadi.impl;
 
-import org.codehaus.wadi.DistributableValueConfig;
 import org.codehaus.wadi.Value;
-import org.codehaus.wadi.ValueConfig;
-import org.codehaus.wadi.ValueFactory;
+import org.codehaus.wadi.web.ValueHelperRegistry;
+import org.codehaus.wadi.web.impl.DistributableValueFactory;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class LazyValueFactory implements ValueFactory {
+public class LazyValueFactory extends DistributableValueFactory {
 
-    public LazyValueFactory() {
-        super();
+    public LazyValueFactory(ValueHelperRegistry valueHelperRegistry) {
+        super(valueHelperRegistry);
     }
 
-    public Value create(ValueConfig config) {
-        return new LazyValue((DistributableValueConfig)config);
+    public Value create() {
+        return new LazyValue(valueHelperRegistry);
     }
 
 }

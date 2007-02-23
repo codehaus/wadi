@@ -17,14 +17,22 @@
 package org.codehaus.wadi.impl;
 
 import org.codehaus.wadi.Session;
+import org.codehaus.wadi.web.Attributes;
 
 /**
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision: 1533 $
  */
-
 public abstract class AbstractSession extends AbstractMotable implements Session {
+    protected final Attributes attributes;
+
+    public AbstractSession(Attributes attributes) {
+        if (null == attributes) {
+            throw new IllegalArgumentException("attributes is required");
+        }
+        this.attributes = attributes;
+    }
 
     public synchronized void onEndProcessing() {
         newSession = false;

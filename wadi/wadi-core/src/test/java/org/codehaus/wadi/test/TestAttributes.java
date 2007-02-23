@@ -30,12 +30,14 @@ import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.Value;
 import org.codehaus.wadi.ValueFactory;
 import org.codehaus.wadi.ValueHelper;
-import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.impl.SimpleStreamer;
-import org.codehaus.wadi.impl.SimpleValuePool;
 import org.codehaus.wadi.impl.Utils;
+import org.codehaus.wadi.web.BasicValueHelperRegistry;
+import org.codehaus.wadi.web.ValueHelperRegistry;
 import org.codehaus.wadi.web.impl.DistributableValue;
 import org.codehaus.wadi.web.impl.DistributableValueFactory;
+
+import com.agical.rmock.extension.junit.RMockTestCase;
 
 /**
  * Test Attribute and Attributes classes and subclasses...
@@ -44,7 +46,7 @@ import org.codehaus.wadi.web.impl.DistributableValueFactory;
  * @version $Revision$
  */
 
-public class TestAttributes extends TestCase {
+public class TestAttributes extends RMockTestCase {
 	protected Log _log = LogFactory.getLog(getClass());
     
     /*
@@ -94,10 +96,12 @@ public class TestAttributes extends TestCase {
     }
     
     public void testAttribute() throws Exception {
-        ValueFactory factory=new DistributableValueFactory();
-        ValuePool pool=new SimpleValuePool(factory); 
+        ValueHelperRegistry valueHelperRegistry = (ValueHelperRegistry) mock(ValueHelperRegistry.class);
+        startVerification();
         
-        Value a=pool.take(null);
+        ValueFactory factory=new DistributableValueFactory(valueHelperRegistry);
+        
+        Value a=factory.create();
         // test get/set
         assertTrue(a.getValue()==null);
         String foo="foo";
@@ -105,22 +109,12 @@ public class TestAttributes extends TestCase {
         assertTrue(a.getValue()==foo);
         a.setValue(null);
         assertTrue(a.getValue()==null);
-        pool.put(a);
         
         // test serialisation with various values
         {
-            DistributableValue attr1=(DistributableValue)pool.take(null);
-            DistributableValue attr2=(DistributableValue)pool.take(null);
+            DistributableValue attr1=(DistributableValue)factory.create();
+            DistributableValue attr2=(DistributableValue)factory.create();
             testAttributeSerialisation(attr1, attr2, null);
-            pool.put(attr1);
-            pool.put(attr2);
-        }
-        {
-            DistributableValue attr1=(DistributableValue)pool.take(null);
-            DistributableValue attr2=(DistributableValue)pool.take(null);
-            testAttributeSerialisation(new DistributableValue(null), new DistributableValue(null), foo);
-            pool.put(attr1);
-            pool.put(attr2);
         }
         
 // FIXME

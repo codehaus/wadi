@@ -19,17 +19,16 @@ package org.codehaus.wadi.web.impl;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.Iterator;
 import java.util.Set;
+
+import javax.servlet.http.HttpSessionActivationListener;
 
 import org.codehaus.wadi.Manager;
 import org.codehaus.wadi.Streamer;
-import org.codehaus.wadi.ValueHelper;
-import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.impl.Utils;
-import org.codehaus.wadi.web.AttributesFactory;
-import org.codehaus.wadi.web.DistributableAttributesConfig;
+import org.codehaus.wadi.web.Attributes;
 import org.codehaus.wadi.web.Router;
-import org.codehaus.wadi.web.ValueHelperRegistry;
 import org.codehaus.wadi.web.WebSessionConfig;
 import org.codehaus.wadi.web.WebSessionWrapperFactory;
 
@@ -41,40 +40,33 @@ import org.codehaus.wadi.web.WebSessionWrapperFactory;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision: 1725 $
  */
-public class DistributableSession extends StandardSession implements DistributableAttributesConfig {
-    private final transient Streamer streamer;
-    private final transient ValueHelperRegistry valueHelperRegistry;
+public class DistributableSession extends StandardSession {
     
+    private final Streamer streamer;
+
     public DistributableSession(WebSessionConfig config,
-            AttributesFactory attributesFactory,
+            Attributes attributes,
             WebSessionWrapperFactory wrapperFactory,
-            ValuePool valuePool,
             Router router,
             Manager manager,
-            Streamer streamer,
-            ValueHelperRegistry valueHelperRegistry) {
-        super(config, attributesFactory, wrapperFactory, valuePool, router, manager);
+            Streamer streamer) {
+        super(config, attributes, wrapperFactory, router, manager);
         if (null == streamer) {
             throw new IllegalArgumentException("streamer is required");
-        } else if (null == valueHelperRegistry) {
-            throw new IllegalArgumentException("valueHelperRegistry is required");
         }
         this.streamer = streamer;
-        this.valueHelperRegistry = valueHelperRegistry;
-    }
-
-    public Streamer getStreamer() {
-        return streamer;
     }
 
     public synchronized void readExternal(ObjectInput oi) throws IOException, ClassNotFoundException {
         super.readExternal(oi);
         ((DistributableAttributes) attributes).readExternal(oi);
+        onDeserialization();
     }
 
     public synchronized void writeExternal(ObjectOutput oo) throws IOException {
         super.writeExternal(oo);
         ((DistributableAttributes) attributes).writeExternal(oo);
+        onSerialization();
     }
 
     public synchronized byte[] getBodyAsByteArray() throws Exception {
@@ -85,12 +77,30 @@ public class DistributableSession extends StandardSession implements Distributab
         Utils.setContent(this, bytes, streamer);
     }
 
-    public ValueHelper findHelper(Class type) {
-        return valueHelperRegistry.findHelper(type);
-    }
-
     public synchronized Set getListenerNames() {
         return ((DistributableAttributes) attributes).getListenerNames();
+    }
+    
+    protected void onDeserialization() {
+        for (Iterator iter = attributes.keySet().iterator(); iter.hasNext();) {
+            Object key = (Object) iter.next();
+            Object value = attributes.get(key);
+            if (value instanceof HttpSessionActivationListener) {
+                HttpSessionActivationListener listener = (HttpSessionActivationListener) value;
+                listener.sessionDidActivate(httpSessionEvent);
+            }
+        }
+    }
+    
+    protected void onSerialization() {
+        for (Iterator iter = attributes.keySet().iterator(); iter.hasNext();) {
+            Object key = (Object) iter.next();
+            Object value = attributes.get(key);
+            if (value instanceof HttpSessionActivationListener) {
+                HttpSessionActivationListener listener = (HttpSessionActivationListener) value;
+                listener.sessionWillPassivate(httpSessionEvent);
+            }
+        }
     }
 
 }

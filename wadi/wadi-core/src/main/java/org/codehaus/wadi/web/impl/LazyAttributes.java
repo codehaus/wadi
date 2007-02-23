@@ -23,104 +23,108 @@ import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
-import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.web.AttributesConfig;
+import org.codehaus.wadi.Streamer;
+import org.codehaus.wadi.ValueFactory;
+import org.codehaus.wadi.web.ValueHelperRegistry;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
 public class LazyAttributes extends DistributableAttributes {
-
-    public LazyAttributes(AttributesConfig config, Map map) {
-        super(config, map);
-        // TODO Auto-generated constructor stub
-    }
     protected static final Log _log = LogFactory.getLog(LazyAttributes.class);
 
     protected transient byte[] _bytes;
 
+    public LazyAttributes(ValueFactory valueFactory, ValueHelperRegistry valueHelperRegistry, Streamer streamer) {
+        super(valueFactory, valueHelperRegistry, streamer);
+    }
+
     protected void deserialise() {
         try {
             // deserialise content at last minute ...
-            ByteArrayInputStream bais=new ByteArrayInputStream(_bytes);
-            ObjectInputStream ois=new ObjectInputStream(bais);
+            ByteArrayInputStream bais = new ByteArrayInputStream(_bytes);
+            ObjectInputStream ois = new ObjectInputStream(bais);
             super.readExternal(ois);
             ois.close();
         } catch (Exception e) {
-	  _log.error("unexpected problem lazily deserialising session attribute value - data lost", e);
+            _log.error("unexpected problem lazily deserialising session attribute value - data lost", e);
         } finally {
-            _bytes=null;
+            _bytes = null;
         }
     }
 
     protected void serialise() throws IOException {
-        ByteArrayOutputStream baos=new ByteArrayOutputStream(); // TODO - pool these objects...
-        ObjectOutputStream oos=new ObjectOutputStream(baos);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(); // TODO -
+                                                                    // pool
+                                                                    // these
+                                                                    // objects...
+        ObjectOutputStream oos = new ObjectOutputStream(baos);
         super.writeExternal(oos);
         oos.close();
-        _bytes=baos.toByteArray();
+        _bytes = baos.toByteArray();
     }
 
     public synchronized Object get(Object key) {
-        if (_bytes!=null)
+        if (_bytes != null)
             deserialise();
 
         return super.get(key);
     }
 
     public Object remove(Object key) {
-        if (_bytes!=null)
+        if (_bytes != null)
             deserialise();
         return super.remove(key);
     }
 
     public Object put(Object key, Object newValue) {
-        if (_bytes!=null)
+        if (_bytes != null)
             deserialise();
-         return super.put(key, newValue);
+        return super.put(key, newValue);
     }
 
     public int size() {
-        if (_bytes!=null)
+        if (_bytes != null)
             deserialise();
-        return super.size(); // TODO - this should not need deserialisation...
+        return super.size();
     }
 
-    public Set keySet(){
-        if (_bytes!=null)
+    public Set keySet() {
+        if (_bytes != null)
             deserialise();
         return super.keySet();
     }
 
-    public void clear(){
-        _bytes=null;
+    public void clear() {
+        _bytes = null;
     }
 
     public Set getListenerNames() {
-        if (_bytes!=null)
+        if (_bytes != null)
             deserialise();
         return _listenerNames;
     }
 
     public synchronized void writeExternal(ObjectOutput oo) throws IOException {
-        if (_bytes==null)
+        if (_bytes == null) {
             serialise(); // rebuild cache
+        }
 
         oo.writeInt(_bytes.length);
         oo.write(_bytes);
     }
 
     public synchronized void readExternal(ObjectInput oi) throws IOException, ClassNotFoundException {
-        int length=oi.readInt();
-        _bytes=new byte[length];
-        if (oi.read(_bytes)!=length)
+        int length = oi.readInt();
+        _bytes = new byte[length];
+        if (oi.read(_bytes) != length)
             throw new IOException("data truncated whilst reading Session Attributes- data lost");
-        _map.clear();
+        attributes.clear();
     }
 
 }

@@ -17,7 +17,6 @@
 package org.codehaus.wadi.web.impl;
 
 import org.codehaus.wadi.Value;
-import org.codehaus.wadi.ValueConfig;
 
 /**
  * A simple slot for holding and Attribute's value
@@ -25,25 +24,18 @@ import org.codehaus.wadi.ValueConfig;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision: 1177 $
  */
-
 public class StandardValue implements Value {
     
-    protected final ValueConfig _config;
-    
-    public StandardValue(ValueConfig config) {
-    	_config=config;
-    }
-    
-    protected Object _value;
-    
+    protected Object value;
+
     public Object getValue() {
-        return _value;
+        return value;
     }
-    
+
     public Object setValue(Object newValue) {
-        Object oldValue=_value;
-        _value=newValue;
+        Object oldValue = value;
+        value = newValue;
         return oldValue;
-    }	
+    }
 
 }
