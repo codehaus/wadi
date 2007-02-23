@@ -43,13 +43,11 @@ import org.codehaus.wadi.Manager;
 import org.codehaus.wadi.SessionIdFactory;
 import org.codehaus.wadi.SessionMonitor;
 import org.codehaus.wadi.ValueFactory;
-import org.codehaus.wadi.ValuePool;
 import org.codehaus.wadi.core.ConcurrentMotableMap;
 import org.codehaus.wadi.core.OswegoConcurrentMotableMap;
 import org.codehaus.wadi.impl.ClusteredManager;
 import org.codehaus.wadi.impl.DummyContextualiser;
 import org.codehaus.wadi.impl.DummyManagerConfig;
-import org.codehaus.wadi.impl.SimpleValuePool;
 import org.codehaus.wadi.impl.StandardManager;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 import org.codehaus.wadi.web.AttributesFactory;
@@ -90,11 +88,9 @@ public class TestHttpSession extends TestCase {
     protected WebSessionWrapperFactory _standardSessionWrapperFactory = new StandardSessionWrapperFactory();
     protected SessionIdFactory _standardSessionIdFactory = new TomcatSessionIdFactory();
     protected ValueFactory _standardValueFactory = new StandardValueFactory();
-    protected ValuePool _standardValuePool = new SimpleValuePool(_standardValueFactory);
-    protected AttributesFactory _standardAttributesFactory = new StandardAttributesFactory();
+    protected AttributesFactory _standardAttributesFactory = new StandardAttributesFactory(_standardValueFactory);
     protected WebSessionFactory _standardSessionFactory = new StandardSessionFactory(_standardAttributesFactory,
             _standardSessionWrapperFactory,
-            _standardValuePool,
             _router);
     protected StandardManager _standardManager = new StandardManager(_standardSessionFactory,
             _standardSessionIdFactory,
