@@ -31,5 +31,20 @@ import java.io.Externalizable;
  * @version $Revision$
  */
 public interface Session extends Motable, Externalizable {
+    /**
+     * Map like contract to manipulate state information.
+     */
+    Object addState(String key, Object value);
+
+    /**
+     * Map like contract to manipulate state information.
+     */
+    Object getState(String key);
+
+    /**
+     * Map like contract to manipulate state information.
+     */
+    Object removeState(String key);
+
     void onEndProcessing();
 }
