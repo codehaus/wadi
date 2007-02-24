@@ -14,27 +14,27 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.impl;
+package org.codehaus.wadi.core.eviction;
 
-import org.codehaus.wadi.EvictionStrategy;
 import org.codehaus.wadi.Motable;
-import org.codehaus.wadi.core.ConcurrentMotableMap;
 
 /**
+ * An Evicter which also evicts Evictables with less than a certain time to live remaining.
+ * For example, using this Evicter, you could evict sessions with less than 30 minutes of time left.
+ *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class DummyEvicter extends AbstractEvicter {
+public class TimeToLiveEvicter extends AbstractBestEffortEvicter {
+	protected final long _ttl;
 
-    public DummyEvicter() {
-        super(10);
+    public TimeToLiveEvicter(int sweepInterval, boolean strictOrdering, int ttl) {
+        super(sweepInterval, strictOrdering);
+        _ttl = ttl * 1000;
     }
 
-    public void evict(ConcurrentMotableMap idToMotable, EvictionStrategy evictionStrategy) {
-    }
-    
     public boolean testForDemotion(Motable motable, long time, long ttl) {
-        return false;
+        return ttl <= _ttl;
     }
 
 }

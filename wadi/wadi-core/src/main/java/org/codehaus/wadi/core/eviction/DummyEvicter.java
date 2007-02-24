@@ -14,24 +14,27 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.impl;
+package org.codehaus.wadi.core.eviction;
 
+import org.codehaus.wadi.EvictionStrategy;
 import org.codehaus.wadi.Motable;
+import org.codehaus.wadi.core.ConcurrentMotableMap;
 
 /**
- * An Evicter which always evicts
- *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class AlwaysEvicter extends AbstractBestEffortEvicter {
+public class DummyEvicter extends AbstractEvicter {
 
-    public AlwaysEvicter(int sweepInterval, boolean strictOrdering) {
-        super(sweepInterval, strictOrdering);
+    public DummyEvicter() {
+        super(10);
+    }
+
+    public void evict(ConcurrentMotableMap idToMotable, EvictionStrategy evictionStrategy) {
     }
     
-	public boolean testForDemotion(Motable motable, long time, long ttl) {
-        return true;
+    public boolean testForDemotion(Motable motable, long time, long ttl) {
+        return false;
     }
 
 }
