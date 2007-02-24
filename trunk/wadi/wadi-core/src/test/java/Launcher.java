@@ -24,10 +24,10 @@ import javax.servlet.http.HttpSession;
 
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.Session;
+import org.codehaus.wadi.core.manager.ClusteredManager;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.vm.VMBroker;
 import org.codehaus.wadi.group.vm.VMDispatcher;
-import org.codehaus.wadi.impl.ClusteredManager;
 import org.codehaus.wadi.web.impl.WebInvocation;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;

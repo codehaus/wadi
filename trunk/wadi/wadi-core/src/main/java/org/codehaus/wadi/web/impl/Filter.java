@@ -28,7 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.Manager;
-import org.codehaus.wadi.impl.StandardManager;
+import org.codehaus.wadi.core.manager.StandardManager;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>

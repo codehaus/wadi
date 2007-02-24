@@ -26,7 +26,7 @@ import javax.servlet.http.HttpSessionListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.SessionMonitor;
-import org.codehaus.wadi.impl.StandardManager;
+import org.codehaus.wadi.core.manager.StandardManager;
 import org.codehaus.wadi.web.WADIHttpSessionListener;
 import org.codehaus.wadi.web.WebSessionConfig;
 
