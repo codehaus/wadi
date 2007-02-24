@@ -18,12 +18,12 @@ package org.codehaus.wadi.axis2;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.Router;
 import org.codehaus.wadi.PoolableInvocationWrapper;
 import org.codehaus.wadi.core.contextualiser.Invocation;
 import org.codehaus.wadi.core.contextualiser.InvocationException;
 import org.codehaus.wadi.core.contextualiser.InvocationProxy;
 import org.codehaus.wadi.core.manager.Manager;
+import org.codehaus.wadi.core.manager.Router;
 import org.codehaus.wadi.core.session.Session;
 import org.codehaus.wadi.group.EndPoint;
 import org.codehaus.wadi.web.impl.StatefulHttpServletRequestWrapper;
