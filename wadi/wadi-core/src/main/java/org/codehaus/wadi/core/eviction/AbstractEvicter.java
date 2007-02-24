@@ -19,7 +19,6 @@ package org.codehaus.wadi.core.eviction;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import org.codehaus.wadi.Evicter;
 
 /**
  * Abstract base for Evicters.

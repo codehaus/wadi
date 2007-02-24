@@ -19,7 +19,7 @@ package org.codehaus.wadi.impl;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Emoter;
-import org.codehaus.wadi.Motable;
+import org.codehaus.wadi.core.motable.Motable;
 
 
 /**

@@ -14,14 +14,13 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.core.motable;
+package org.codehaus.wadi.core.eviction;
 
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
 
-import org.codehaus.wadi.Evictable;
 
 /**
  * A very Simple impementation of Evictable

@@ -16,6 +16,8 @@
  */
 package org.codehaus.wadi;
 
+import org.codehaus.wadi.core.motable.Motable;
+
 
 /**
  * Basic API for motion of Motables IN to a container

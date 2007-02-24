@@ -21,8 +21,8 @@ import java.sql.SQLException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.core.motable.AbstractMotable;
+import org.codehaus.wadi.core.motable.Motable;
 
 /**
  * A Motable that represents its Bytes field as a row in a Shared DataBase table.

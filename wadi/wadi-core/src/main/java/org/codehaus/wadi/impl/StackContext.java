@@ -19,7 +19,6 @@ import java.util.Timer;
 
 import org.codehaus.wadi.BasicSessionMonitor;
 import org.codehaus.wadi.Contextualiser;
-import org.codehaus.wadi.Evicter;
 import org.codehaus.wadi.PartitionMapper;
 import org.codehaus.wadi.PoolableInvocationWrapperPool;
 import org.codehaus.wadi.Router;
@@ -34,6 +33,7 @@ import org.codehaus.wadi.core.contextualiser.HashingCollapser;
 import org.codehaus.wadi.core.contextualiser.MemoryContextualiser;
 import org.codehaus.wadi.core.contextualiser.SerialContextualiser;
 import org.codehaus.wadi.core.eviction.AbsoluteEvicter;
+import org.codehaus.wadi.core.eviction.Evicter;
 import org.codehaus.wadi.core.manager.ClusteredManager;
 import org.codehaus.wadi.core.session.AtomicallyReplicableSessionFactory;
 import org.codehaus.wadi.core.session.BasicValueHelperRegistry;

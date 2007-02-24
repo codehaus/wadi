@@ -18,7 +18,7 @@ package org.codehaus.wadi.location.session;
 
 import java.io.Serializable;
 
-import org.codehaus.wadi.Motable;
+import org.codehaus.wadi.core.motable.Motable;
 import org.codehaus.wadi.location.SessionChainMessage;
 
 /**

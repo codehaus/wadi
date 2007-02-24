@@ -20,7 +20,7 @@ import java.io.File;
 
 import junit.framework.TestCase;
 
-import org.codehaus.wadi.Motable;
+import org.codehaus.wadi.core.motable.Motable;
 import org.codehaus.wadi.core.motable.SimpleMotable;
 import org.codehaus.wadi.core.store.DiscStore;
 import org.codehaus.wadi.core.store.Store;

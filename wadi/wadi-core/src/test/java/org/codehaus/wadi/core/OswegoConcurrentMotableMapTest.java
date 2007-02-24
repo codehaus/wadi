@@ -2,7 +2,7 @@ package org.codehaus.wadi.core;
 
 import junit.framework.TestCase;
 
-import org.codehaus.wadi.Motable;
+import org.codehaus.wadi.core.motable.Motable;
 import org.codehaus.wadi.core.motable.SimpleMotable;
 
 public class OswegoConcurrentMotableMapTest extends TestCase {

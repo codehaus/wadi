@@ -16,8 +16,8 @@
  */
 package org.codehaus.wadi.impl;
 
-import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.core.ConcurrentMotableMap;
+import org.codehaus.wadi.core.motable.Motable;
 
 
 /**

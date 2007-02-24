@@ -14,12 +14,14 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.core.eviction;
 
 import java.util.Timer;
 import java.util.TimerTask;
 
 import org.codehaus.wadi.core.ConcurrentMotableMap;
+import org.codehaus.wadi.core.contextualiser.EvictionStrategy;
+import org.codehaus.wadi.core.motable.Motable;
 
 /**
  * An API for deciding whether or not to evict a given Evictable

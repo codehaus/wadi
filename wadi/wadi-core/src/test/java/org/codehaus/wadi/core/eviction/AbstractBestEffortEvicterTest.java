@@ -2,10 +2,10 @@ package org.codehaus.wadi.core.eviction;
 
 import java.util.Collections;
 
-import org.codehaus.wadi.EvictionStrategy;
-import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.core.ConcurrentMotableMap;
+import org.codehaus.wadi.core.contextualiser.EvictionStrategy;
 import org.codehaus.wadi.core.eviction.AbstractBestEffortEvicter;
+import org.codehaus.wadi.core.motable.Motable;
 
 import com.agical.rmock.extension.junit.RMockTestCase;
 

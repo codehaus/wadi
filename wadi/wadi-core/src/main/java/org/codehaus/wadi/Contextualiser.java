@@ -18,6 +18,8 @@ package org.codehaus.wadi;
 
 import java.util.Map;
 
+import org.codehaus.wadi.core.motable.Motable;
+
 /**
  * Contextualising an Invocation is colocating it and the relevant Session within the same JVM and then
  * invoke()-ing the Invocation...

@@ -17,7 +17,7 @@ package org.codehaus.wadi.core;
 
 import java.util.Set;
 
-import org.codehaus.wadi.Motable;
+import org.codehaus.wadi.core.motable.Motable;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
