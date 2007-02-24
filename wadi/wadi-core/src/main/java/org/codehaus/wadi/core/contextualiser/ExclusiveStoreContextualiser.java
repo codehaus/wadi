@@ -18,17 +18,17 @@ package org.codehaus.wadi.core.contextualiser;
 
 import java.io.File;
 
-import org.codehaus.wadi.Emoter;
-import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.core.ConcurrentMotableMap;
 import org.codehaus.wadi.core.eviction.Evicter;
+import org.codehaus.wadi.core.motable.AbstractMappedImmoter;
+import org.codehaus.wadi.core.motable.BaseMappedEmoter;
+import org.codehaus.wadi.core.motable.Emoter;
+import org.codehaus.wadi.core.motable.Immoter;
 import org.codehaus.wadi.core.motable.Motable;
 import org.codehaus.wadi.core.store.DiscStore;
 import org.codehaus.wadi.core.store.Store;
 import org.codehaus.wadi.core.store.StoreMotable;
-import org.codehaus.wadi.impl.AbstractMappedImmoter;
-import org.codehaus.wadi.impl.BaseMappedEmoter;
 
 /**
  * Maps id:File where file contains Context content...

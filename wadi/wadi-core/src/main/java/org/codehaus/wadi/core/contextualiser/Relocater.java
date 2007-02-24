@@ -16,7 +16,7 @@
  */
 package org.codehaus.wadi.core.contextualiser;
 
-import org.codehaus.wadi.Immoter;
+import org.codehaus.wadi.core.motable.Immoter;
 
 
 /**

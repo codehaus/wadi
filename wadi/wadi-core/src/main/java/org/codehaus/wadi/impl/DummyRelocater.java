@@ -16,10 +16,10 @@
  */
 package org.codehaus.wadi.impl;
 
-import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.core.contextualiser.Invocation;
 import org.codehaus.wadi.core.contextualiser.InvocationException;
 import org.codehaus.wadi.core.contextualiser.Relocater;
+import org.codehaus.wadi.core.motable.Immoter;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
