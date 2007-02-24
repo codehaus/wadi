@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.core.session;
 
 /**
  * TODO - JavaDoc this type
@@ -24,8 +24,7 @@ package org.codehaus.wadi;
  */
 
 public interface Value {
-
     Object getValue();
-    Object setValue(Object newValue);
 
+    Object setValue(Object newValue);
 }

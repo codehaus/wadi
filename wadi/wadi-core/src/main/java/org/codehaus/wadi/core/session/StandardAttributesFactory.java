@@ -16,7 +16,6 @@
  */
 package org.codehaus.wadi.core.session;
 
-import org.codehaus.wadi.ValueFactory;
 import org.codehaus.wadi.web.Attributes;
 import org.codehaus.wadi.web.AttributesFactory;
 

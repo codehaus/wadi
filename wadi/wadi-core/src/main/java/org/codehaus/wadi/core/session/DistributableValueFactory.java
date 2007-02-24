@@ -16,7 +16,6 @@
  */
 package org.codehaus.wadi.core.session;
 
-import org.codehaus.wadi.Value;
 import org.codehaus.wadi.web.ValueHelperRegistry;
 
 /**
