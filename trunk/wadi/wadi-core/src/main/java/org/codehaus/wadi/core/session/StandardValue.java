@@ -16,7 +16,6 @@
  */
 package org.codehaus.wadi.core.session;
 
-import org.codehaus.wadi.Value;
 
 /**
  * A simple slot for holding and Attribute's value
