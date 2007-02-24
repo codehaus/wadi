@@ -14,35 +14,27 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.impl;
+package org.codehaus.wadi.core.eviction;
 
-import java.util.Timer;
-import java.util.TimerTask;
-
-import org.codehaus.wadi.Evicter;
+import org.codehaus.wadi.Motable;
 
 /**
- * Abstract base for Evicters.
+ * An Evicter which evicts Evictables if they have timed out or after an absolute period of inactivity.
+ * For example, using this Evicter, you could evict sessions after 30 minutes of inactivity.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public abstract class AbstractEvicter implements Evicter {
-    private final int sweepInterval;
+public class AbsoluteEvicter extends AbstractBestEffortEvicter {
+    protected final long _inactiveInterval;
     
-    public AbstractEvicter(int sweepInterval) {
-        if (1 > sweepInterval) {
-            throw new IllegalArgumentException("sweepInterval must be > 0");
-        }
-        this.sweepInterval = sweepInterval * 1000;
-    }
-    
-    public void schedule(Timer timer, TimerTask timerTask) {
-        timer.schedule(timerTask, sweepInterval, sweepInterval);
+    public AbsoluteEvicter(int sweepInterval, boolean strictOrdering, int inactivityInterval) {
+        super(sweepInterval, strictOrdering);
+        _inactiveInterval = inactivityInterval * 1000;
     }
 
-    public void cancel(TimerTask timerTask) {
-        timerTask.cancel();
+    public boolean testForDemotion(Motable motable, long time, long ttl) {
+        return time - motable.getLastAccessedTime() >= _inactiveInterval;
     }
     
 }

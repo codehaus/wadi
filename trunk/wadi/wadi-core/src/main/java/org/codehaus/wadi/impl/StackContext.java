@@ -27,6 +27,7 @@ import org.codehaus.wadi.SessionFactory;
 import org.codehaus.wadi.SessionMonitor;
 import org.codehaus.wadi.core.ConcurrentMotableMap;
 import org.codehaus.wadi.core.OswegoConcurrentMotableMap;
+import org.codehaus.wadi.core.eviction.AbsoluteEvicter;
 import org.codehaus.wadi.core.manager.ClusteredManager;
 import org.codehaus.wadi.core.session.AtomicallyReplicableSessionFactory;
 import org.codehaus.wadi.core.session.DistributableAttributesFactory;
