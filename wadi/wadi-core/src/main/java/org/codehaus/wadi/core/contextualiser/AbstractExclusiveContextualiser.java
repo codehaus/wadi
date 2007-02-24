@@ -28,7 +28,7 @@ import org.codehaus.wadi.core.eviction.Evicter;
 import org.codehaus.wadi.core.motable.Emoter;
 import org.codehaus.wadi.core.motable.Immoter;
 import org.codehaus.wadi.core.motable.Motable;
-import org.codehaus.wadi.impl.Utils;
+import org.codehaus.wadi.core.util.Utils;
 
 /**
  * Basic implementation for Contextualisers which maintain a local Map of references

@@ -14,27 +14,17 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.test;
+package org.codehaus.wadi.core.manager;
 
-import javax.servlet.Filter;
-import javax.servlet.Servlet;
-
-import org.codehaus.wadi.Securable;
-
+import org.codehaus.wadi.core.session.SessionFactory;
 
 /**
- * TODO - JavaDoc this type
- *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
+public class DummyManagerConfig implements ManagerConfig {
 
-public interface Node extends Securable {
-	Filter getFilter();
+    public void callback(Manager manager, SessionMonitor sessionMonitor, SessionFactory sessionFactory) {
+	}
 
-	Servlet getServlet();
-
-	void start() throws Exception;
-
-	void stop() throws Exception;
 }

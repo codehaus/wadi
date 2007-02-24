@@ -15,7 +15,7 @@
  */
 package org.codehaus.wadi.replication.storage;
 
-import org.codehaus.wadi.Lifecycle;
+import org.codehaus.wadi.core.Lifecycle;
 import org.codehaus.wadi.replication.common.ReplicaInfo;
 import org.codehaus.wadi.servicespace.ServiceName;
 

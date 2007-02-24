@@ -17,9 +17,9 @@
 
 package org.codehaus.wadi.core.session;
 
-import org.codehaus.wadi.RehydrationException;
-import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.core.manager.Manager;
+import org.codehaus.wadi.core.motable.RehydrationException;
+import org.codehaus.wadi.core.util.Streamer;
 import org.codehaus.wadi.replication.Replicater;
 
 

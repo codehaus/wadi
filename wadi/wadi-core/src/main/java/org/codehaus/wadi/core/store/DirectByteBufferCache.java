@@ -1,5 +1,6 @@
 /**
- * Copyright 2006 The Apache Software Foundation
+ *
+ * Copyright 2003-2005 Core Developers Network Ltd.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -13,19 +14,22 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.core.store;
+
+import java.nio.ByteBuffer;
 
 /**
- * 
- * @version $Revision: 1603 $
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
  */
-public class RehydrationException extends Exception {
+public class DirectByteBufferCache {
 
-    public RehydrationException(String message, Throwable cause) {
-        super(message, cause);
+    public ByteBuffer take(int size) {
+        return ByteBuffer.allocateDirect(size);
     }
 
-    public RehydrationException(Throwable cause) {
-        super(cause);
+    public void put(ByteBuffer buffer) {
+        // do nothing yet...
     }
+
 }

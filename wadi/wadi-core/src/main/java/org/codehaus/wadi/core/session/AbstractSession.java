@@ -18,8 +18,8 @@ package org.codehaus.wadi.core.session;
 
 import org.codehaus.wadi.core.manager.Manager;
 import org.codehaus.wadi.core.motable.AbstractMotable;
-import org.codehaus.wadi.impl.SimpleStreamer;
-import org.codehaus.wadi.impl.Utils;
+import org.codehaus.wadi.core.util.SimpleStreamer;
+import org.codehaus.wadi.core.util.Utils;
 
 /**
  *

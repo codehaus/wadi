@@ -17,6 +17,7 @@ package org.codehaus.wadi.impl;
 
 import java.io.IOException;
 
+import org.codehaus.wadi.core.contextualiser.HybridRelocater;
 import org.codehaus.wadi.core.contextualiser.Invocation;
 import org.codehaus.wadi.core.motable.Immoter;
 import org.codehaus.wadi.group.Cluster;

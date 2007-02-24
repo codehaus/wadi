@@ -24,7 +24,7 @@ import org.codehaus.wadi.core.motable.Motable;
 import org.codehaus.wadi.core.store.DatabaseStore;
 import org.codehaus.wadi.core.store.Store;
 import org.codehaus.wadi.core.store.StoreMotable;
-import org.codehaus.wadi.impl.Utils;
+import org.codehaus.wadi.core.util.Utils;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 

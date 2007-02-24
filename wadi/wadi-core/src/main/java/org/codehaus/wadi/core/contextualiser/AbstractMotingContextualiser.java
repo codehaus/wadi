@@ -19,7 +19,7 @@ package org.codehaus.wadi.core.contextualiser;
 import org.codehaus.wadi.core.motable.Emoter;
 import org.codehaus.wadi.core.motable.Immoter;
 import org.codehaus.wadi.core.motable.Motable;
-import org.codehaus.wadi.impl.Utils;
+import org.codehaus.wadi.core.util.Utils;
 
 /**
  * Abstract base for Contextualisers that are 'chained' - in other words - arranged in a single linked list

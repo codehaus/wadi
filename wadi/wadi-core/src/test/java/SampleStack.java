@@ -2,8 +2,8 @@
 
 import java.net.URI;
 
-import org.codehaus.wadi.Router;
 import org.codehaus.wadi.core.manager.ClusteredManager;
+import org.codehaus.wadi.core.manager.Router;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.impl.StackContext;
 import org.codehaus.wadi.servicespace.ServiceSpace;

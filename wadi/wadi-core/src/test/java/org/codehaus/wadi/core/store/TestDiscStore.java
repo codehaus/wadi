@@ -25,7 +25,7 @@ import org.codehaus.wadi.core.motable.SimpleMotable;
 import org.codehaus.wadi.core.store.DiscStore;
 import org.codehaus.wadi.core.store.Store;
 import org.codehaus.wadi.core.store.StoreMotable;
-import org.codehaus.wadi.impl.SimpleStreamer;
+import org.codehaus.wadi.core.util.SimpleStreamer;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>

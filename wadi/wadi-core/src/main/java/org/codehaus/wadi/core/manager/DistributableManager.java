@@ -16,7 +16,6 @@
  */
 package org.codehaus.wadi.core.manager;
 
-import org.codehaus.wadi.Router;
 import org.codehaus.wadi.core.ConcurrentMotableMap;
 import org.codehaus.wadi.core.contextualiser.Contextualiser;
 import org.codehaus.wadi.core.session.SessionFactory;
