@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.impl;
+package org.codehaus.wadi.core.contextualiser;
 
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Emoter;
@@ -28,6 +28,8 @@ import org.codehaus.wadi.PoolableInvocationWrapperPool;
 import org.codehaus.wadi.Session;
 import org.codehaus.wadi.SessionFactory;
 import org.codehaus.wadi.core.ConcurrentMotableMap;
+import org.codehaus.wadi.impl.AbstractMappedImmoter;
+import org.codehaus.wadi.impl.BaseMappedEmoter;
 
 /**
  * A Contextualiser that stores its state in Memory as Java Objects

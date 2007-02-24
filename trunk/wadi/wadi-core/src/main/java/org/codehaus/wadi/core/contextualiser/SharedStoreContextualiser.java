@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.impl;
+package org.codehaus.wadi.core.contextualiser;
 
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Emoter;
@@ -24,6 +24,10 @@ import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.Store;
 import org.codehaus.wadi.StoreMotable;
+import org.codehaus.wadi.impl.AbstractChainedEmoter;
+import org.codehaus.wadi.impl.AbstractImmoter;
+import org.codehaus.wadi.impl.DatabaseStore;
+import org.codehaus.wadi.impl.Utils;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 

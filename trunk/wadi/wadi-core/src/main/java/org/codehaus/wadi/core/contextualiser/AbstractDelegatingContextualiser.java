@@ -14,29 +14,33 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.impl;
+package org.codehaus.wadi.core.contextualiser;
 
-import java.util.Map;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Contextualiser;
-import org.codehaus.wadi.PartitionMapper;
+import org.codehaus.wadi.Immoter;
+import org.codehaus.wadi.Motable;
 
 /**
+ *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public abstract class AbstractContextualiser implements Contextualiser {
-    protected final Log _log = LogFactory.getLog(getClass());
+public abstract class AbstractDelegatingContextualiser extends AbstractChainedContextualiser {
 
-    public void start() throws Exception {
+    public AbstractDelegatingContextualiser(Contextualiser next) {
+        super(next);
     }
 
-    public void stop() throws Exception {
+    public Immoter getDemoter(String name, Motable motable) {
+        return next.getDemoter(name, motable);
     }
 
-    public void findRelevantSessionNames(PartitionMapper mapper, Map keyToSessionNames) {
+    public Immoter getSharedDemoter() {
+        return next.getSharedDemoter();
     }
-    
+
+    public void promoteToExclusive(Immoter immoter) {
+        next.promoteToExclusive(immoter);
+    }
+
 }
