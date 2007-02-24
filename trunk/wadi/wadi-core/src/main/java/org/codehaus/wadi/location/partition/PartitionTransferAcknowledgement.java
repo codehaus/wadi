@@ -18,7 +18,6 @@ package org.codehaus.wadi.location.partition;
 
 import java.io.Serializable;
 
-import org.codehaus.wadi.PartitionResponseMessage;
 
 /**
  * Sent from a cluster member to the Coordinator acknowledging receipt and confirming successful carrying out of a PartitionTransferCommand.

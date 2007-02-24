@@ -18,7 +18,6 @@ package org.codehaus.wadi.location.partition;
 
 import java.io.Serializable;
 
-import org.codehaus.wadi.PartitionResponseMessage;
 
 /**
  * Response from Coordinator to source of a PartitionEvacuationRequest, indicating that evacuation is complete.

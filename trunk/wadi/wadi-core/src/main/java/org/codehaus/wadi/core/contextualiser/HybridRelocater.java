@@ -20,6 +20,7 @@ import java.io.Serializable;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.core.WADIRuntimeException;
 import org.codehaus.wadi.core.motable.AbstractChainedEmoter;
 import org.codehaus.wadi.core.motable.Emoter;
 import org.codehaus.wadi.core.motable.Immoter;
@@ -32,8 +33,7 @@ import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.Peer;
-import org.codehaus.wadi.impl.WADIRuntimeException;
-import org.codehaus.wadi.location.PartitionManager;
+import org.codehaus.wadi.location.partitionmanager.PartitionManager;
 import org.codehaus.wadi.location.session.MoveIMToPM;
 import org.codehaus.wadi.location.session.MoveIMToSM;
 import org.codehaus.wadi.location.session.MovePMToIM;

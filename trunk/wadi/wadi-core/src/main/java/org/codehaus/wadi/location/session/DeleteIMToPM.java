@@ -18,8 +18,6 @@ package org.codehaus.wadi.location.session;
 
 import java.io.Serializable;
 
-import org.codehaus.wadi.location.SessionResponseMessage;
-import org.codehaus.wadi.location.impl.SessionRequestImpl;
 
 /**
  * Sent from InvocationMaster to PartitionMaster requesting that an entry be removed from the index.

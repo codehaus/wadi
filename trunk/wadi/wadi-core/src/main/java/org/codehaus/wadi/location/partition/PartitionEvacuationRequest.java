@@ -18,7 +18,6 @@ package org.codehaus.wadi.location.partition;
 
 import java.io.Serializable;
 
-import org.codehaus.wadi.PartitionRequestMessage;
 
 /**
  * Sent to the Coordinator, requesting that it rearrange Partition ownership, excluding the Requestor.

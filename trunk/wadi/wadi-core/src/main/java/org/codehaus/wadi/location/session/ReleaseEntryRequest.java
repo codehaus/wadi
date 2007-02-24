@@ -19,8 +19,6 @@ package org.codehaus.wadi.location.session;
 import java.io.Serializable;
 
 import org.codehaus.wadi.core.motable.Motable;
-import org.codehaus.wadi.location.SessionRequestMessage;
-import org.codehaus.wadi.location.SessionResponseMessage;
 
 /**
  * A request for the emigration of the enclosed session - The response

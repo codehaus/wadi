@@ -18,8 +18,6 @@ package org.codehaus.wadi.location.partition;
 
 import java.io.Serializable;
 
-import org.codehaus.wadi.PartitionRequestMessage;
-import org.codehaus.wadi.location.impl.PartitionTransfer;
 
 /**
  * Sent from Coordinator to a Peer, ordering it to transfer ownership of numbers of Partitions to other Peers.

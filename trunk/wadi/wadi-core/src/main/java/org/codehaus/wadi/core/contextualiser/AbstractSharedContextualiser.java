@@ -18,10 +18,10 @@ package org.codehaus.wadi.core.contextualiser;
 
 import java.util.Map;
 
-import org.codehaus.wadi.PartitionMapper;
 import org.codehaus.wadi.core.motable.Emoter;
 import org.codehaus.wadi.core.motable.Immoter;
 import org.codehaus.wadi.core.motable.Motable;
+import org.codehaus.wadi.location.partitionmanager.PartitionMapper;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>

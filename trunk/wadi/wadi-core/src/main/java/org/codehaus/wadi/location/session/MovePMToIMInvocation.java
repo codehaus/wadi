@@ -16,7 +16,7 @@
  */
 package org.codehaus.wadi.location.session;
 
-import org.codehaus.wadi.Lease;
+import org.codehaus.wadi.core.util.Lease;
 import org.codehaus.wadi.group.Peer;
 
 /**

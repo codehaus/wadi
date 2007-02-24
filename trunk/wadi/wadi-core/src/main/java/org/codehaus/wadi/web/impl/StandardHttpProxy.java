@@ -49,7 +49,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.IrrecoverableException;
 
 // My choice of proxy - still suboptimal - servlet spec imposes a very clumsy API
 // for copying the headers out of the HttpServletRequest (a proprietary solution

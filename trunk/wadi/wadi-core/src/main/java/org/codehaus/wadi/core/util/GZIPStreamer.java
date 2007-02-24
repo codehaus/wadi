@@ -26,7 +26,6 @@ import java.io.OutputStream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-import org.codehaus.wadi.impl.ObjectInputStream;
 
 /**
  * Pluggable support for [un]GZIP-ing sessions as they are exchanged with

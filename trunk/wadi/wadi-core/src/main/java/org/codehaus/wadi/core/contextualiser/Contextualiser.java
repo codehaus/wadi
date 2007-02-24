@@ -18,10 +18,10 @@ package org.codehaus.wadi.core.contextualiser;
 
 import java.util.Map;
 
-import org.codehaus.wadi.PartitionMapper;
 import org.codehaus.wadi.core.Lifecycle;
 import org.codehaus.wadi.core.motable.Immoter;
 import org.codehaus.wadi.core.motable.Motable;
+import org.codehaus.wadi.location.partitionmanager.PartitionMapper;
 
 /**
  * Contextualising an Invocation is colocating it and the relevant Session within the same JVM and then

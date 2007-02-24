@@ -20,7 +20,7 @@ import org.codehaus.wadi.core.contextualiser.Contextualiser;
 import org.codehaus.wadi.core.motable.Emoter;
 import org.codehaus.wadi.core.motable.Immoter;
 import org.codehaus.wadi.core.motable.Motable;
-import org.codehaus.wadi.location.StateManager;
+import org.codehaus.wadi.location.statemanager.StateManager;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
 
 /**

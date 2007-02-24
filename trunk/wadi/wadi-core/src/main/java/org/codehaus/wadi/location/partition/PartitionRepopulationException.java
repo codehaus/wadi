@@ -15,7 +15,7 @@
  */
 package org.codehaus.wadi.location.partition;
 
-import org.codehaus.wadi.location.impl.PartitionBalancingException;
+import org.codehaus.wadi.location.partitionmanager.PartitionBalancingException;
 
 /**
  * 

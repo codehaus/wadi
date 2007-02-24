@@ -22,8 +22,8 @@ import org.codehaus.wadi.core.contextualiser.Invocation;
 import org.codehaus.wadi.core.contextualiser.InvocationException;
 import org.codehaus.wadi.core.contextualiser.InvocationProxy;
 import org.codehaus.wadi.core.session.SessionFactory;
-import org.codehaus.wadi.location.PartitionManager;
-import org.codehaus.wadi.location.StateManager;
+import org.codehaus.wadi.location.partitionmanager.PartitionManager;
+import org.codehaus.wadi.location.statemanager.StateManager;
 import org.codehaus.wadi.web.WebSession;
 
 /**

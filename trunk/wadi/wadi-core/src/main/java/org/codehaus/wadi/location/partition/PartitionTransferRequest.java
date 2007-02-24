@@ -18,7 +18,6 @@ package org.codehaus.wadi.location.partition;
 
 import java.util.Map;
 
-import org.codehaus.wadi.PartitionRequestMessage;
 
 /**
  * Sent from one peer to another, requesting that it take over ownership of a number of Partitions (enclosed).
