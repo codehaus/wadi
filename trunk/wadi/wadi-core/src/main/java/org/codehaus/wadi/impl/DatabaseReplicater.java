@@ -23,6 +23,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Replicater;
 import org.codehaus.wadi.core.session.AbstractReplicableSession;
+import org.codehaus.wadi.core.store.DatabaseStore;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>

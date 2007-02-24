@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 
-package org.codehaus.wadi.impl;
+package org.codehaus.wadi.core.store;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -30,11 +30,7 @@ import javax.sql.DataSource;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.DatabaseMotableConfig;
 import org.codehaus.wadi.Motable;
-import org.codehaus.wadi.Store;
-import org.codehaus.wadi.StoreMotable;
-import org.codehaus.wadi.core.motable.DatabaseMotable;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>

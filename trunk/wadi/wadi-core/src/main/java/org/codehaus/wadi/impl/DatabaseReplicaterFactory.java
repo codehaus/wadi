@@ -16,6 +16,8 @@
  */
 package org.codehaus.wadi.impl;
 
+import org.codehaus.wadi.core.store.DatabaseStore;
+
 /**
  * A DatabaseReplicater holds no per Session state, so all Sessions may use the same Replicater
  *

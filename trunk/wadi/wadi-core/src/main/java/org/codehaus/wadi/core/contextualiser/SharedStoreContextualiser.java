@@ -22,11 +22,11 @@ import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.Motable;
-import org.codehaus.wadi.Store;
-import org.codehaus.wadi.StoreMotable;
+import org.codehaus.wadi.core.store.DatabaseStore;
+import org.codehaus.wadi.core.store.Store;
+import org.codehaus.wadi.core.store.StoreMotable;
 import org.codehaus.wadi.impl.AbstractChainedEmoter;
 import org.codehaus.wadi.impl.AbstractImmoter;
-import org.codehaus.wadi.impl.DatabaseStore;
 import org.codehaus.wadi.impl.Utils;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
