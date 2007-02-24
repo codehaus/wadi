@@ -16,7 +16,7 @@
  */
 package org.codehaus.wadi.core.eviction;
 
-import org.codehaus.wadi.Motable;
+import org.codehaus.wadi.core.motable.Motable;
 
 /**
  * An Evicter which always evicts

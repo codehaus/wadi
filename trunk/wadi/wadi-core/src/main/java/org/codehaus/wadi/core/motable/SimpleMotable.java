@@ -18,7 +18,6 @@ package org.codehaus.wadi.core.motable;
 
 import java.io.Serializable;
 
-import org.codehaus.wadi.Motable;
 
 /**
  * A very Simple implementation of Motable, with the Bytes field represented as a byte[]

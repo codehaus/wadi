@@ -24,10 +24,9 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.Evictable;
-import org.codehaus.wadi.EvictionStrategy;
-import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.core.ConcurrentMotableMap;
+import org.codehaus.wadi.core.contextualiser.EvictionStrategy;
+import org.codehaus.wadi.core.motable.Motable;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>

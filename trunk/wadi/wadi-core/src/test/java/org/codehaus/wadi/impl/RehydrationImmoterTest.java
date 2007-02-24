@@ -16,7 +16,7 @@
 package org.codehaus.wadi.impl;
 
 import org.codehaus.wadi.Immoter;
-import org.codehaus.wadi.Motable;
+import org.codehaus.wadi.core.motable.Motable;
 
 import com.agical.rmock.extension.junit.RMockTestCase;
 

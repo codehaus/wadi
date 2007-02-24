@@ -14,7 +14,10 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.core.motable;
+
+import org.codehaus.wadi.RehydrationException;
+import org.codehaus.wadi.core.eviction.Evictable;
 
 import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
 

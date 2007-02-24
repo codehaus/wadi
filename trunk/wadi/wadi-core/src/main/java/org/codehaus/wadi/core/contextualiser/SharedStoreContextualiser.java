@@ -21,7 +21,7 @@ import org.codehaus.wadi.Emoter;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
-import org.codehaus.wadi.Motable;
+import org.codehaus.wadi.core.motable.Motable;
 import org.codehaus.wadi.core.store.DatabaseStore;
 import org.codehaus.wadi.core.store.Store;
 import org.codehaus.wadi.core.store.StoreMotable;

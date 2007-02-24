@@ -18,6 +18,8 @@ package org.codehaus.wadi;
 
 import java.io.Externalizable;
 
+import org.codehaus.wadi.core.motable.Motable;
+
 
 
 /**

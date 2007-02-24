@@ -18,7 +18,7 @@ package org.codehaus.wadi.location;
 
 
 import org.codehaus.wadi.Lifecycle;
-import org.codehaus.wadi.Motable;
+import org.codehaus.wadi.core.motable.Motable;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>

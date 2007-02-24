@@ -27,8 +27,8 @@ import java.nio.channels.FileChannel;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.core.motable.AbstractMotable;
+import org.codehaus.wadi.core.motable.Motable;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>

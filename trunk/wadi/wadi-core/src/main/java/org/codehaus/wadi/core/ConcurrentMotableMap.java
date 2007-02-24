@@ -17,7 +17,7 @@ package org.codehaus.wadi.core;
 
 import java.util.Set;
 
-import org.codehaus.wadi.Motable;
+import org.codehaus.wadi.core.motable.Motable;
 
 /**
  * 

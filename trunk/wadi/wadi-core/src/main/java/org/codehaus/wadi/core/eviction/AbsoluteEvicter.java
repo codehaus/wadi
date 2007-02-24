@@ -16,7 +16,7 @@
  */
 package org.codehaus.wadi.core.eviction;
 
-import org.codehaus.wadi.Motable;
+import org.codehaus.wadi.core.motable.Motable;
 
 /**
  * An Evicter which evicts Evictables if they have timed out or after an absolute period of inactivity.

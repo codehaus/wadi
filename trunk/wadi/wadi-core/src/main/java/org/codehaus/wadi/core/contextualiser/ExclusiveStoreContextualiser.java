@@ -20,11 +20,11 @@ import java.io.File;
 
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Emoter;
-import org.codehaus.wadi.Evicter;
 import org.codehaus.wadi.Immoter;
-import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.core.ConcurrentMotableMap;
+import org.codehaus.wadi.core.eviction.Evicter;
+import org.codehaus.wadi.core.motable.Motable;
 import org.codehaus.wadi.core.store.DiscStore;
 import org.codehaus.wadi.core.store.Store;
 import org.codehaus.wadi.core.store.StoreMotable;

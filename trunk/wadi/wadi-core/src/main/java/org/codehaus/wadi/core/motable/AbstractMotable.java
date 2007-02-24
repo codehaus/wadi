@@ -21,8 +21,8 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
 
-import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.RehydrationException;
+import org.codehaus.wadi.core.eviction.SimpleEvictable;
 
 import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
 import EDU.oswego.cs.dl.util.concurrent.WriterPreferenceReadWriteLock;
