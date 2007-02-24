@@ -14,21 +14,31 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.impl;
 
-import org.codehaus.wadi.core.contextualiser.Invocation;
-import org.codehaus.wadi.core.contextualiser.InvocationException;
-import org.codehaus.wadi.core.contextualiser.Relocater;
-import org.codehaus.wadi.core.motable.Immoter;
+package org.codehaus.wadi.core.util;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.io.OutputStream;
 
 /**
+ * Abstract factory. Allows pluggable implementations of various
+ * input/output streaming mechanisms to support e.g. compression,
+ * encryption etc... I'd like to pool these, but the streams apis
+ * don't allow the resetting of the streams that they wrap.
+ *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class DummyRelocater implements Relocater {
+public interface Streamer {
+	ObjectInput getInputStream(InputStream is) throws IOException;
 
-    public boolean relocate(Invocation invocation, String name, Immoter immoter, boolean shuttingDown) throws InvocationException {
-		return true;
-	}
-
+    ObjectOutput getOutputStream(OutputStream os) throws IOException;
+	
+    String getSuffix();
+	
+    String getSuffixWithDot();
 }
+

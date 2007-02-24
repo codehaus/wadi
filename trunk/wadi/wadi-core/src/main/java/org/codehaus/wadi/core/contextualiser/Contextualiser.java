@@ -18,8 +18,8 @@ package org.codehaus.wadi.core.contextualiser;
 
 import java.util.Map;
 
-import org.codehaus.wadi.Lifecycle;
 import org.codehaus.wadi.PartitionMapper;
+import org.codehaus.wadi.core.Lifecycle;
 import org.codehaus.wadi.core.motable.Immoter;
 import org.codehaus.wadi.core.motable.Motable;
 

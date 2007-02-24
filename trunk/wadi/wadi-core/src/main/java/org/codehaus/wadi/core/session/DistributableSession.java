@@ -21,9 +21,9 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.Set;
 
-import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.core.manager.Manager;
-import org.codehaus.wadi.impl.Utils;
+import org.codehaus.wadi.core.util.Streamer;
+import org.codehaus.wadi.core.util.Utils;
 
 /**
  * A Standard Session enhanced with functionality associated with

@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 
-package org.codehaus.wadi.impl;
+package org.codehaus.wadi.core.util;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,7 +24,7 @@ import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 
-import org.codehaus.wadi.Streamer;
+import org.codehaus.wadi.impl.ObjectInputStream;
 
 /**
  * Don't do anything extra, just connect streams up directly.

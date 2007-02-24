@@ -16,7 +16,7 @@
  */
 package org.codehaus.wadi.core.session;
 
-import org.codehaus.wadi.Streamer;
+import org.codehaus.wadi.core.util.Streamer;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>

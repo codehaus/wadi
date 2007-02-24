@@ -20,7 +20,7 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.Lifecycle;
+import org.codehaus.wadi.core.Lifecycle;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.servicespace.LifecycleState;
 import org.codehaus.wadi.servicespace.ServiceName;

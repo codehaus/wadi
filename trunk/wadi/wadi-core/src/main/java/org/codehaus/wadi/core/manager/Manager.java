@@ -16,7 +16,7 @@
  */
 package org.codehaus.wadi.core.manager;
 
-import org.codehaus.wadi.Lifecycle;
+import org.codehaus.wadi.core.Lifecycle;
 import org.codehaus.wadi.core.contextualiser.Invocation;
 import org.codehaus.wadi.core.contextualiser.InvocationException;
 import org.codehaus.wadi.core.session.Session;

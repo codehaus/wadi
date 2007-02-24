@@ -14,20 +14,28 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.impl;
+package org.codehaus.wadi.core.manager;
 
-import org.codehaus.wadi.core.manager.Manager;
-import org.codehaus.wadi.core.manager.ManagerConfig;
-import org.codehaus.wadi.core.manager.SessionMonitor;
-import org.codehaus.wadi.core.session.SessionFactory;
+
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class DummyManagerConfig implements ManagerConfig {
+public interface Router {
+    /**
+     * Strip any routing info from this session id.
+     *
+     * @param session a <code>String</code> value
+     * @return a <code>String</code> value
+     */
+    String strip(String session);
 
-    public void callback(Manager manager, SessionMonitor sessionMonitor, SessionFactory sessionFactory) {
-	}
-
+    /**
+     * Add our routing info to this session id.
+     *
+     * @param session a <code>String</code> value
+     * @return a <code>String</code> value
+     */
+    String augment(String session);
 }

@@ -16,8 +16,8 @@
  */
 package org.codehaus.wadi.web.impl;
 
-import org.codehaus.wadi.Router;
 import org.codehaus.wadi.core.contextualiser.Invocation;
+import org.codehaus.wadi.core.manager.Router;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>

@@ -22,8 +22,7 @@ import java.nio.ByteBuffer;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.Streamer;
-import org.codehaus.wadi.impl.DirectByteBufferCache;
+import org.codehaus.wadi.core.util.Streamer;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>

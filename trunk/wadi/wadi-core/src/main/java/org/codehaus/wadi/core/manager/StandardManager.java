@@ -18,11 +18,10 @@ package org.codehaus.wadi.core.manager;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.Lifecycle;
 import org.codehaus.wadi.PoolableInvocationWrapper;
 import org.codehaus.wadi.PoolableInvocationWrapperPool;
-import org.codehaus.wadi.Router;
 import org.codehaus.wadi.core.ConcurrentMotableMap;
+import org.codehaus.wadi.core.Lifecycle;
 import org.codehaus.wadi.core.contextualiser.Contextualiser;
 import org.codehaus.wadi.core.contextualiser.Invocation;
 import org.codehaus.wadi.core.contextualiser.InvocationException;

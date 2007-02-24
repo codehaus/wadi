@@ -16,7 +16,6 @@
  */
 package org.codehaus.wadi.core.motable;
 
-import org.codehaus.wadi.RehydrationException;
 import org.codehaus.wadi.core.eviction.Evictable;
 
 import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;

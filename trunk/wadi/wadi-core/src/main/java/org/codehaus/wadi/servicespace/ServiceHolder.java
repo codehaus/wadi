@@ -15,7 +15,7 @@
  */
 package org.codehaus.wadi.servicespace;
 
-import org.codehaus.wadi.Lifecycle;
+import org.codehaus.wadi.core.Lifecycle;
 
 
 

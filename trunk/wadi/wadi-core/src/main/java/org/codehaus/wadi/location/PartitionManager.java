@@ -16,7 +16,7 @@
  */
 package org.codehaus.wadi.location;
 
-import org.codehaus.wadi.Lifecycle;
+import org.codehaus.wadi.core.Lifecycle;
 import org.codehaus.wadi.partition.PartitionBalancingInfo;
 
 /**

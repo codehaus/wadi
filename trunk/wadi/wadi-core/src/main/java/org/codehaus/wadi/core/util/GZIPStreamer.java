@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 
-package org.codehaus.wadi.impl;
+package org.codehaus.wadi.core.util;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,7 +26,7 @@ import java.io.OutputStream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-import org.codehaus.wadi.Streamer;
+import org.codehaus.wadi.impl.ObjectInputStream;
 
 /**
  * Pluggable support for [un]GZIP-ing sessions as they are exchanged with

@@ -15,7 +15,7 @@
  */
 package org.codehaus.wadi.partition;
 
-import org.codehaus.wadi.Lifecycle;
+import org.codehaus.wadi.core.Lifecycle;
 import org.codehaus.wadi.group.MessageExchangeException;
 
 

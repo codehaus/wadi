@@ -20,7 +20,7 @@ import java.util.Iterator;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.Lifecycle;
+import org.codehaus.wadi.core.Lifecycle;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.MessageExchangeException;

@@ -17,7 +17,7 @@ package org.codehaus.wadi.servicespace.basic;
 
 import java.io.Serializable;
 
-import org.codehaus.wadi.Lifecycle;
+import org.codehaus.wadi.core.Lifecycle;
 import org.codehaus.wadi.servicespace.ServiceAlreadyRegisteredException;
 import org.codehaus.wadi.servicespace.ServiceName;
 

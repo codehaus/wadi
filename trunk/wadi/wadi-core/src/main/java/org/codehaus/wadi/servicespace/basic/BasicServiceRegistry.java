@@ -24,7 +24,7 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.Lifecycle;
+import org.codehaus.wadi.core.Lifecycle;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.servicespace.ServiceAlreadyRegisteredException;
 import org.codehaus.wadi.servicespace.ServiceName;
