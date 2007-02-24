@@ -28,11 +28,11 @@ import javax.servlet.http.HttpSessionBindingListener;
 import javax.servlet.http.HttpSessionEvent;
 
 import org.codehaus.wadi.Manager;
-import org.codehaus.wadi.Replicater;
 import org.codehaus.wadi.Router;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.core.session.AtomicallyReplicableSession;
 import org.codehaus.wadi.core.session.Attributes;
+import org.codehaus.wadi.replication.Replicater;
 
 /**
  * 

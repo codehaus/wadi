@@ -52,9 +52,9 @@ import org.codehaus.wadi.core.session.StandardAttributesFactory;
 import org.codehaus.wadi.core.session.StandardValueFactory;
 import org.codehaus.wadi.core.session.ValueFactory;
 import org.codehaus.wadi.impl.DummyManagerConfig;
-import org.codehaus.wadi.impl.DummyReplicaterFactory;
 import org.codehaus.wadi.impl.SimpleStreamer;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
+import org.codehaus.wadi.replication.DummyReplicaterFactory;
 import org.codehaus.wadi.web.impl.DummyRouter;
 import org.codehaus.wadi.web.impl.StandardSessionWrapperFactory;
 

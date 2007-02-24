@@ -18,8 +18,8 @@ package org.codehaus.wadi.core.session;
 
 import org.codehaus.wadi.Manager;
 import org.codehaus.wadi.Motable;
-import org.codehaus.wadi.Replicater;
 import org.codehaus.wadi.Streamer;
+import org.codehaus.wadi.replication.Replicater;
 
 /**
  * A DistributableSession enhanced with functionality associated with replication - the frequent 'backing-up' of 

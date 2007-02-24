@@ -15,12 +15,12 @@
  */
 package org.codehaus.wadi.web;
 
-import org.codehaus.wadi.ReplicaterFactory;
 import org.codehaus.wadi.Router;
 import org.codehaus.wadi.Session;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.core.session.AtomicallyReplicableSessionFactory;
 import org.codehaus.wadi.core.session.AttributesFactory;
+import org.codehaus.wadi.replication.ReplicaterFactory;
 
 /**
  * 

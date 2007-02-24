@@ -16,9 +16,9 @@
 package org.codehaus.wadi.replication.manager;
 
 import org.codehaus.wadi.Motable;
-import org.codehaus.wadi.Replicater;
-import org.codehaus.wadi.ReplicaterException;
 import org.codehaus.wadi.Session;
+import org.codehaus.wadi.replication.Replicater;
+import org.codehaus.wadi.replication.ReplicaterException;
 
 /**
  * 
