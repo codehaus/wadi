@@ -23,7 +23,7 @@ package org.codehaus.wadi.web;
  */
 public interface HttpServletRequestWrapperPool {
 
-    PoolableHttpServletRequestWrapper take();
-    void put(PoolableHttpServletRequestWrapper wrapper);
+    HttpInvocationContext take();
+    void put(HttpInvocationContext wrapper);
 
 }

@@ -16,41 +16,28 @@
  */
 package org.codehaus.wadi.web.impl;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpSession;
 
 import org.codehaus.wadi.core.contextualiser.Invocation;
-import org.codehaus.wadi.core.session.Session;
-import org.codehaus.wadi.web.PoolableHttpServletRequestWrapper;
+import org.codehaus.wadi.web.HttpInvocationContext;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision: 1886 $
  */
-public class StatelessHttpServletRequestWrapper extends HttpServletRequestWrapper implements PoolableHttpServletRequestWrapper {
+public class StatelessHttpServletRequestWrapper extends HttpServletRequestWrapper implements HttpInvocationContext {
 
-	protected static final HttpServletRequest DUMMY = new DummyHttpServletRequest();
+    public StatelessHttpServletRequestWrapper(Invocation invocation) {
+        super(((WebInvocation) invocation).getHreq());
+    }
 
-	public StatelessHttpServletRequestWrapper() {
-		super(DUMMY);
-	}
+    public HttpSession getSession() {
+        return getSession(true);
+    }
 
-	public StatelessHttpServletRequestWrapper(HttpServletRequest request) {super(request);}
-
-	// These methods should never be called while contextualising a stateless request...
-	public HttpSession getSession(){return getSession(true);}
-	public HttpSession getSession(boolean create){throw new UnsupportedOperationException();}
-
-	// TODO - consider session cookie related methods as well..
-
-	public void init(Invocation invocation, Session context) {
-		HttpServletRequest request = ((WebInvocation) invocation).getHreq();
-		setRequest(request);
-	}
-
-	public void destroy() {
-		setRequest(DUMMY);
-	}
+    public HttpSession getSession(boolean create) {
+        throw new UnsupportedOperationException();
+    }
 
 }

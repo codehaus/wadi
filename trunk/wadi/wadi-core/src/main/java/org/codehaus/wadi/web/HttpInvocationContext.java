@@ -17,11 +17,12 @@
 package org.codehaus.wadi.web;
 
 import javax.servlet.http.HttpServletRequest;
-import org.codehaus.wadi.PoolableInvocationWrapper;
+
+import org.codehaus.wadi.core.contextualiser.InvocationContext;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public interface PoolableHttpServletRequestWrapper extends HttpServletRequest, PoolableInvocationWrapper {
+public interface HttpInvocationContext extends HttpServletRequest, InvocationContext {
 }

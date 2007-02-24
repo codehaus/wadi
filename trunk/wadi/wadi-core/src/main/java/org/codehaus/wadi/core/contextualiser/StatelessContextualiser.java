@@ -23,7 +23,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.core.motable.Immoter;
-import org.codehaus.wadi.web.PoolableHttpServletRequestWrapper;
 import org.codehaus.wadi.web.impl.StatelessHttpServletRequestWrapper;
 import org.codehaus.wadi.web.impl.WebInvocation;
 
@@ -71,27 +70,16 @@ public class StatelessContextualiser extends AbstractDelegatingContextualiser {
 		_uriFlag=uriFlag;
 	}
 
-	public ThreadLocal _wrapper=new ThreadLocal(){
-		protected synchronized Object initialValue() {
-			return new StatelessHttpServletRequestWrapper();
-		}
-	};
-
 	public boolean contextualise(Invocation invocation, String key, Immoter immoter, boolean exclusiveOnly) throws InvocationException {
-		WebInvocation context = (WebInvocation) invocation;
-		HttpServletRequest hreq = context.getHreq();
+		WebInvocation webInvocation = (WebInvocation) invocation;
+		HttpServletRequest hreq = webInvocation.getHreq();
 		if (hreq==null || isStateful(hreq)) {
 			// we cannot optimise...
 			return next.contextualise(invocation, key, immoter, exclusiveOnly);
 		} else {
 			// wrap the request so that session is inaccessible and process here...
-			PoolableHttpServletRequestWrapper wrapper=(PoolableHttpServletRequestWrapper)_wrapper.get();
-			wrapper.init(invocation, null);
-			try {
-				invocation.invoke(wrapper);
-			} finally {
-				wrapper.destroy();
-			}
+            StatelessHttpServletRequestWrapper context = new StatelessHttpServletRequestWrapper(invocation);
+			invocation.invoke(context);
 			return true;
 		}
 	}

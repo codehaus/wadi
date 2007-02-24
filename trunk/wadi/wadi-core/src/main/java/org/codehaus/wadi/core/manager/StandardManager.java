@@ -18,17 +18,17 @@ package org.codehaus.wadi.core.manager;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.PoolableInvocationWrapper;
-import org.codehaus.wadi.PoolableInvocationWrapperPool;
 import org.codehaus.wadi.core.ConcurrentMotableMap;
 import org.codehaus.wadi.core.Lifecycle;
 import org.codehaus.wadi.core.contextualiser.Contextualiser;
 import org.codehaus.wadi.core.contextualiser.Invocation;
+import org.codehaus.wadi.core.contextualiser.InvocationContext;
+import org.codehaus.wadi.core.contextualiser.InvocationContextFactory;
 import org.codehaus.wadi.core.contextualiser.InvocationException;
 import org.codehaus.wadi.core.session.Session;
 import org.codehaus.wadi.core.session.SessionFactory;
 import org.codehaus.wadi.impl.WADIRuntimeException;
-import org.codehaus.wadi.web.impl.DummyStatefulHttpServletRequestWrapperPool;
+import org.codehaus.wadi.web.impl.StatefulHttpInvocationContextFactory;
 
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
 
@@ -48,7 +48,7 @@ public class StandardManager implements Lifecycle, Manager {
     protected final boolean errorIfSessionNotAcquired;
     protected final SynchronizedBoolean acceptingSessions = new SynchronizedBoolean(true);
     private final SessionMonitor sessionMonitor;
-    protected PoolableInvocationWrapperPool _pool = new DummyStatefulHttpServletRequestWrapperPool();
+    protected InvocationContextFactory invocationContextFactory = new StatefulHttpInvocationContextFactory();
     protected ManagerConfig config;
     protected int maxInactiveInterval = 30 * 60;
 
@@ -175,11 +175,8 @@ public class StandardManager implements Lifecycle, Manager {
         }
 
         // no session yet - but may initiate one...
-        PoolableInvocationWrapper wrapper = _pool.take();
-        wrapper.init(invocation, null);
-        invocation.invoke(wrapper);
-        wrapper.destroy();
-        _pool.put(wrapper);
+        InvocationContext context = invocationContextFactory.create(invocation, null);
+        invocation.invoke(context);
         return true;
     }
 

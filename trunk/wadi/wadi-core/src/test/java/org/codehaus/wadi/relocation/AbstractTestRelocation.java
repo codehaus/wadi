@@ -26,8 +26,8 @@ import junit.framework.TestCase;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.PoolableInvocationWrapper;
 import org.codehaus.wadi.core.contextualiser.Invocation;
+import org.codehaus.wadi.core.contextualiser.InvocationContext;
 import org.codehaus.wadi.core.contextualiser.InvocationException;
 import org.codehaus.wadi.core.contextualiser.InvocationProxy;
 import org.codehaus.wadi.core.manager.StandardManager;
@@ -70,7 +70,7 @@ public class AbstractTestRelocation extends TestCase {
             throw new UnsupportedOperationException("NYI");
         }
 
-        public void invoke(PoolableInvocationWrapper wrapper) throws InvocationException {
+        public void invoke(InvocationContext wrapper) throws InvocationException {
             throw new UnsupportedOperationException("NYI");
         }
 

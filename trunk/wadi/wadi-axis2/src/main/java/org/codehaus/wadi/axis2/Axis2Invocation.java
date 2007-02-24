@@ -18,8 +18,8 @@ package org.codehaus.wadi.axis2;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.PoolableInvocationWrapper;
 import org.codehaus.wadi.core.contextualiser.Invocation;
+import org.codehaus.wadi.core.contextualiser.InvocationContext;
 import org.codehaus.wadi.core.contextualiser.InvocationException;
 import org.codehaus.wadi.core.contextualiser.InvocationProxy;
 import org.codehaus.wadi.core.manager.Manager;
@@ -118,7 +118,7 @@ public class Axis2Invocation implements Invocation, Runnable {
     // we'll just reuse the way that this is done for webcontainers - but, rather than actually wrap our non-existant
     // request with this wrapper, we'll just take the session from it and make that available for the duration of the
     // invocation....
-    public void invoke(PoolableInvocationWrapper wrapper) throws InvocationException {
+    public void invoke(InvocationContext wrapper) throws InvocationException {
         StatefulHttpServletRequestWrapper w=(StatefulHttpServletRequestWrapper)wrapper; // hacky
         _session=(Axis2Session)w.getSession();
         invoke();

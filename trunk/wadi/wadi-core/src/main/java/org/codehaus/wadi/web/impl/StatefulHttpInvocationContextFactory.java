@@ -14,15 +14,21 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.web.impl;
+
+import org.codehaus.wadi.core.contextualiser.Invocation;
+import org.codehaus.wadi.core.contextualiser.InvocationContext;
+import org.codehaus.wadi.core.contextualiser.InvocationContextFactory;
+import org.codehaus.wadi.core.session.Session;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public interface PoolableInvocationWrapperPool {
+public class StatefulHttpInvocationContextFactory implements InvocationContextFactory {
 
-    PoolableInvocationWrapper take();
-    void put(PoolableInvocationWrapper wrapper);
+	public InvocationContext create(Invocation invocation, Session context) {
+		return new StatefulHttpServletRequestWrapper(invocation, context);
+	}
 
 }

@@ -16,8 +16,6 @@
  */
 package org.codehaus.wadi.core.contextualiser;
 
-import org.codehaus.wadi.PoolableInvocationWrapper;
-import org.codehaus.wadi.PoolableInvocationWrapperPool;
 import org.codehaus.wadi.core.ConcurrentMotableMap;
 import org.codehaus.wadi.core.eviction.Evicter;
 import org.codehaus.wadi.core.motable.AbstractMappedImmoter;
@@ -39,19 +37,21 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
     private final Immoter _immoter;
     private final Emoter _emoter;
     private final Emoter _evictionEmoter;
-    private final PoolableInvocationWrapperPool _requestPool;
+    private final InvocationContextFactory invocationContextFactory;
 
 	public MemoryContextualiser(Contextualiser next,
             Evicter evicter,
             ConcurrentMotableMap map,
             SessionFactory sessionFactory,
-            PoolableInvocationWrapperPool requestPool) {
+            InvocationContextFactory invocationContextFactory) {
 		super(next, evicter, map);
         if (null == sessionFactory) {
             throw new IllegalArgumentException("sessionFactory is required");
+        } else if (null == invocationContextFactory) {
+            throw new IllegalArgumentException("invocationContextFactory is required");
         }
         this.sessionFactory = sessionFactory;
-        _requestPool = requestPool;
+        this.invocationContextFactory = invocationContextFactory;
         
         _immoter = new MemoryImmoter(map);
         _emoter = new BaseMappedEmoter(map);
@@ -64,11 +64,8 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
         invocation.setSession((Session) motable); 
         if (!invocation.isProxiedInvocation()) {
             // take wrapper from pool...
-            PoolableInvocationWrapper wrapper = _requestPool.take();
-            wrapper.init(invocation, (Session) motable);
+            InvocationContext wrapper = invocationContextFactory.create(invocation, (Session) motable);
             invocation.invoke(wrapper);
-            wrapper.destroy();
-            _requestPool.put(wrapper);
         } else {
             invocation.invoke();
         }
