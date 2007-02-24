@@ -18,7 +18,7 @@ package org.codehaus.wadi.replication.contextualiser;
 import org.codehaus.wadi.core.contextualiser.DummyContextualiser;
 import org.codehaus.wadi.core.motable.Emoter;
 import org.codehaus.wadi.core.motable.Motable;
-import org.codehaus.wadi.location.StateManager;
+import org.codehaus.wadi.location.statemanager.StateManager;
 import org.codehaus.wadi.replication.contextualiser.ReplicaAwareContextualiser;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
 

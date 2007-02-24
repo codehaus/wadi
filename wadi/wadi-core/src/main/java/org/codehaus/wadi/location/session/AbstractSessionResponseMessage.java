@@ -17,7 +17,6 @@ package org.codehaus.wadi.location.session;
 
 import java.io.Serializable;
 
-import org.codehaus.wadi.location.SessionResponseMessage;
 
 /**
  *

@@ -19,7 +19,6 @@ package org.codehaus.wadi.location.partition;
 import java.io.Serializable;
 import java.util.Map;
 
-import org.codehaus.wadi.PartitionResponseMessage;
 import org.codehaus.wadi.group.Peer;
 
 /**

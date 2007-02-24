@@ -24,7 +24,6 @@ import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 
-import org.codehaus.wadi.impl.ObjectInputStream;
 
 /**
  * Don't do anything extra, just connect streams up directly.

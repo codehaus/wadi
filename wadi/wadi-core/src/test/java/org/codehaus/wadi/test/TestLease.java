@@ -20,10 +20,10 @@ import junit.framework.TestCase;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.Lease;
-import org.codehaus.wadi.Lease.Handle;
-import org.codehaus.wadi.impl.ExtendableLease;
-import org.codehaus.wadi.impl.SimpleLease;
+import org.codehaus.wadi.core.util.ExtendableLease;
+import org.codehaus.wadi.core.util.Lease;
+import org.codehaus.wadi.core.util.SimpleLease;
+import org.codehaus.wadi.core.util.Lease.Handle;
 
 import EDU.oswego.cs.dl.util.concurrent.Mutex;
 import EDU.oswego.cs.dl.util.concurrent.Sync;

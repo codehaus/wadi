@@ -20,6 +20,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.core.ConcurrentMotableMap;
 import org.codehaus.wadi.core.Lifecycle;
+import org.codehaus.wadi.core.WADIRuntimeException;
 import org.codehaus.wadi.core.contextualiser.Contextualiser;
 import org.codehaus.wadi.core.contextualiser.Invocation;
 import org.codehaus.wadi.core.contextualiser.InvocationContext;
@@ -27,7 +28,6 @@ import org.codehaus.wadi.core.contextualiser.InvocationContextFactory;
 import org.codehaus.wadi.core.contextualiser.InvocationException;
 import org.codehaus.wadi.core.session.Session;
 import org.codehaus.wadi.core.session.SessionFactory;
-import org.codehaus.wadi.impl.WADIRuntimeException;
 import org.codehaus.wadi.web.impl.StatefulHttpInvocationContextFactory;
 
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;

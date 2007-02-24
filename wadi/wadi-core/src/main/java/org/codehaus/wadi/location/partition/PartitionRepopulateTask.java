@@ -16,7 +16,7 @@
 package org.codehaus.wadi.location.partition;
 
 import org.codehaus.wadi.group.MessageExchangeException;
-import org.codehaus.wadi.location.impl.local.LocalPartition;
+import org.codehaus.wadi.location.partitionmanager.local.LocalPartition;
 
 /**
  * 

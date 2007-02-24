@@ -19,8 +19,6 @@ package org.codehaus.wadi.location.session;
 import java.io.Serializable;
 
 import org.codehaus.wadi.group.Peer;
-import org.codehaus.wadi.location.SessionResponseMessage;
-import org.codehaus.wadi.location.impl.SessionRequestImpl;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>

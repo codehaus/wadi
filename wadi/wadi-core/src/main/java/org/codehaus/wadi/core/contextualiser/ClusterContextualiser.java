@@ -20,8 +20,8 @@ import org.codehaus.wadi.core.motable.Emoter;
 import org.codehaus.wadi.core.motable.Immoter;
 import org.codehaus.wadi.core.motable.Motable;
 import org.codehaus.wadi.core.motable.SimpleMotable;
-import org.codehaus.wadi.location.PartitionManager;
-import org.codehaus.wadi.location.StateManager;
+import org.codehaus.wadi.location.partitionmanager.PartitionManager;
+import org.codehaus.wadi.location.statemanager.StateManager;
 
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
 

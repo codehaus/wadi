@@ -63,7 +63,6 @@ import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.TraceMethod;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.IrrecoverableException;
 
 //This does not seem as performant as the StandardHttpProxy - it also seems to be able to crash Firefox reproducibly !
 //commons-httpclient does not [seem to] allow us to pass Cookie headers straight through. So, we have
