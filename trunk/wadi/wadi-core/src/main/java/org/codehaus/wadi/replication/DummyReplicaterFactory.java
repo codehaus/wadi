@@ -14,18 +14,16 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.replication;
+
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public interface Replicater {
-	void create(Object tmp) throws ReplicaterException;
+public class DummyReplicaterFactory extends StatelessReplicaterFactory {
 
-    void update(Object tmp) throws ReplicaterException;
-	
-    void destroy(Object tmp);
-
-	void acquireFromOtherReplicater(Object tmp) throws ReplicaterException;
+	public DummyReplicaterFactory() {
+		super(new DummyReplicater());
+	}
 }

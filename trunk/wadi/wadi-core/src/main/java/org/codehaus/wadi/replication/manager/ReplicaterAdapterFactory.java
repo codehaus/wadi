@@ -15,8 +15,8 @@
  */
 package org.codehaus.wadi.replication.manager;
 
-import org.codehaus.wadi.Replicater;
-import org.codehaus.wadi.ReplicaterFactory;
+import org.codehaus.wadi.replication.Replicater;
+import org.codehaus.wadi.replication.ReplicaterFactory;
 import org.codehaus.wadi.replication.manager.basic.MotableReplicationManager;
 
 /**

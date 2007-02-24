@@ -14,15 +14,21 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.impl;
+package org.codehaus.wadi.replication;
 
+import org.codehaus.wadi.core.store.DatabaseStore;
+
+/**
+ * A DatabaseReplicater holds no per Session state, so all Sessions may use the same Replicater
+ *
+ */
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class DummyReplicaterFactory extends StatelessReplicaterFactory {
+public class DatabaseReplicaterFactory extends StatelessReplicaterFactory {
 
-	public DummyReplicaterFactory() {
-		super(new DummyReplicater());
+	public DatabaseReplicaterFactory(DatabaseStore store, boolean reusingStore) {
+		super(new DatabaseReplicater(store, reusingStore));
 	}
 }

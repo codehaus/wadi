@@ -14,23 +14,13 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.impl;
+package org.codehaus.wadi.replication;
 
-import org.codehaus.wadi.Replicater;
-import org.codehaus.wadi.ReplicaterFactory;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class StatelessReplicaterFactory implements ReplicaterFactory {
-	private final Replicater _replicater;
-
-	public StatelessReplicaterFactory(Replicater replicater) {
-		_replicater = replicater;
-	}
-
-    public Replicater create() {
-		return _replicater;
-	}
+public interface ReplicaterFactory {
+	Replicater create();
 }

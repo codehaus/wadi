@@ -16,10 +16,10 @@
  */
 package org.codehaus.wadi.core.session;
 
-import org.codehaus.wadi.Replicater;
-import org.codehaus.wadi.ReplicaterFactory;
 import org.codehaus.wadi.Session;
 import org.codehaus.wadi.Streamer;
+import org.codehaus.wadi.replication.Replicater;
+import org.codehaus.wadi.replication.ReplicaterFactory;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>

@@ -1,5 +1,6 @@
 /**
- * Copyright 2006 The Apache Software Foundation
+ *
+ * Copyright 2003-2005 Core Developers Network Ltd.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -13,16 +14,21 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.replication;
+
 
 /**
- * 
- * @version $Revision: 2067 $
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
  */
-public class ReplicaterException extends RuntimeException {
+public class StatelessReplicaterFactory implements ReplicaterFactory {
+	private final Replicater _replicater;
 
-    public ReplicaterException(Throwable throwable) {
-        super(throwable);
-    }
-    
+	public StatelessReplicaterFactory(Replicater replicater) {
+		_replicater = replicater;
+	}
+
+    public Replicater create() {
+		return _replicater;
+	}
 }

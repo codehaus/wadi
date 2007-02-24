@@ -15,9 +15,8 @@
  *  limitations under the License.
  */
 
-package org.codehaus.wadi.impl;
+package org.codehaus.wadi.replication;
 
-import org.codehaus.wadi.Replicater;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
