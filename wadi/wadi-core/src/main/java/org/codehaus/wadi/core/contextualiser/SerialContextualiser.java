@@ -16,7 +16,6 @@
  */
 package org.codehaus.wadi.core.contextualiser;
 
-import org.codehaus.wadi.Collapser;
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Invocation;
