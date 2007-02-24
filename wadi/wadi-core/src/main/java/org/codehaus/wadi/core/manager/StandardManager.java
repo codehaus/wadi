@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.impl;
+package org.codehaus.wadi.core.manager;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -33,6 +33,7 @@ import org.codehaus.wadi.SessionFactory;
 import org.codehaus.wadi.SessionIdFactory;
 import org.codehaus.wadi.SessionMonitor;
 import org.codehaus.wadi.core.ConcurrentMotableMap;
+import org.codehaus.wadi.impl.WADIRuntimeException;
 import org.codehaus.wadi.web.impl.DummyStatefulHttpServletRequestWrapperPool;
 
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
