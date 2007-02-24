@@ -270,7 +270,6 @@
     <derby.version>10.1.1.0</derby.version>
     <geronimo-spec-jms.version>1.1-rc4</geronimo-spec-jms.version>
     <geronimo-spec-servlet.version>2.4-rc4</geronimo-spec-servlet.version>
-    <jboss4.version>4.0.2</jboss4.version>
     <jee.version>1.4</jee.version>
     <jse.version>1.4</jse.version>
     <junit.version>3.8.1</junit.version>
@@ -292,7 +291,6 @@
     <module>wadi-tomcat50</module>
     <module>wadi-tomcat55</module>
     <module>wadi-axis2</module>
-    <module>wadi-jboss4</module>
     <module>wadi-webapp</module>
     <module>wadi-assembly</module>
   </modules>
