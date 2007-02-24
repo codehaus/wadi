@@ -16,7 +16,7 @@
 package org.codehaus.wadi.replication.manager.basic;
 
 import org.codehaus.wadi.Motable;
-import org.codehaus.wadi.impl.SimpleMotable;
+import org.codehaus.wadi.core.motable.SimpleMotable;
 import org.codehaus.wadi.replication.common.ReplicaInfo;
 import org.codehaus.wadi.replication.manager.InternalReplicationManagerException;
 import org.codehaus.wadi.replication.manager.ReplicationKeyNotFoundException;

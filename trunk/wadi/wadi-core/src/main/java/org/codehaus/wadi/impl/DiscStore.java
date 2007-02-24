@@ -26,6 +26,7 @@ import org.codehaus.wadi.DiscMotableConfig;
 import org.codehaus.wadi.Store;
 import org.codehaus.wadi.StoreMotable;
 import org.codehaus.wadi.Streamer;
+import org.codehaus.wadi.core.motable.DiscMotable;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>

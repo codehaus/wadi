@@ -23,8 +23,8 @@ import junit.framework.TestCase;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.Store;
 import org.codehaus.wadi.StoreMotable;
+import org.codehaus.wadi.core.motable.SimpleMotable;
 import org.codehaus.wadi.impl.DiscStore;
-import org.codehaus.wadi.impl.SimpleMotable;
 import org.codehaus.wadi.impl.SimpleStreamer;
 
 /**

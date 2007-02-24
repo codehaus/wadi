@@ -34,6 +34,7 @@ import org.codehaus.wadi.DatabaseMotableConfig;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.Store;
 import org.codehaus.wadi.StoreMotable;
+import org.codehaus.wadi.core.motable.DatabaseMotable;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>

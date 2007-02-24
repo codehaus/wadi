@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.impl;
+package org.codehaus.wadi.core.motable;
 
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -31,7 +31,7 @@ import EDU.oswego.cs.dl.util.concurrent.WriterPreferenceReadWriteLock;
  * Implement all of Motable except for the Bytes field. This is the field most likely to have different representations.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
+ * @version $Revision: 2244 $
  */
 public abstract class AbstractMotable extends SimpleEvictable implements Motable, Serializable {
     protected String name;
