@@ -28,7 +28,6 @@ import java.util.Set;
 import javax.servlet.http.HttpSessionActivationListener;
 import javax.servlet.http.HttpSessionBindingListener;
 
-import org.codehaus.wadi.ValueFactory;
 
 /**
  * A DistributableAttributes object needs to be Listener aware. When a Session is invalidated in Serialised
