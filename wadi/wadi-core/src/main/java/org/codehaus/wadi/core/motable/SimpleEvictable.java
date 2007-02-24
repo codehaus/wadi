@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.impl;
+package org.codehaus.wadi.core.motable;
 
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -27,7 +27,7 @@ import org.codehaus.wadi.Evictable;
  * A very Simple impementation of Evictable
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
+ * @version $Revision: 2244 $
  */
 
 public abstract class SimpleEvictable implements Evictable, Serializable {

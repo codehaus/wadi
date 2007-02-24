@@ -23,6 +23,7 @@ import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.Relocater;
+import org.codehaus.wadi.core.motable.SimpleMotable;
 import org.codehaus.wadi.location.PartitionManager;
 import org.codehaus.wadi.location.StateManager;
 
