@@ -15,7 +15,7 @@
  *  limitations under the License.
  */
 
-package org.codehaus.wadi;
+package org.codehaus.wadi.core.contextualiser;
 
 import EDU.oswego.cs.dl.util.concurrent.Sync;
 
@@ -26,7 +26,5 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * @version $Revision$
  */
 public interface Collapser {
-
 	Sync getLock(String id);
-
 }

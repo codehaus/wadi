@@ -30,6 +30,7 @@ import org.codehaus.wadi.core.ConcurrentMotableMap;
 import org.codehaus.wadi.core.OswegoConcurrentMotableMap;
 import org.codehaus.wadi.core.contextualiser.ClusterContextualiser;
 import org.codehaus.wadi.core.contextualiser.DummyContextualiser;
+import org.codehaus.wadi.core.contextualiser.HashingCollapser;
 import org.codehaus.wadi.core.contextualiser.MemoryContextualiser;
 import org.codehaus.wadi.core.contextualiser.SerialContextualiser;
 import org.codehaus.wadi.core.eviction.AbsoluteEvicter;
