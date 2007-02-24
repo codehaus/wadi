@@ -34,7 +34,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Replicater;
 import org.codehaus.wadi.Router;
 import org.codehaus.wadi.Streamer;
-import org.codehaus.wadi.web.Attributes;
+import org.codehaus.wadi.core.session.Attributes;
 import org.codehaus.wadi.web.BasicWebSession;
 import org.codehaus.wadi.web.WebSessionConfig;
 import org.codehaus.wadi.web.WebSessionWrapperFactory;

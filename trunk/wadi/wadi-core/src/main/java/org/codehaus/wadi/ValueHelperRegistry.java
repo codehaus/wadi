@@ -1,6 +1,5 @@
 /**
- *
- * Copyright 2003-2005 Core Developers Network Ltd.
+ * Copyright 2006 The Apache Software Foundation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,26 +13,13 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.web;
+package org.codehaus.wadi;
 
-import java.util.Set;
 
 /**
- * TODO - JavaDoc this type
- *
- * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
+ * 
+ * @version $Revision: 1538 $
  */
-public interface Attributes {
-    Object get(Object key);
-
-    Object remove(Object key);
-    
-    Object put(Object key, Object newValue);
-    
-    int size();
-    
-    Set keySet();
-    
-    void clear();
+public interface ValueHelperRegistry {
+    ValueHelper findHelper(Class type);
 }

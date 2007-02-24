@@ -47,6 +47,7 @@ import org.codehaus.wadi.core.OswegoConcurrentMotableMap;
 import org.codehaus.wadi.core.contextualiser.DummyContextualiser;
 import org.codehaus.wadi.core.manager.ClusteredManager;
 import org.codehaus.wadi.core.manager.StandardManager;
+import org.codehaus.wadi.core.session.AttributesFactory;
 import org.codehaus.wadi.core.session.StandardAttributesFactory;
 import org.codehaus.wadi.core.session.StandardValueFactory;
 import org.codehaus.wadi.core.session.ValueFactory;

@@ -16,7 +16,7 @@
  */
 package org.codehaus.wadi.core.session;
 
-import org.codehaus.wadi.web.ValueHelperRegistry;
+import org.codehaus.wadi.ValueHelperRegistry;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>

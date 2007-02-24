@@ -24,7 +24,6 @@ import java.util.Set;
 import org.codehaus.wadi.Manager;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.impl.Utils;
-import org.codehaus.wadi.web.Attributes;
 
 /**
  * A Standard Session enhanced with functionality associated with

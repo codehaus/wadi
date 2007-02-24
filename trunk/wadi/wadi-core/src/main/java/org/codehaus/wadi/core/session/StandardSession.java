@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.io.NotSerializableException;
 
 import org.codehaus.wadi.Manager;
-import org.codehaus.wadi.web.Attributes;
 
 /**
  * Our internal representation of any Web Session

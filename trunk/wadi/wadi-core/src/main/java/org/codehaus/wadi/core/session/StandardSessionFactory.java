@@ -19,8 +19,6 @@ package org.codehaus.wadi.core.session;
 import org.codehaus.wadi.Manager;
 import org.codehaus.wadi.Session;
 import org.codehaus.wadi.SessionFactory;
-import org.codehaus.wadi.web.Attributes;
-import org.codehaus.wadi.web.AttributesFactory;
 
 
 /**
