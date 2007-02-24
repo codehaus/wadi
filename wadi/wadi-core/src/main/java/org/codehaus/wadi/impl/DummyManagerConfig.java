@@ -16,10 +16,10 @@
  */
 package org.codehaus.wadi.impl;
 
-import org.codehaus.wadi.Manager;
-import org.codehaus.wadi.ManagerConfig;
-import org.codehaus.wadi.SessionFactory;
-import org.codehaus.wadi.SessionMonitor;
+import org.codehaus.wadi.core.manager.Manager;
+import org.codehaus.wadi.core.manager.ManagerConfig;
+import org.codehaus.wadi.core.manager.SessionMonitor;
+import org.codehaus.wadi.core.session.SessionFactory;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>

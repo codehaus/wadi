@@ -22,10 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Immoter;
-import org.codehaus.wadi.Invocation;
-import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.web.PoolableHttpServletRequestWrapper;
 import org.codehaus.wadi.web.impl.StatelessHttpServletRequestWrapper;
 import org.codehaus.wadi.web.impl.WebInvocation;

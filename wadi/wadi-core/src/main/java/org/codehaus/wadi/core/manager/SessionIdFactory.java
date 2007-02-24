@@ -1,5 +1,6 @@
 /**
- * Copyright 2006 The Apache Software Foundation
+ *
+ * Copyright 2003-2005 Core Developers Network Ltd.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -13,19 +14,24 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
 
+package org.codehaus.wadi.core.manager;
 
 /**
- * 
- * @version $Revision: 1538 $
+ * Abstract out the API for session id generation
+ *
+ * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
+ * @version $Revision$
  */
-public interface SessionMonitor {
-    void notifySessionCreation(Session session);
 
-    void notifySessionDestruction(Session session);
+public interface SessionIdFactory {
     
-    void addSessionListener(SessionListener sessionListener);
+    String create();
     
-    void removeSessionListener(SessionListener sessionListener);
+    int getSessionIdLength();
+    
+    // I don't want this here - I favour ctor IOC 
+    // - but TC's Manager i/f makes it awkward not to have it...
+    void setSessionIdLength(int l);    
+    
 }

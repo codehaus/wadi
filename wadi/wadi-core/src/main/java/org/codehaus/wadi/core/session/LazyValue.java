@@ -29,7 +29,6 @@ import javax.servlet.http.HttpSessionBindingListener;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.ValueHelperRegistry;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>

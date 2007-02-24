@@ -14,8 +14,10 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.core.contextualiser;
 
+import org.codehaus.wadi.PoolableInvocationWrapper;
+import org.codehaus.wadi.core.session.Session;
 import org.codehaus.wadi.group.EndPoint;
 
 

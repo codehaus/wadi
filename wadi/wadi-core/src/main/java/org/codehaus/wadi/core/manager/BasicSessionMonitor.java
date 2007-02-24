@@ -13,9 +13,11 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.core.manager;
 
 import java.util.Iterator;
+
+import org.codehaus.wadi.core.session.Session;
 
 import EDU.oswego.cs.dl.util.concurrent.CopyOnWriteArrayList;
 

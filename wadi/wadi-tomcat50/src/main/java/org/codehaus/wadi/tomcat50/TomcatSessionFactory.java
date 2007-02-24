@@ -16,11 +16,11 @@
  */
 package org.codehaus.wadi.tomcat50;
 
-import org.codehaus.wadi.ReplicaterFactory;
 import org.codehaus.wadi.Router;
-import org.codehaus.wadi.Session;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.core.session.AttributesFactory;
+import org.codehaus.wadi.core.session.Session;
+import org.codehaus.wadi.replication.ReplicaterFactory;
 import org.codehaus.wadi.web.BasicWebSessionFactory;
 import org.codehaus.wadi.web.WebSessionWrapperFactory;
 

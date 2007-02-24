@@ -14,15 +14,19 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.core.session;
+
+import org.codehaus.wadi.core.manager.Manager;
 
 
 
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
+ * @version $Revision: 1885 $
  */
-public interface ManagerConfig {
-    void callback(Manager manager, SessionMonitor sessionMonitor, SessionFactory sessionFactory);
+public interface SessionFactory {
+    void setManager(Manager manager);
+    
+    Session create();
 }

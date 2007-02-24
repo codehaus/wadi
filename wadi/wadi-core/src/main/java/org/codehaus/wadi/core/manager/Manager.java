@@ -14,8 +14,12 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.core.manager;
 
+import org.codehaus.wadi.Lifecycle;
+import org.codehaus.wadi.core.contextualiser.Invocation;
+import org.codehaus.wadi.core.contextualiser.InvocationException;
+import org.codehaus.wadi.core.session.Session;
 import org.codehaus.wadi.servicespace.ServiceName;
 
 /**

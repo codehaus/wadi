@@ -1,6 +1,5 @@
 /**
- *
- * Copyright 2003-2005 Core Developers Network Ltd.
+ * Copyright 2006 The Apache Software Foundation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,17 +13,13 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
-
-
+package org.codehaus.wadi.core.session;
 
 
 /**
- * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision: 1885 $
+ * 
+ * @version $Revision: 1538 $
  */
-public interface SessionFactory {
-    void setManager(Manager manager);
-    
-    Session create();
+public interface ValueHelperRegistry {
+    ValueHelper findHelper(Class type);
 }

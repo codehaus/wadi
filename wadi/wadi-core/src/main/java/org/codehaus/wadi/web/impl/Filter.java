@@ -26,8 +26,8 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.codehaus.wadi.InvocationException;
-import org.codehaus.wadi.Manager;
+import org.codehaus.wadi.core.contextualiser.InvocationException;
+import org.codehaus.wadi.core.manager.Manager;
 import org.codehaus.wadi.core.manager.StandardManager;
 
 /**

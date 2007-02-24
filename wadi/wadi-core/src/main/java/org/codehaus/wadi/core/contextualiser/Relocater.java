@@ -14,24 +14,26 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+package org.codehaus.wadi.core.contextualiser;
 
-package org.codehaus.wadi;
+import org.codehaus.wadi.Immoter;
+
 
 /**
- * Abstract out the API for session id generation
+ * Abstracts out a strategy for either request or state relocation. This is necessary to
+ * ensure that a request is processed in the same node as its state.
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-
-public interface SessionIdFactory {
-    
-    String create();
-    
-    int getSessionIdLength();
-    
-    // I don't want this here - I favour ctor IOC 
-    // - but TC's Manager i/f makes it awkward not to have it...
-    void setSessionIdLength(int l);    
-    
+public interface Relocater {
+    /**
+	 * Either relocate the request to the session by proxying/redirection, or the session to the request, by migration...
+     * @param invocation
+	 * @param name
+	 * @param immoter
+	 * @param b 
+	 * @return - whether, or not, the request was contextualised
+	 */
+    boolean relocate(Invocation invocation, String name, Immoter immoter, boolean shuttingDown) throws InvocationException;
 }

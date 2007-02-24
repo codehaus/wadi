@@ -16,12 +16,10 @@
  */
 package org.codehaus.wadi.core.manager;
 
-import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Router;
-import org.codehaus.wadi.SessionFactory;
-import org.codehaus.wadi.SessionIdFactory;
-import org.codehaus.wadi.SessionMonitor;
 import org.codehaus.wadi.core.ConcurrentMotableMap;
+import org.codehaus.wadi.core.contextualiser.Contextualiser;
+import org.codehaus.wadi.core.session.SessionFactory;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>

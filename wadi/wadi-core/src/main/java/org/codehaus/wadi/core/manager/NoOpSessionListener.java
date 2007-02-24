@@ -13,14 +13,20 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.web;
+package org.codehaus.wadi.core.manager;
 
-import org.codehaus.wadi.core.session.SessionFactory;
+import org.codehaus.wadi.core.session.Session;
 
 /**
  * 
  * @version $Revision: 1538 $
  */
-public interface WebSessionFactory extends SessionFactory {
-    WebSessionConfig getWebSessionConfig();
+public class NoOpSessionListener implements SessionListener {
+
+    public void onSessionCreation(Session session) {
+    }
+
+    public void onSessionDestruction(Session session) {
+    }
+
 }

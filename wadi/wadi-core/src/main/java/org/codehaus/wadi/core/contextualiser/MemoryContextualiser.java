@@ -16,18 +16,15 @@
  */
 package org.codehaus.wadi.core.contextualiser;
 
-import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Emoter;
 import org.codehaus.wadi.Immoter;
-import org.codehaus.wadi.Invocation;
-import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.PoolableInvocationWrapper;
 import org.codehaus.wadi.PoolableInvocationWrapperPool;
-import org.codehaus.wadi.Session;
-import org.codehaus.wadi.SessionFactory;
 import org.codehaus.wadi.core.ConcurrentMotableMap;
 import org.codehaus.wadi.core.eviction.Evicter;
 import org.codehaus.wadi.core.motable.Motable;
+import org.codehaus.wadi.core.session.Session;
+import org.codehaus.wadi.core.session.SessionFactory;
 import org.codehaus.wadi.impl.AbstractMappedImmoter;
 import org.codehaus.wadi.impl.BaseMappedEmoter;
 

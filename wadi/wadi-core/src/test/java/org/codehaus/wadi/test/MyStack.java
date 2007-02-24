@@ -19,11 +19,11 @@ package org.codehaus.wadi.test;
 import java.net.URI;
 
 import org.codehaus.wadi.Router;
-import org.codehaus.wadi.SessionFactory;
-import org.codehaus.wadi.ValueHelperRegistry;
 import org.codehaus.wadi.core.manager.ClusteredManager;
 import org.codehaus.wadi.core.session.DistributableAttributesFactory;
+import org.codehaus.wadi.core.session.SessionFactory;
 import org.codehaus.wadi.core.session.ValueFactory;
+import org.codehaus.wadi.core.session.ValueHelperRegistry;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.impl.SimpleStreamer;
 import org.codehaus.wadi.impl.StackContext;

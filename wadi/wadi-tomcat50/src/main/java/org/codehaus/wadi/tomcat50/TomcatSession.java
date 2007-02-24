@@ -31,10 +31,10 @@ import org.apache.catalina.Session;
 import org.apache.catalina.SessionListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.Replicater;
 import org.codehaus.wadi.Router;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.core.session.Attributes;
+import org.codehaus.wadi.replication.Replicater;
 import org.codehaus.wadi.web.BasicWebSession;
 import org.codehaus.wadi.web.WebSessionConfig;
 import org.codehaus.wadi.web.WebSessionWrapperFactory;
@@ -56,7 +56,7 @@ public class TomcatSession extends BasicWebSession implements Session {
           Attributes attributes,
           WebSessionWrapperFactory wrapperFactory,
           Router router,
-          org.codehaus.wadi.Manager manager,
+          org.codehaus.wadi.core.manager.Manager manager,
           Streamer streamer,
           Replicater replicater) {
       super(config, attributes, wrapperFactory, router, manager, streamer, replicater);

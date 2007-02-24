@@ -18,7 +18,6 @@ package org.codehaus.wadi.core.contextualiser;
 
 import java.io.File;
 
-import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Emoter;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Streamer;

@@ -16,8 +16,8 @@
 package org.codehaus.wadi.impl;
 
 import org.codehaus.wadi.Immoter;
-import org.codehaus.wadi.Invocation;
-import org.codehaus.wadi.InvocationException;
+import org.codehaus.wadi.core.contextualiser.Invocation;
+import org.codehaus.wadi.core.contextualiser.InvocationException;
 import org.codehaus.wadi.core.motable.Motable;
 
 /**

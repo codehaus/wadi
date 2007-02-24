@@ -21,8 +21,8 @@ import java.util.Iterator;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
 
-import org.codehaus.wadi.NoOpSessionListener;
-import org.codehaus.wadi.Session;
+import org.codehaus.wadi.core.manager.NoOpSessionListener;
+import org.codehaus.wadi.core.session.Session;
 
 /**
  * 
