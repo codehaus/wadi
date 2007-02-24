@@ -106,8 +106,6 @@ public interface Dispatcher extends MessageListener {
      */
     Envelope exchangeSend(Address target, Serializable pojo, long timeout) throws MessageExchangeException;
 
-    Envelope exchangeSendLink(Peer peer, Serializable pojo, long timeout, int retries) throws MessageExchangeException;
-    
     /**
      * Send a Serializable 'pojo' to a 'target' Address - sync - and wait for a
      * reply. This message will be accompanied by a 'targetCorrelationId' which

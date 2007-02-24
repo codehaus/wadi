@@ -24,7 +24,6 @@ import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.MessageExchangeException;
-import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.Quipu;
 import org.codehaus.wadi.group.ServiceEndpoint;
 
@@ -132,10 +131,6 @@ public class SharedDispatcher implements Dispatcher {
     public Envelope exchangeSend(Address target, Envelope om, long timeout) throws MessageExchangeException {
         return _delegate.exchangeSend(target, om, timeout);
     }
-
-	public Envelope exchangeSendLink(Peer peer, Serializable pojo, long timeout, int retries) throws MessageExchangeException {
-		return _delegate.exchangeSendLink(peer, pojo, timeout, retries);
-	}
 
     public void reply(Envelope request, Envelope reply) throws MessageExchangeException {
         _delegate.reply(request, reply);
