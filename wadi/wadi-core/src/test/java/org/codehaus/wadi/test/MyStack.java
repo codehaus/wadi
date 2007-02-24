@@ -20,6 +20,7 @@ import java.net.URI;
 
 import org.codehaus.wadi.Router;
 import org.codehaus.wadi.SessionFactory;
+import org.codehaus.wadi.ValueHelperRegistry;
 import org.codehaus.wadi.core.manager.ClusteredManager;
 import org.codehaus.wadi.core.session.DistributableAttributesFactory;
 import org.codehaus.wadi.core.session.ValueFactory;
@@ -30,7 +31,6 @@ import org.codehaus.wadi.replication.manager.ReplicaterAdapterFactory;
 import org.codehaus.wadi.servicespace.ServiceSpace;
 import org.codehaus.wadi.servicespace.ServiceSpaceName;
 import org.codehaus.wadi.web.BasicWebSessionFactory;
-import org.codehaus.wadi.web.ValueHelperRegistry;
 import org.codehaus.wadi.web.impl.DummyRouter;
 import org.codehaus.wadi.web.impl.StandardSessionWrapperFactory;
 

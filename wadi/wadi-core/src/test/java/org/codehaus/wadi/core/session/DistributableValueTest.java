@@ -13,7 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.web.impl;
+package org.codehaus.wadi.core.session;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -22,8 +22,8 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
 import org.codehaus.wadi.ValueHelper;
+import org.codehaus.wadi.ValueHelperRegistry;
 import org.codehaus.wadi.core.session.DistributableValue;
-import org.codehaus.wadi.web.ValueHelperRegistry;
 
 import com.agical.rmock.extension.junit.RMockTestCase;
 

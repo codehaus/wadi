@@ -21,7 +21,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.codehaus.wadi.web.Attributes;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>

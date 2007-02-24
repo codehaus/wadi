@@ -18,7 +18,6 @@ package org.codehaus.wadi.core.session;
 
 import org.codehaus.wadi.Session;
 import org.codehaus.wadi.Streamer;
-import org.codehaus.wadi.web.AttributesFactory;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>

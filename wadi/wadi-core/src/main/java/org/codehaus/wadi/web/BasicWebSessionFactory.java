@@ -20,6 +20,7 @@ import org.codehaus.wadi.Router;
 import org.codehaus.wadi.Session;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.core.session.AtomicallyReplicableSessionFactory;
+import org.codehaus.wadi.core.session.AttributesFactory;
 
 /**
  * 

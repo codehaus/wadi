@@ -32,6 +32,7 @@ import org.codehaus.wadi.Replicater;
 import org.codehaus.wadi.Router;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.core.session.AtomicallyReplicableSession;
+import org.codehaus.wadi.core.session.Attributes;
 
 /**
  * 

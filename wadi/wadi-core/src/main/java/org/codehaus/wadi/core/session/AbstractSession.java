@@ -21,7 +21,6 @@ import org.codehaus.wadi.Session;
 import org.codehaus.wadi.core.motable.AbstractMotable;
 import org.codehaus.wadi.impl.SimpleStreamer;
 import org.codehaus.wadi.impl.Utils;
-import org.codehaus.wadi.web.Attributes;
 
 /**
  *

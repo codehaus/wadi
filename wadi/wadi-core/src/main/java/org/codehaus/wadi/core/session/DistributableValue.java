@@ -23,7 +23,7 @@ import java.io.ObjectOutput;
 import java.io.Serializable;
 
 import org.codehaus.wadi.ValueHelper;
-import org.codehaus.wadi.web.ValueHelperRegistry;
+import org.codehaus.wadi.ValueHelperRegistry;
 
 /**
  * An attribute Value that supports the notification of HttpSessionActivationListeners at the correct
