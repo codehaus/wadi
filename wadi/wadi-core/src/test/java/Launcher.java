@@ -23,11 +23,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.codehaus.wadi.InvocationException;
+import org.codehaus.wadi.Session;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.vm.VMBroker;
 import org.codehaus.wadi.group.vm.VMDispatcher;
 import org.codehaus.wadi.impl.ClusteredManager;
-import org.codehaus.wadi.web.WebSession;
 import org.codehaus.wadi.web.impl.WebInvocation;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -80,9 +80,9 @@ public class Launcher {
         greenManager = newClusteredManager(broker, "green");
         yellowManager = newClusteredManager(broker, "yellow");
         
-        WebSession session = greenManager.createWithName(SESSION_ID);
+        Session session = greenManager.createWithName(SESSION_ID);
         cpt = new Long(0);
-        session.setAttribute("attr1", cpt);
+        session.addState("attr1", cpt);
         session.onEndProcessing();
         
         ClusteredManager managers[] = new ClusteredManager[] {redManager, greenManager, yellowManager};

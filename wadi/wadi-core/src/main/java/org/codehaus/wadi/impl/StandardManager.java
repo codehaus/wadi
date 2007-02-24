@@ -26,15 +26,14 @@ import org.codehaus.wadi.Manager;
 import org.codehaus.wadi.ManagerConfig;
 import org.codehaus.wadi.PoolableInvocationWrapper;
 import org.codehaus.wadi.PoolableInvocationWrapperPool;
+import org.codehaus.wadi.Router;
+import org.codehaus.wadi.Session;
 import org.codehaus.wadi.SessionAlreadyExistException;
+import org.codehaus.wadi.SessionFactory;
 import org.codehaus.wadi.SessionIdFactory;
 import org.codehaus.wadi.SessionMonitor;
 import org.codehaus.wadi.core.ConcurrentMotableMap;
-import org.codehaus.wadi.web.Router;
-import org.codehaus.wadi.web.WebSession;
-import org.codehaus.wadi.web.WebSessionFactory;
 import org.codehaus.wadi.web.impl.DummyStatefulHttpServletRequestWrapperPool;
-import org.codehaus.wadi.web.impl.Filter;
 
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
 
@@ -46,23 +45,22 @@ import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
 public class StandardManager implements Lifecycle, Manager {
 	private static final Log log = LogFactory.getLog(StandardManager.class);
 
-    private final WebSessionFactory sessionFactory;
-    protected final SessionIdFactory _sessionIdFactory;
-    protected final Contextualiser _contextualiser;
-    protected final ConcurrentMotableMap _map;
-    protected final Router _router;
-    protected final boolean _errorIfSessionNotAcquired;
-    protected final SynchronizedBoolean _acceptingSessions = new SynchronizedBoolean(true);
+    private final SessionFactory sessionFactory;
+    protected final SessionIdFactory sessionIdFactory;
+    protected final Contextualiser contextualiser;
+    protected final ConcurrentMotableMap motableMap;
+    protected final Router router;
+    protected final boolean errorIfSessionNotAcquired;
+    protected final SynchronizedBoolean acceptingSessions = new SynchronizedBoolean(true);
     private final SessionMonitor sessionMonitor;
     protected PoolableInvocationWrapperPool _pool = new DummyStatefulHttpServletRequestWrapperPool();
-    protected ManagerConfig _config;
-    protected int _maxInactiveInterval = 30 * 60;
-    protected Filter _filter;
+    protected ManagerConfig config;
+    protected int maxInactiveInterval = 30 * 60;
 
-    public StandardManager(WebSessionFactory sessionFactory,
+    public StandardManager(SessionFactory sessionFactory,
             SessionIdFactory sessionIdFactory,
             Contextualiser contextualiser,
-            ConcurrentMotableMap map,
+            ConcurrentMotableMap motableMap,
             Router router,
             SessionMonitor sessionMonitor,
             boolean errorIfSessionNotAcquired) {
@@ -72,81 +70,80 @@ public class StandardManager implements Lifecycle, Manager {
             throw new IllegalArgumentException("sessionIdFactory is required");
         } else if (null == contextualiser) {
             throw new IllegalArgumentException("contextualiser is required");
-        } else if (null == map) {
-            throw new IllegalArgumentException("map is required");
+        } else if (null == motableMap) {
+            throw new IllegalArgumentException("motableMap is required");
         } else if (null == router) {
             throw new IllegalArgumentException("router is required");
         } else if (null == sessionMonitor) {
             throw new IllegalArgumentException("sessionMonitor is required");
         }
         this.sessionFactory = sessionFactory;
-        _sessionIdFactory = sessionIdFactory;
-        _contextualiser = contextualiser;
-        _map = map;
-        _router = router;
-        _errorIfSessionNotAcquired = errorIfSessionNotAcquired;
+        this.sessionIdFactory = sessionIdFactory;
+        this.contextualiser = contextualiser;
+        this.motableMap = motableMap;
+        this.router = router;
+        this.errorIfSessionNotAcquired = errorIfSessionNotAcquired;
         this.sessionMonitor = sessionMonitor;
         
-        sessionFactory.getWebSessionConfig().setManager(this);
+        sessionFactory.setManager(this);
     }
 
     public void init(ManagerConfig config) {
-        _config = config;
+        this.config = config;
     }
 
     public void start() throws Exception {
-        _contextualiser.promoteToExclusive(null);
-        _contextualiser.start();
+        contextualiser.promoteToExclusive(null);
+        contextualiser.start();
         String version = getClass().getPackage().getImplementationVersion();
         version = (version == null ? System.getProperty("wadi.version") : version);
         log.info("WADI-" + version + " successfully installed");
     }
 
     public void stop() throws Exception {
-        _acceptingSessions.set(false);
-        _contextualiser.stop();
+        acceptingSessions.set(false);
+        contextualiser.stop();
     }
 
-    public WebSession createWithName(String name) throws SessionAlreadyExistException {
+    public Session createWithName(String name) throws SessionAlreadyExistException {
         if (!validateSessionName(name)) {
             throw new SessionAlreadyExistException(name);
         }
         return createSession(name);
     }
 
-    public WebSession create(Invocation invocation) {
+    public Session create(Invocation invocation) {
         String name = null;
         do {
-            name = _sessionIdFactory.create();
+            name = sessionIdFactory.create();
         } while (!validateSessionName(name));
         return createSession(name);
     }
 
-    public void destroy(WebSession session) {
+    public void destroy(Session session) {
         if (log.isDebugEnabled()) {
             log.debug("Destroy [" + session + "]");
         }
-        _map.remove(session.getName());
+        motableMap.remove(session.getName());
         sessionMonitor.notifySessionDestruction(session);
         onSessionDestruction(session);
     }
 
     public int getMaxInactiveInterval() {
-        return _maxInactiveInterval;
+        return maxInactiveInterval;
     }
 
     public void setMaxInactiveInterval(int interval) {
-        _maxInactiveInterval = interval;
+        maxInactiveInterval = interval;
     }
     
     public SessionIdFactory getSessionIdFactory() {
-        return _sessionIdFactory;
+        return sessionIdFactory;
     }
 
     // integrate with Filter instance
-    public void setFilter(Filter filter) {
-        _filter = filter;
-        _config.callback(this, sessionMonitor, sessionFactory.getWebSessionConfig());
+    public void triggerCallback() {
+        config.callback(this, sessionMonitor, sessionFactory);
     }
 
     public boolean contextualise(Invocation invocation) throws InvocationException {
@@ -161,11 +158,11 @@ public class StandardManager implements Lifecycle, Manager {
     protected boolean processStateful(Invocation invocation) throws InvocationException {
         String key = invocation.getSessionKey();
         // already associated with a session. strip off any routing info.
-        String name = _router.strip(key);
-        boolean contextualised = _contextualiser.contextualise(invocation, name, null, false);
+        String name = router.strip(key);
+        boolean contextualised = contextualiser.contextualise(invocation, name, null, false);
         if (!contextualised) {
             log.error("Could not acquire session [" + name + "]");
-            if (_errorIfSessionNotAcquired) {
+            if (errorIfSessionNotAcquired) {
                 invocation.sendError(503, "Session [" + name + "] is not known");
             } else {
                 contextualised = processStateless(invocation);
@@ -177,7 +174,7 @@ public class StandardManager implements Lifecycle, Manager {
     protected boolean processStateless(Invocation invocation) throws InvocationException {
         // are we accepting sessions ? - otherwise relocate to another node...
         // sync point - expensive, but will only hit sessionless requests...
-        if (!_acceptingSessions.get()) {
+        if (!acceptingSessions.get()) {
             // think about what to do here... relocate invoacation or error page ?
             throw new WADIRuntimeException("sessionless request has arrived during shutdown");
         }
@@ -195,11 +192,11 @@ public class StandardManager implements Lifecycle, Manager {
         return true;
     }
 
-    protected WebSession createSession(String name) {
-        WebSession session = sessionFactory.create();
+    protected Session createSession(String name) {
+        Session session = sessionFactory.create();
         long time = System.currentTimeMillis();
-        session.init(time, time, _maxInactiveInterval, name);
-        _map.put(name, session);
+        session.init(time, time, maxInactiveInterval, name);
+        motableMap.put(name, session);
         sessionMonitor.notifySessionCreation(session);
         onSessionCreation(session);
         if (log.isDebugEnabled()) {
@@ -208,10 +205,10 @@ public class StandardManager implements Lifecycle, Manager {
         return session;
     }
     
-    protected void onSessionCreation(WebSession session) {
+    protected void onSessionCreation(Session session) {
     }
 
-    protected void onSessionDestruction(WebSession session) {
+    protected void onSessionDestruction(Session session) {
     }
     
 }

@@ -23,7 +23,7 @@ import java.io.InputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Manager;
-import org.codehaus.wadi.web.WebSessionFactory;
+import org.codehaus.wadi.SessionFactory;
 import org.codehaus.wadi.web.WebSessionWrapperFactory;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
@@ -41,10 +41,10 @@ public class SpringManagerFactory {
 
     protected final InputStream _descriptor;
     protected final String _beanName;
-    protected final WebSessionFactory _sessionFactory;
+    protected final SessionFactory _sessionFactory;
     protected final WebSessionWrapperFactory _sessionWrapperFactory;
 
-    public SpringManagerFactory(InputStream descriptor, String beanName, WebSessionFactory sessionFactory, WebSessionWrapperFactory sessionWrapperFactory) {
+    public SpringManagerFactory(InputStream descriptor, String beanName, SessionFactory sessionFactory, WebSessionWrapperFactory sessionWrapperFactory) {
         _descriptor=descriptor;
         _beanName=beanName;
         _sessionFactory=sessionFactory;

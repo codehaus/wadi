@@ -22,6 +22,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
 import org.codehaus.wadi.ValueHelper;
+import org.codehaus.wadi.core.session.DistributableValue;
 import org.codehaus.wadi.web.ValueHelperRegistry;
 
 import com.agical.rmock.extension.junit.RMockTestCase;

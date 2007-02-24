@@ -22,10 +22,15 @@ import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Evicter;
 import org.codehaus.wadi.PartitionMapper;
 import org.codehaus.wadi.PoolableInvocationWrapperPool;
+import org.codehaus.wadi.Router;
+import org.codehaus.wadi.SessionFactory;
 import org.codehaus.wadi.SessionMonitor;
 import org.codehaus.wadi.ValueFactory;
 import org.codehaus.wadi.core.ConcurrentMotableMap;
 import org.codehaus.wadi.core.OswegoConcurrentMotableMap;
+import org.codehaus.wadi.core.session.AtomicallyReplicableSessionFactory;
+import org.codehaus.wadi.core.session.DistributableAttributesFactory;
+import org.codehaus.wadi.core.session.DistributableValueFactory;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.location.PartitionManager;
 import org.codehaus.wadi.location.StateManager;
@@ -57,16 +62,10 @@ import org.codehaus.wadi.servicespace.ServiceSpaceName;
 import org.codehaus.wadi.servicespace.SingletonServiceHolder;
 import org.codehaus.wadi.servicespace.basic.BasicServiceSpace;
 import org.codehaus.wadi.web.BasicValueHelperRegistry;
-import org.codehaus.wadi.web.Router;
 import org.codehaus.wadi.web.ValueHelperRegistry;
-import org.codehaus.wadi.web.WebSessionFactory;
-import org.codehaus.wadi.web.impl.AtomicallyReplicableSessionFactory;
-import org.codehaus.wadi.web.impl.DistributableAttributesFactory;
-import org.codehaus.wadi.web.impl.DistributableValueFactory;
 import org.codehaus.wadi.web.impl.DummyStatefulHttpServletRequestWrapperPool;
 import org.codehaus.wadi.web.impl.JkRouter;
 import org.codehaus.wadi.web.impl.StandardHttpProxy;
-import org.codehaus.wadi.web.impl.StandardSessionWrapperFactory;
 
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
 
@@ -90,7 +89,7 @@ public class StackContext {
     protected StateManager stateManager;
     protected Timer timer;
     protected ReplicationManager replicationManager;
-    protected WebSessionFactory sessionFactory;
+    protected SessionFactory sessionFactory;
     protected ClusteredManager manager;
     protected ConcurrentMotableMap memoryMap;
     protected Router router;
@@ -167,7 +166,7 @@ public class StackContext {
         stateManager = newStateManager();
         replicationManager = newReplicationManager();
         router = newRouter();
-        sessionFactory = newWebSessionFactory();
+        sessionFactory = newSessionFactory();
 
         Contextualiser contextualiser = newReplicaAwareContextualiser(new DummyContextualiser());
         contextualiser = newClusteredContextualiser(contextualiser);
@@ -248,16 +247,26 @@ public class StackContext {
         return new JkRouter(nodeName);
     }
 
-    protected WebSessionFactory newWebSessionFactory() {
-        ValueHelperRegistry valueHelperRegistry = new BasicValueHelperRegistry();
-        ValueFactory valueFactory = new DistributableValueFactory(valueHelperRegistry);
-        SimpleStreamer streamer = new SimpleStreamer();
+    protected SessionFactory newSessionFactory() {
+        ValueHelperRegistry valueHelperRegistry = newValueHelperRegistry();
+        ValueFactory valueFactory = newValueFactory(valueHelperRegistry);
+        SimpleStreamer streamer = newStreamer();
         return new AtomicallyReplicableSessionFactory(
                 new DistributableAttributesFactory(valueFactory),
-                new StandardSessionWrapperFactory(),
-                router,
                 streamer,
                 new ReplicaterAdapterFactory(replicationManager));
+    }
+
+    protected SimpleStreamer newStreamer() {
+        return new SimpleStreamer();
+    }
+
+    protected DistributableValueFactory newValueFactory(ValueHelperRegistry valueHelperRegistry) {
+        return new DistributableValueFactory(valueHelperRegistry);
+    }
+
+    protected BasicValueHelperRegistry newValueHelperRegistry() {
+        return new BasicValueHelperRegistry();
     }
     
     protected StateManager newStateManager() {

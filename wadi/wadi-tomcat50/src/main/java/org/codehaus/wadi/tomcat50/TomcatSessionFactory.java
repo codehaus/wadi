@@ -16,33 +16,37 @@
  */
 package org.codehaus.wadi.tomcat50;
 
+import org.codehaus.wadi.ReplicaterFactory;
+import org.codehaus.wadi.Router;
+import org.codehaus.wadi.Session;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.web.AttributesFactory;
-import org.codehaus.wadi.web.Router;
-import org.codehaus.wadi.web.WebSession;
+import org.codehaus.wadi.web.BasicWebSessionFactory;
 import org.codehaus.wadi.web.WebSessionWrapperFactory;
-import org.codehaus.wadi.web.impl.DistributableSessionFactory;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class TomcatSessionFactory extends DistributableSessionFactory {
+public class TomcatSessionFactory extends BasicWebSessionFactory {
+
 
     public TomcatSessionFactory(AttributesFactory attributesFactory,
-            WebSessionWrapperFactory wrapperFactory,
+            Streamer streamer,
+            ReplicaterFactory replicaterFactory,
             Router router,
-            Streamer streamer) {
-        super(attributesFactory, wrapperFactory, router, streamer);
+            WebSessionWrapperFactory wrapperFactory) {
+        super(attributesFactory, streamer, replicaterFactory, router, wrapperFactory);
     }
 
-    public WebSession create() {
-        return new TomcatSession(config,
+    public Session create() {
+        return new TomcatSession(webSessionConfig,
                 newAttributes(),
                 wrapperFactory,
                 router,
                 getManager(),
-                streamer);
+                streamer,
+                replicater);
     }
 
 }

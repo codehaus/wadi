@@ -26,9 +26,8 @@ import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.PoolableInvocationWrapper;
 import org.codehaus.wadi.PoolableInvocationWrapperPool;
 import org.codehaus.wadi.Session;
-import org.codehaus.wadi.SessionPool;
+import org.codehaus.wadi.SessionFactory;
 import org.codehaus.wadi.core.ConcurrentMotableMap;
-import org.codehaus.wadi.web.WebSessionFactory;
 
 /**
  * A Contextualiser that stores its state in Memory as Java Objects
@@ -37,7 +36,7 @@ import org.codehaus.wadi.web.WebSessionFactory;
  * @version $Revision$
  */
 public class MemoryContextualiser extends AbstractExclusiveContextualiser {
-	private final WebSessionFactory sessionFactory;
+	private final SessionFactory sessionFactory;
     private final Immoter _immoter;
     private final Emoter _emoter;
     private final Emoter _evictionEmoter;
@@ -46,7 +45,7 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
 	public MemoryContextualiser(Contextualiser next,
             Evicter evicter,
             ConcurrentMotableMap map,
-            WebSessionFactory sessionFactory,
+            SessionFactory sessionFactory,
             PoolableInvocationWrapperPool requestPool) {
 		super(next, evicter, map);
         if (null == sessionFactory) {

@@ -14,9 +14,13 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.impl;
+package org.codehaus.wadi.core.session;
 
+import org.codehaus.wadi.Manager;
 import org.codehaus.wadi.Session;
+import org.codehaus.wadi.impl.AbstractMotable;
+import org.codehaus.wadi.impl.SimpleStreamer;
+import org.codehaus.wadi.impl.Utils;
 import org.codehaus.wadi.web.Attributes;
 
 /**
@@ -26,16 +30,21 @@ import org.codehaus.wadi.web.Attributes;
  */
 public abstract class AbstractSession extends AbstractMotable implements Session {
     protected final Attributes attributes;
+    protected final Manager manager;
 
-    public AbstractSession(Attributes attributes) {
+    public AbstractSession(Attributes attributes, Manager manager) {
         if (null == attributes) {
             throw new IllegalArgumentException("attributes is required");
+        } else if (null == manager) {
+            throw new IllegalArgumentException("manager is required");
         }
         this.attributes = attributes;
+        this.manager = manager;
     }
 
     public synchronized void destroy() throws Exception {
         super.destroy();
+        manager.destroy(this);
         attributes.clear();
     }
 

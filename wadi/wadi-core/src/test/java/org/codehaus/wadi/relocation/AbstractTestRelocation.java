@@ -39,7 +39,6 @@ import org.codehaus.wadi.test.MyHttpServletRequest;
 import org.codehaus.wadi.test.MyHttpServletResponse;
 import org.codehaus.wadi.test.MyStack;
 import org.codehaus.wadi.test.TestUtil;
-import org.codehaus.wadi.web.WebSession;
 
 /**
  * 
@@ -52,7 +51,7 @@ public class AbstractTestRelocation extends TestCase {
         protected Log _log = LogFactory.getLog(getClass());
         protected StandardManager _manager;
         protected String _key;
-        protected WebSession _session;
+        protected Session _session;
 
         public void init(StandardManager manager, String key) {
             _manager = manager;
@@ -108,18 +107,18 @@ public class AbstractTestRelocation extends TestCase {
 
         TestUtil.waitForDispatcherSeeOthers(new Dispatcher[] { redD, greenD }, 5000);
 
-        WebSession session = red.getManager().create(null);
+        Session session = red.getManager().create(null);
         session.onEndProcessing();
-        String id = session.getId();
+        String name = session.getName();
 
-        assertTrue(id != null);
+        assertTrue(name != null);
 
         FilterChain fc = new FilterChain() {
             public void doFilter(ServletRequest req, ServletResponse res) throws IOException, ServletException {
             }
         };
 
-        Invocation invocation = new MockInvocation(new MyHttpServletRequest(id), new MyHttpServletResponse(), fc);
+        Invocation invocation = new MockInvocation(new MyHttpServletRequest(name), new MyHttpServletResponse(), fc);
         boolean success = green.getManager().contextualise(invocation);
         assertTrue(success);
 

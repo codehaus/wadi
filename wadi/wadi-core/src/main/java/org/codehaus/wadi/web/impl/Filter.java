@@ -42,7 +42,7 @@ public class Filter implements javax.servlet.Filter {
         if (_manager == null) {
             throw new ServletException("Manager not found");
         }
-        ((StandardManager) _manager).setFilter(this);
+        ((StandardManager) _manager).triggerCallback();
     }
 
     public void destroy() {

@@ -14,13 +14,11 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.web.impl;
+package org.codehaus.wadi.core.session;
 
+import org.codehaus.wadi.Session;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.web.AttributesFactory;
-import org.codehaus.wadi.web.Router;
-import org.codehaus.wadi.web.WebSession;
-import org.codehaus.wadi.web.WebSessionWrapperFactory;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -30,24 +28,16 @@ public class DistributableSessionFactory extends StandardSessionFactory {
 
     protected final Streamer streamer;
 
-    public DistributableSessionFactory(AttributesFactory attributesFactory,
-            WebSessionWrapperFactory wrapperFactory,
-            Router router,
-            Streamer streamer) {
-        super(attributesFactory, wrapperFactory, router);
+    public DistributableSessionFactory(AttributesFactory attributesFactory, Streamer streamer) {
+        super(attributesFactory);
         if (null == streamer) {
             throw new IllegalArgumentException("streamer is required");
         }
         this.streamer = streamer;
     }
 
-    public WebSession create() {
-        return new DistributableSession(config,
-                newAttributes(),
-                wrapperFactory,
-                router,
-                getManager(),
-                streamer);
+    public Session create() {
+        return new DistributableSession(newAttributes(), getManager(), streamer);
     }
     
 }

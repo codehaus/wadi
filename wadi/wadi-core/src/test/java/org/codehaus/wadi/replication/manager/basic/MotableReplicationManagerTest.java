@@ -20,10 +20,7 @@ import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.vm.VMPeer;
 import org.codehaus.wadi.replication.common.ReplicaInfo;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
-import org.codehaus.wadi.web.WebSession;
-import org.codehaus.wadi.web.WebSessionPool;
 
-import com.agical.rmock.core.match.Expression;
 import com.agical.rmock.extension.junit.RMockTestCase;
 
 /**
@@ -33,7 +30,6 @@ import com.agical.rmock.extension.junit.RMockTestCase;
 public class MotableReplicationManagerTest extends RMockTestCase {
 
     private ReplicationManager repManager;
-    private WebSessionPool sessionPool;
     private String key;
     private Motable motable;
     private byte[] webSessionBody = new byte[0];

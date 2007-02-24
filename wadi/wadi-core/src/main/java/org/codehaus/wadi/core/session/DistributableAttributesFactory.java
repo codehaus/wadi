@@ -14,16 +14,24 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.core.session;
+
+import org.codehaus.wadi.ValueFactory;
+import org.codehaus.wadi.web.Attributes;
+
 
 /**
- * API for a pool of Contexts
- *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
+ * @version $Revision: 1497 $
  */
-public interface SessionPool {
-	void put(Session context);
+public class DistributableAttributesFactory extends StandardAttributesFactory {
 
-    Session take();
+    public DistributableAttributesFactory(ValueFactory valueFactory) {
+        super(valueFactory);
+    }
+
+    public Attributes create() {
+        return new DistributableAttributes(valueFactory);
+    }
+
 }

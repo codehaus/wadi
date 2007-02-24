@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.impl;
+package org.codehaus.wadi.core.session;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -30,7 +30,6 @@ import javax.servlet.http.HttpSessionBindingListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.web.ValueHelperRegistry;
-import org.codehaus.wadi.web.impl.DistributableValue;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>

@@ -18,7 +18,8 @@ package org.codehaus.wadi.web.impl;
 
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionBindingEvent;
-import org.codehaus.wadi.impl.LazyValue;
+
+import org.codehaus.wadi.core.session.LazyValue;
 
 // IDEA - implement later
 

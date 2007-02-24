@@ -14,28 +14,23 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.web.impl;
+package org.codehaus.wadi.core.session;
 
 import org.codehaus.wadi.Value;
+import org.codehaus.wadi.web.ValueHelperRegistry;
 
 /**
- * A simple slot for holding and Attribute's value
- *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision: 1177 $
+ * @version $Revision$
  */
-public class StandardValue implements Value {
-    
-    protected Object value;
+public class LazyValueFactory extends DistributableValueFactory {
 
-    public Object getValue() {
-        return value;
+    public LazyValueFactory(ValueHelperRegistry valueHelperRegistry) {
+        super(valueHelperRegistry);
     }
 
-    public Object setValue(Object newValue) {
-        Object oldValue = value;
-        value = newValue;
-        return oldValue;
+    public Value create() {
+        return new LazyValue(valueHelperRegistry);
     }
 
 }

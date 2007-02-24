@@ -14,20 +14,28 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.web.impl;
+package org.codehaus.wadi.core.session;
 
 import org.codehaus.wadi.Value;
-import org.codehaus.wadi.ValueFactory;
 
 /**
+ * A simple slot for holding and Attribute's value
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision: 1139 $
+ * @version $Revision: 1177 $
  */
-public class StandardValueFactory implements ValueFactory {
+public class StandardValue implements Value {
+    
+    protected Object value;
 
-    public Value create() {
-        return new StandardValue();
+    public Object getValue() {
+        return value;
+    }
+
+    public Object setValue(Object newValue) {
+        Object oldValue = value;
+        value = newValue;
+        return oldValue;
     }
 
 }

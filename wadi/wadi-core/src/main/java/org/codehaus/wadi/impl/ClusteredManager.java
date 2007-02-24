@@ -20,14 +20,14 @@ import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.InvocationProxy;
+import org.codehaus.wadi.Router;
+import org.codehaus.wadi.SessionFactory;
 import org.codehaus.wadi.SessionIdFactory;
 import org.codehaus.wadi.SessionMonitor;
 import org.codehaus.wadi.core.ConcurrentMotableMap;
 import org.codehaus.wadi.location.PartitionManager;
 import org.codehaus.wadi.location.StateManager;
-import org.codehaus.wadi.web.Router;
 import org.codehaus.wadi.web.WebSession;
-import org.codehaus.wadi.web.WebSessionFactory;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -40,7 +40,7 @@ public class ClusteredManager extends DistributableManager {
 
     public ClusteredManager(StateManager stateManager,
             PartitionManager partitionManager,
-            WebSessionFactory sessionFactory, 
+            SessionFactory sessionFactory, 
             SessionIdFactory sessionIdFactory,
             Contextualiser contextualiser, 
             ConcurrentMotableMap sessionMap, 

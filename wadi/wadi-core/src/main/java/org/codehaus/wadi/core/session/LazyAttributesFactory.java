@@ -14,16 +14,23 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.web;
+package org.codehaus.wadi.core.session;
 
-
+import org.codehaus.wadi.ValueFactory;
+import org.codehaus.wadi.web.Attributes;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision: 1885 $
+ * @version $Revision$
  */
-public interface WebSessionPool {
-    WebSession take();
+public class LazyAttributesFactory extends DistributableAttributesFactory {
 
-    void put(WebSession session);
+    public LazyAttributesFactory(ValueFactory valueFactory) {
+        super(valueFactory);
+    }
+
+    public Attributes create() {
+        return new LazyAttributes(valueFactory);
+    }
+
 }

@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.test;
+package org.codehaus.wadi.session;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -30,12 +30,12 @@ import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.Value;
 import org.codehaus.wadi.ValueFactory;
 import org.codehaus.wadi.ValueHelper;
+import org.codehaus.wadi.core.session.DistributableValue;
+import org.codehaus.wadi.core.session.DistributableValueFactory;
 import org.codehaus.wadi.impl.SimpleStreamer;
 import org.codehaus.wadi.impl.Utils;
 import org.codehaus.wadi.web.BasicValueHelperRegistry;
 import org.codehaus.wadi.web.ValueHelperRegistry;
-import org.codehaus.wadi.web.impl.DistributableValue;
-import org.codehaus.wadi.web.impl.DistributableValueFactory;
 
 import com.agical.rmock.extension.junit.RMockTestCase;
 

@@ -16,12 +16,10 @@
  */
 package org.codehaus.wadi.impl;
 
-import javax.servlet.ServletContext;
-
 import org.codehaus.wadi.Manager;
 import org.codehaus.wadi.ManagerConfig;
+import org.codehaus.wadi.SessionFactory;
 import org.codehaus.wadi.SessionMonitor;
-import org.codehaus.wadi.web.WebSessionConfig;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -29,11 +27,7 @@ import org.codehaus.wadi.web.WebSessionConfig;
  */
 public class DummyManagerConfig implements ManagerConfig {
 
-	public ServletContext getServletContext() {
-		return null;
-	}
-
-    public void callback(Manager manager, SessionMonitor sessionMonitor, WebSessionConfig sessionConfig) {
+    public void callback(Manager manager, SessionMonitor sessionMonitor, SessionFactory sessionFactory) {
 	}
 
 }
