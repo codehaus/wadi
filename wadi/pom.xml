@@ -275,7 +275,6 @@
     <junit.version>3.8.1</junit.version>
     <mx4j.version>3.0.1</mx4j.version>
     <rmock.version>2.0.0-rc-6</rmock.version>
-    <tomcat50.version>5.0.18</tomcat50.version><!-- should be 5.0.28 -->
     <tomcat55.version>5.5.12</tomcat55.version>
   </properties>
 
@@ -288,7 +287,6 @@
     <module>wadi-activecluster</module>
     <module>wadi-jgroups</module>
     <module>wadi-tribes</module>
-    <module>wadi-tomcat50</module>
     <module>wadi-tomcat55</module>
     <module>wadi-axis2</module>
     <module>wadi-webapp</module>
