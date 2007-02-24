@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.impl;
+package org.codehaus.wadi.core.contextualiser;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -32,6 +32,7 @@ import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.PartitionMapper;
 import org.codehaus.wadi.core.ConcurrentMotableMap;
+import org.codehaus.wadi.impl.Utils;
 
 /**
  * Basic implementation for Contextualisers which maintain a local Map of references

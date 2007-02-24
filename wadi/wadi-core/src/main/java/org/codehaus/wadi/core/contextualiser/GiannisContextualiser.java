@@ -14,9 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.impl;
-
-import java.io.File;
+package org.codehaus.wadi.core.contextualiser;
 
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Emoter;
@@ -25,8 +23,10 @@ import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.Store;
 import org.codehaus.wadi.StoreMotable;
-import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.core.ConcurrentMotableMap;
+import org.codehaus.wadi.impl.AbstractMappedImmoter;
+import org.codehaus.wadi.impl.BaseMappedEmoter;
+import org.codehaus.wadi.impl.DatabaseStore;
 
 /**
  * Maps id:File where file contains Context content...
@@ -34,36 +34,35 @@ import org.codehaus.wadi.core.ConcurrentMotableMap;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class ExclusiveStoreContextualiser extends AbstractExclusiveContextualiser {
+public class GiannisContextualiser extends AbstractExclusiveContextualiser {
     private final boolean clean;
     private final boolean accessOnLoad;
-    protected final Store _store;
     protected final Immoter _immoter;
 	protected final Emoter _emoter;
+	protected final DatabaseStore _store;
 
-	public ExclusiveStoreContextualiser(Contextualiser next,
+	public GiannisContextualiser(Contextualiser next,
             boolean clean,
             Evicter evicter,
             ConcurrentMotableMap map,
-            Streamer streamer,
-            File dir,
+            DatabaseStore dbstore,
             boolean accessOnLoad) throws Exception {
 	    super(next, evicter, map);
         this.clean = clean;
         this.accessOnLoad = accessOnLoad;
         
-        _store = new DiscStore(streamer, dir, true, false);
-        _immoter = new ExclusiveStoreImmoter(map);
-        _emoter = new BaseMappedEmoter(map);
+	    _immoter=new GiannisImmoter(map);
+	    _emoter=new BaseMappedEmoter(map);
+	    _store=dbstore;
 	}
 
 	public Immoter getImmoter() {
-        return _immoter;
-    }
+		return _immoter;
+	}
 
-    public Emoter getEmoter() {
-        return _emoter;
-    }
+	public Emoter getEmoter(){
+		return _emoter;
+	}
 
     public void start() throws Exception {
         if (clean) {
@@ -78,18 +77,19 @@ public class ExclusiveStoreContextualiser extends AbstractExclusiveContextualise
         }
         super.start();
     }
-    
-    /**
-     * An Immoter that deals in terms of StoreMotables
-     */
-    public class ExclusiveStoreImmoter extends AbstractMappedImmoter {
 
-        public ExclusiveStoreImmoter(ConcurrentMotableMap map) {
+    public Immoter getSharedDemoter() {
+    	return getImmoter();
+    }
+    
+    class GiannisImmoter extends AbstractMappedImmoter {
+
+        public GiannisImmoter(ConcurrentMotableMap map) {
             super(map);
         }
 
         public Motable newMotable() {
-            StoreMotable motable = _store.create();
+            StoreMotable motable=_store.create();
             motable.init(_store);
             return motable;
         }

@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.impl;
+package org.codehaus.wadi.core.contextualiser;
 
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Emoter;
@@ -22,6 +22,7 @@ import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.Motable;
+import org.codehaus.wadi.impl.Utils;
 
 /**
  * Abstract base for Contextualisers that are 'chained' - in other words - arranged in a single linked list

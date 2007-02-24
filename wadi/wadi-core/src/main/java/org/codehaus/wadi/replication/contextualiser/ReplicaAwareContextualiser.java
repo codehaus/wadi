@@ -13,13 +13,13 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.replication.contextualizer;
+package org.codehaus.wadi.replication.contextualiser;
 
 import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Emoter;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Motable;
-import org.codehaus.wadi.impl.AbstractSharedContextualiser;
+import org.codehaus.wadi.core.contextualiser.AbstractSharedContextualiser;
 import org.codehaus.wadi.location.StateManager;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
 
