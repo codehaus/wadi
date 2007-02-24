@@ -16,7 +16,6 @@
  */
 package org.codehaus.wadi.core.contextualiser;
 
-import org.codehaus.wadi.PoolableInvocationWrapper;
 import org.codehaus.wadi.core.session.Session;
 import org.codehaus.wadi.group.EndPoint;
 
@@ -87,7 +86,7 @@ public interface Invocation {
 	void invoke() throws InvocationException;
     
 	// these two methods are left overs from web-specific time - on their way out...
-    void invoke(PoolableInvocationWrapper wrapper) throws InvocationException;
+    void invoke(InvocationContext context) throws InvocationException;
     
 	boolean isProxiedInvocation();
     

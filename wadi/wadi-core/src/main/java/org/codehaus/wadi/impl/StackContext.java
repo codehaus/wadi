@@ -18,7 +18,6 @@ package org.codehaus.wadi.impl;
 import java.util.Timer;
 
 import org.codehaus.wadi.PartitionMapper;
-import org.codehaus.wadi.PoolableInvocationWrapperPool;
 import org.codehaus.wadi.core.ConcurrentMotableMap;
 import org.codehaus.wadi.core.OswegoConcurrentMotableMap;
 import org.codehaus.wadi.core.contextualiser.ClusterContextualiser;
@@ -26,6 +25,7 @@ import org.codehaus.wadi.core.contextualiser.Contextualiser;
 import org.codehaus.wadi.core.contextualiser.DummyContextualiser;
 import org.codehaus.wadi.core.contextualiser.HashingCollapser;
 import org.codehaus.wadi.core.contextualiser.HybridRelocater;
+import org.codehaus.wadi.core.contextualiser.InvocationContextFactory;
 import org.codehaus.wadi.core.contextualiser.MemoryContextualiser;
 import org.codehaus.wadi.core.contextualiser.SerialContextualiser;
 import org.codehaus.wadi.core.eviction.AbsoluteEvicter;
@@ -73,7 +73,7 @@ import org.codehaus.wadi.servicespace.ServiceSpace;
 import org.codehaus.wadi.servicespace.ServiceSpaceName;
 import org.codehaus.wadi.servicespace.SingletonServiceHolder;
 import org.codehaus.wadi.servicespace.basic.BasicServiceSpace;
-import org.codehaus.wadi.web.impl.DummyStatefulHttpServletRequestWrapperPool;
+import org.codehaus.wadi.web.impl.StatefulHttpInvocationContextFactory;
 import org.codehaus.wadi.web.impl.JkRouter;
 import org.codehaus.wadi.web.impl.StandardHttpProxy;
 
@@ -309,14 +309,14 @@ public class StackContext {
     
     protected Contextualiser newMemoryContextualiser(Contextualiser next, ConcurrentMotableMap mmap) {
         Evicter mevicter = new AbsoluteEvicter(sweepInterval, true, sessionTimeout);
-        PoolableInvocationWrapperPool requestPool = new DummyStatefulHttpServletRequestWrapperPool();
+        InvocationContextFactory requestPool = new StatefulHttpInvocationContextFactory();
         return newMemoryContextualiser(next, mmap, mevicter, requestPool);
     }
 
     protected MemoryContextualiser newMemoryContextualiser(Contextualiser next,
             ConcurrentMotableMap mmap,
             Evicter mevicter,
-            PoolableInvocationWrapperPool requestPool) {
+            InvocationContextFactory requestPool) {
         return new MemoryContextualiser(next, mevicter, mmap, sessionFactory, requestPool);
     }
 

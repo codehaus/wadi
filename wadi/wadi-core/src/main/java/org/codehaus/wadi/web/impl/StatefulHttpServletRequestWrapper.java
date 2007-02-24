@@ -21,47 +21,36 @@ import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpSession;
 
 import org.codehaus.wadi.core.contextualiser.Invocation;
+import org.codehaus.wadi.core.contextualiser.InvocationContext;
 import org.codehaus.wadi.core.session.Session;
-import org.codehaus.wadi.web.PoolableHttpServletRequestWrapper;
+import org.codehaus.wadi.web.HttpInvocationContext;
 import org.codehaus.wadi.web.WADIHttpSession;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision: 1886 $
  */
-public class StatefulHttpServletRequestWrapper extends HttpServletRequestWrapper implements PoolableHttpServletRequestWrapper {
+public class StatefulHttpServletRequestWrapper extends HttpServletRequestWrapper implements HttpInvocationContext {
 
-	protected static final HttpServletRequest _dummy=new DummyHttpServletRequest();
-	protected HttpSession _session; // I want to maintain a Session - but it's hard to get hold of it upon creation... - do we really need it ?
+    protected HttpSession _session;
 
+    public StatefulHttpServletRequestWrapper(Invocation invocation, Session context) {
+        super(((WebInvocation) invocation).getHreq());
+        _session = context == null ? null : ((WADIHttpSession) context).getWrapper();
+    }
 
-	public StatefulHttpServletRequestWrapper() {
-		super(_dummy);
-	}
+    public HttpSession getSession() {
+        return getSession(true);
+    }
 
-	public void init(Invocation invocation, Session context) {
-		HttpServletRequest request = ((WebInvocation) invocation).getHreq();
-		setRequest(request);
-		_session=context==null?null:((WADIHttpSession)context).getWrapper();
-	}
-
-	public void destroy() {
-		setRequest(_dummy);
-		_session=null;
-	}
-
-	// Session related method interceptions...
-
-	public HttpSession getSession(){return getSession(true);}
-
-	public HttpSession getSession(boolean create) {
-		// TODO - I'm assuming single threaded access to request objects...
-		// so no synchronization ?
-
-		if (null==_session)
-			return (_session=((HttpServletRequest)getRequest()).getSession(create));
-		else
-			return _session;
-	}
+    public HttpSession getSession(boolean create) {
+        // TODO - I'm assuming single threaded access to request objects...
+        // so no synchronization ?
+        if (null == _session) {
+            return (_session = ((HttpServletRequest) getRequest()).getSession(create));
+        } else {
+            return _session;
+        }
+    }
 
 }

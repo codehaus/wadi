@@ -22,13 +22,13 @@ import javax.servlet.FilterChain;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.codehaus.wadi.PoolableInvocationWrapper;
 import org.codehaus.wadi.core.contextualiser.Invocation;
+import org.codehaus.wadi.core.contextualiser.InvocationContext;
 import org.codehaus.wadi.core.contextualiser.InvocationException;
 import org.codehaus.wadi.core.contextualiser.InvocationProxy;
 import org.codehaus.wadi.core.session.Session;
 import org.codehaus.wadi.group.EndPoint;
-import org.codehaus.wadi.web.PoolableHttpServletRequestWrapper;
+import org.codehaus.wadi.web.HttpInvocationContext;
 
 /**
  * @version $Revision: 1430 $
@@ -103,8 +103,8 @@ public class WebInvocation implements Invocation {
         return proxiedInvocation;
     }
 
-    public void invoke(PoolableInvocationWrapper wrapper) throws InvocationException {
-        PoolableHttpServletRequestWrapper actualWrapper = (PoolableHttpServletRequestWrapper) wrapper;
+    public void invoke(InvocationContext wrapper) throws InvocationException {
+        HttpInvocationContext actualWrapper = (HttpInvocationContext) wrapper;
         try {
             chain.doFilter(actualWrapper, hres);
         } catch (Exception e) {
