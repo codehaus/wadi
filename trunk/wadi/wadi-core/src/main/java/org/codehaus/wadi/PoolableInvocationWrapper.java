@@ -16,6 +16,9 @@
  */
 package org.codehaus.wadi;
 
+import org.codehaus.wadi.core.contextualiser.Invocation;
+import org.codehaus.wadi.core.session.Session;
+
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$

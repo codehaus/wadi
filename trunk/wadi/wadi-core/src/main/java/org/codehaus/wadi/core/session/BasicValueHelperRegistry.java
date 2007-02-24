@@ -18,8 +18,6 @@ package org.codehaus.wadi.core.session;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.codehaus.wadi.ValueHelper;
-import org.codehaus.wadi.ValueHelperRegistry;
 
 /**
  * 

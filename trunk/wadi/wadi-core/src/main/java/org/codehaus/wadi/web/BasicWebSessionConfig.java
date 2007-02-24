@@ -18,7 +18,7 @@ package org.codehaus.wadi.web;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpSessionAttributeListener;
 
-import org.codehaus.wadi.Manager;
+import org.codehaus.wadi.core.manager.Manager;
 
 /**
  * 

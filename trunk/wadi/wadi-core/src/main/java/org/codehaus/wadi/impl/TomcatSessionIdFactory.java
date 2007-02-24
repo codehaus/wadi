@@ -87,7 +87,7 @@ package org.codehaus.wadi.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.SessionIdFactory;
+import org.codehaus.wadi.core.manager.SessionIdFactory;
 
 import java.io.DataInputStream;
 import java.io.File;

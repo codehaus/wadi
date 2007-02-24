@@ -18,21 +18,16 @@ package org.codehaus.wadi.core.manager;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.Contextualiser;
-import org.codehaus.wadi.Invocation;
-import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.Lifecycle;
-import org.codehaus.wadi.Manager;
-import org.codehaus.wadi.ManagerConfig;
 import org.codehaus.wadi.PoolableInvocationWrapper;
 import org.codehaus.wadi.PoolableInvocationWrapperPool;
 import org.codehaus.wadi.Router;
-import org.codehaus.wadi.Session;
-import org.codehaus.wadi.SessionAlreadyExistException;
-import org.codehaus.wadi.SessionFactory;
-import org.codehaus.wadi.SessionIdFactory;
-import org.codehaus.wadi.SessionMonitor;
 import org.codehaus.wadi.core.ConcurrentMotableMap;
+import org.codehaus.wadi.core.contextualiser.Contextualiser;
+import org.codehaus.wadi.core.contextualiser.Invocation;
+import org.codehaus.wadi.core.contextualiser.InvocationException;
+import org.codehaus.wadi.core.session.Session;
+import org.codehaus.wadi.core.session.SessionFactory;
 import org.codehaus.wadi.impl.WADIRuntimeException;
 import org.codehaus.wadi.web.impl.DummyStatefulHttpServletRequestWrapperPool;
 

@@ -22,9 +22,9 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import org.codehaus.wadi.InvocationException;
-import org.codehaus.wadi.Session;
+import org.codehaus.wadi.core.contextualiser.InvocationException;
 import org.codehaus.wadi.core.manager.ClusteredManager;
+import org.codehaus.wadi.core.session.Session;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.vm.VMBroker;
 import org.codehaus.wadi.group.vm.VMDispatcher;

@@ -25,8 +25,6 @@ import javax.servlet.http.HttpSessionEvent;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Streamer;
-import org.codehaus.wadi.ValueHelper;
-import org.codehaus.wadi.ValueHelperRegistry;
 import org.codehaus.wadi.core.session.DistributableValue;
 import org.codehaus.wadi.core.session.DistributableValueFactory;
 import org.codehaus.wadi.impl.SimpleStreamer;

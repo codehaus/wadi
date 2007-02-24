@@ -13,18 +13,27 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.core.manager;
 
 /**
  * 
  * @version $Revision: 1538 $
  */
-public class NoOpSessionListener implements SessionListener {
+public class SessionAlreadyExistException extends Exception {
 
-    public void onSessionCreation(Session session) {
+    public SessionAlreadyExistException() {
+        super();
     }
 
-    public void onSessionDestruction(Session session) {
+    public SessionAlreadyExistException(String message, Throwable cause) {
+        super(message, cause);
     }
 
+    public SessionAlreadyExistException(String message) {
+        super(message);
+    }
+
+    public SessionAlreadyExistException(Throwable cause) {
+        super(cause);
+    }
 }

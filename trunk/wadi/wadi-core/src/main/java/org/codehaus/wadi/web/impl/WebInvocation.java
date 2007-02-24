@@ -22,11 +22,11 @@ import javax.servlet.FilterChain;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.codehaus.wadi.Invocation;
-import org.codehaus.wadi.InvocationException;
-import org.codehaus.wadi.InvocationProxy;
 import org.codehaus.wadi.PoolableInvocationWrapper;
-import org.codehaus.wadi.Session;
+import org.codehaus.wadi.core.contextualiser.Invocation;
+import org.codehaus.wadi.core.contextualiser.InvocationException;
+import org.codehaus.wadi.core.contextualiser.InvocationProxy;
+import org.codehaus.wadi.core.session.Session;
 import org.codehaus.wadi.group.EndPoint;
 import org.codehaus.wadi.web.PoolableHttpServletRequestWrapper;
 

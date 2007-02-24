@@ -20,8 +20,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpSession;
 
-import org.codehaus.wadi.Session;
-import org.codehaus.wadi.Invocation;
+import org.codehaus.wadi.core.contextualiser.Invocation;
+import org.codehaus.wadi.core.session.Session;
 import org.codehaus.wadi.web.PoolableHttpServletRequestWrapper;
 import org.codehaus.wadi.web.WADIHttpSession;
 

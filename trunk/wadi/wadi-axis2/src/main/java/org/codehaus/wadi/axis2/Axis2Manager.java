@@ -27,10 +27,10 @@ import org.apache.axis2.session.SessionIdFactory;
 import org.apache.axis2.session.SessionManager;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.Manager;
-import org.codehaus.wadi.ManagerConfig;
-import org.codehaus.wadi.SessionFactory;
-import org.codehaus.wadi.SessionMonitor;
+import org.codehaus.wadi.core.manager.Manager;
+import org.codehaus.wadi.core.manager.ManagerConfig;
+import org.codehaus.wadi.core.manager.SessionMonitor;
+import org.codehaus.wadi.core.session.SessionFactory;
 import org.codehaus.wadi.impl.SpringManagerFactory;
 import org.codehaus.wadi.web.WADIHttpSession;
 
@@ -104,7 +104,7 @@ public class Axis2Manager implements SessionManager, ManagerConfig {
     public Session createSession() {
         _log.debug("create()");
         Axis2Invocation invocation=Axis2Invocation.getThreadLocalInstance();
-        org.codehaus.wadi.Session session=_wadi.create(null);
+        org.codehaus.wadi.core.session.Session session=_wadi.create(null);
         invocation.setKey(session.getName());
         invocation.setSession(session);
         WADIHttpSession httpSession = (WADIHttpSession)session;

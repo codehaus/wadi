@@ -22,8 +22,8 @@ import java.io.InputStream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.Manager;
-import org.codehaus.wadi.SessionFactory;
+import org.codehaus.wadi.core.manager.Manager;
+import org.codehaus.wadi.core.session.SessionFactory;
 import org.codehaus.wadi.web.WebSessionWrapperFactory;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;

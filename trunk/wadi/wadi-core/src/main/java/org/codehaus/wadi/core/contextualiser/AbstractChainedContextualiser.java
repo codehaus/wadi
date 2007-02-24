@@ -18,7 +18,6 @@ package org.codehaus.wadi.core.contextualiser;
 
 import java.util.Map;
 
-import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.PartitionMapper;
 
 /**

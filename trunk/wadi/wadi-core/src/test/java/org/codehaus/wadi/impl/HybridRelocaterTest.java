@@ -18,7 +18,7 @@ package org.codehaus.wadi.impl;
 import java.io.IOException;
 
 import org.codehaus.wadi.Immoter;
-import org.codehaus.wadi.Invocation;
+import org.codehaus.wadi.core.contextualiser.Invocation;
 import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Envelope;

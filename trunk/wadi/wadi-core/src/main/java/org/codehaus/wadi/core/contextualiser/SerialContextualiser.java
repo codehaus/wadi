@@ -16,10 +16,7 @@
  */
 package org.codehaus.wadi.core.contextualiser;
 
-import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Immoter;
-import org.codehaus.wadi.Invocation;
-import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.core.ConcurrentMotableMap;
 import org.codehaus.wadi.core.motable.Motable;
 import org.codehaus.wadi.impl.Utils;

@@ -13,9 +13,9 @@ import junit.framework.TestCase;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.Invocation;
-import org.codehaus.wadi.InvocationException;
-import org.codehaus.wadi.Session;
+import org.codehaus.wadi.core.contextualiser.Invocation;
+import org.codehaus.wadi.core.contextualiser.InvocationException;
+import org.codehaus.wadi.core.session.Session;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.test.MockInvocation;
 import org.codehaus.wadi.test.MyHttpServletRequest;

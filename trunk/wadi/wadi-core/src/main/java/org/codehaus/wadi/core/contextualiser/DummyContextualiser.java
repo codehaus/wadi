@@ -17,8 +17,6 @@
 package org.codehaus.wadi.core.contextualiser;
 
 import org.codehaus.wadi.Immoter;
-import org.codehaus.wadi.Invocation;
-import org.codehaus.wadi.InvocationException;
 import org.codehaus.wadi.core.eviction.DummyEvicter;
 import org.codehaus.wadi.core.eviction.Evicter;
 import org.codehaus.wadi.core.motable.Motable;

@@ -16,8 +16,8 @@
  */
 package org.codehaus.wadi.core.session;
 
-import org.codehaus.wadi.Manager;
 import org.codehaus.wadi.Streamer;
+import org.codehaus.wadi.core.manager.Manager;
 import org.codehaus.wadi.core.motable.Motable;
 import org.codehaus.wadi.replication.Replicater;
 

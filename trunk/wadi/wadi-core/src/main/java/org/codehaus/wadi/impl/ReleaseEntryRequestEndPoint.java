@@ -17,10 +17,10 @@ package org.codehaus.wadi.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.Contextualiser;
 import org.codehaus.wadi.Emoter;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Lifecycle;
+import org.codehaus.wadi.core.contextualiser.Contextualiser;
 import org.codehaus.wadi.core.motable.Motable;
 import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.MessageExchangeException;

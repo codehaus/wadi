@@ -16,6 +16,8 @@
  */
 package org.codehaus.wadi;
 
+import org.codehaus.wadi.core.contextualiser.Invocation;
+import org.codehaus.wadi.core.contextualiser.InvocationException;
 import org.codehaus.wadi.core.motable.Motable;
 
 

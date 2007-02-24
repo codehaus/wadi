@@ -39,8 +39,8 @@ import java.util.HashSet;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.codehaus.wadi.Invocation;
-import org.codehaus.wadi.InvocationProxy;
+import org.codehaus.wadi.core.contextualiser.Invocation;
+import org.codehaus.wadi.core.contextualiser.InvocationProxy;
 import org.codehaus.wadi.group.EndPoint;
 
 //HTTP/1.1 Methods:

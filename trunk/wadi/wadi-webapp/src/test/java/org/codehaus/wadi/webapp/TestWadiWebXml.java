@@ -21,7 +21,7 @@ import java.io.InputStream;
 import java.util.Random;
 
 
-import org.codehaus.wadi.Manager;
+import org.codehaus.wadi.core.manager.Manager;
 import org.codehaus.wadi.impl.SpringManagerFactory;
 
 import junit.framework.TestCase;

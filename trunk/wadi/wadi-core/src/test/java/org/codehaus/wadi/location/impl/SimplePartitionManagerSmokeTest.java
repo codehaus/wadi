@@ -21,7 +21,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import org.codehaus.wadi.Contextualiser;
+import org.codehaus.wadi.core.contextualiser.Contextualiser;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.vm.VMBroker;

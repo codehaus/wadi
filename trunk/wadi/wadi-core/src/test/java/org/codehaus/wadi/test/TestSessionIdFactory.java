@@ -19,7 +19,7 @@ package org.codehaus.wadi.test;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.codehaus.wadi.SessionIdFactory;
+import org.codehaus.wadi.core.manager.SessionIdFactory;
 import org.codehaus.wadi.impl.TomcatSessionIdFactory;
 
 import junit.framework.TestCase;

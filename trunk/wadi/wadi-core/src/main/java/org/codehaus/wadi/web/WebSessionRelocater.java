@@ -16,7 +16,7 @@
  */
 package org.codehaus.wadi.web;
 
-import org.codehaus.wadi.Relocater;
+import org.codehaus.wadi.core.contextualiser.Relocater;
 
 /**
  * A relocation strategy that involves relocating the State to the Request.

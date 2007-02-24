@@ -18,7 +18,8 @@ package org.codehaus.wadi.web;
 
 import java.util.Enumeration;
 import java.util.Set;
-import org.codehaus.wadi.Session;
+
+import org.codehaus.wadi.core.session.Session;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>

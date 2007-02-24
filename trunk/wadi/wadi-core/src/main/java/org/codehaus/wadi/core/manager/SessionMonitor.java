@@ -13,13 +13,21 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.core.manager;
+
+import org.codehaus.wadi.core.session.Session;
 
 
 /**
  * 
  * @version $Revision: 1538 $
  */
-public interface ValueHelperRegistry {
-    ValueHelper findHelper(Class type);
+public interface SessionMonitor {
+    void notifySessionCreation(Session session);
+
+    void notifySessionDestruction(Session session);
+    
+    void addSessionListener(SessionListener sessionListener);
+    
+    void removeSessionListener(SessionListener sessionListener);
 }

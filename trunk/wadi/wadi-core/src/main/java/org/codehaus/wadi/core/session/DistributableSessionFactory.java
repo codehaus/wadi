@@ -16,7 +16,6 @@
  */
 package org.codehaus.wadi.core.session;
 
-import org.codehaus.wadi.Session;
 import org.codehaus.wadi.Streamer;
 
 /**

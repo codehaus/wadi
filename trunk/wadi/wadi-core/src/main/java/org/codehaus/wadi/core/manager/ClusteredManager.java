@@ -16,15 +16,13 @@
  */
 package org.codehaus.wadi.core.manager;
 
-import org.codehaus.wadi.Contextualiser;
-import org.codehaus.wadi.Invocation;
-import org.codehaus.wadi.InvocationException;
-import org.codehaus.wadi.InvocationProxy;
 import org.codehaus.wadi.Router;
-import org.codehaus.wadi.SessionFactory;
-import org.codehaus.wadi.SessionIdFactory;
-import org.codehaus.wadi.SessionMonitor;
 import org.codehaus.wadi.core.ConcurrentMotableMap;
+import org.codehaus.wadi.core.contextualiser.Contextualiser;
+import org.codehaus.wadi.core.contextualiser.Invocation;
+import org.codehaus.wadi.core.contextualiser.InvocationException;
+import org.codehaus.wadi.core.contextualiser.InvocationProxy;
+import org.codehaus.wadi.core.session.SessionFactory;
 import org.codehaus.wadi.location.PartitionManager;
 import org.codehaus.wadi.location.StateManager;
 import org.codehaus.wadi.web.WebSession;
