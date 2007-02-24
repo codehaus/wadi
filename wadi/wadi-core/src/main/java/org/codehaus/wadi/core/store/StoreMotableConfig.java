@@ -14,28 +14,12 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
-
-import java.sql.Connection;
-
-import javax.sql.DataSource;
+package org.codehaus.wadi.core.store;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public interface DatabaseMotableConfig extends StoreMotableConfig {
-
-	String getLabel();
-    DataSource getDataSource();
-    String getTable();
-
-    boolean getReusingStore();
-
-    void insert(Connection connection, Motable motable, Object body) throws Exception;
-    void delete(Connection connection, Motable motable); // TODO - why no Exception ?
-    void update(Connection connection, Motable motable) throws Exception;
-	void loadHeader(Connection connection, Motable motable); // TODO - why no Exception ?
-	Object loadBody(Connection connection, Motable motable) throws Exception;
-
+public interface StoreMotableConfig{
+    boolean getUseNIO();
 }

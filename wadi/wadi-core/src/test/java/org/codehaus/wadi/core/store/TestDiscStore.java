@@ -14,17 +14,17 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.test;
+package org.codehaus.wadi.core.store;
 
 import java.io.File;
 
 import junit.framework.TestCase;
 
 import org.codehaus.wadi.Motable;
-import org.codehaus.wadi.Store;
-import org.codehaus.wadi.StoreMotable;
 import org.codehaus.wadi.core.motable.SimpleMotable;
-import org.codehaus.wadi.impl.DiscStore;
+import org.codehaus.wadi.core.store.DiscStore;
+import org.codehaus.wadi.core.store.Store;
+import org.codehaus.wadi.core.store.StoreMotable;
 import org.codehaus.wadi.impl.SimpleStreamer;
 
 /**

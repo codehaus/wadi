@@ -14,17 +14,15 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.core.motable;
+package org.codehaus.wadi.core.store;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.DatabaseMotableConfig;
 import org.codehaus.wadi.Motable;
-import org.codehaus.wadi.StoreMotable;
-import org.codehaus.wadi.StoreMotableConfig;
+import org.codehaus.wadi.core.motable.AbstractMotable;
 
 /**
  * A Motable that represents its Bytes field as a row in a Shared DataBase table.

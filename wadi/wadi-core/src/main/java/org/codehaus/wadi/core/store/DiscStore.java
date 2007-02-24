@@ -14,7 +14,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.impl;
+package org.codehaus.wadi.core.store;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,11 +22,8 @@ import java.nio.ByteBuffer;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.DiscMotableConfig;
-import org.codehaus.wadi.Store;
-import org.codehaus.wadi.StoreMotable;
 import org.codehaus.wadi.Streamer;
-import org.codehaus.wadi.core.motable.DiscMotable;
+import org.codehaus.wadi.impl.DirectByteBufferCache;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>

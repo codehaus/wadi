@@ -21,12 +21,12 @@ import org.codehaus.wadi.Emoter;
 import org.codehaus.wadi.Evicter;
 import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.Motable;
-import org.codehaus.wadi.Store;
-import org.codehaus.wadi.StoreMotable;
 import org.codehaus.wadi.core.ConcurrentMotableMap;
+import org.codehaus.wadi.core.store.DatabaseStore;
+import org.codehaus.wadi.core.store.Store;
+import org.codehaus.wadi.core.store.StoreMotable;
 import org.codehaus.wadi.impl.AbstractMappedImmoter;
 import org.codehaus.wadi.impl.BaseMappedEmoter;
-import org.codehaus.wadi.impl.DatabaseStore;
 
 /**
  * Maps id:File where file contains Context content...
