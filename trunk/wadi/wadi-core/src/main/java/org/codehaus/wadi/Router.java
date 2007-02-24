@@ -14,24 +14,28 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.web.impl;
+package org.codehaus.wadi;
 
-import org.codehaus.wadi.ValueFactory;
-import org.codehaus.wadi.web.Attributes;
 
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision: 1497 $
+ * @version $Revision$
  */
-public class DistributableAttributesFactory extends StandardAttributesFactory {
+public interface Router {
+    /**
+     * Strip any routing info from this session id.
+     *
+     * @param session a <code>String</code> value
+     * @return a <code>String</code> value
+     */
+    String strip(String session);
 
-    public DistributableAttributesFactory(ValueFactory valueFactory) {
-        super(valueFactory);
-    }
-
-    public Attributes create() {
-        return new DistributableAttributes(valueFactory);
-    }
-
+    /**
+     * Add our routing info to this session id.
+     *
+     * @param session a <code>String</code> value
+     * @return a <code>String</code> value
+     */
+    String augment(String session);
 }

@@ -14,23 +14,20 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.web.impl;
+package org.codehaus.wadi.core.session;
 
+import org.codehaus.wadi.Value;
 import org.codehaus.wadi.ValueFactory;
-import org.codehaus.wadi.web.Attributes;
 
 /**
+ *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
+ * @version $Revision: 1139 $
  */
-public class LazyAttributesFactory extends DistributableAttributesFactory {
+public class StandardValueFactory implements ValueFactory {
 
-    public LazyAttributesFactory(ValueFactory valueFactory) {
-        super(valueFactory);
-    }
-
-    public Attributes create() {
-        return new LazyAttributes(valueFactory);
+    public Value create() {
+        return new StandardValue();
     }
 
 }

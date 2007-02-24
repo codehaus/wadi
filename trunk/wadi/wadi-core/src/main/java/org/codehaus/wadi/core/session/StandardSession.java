@@ -14,31 +14,33 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.impl;
+package org.codehaus.wadi.core.session;
 
-import org.codehaus.wadi.web.WebSession;
-import org.codehaus.wadi.web.WebSessionFactory;
-import org.codehaus.wadi.web.WebSessionPool;
+import java.io.IOException;
+import java.io.NotSerializableException;
+
+import org.codehaus.wadi.Manager;
+import org.codehaus.wadi.web.Attributes;
 
 /**
+ * Our internal representation of any Web Session
+ *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
+ * @version $Revision: 1886 $
  */
-public class SimpleSessionPool implements WebSessionPool {
-    protected final WebSessionFactory factory;
-    
-    public SimpleSessionPool(WebSessionFactory factory) {
-        if (null == factory) {
-            throw new IllegalArgumentException("factory is required");
-        }
-        this.factory = factory;
+
+public class StandardSession extends AbstractSession {
+
+    public StandardSession(Attributes attributes, Manager manager) {
+        super(attributes, manager);
     }
 
-    public WebSession take() {
-        return factory.create();
+    public byte[] getBodyAsByteArray() throws Exception {
+        throw new NotSerializableException();
     }
 
-    public void put(WebSession session) {
+    public void setBodyAsByteArray(byte[] bytes) throws IOException, ClassNotFoundException {
+        throw new NotSerializableException();
     }
 
 }

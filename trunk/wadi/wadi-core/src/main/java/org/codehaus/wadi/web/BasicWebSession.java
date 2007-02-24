@@ -1,6 +1,5 @@
 /**
- *
- * Copyright 2003-2005 Core Developers Network Ltd.
+ * Copyright 2006 The Apache Software Foundation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,36 +13,31 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.web.impl;
+package org.codehaus.wadi.web;
 
-import java.io.IOException;
-import java.io.NotSerializableException;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.Set;
 
 import javax.servlet.http.HttpSession;
+import javax.servlet.http.HttpSessionActivationListener;
 import javax.servlet.http.HttpSessionAttributeListener;
 import javax.servlet.http.HttpSessionBindingEvent;
 import javax.servlet.http.HttpSessionBindingListener;
 import javax.servlet.http.HttpSessionEvent;
 
 import org.codehaus.wadi.Manager;
-import org.codehaus.wadi.impl.AbstractSession;
-import org.codehaus.wadi.web.Attributes;
-import org.codehaus.wadi.web.Router;
-import org.codehaus.wadi.web.WADIHttpSession;
-import org.codehaus.wadi.web.WebSessionConfig;
-import org.codehaus.wadi.web.WebSessionWrapperFactory;
+import org.codehaus.wadi.Replicater;
+import org.codehaus.wadi.Router;
+import org.codehaus.wadi.Streamer;
+import org.codehaus.wadi.core.session.AtomicallyReplicableSession;
 
 /**
- * Our internal representation of any Web Session
- *
- * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision: 1886 $
+ * 
+ * @version $Revision: 1538 $
  */
-
-public class StandardSession extends AbstractSession implements WADIHttpSession {
+public class BasicWebSession extends AtomicallyReplicableSession implements WADIHttpSession {
     private static final String[] EMPTY_STRING_ARRAY = new String[0];
     private static final Enumeration EMPTY_ENUMERATION = Collections.enumeration(Collections.EMPTY_LIST);
 
@@ -51,14 +45,15 @@ public class StandardSession extends AbstractSession implements WADIHttpSession 
     protected final Router router;
     protected final HttpSession wrapper;
     protected final HttpSessionEvent httpSessionEvent;
-    protected final Manager manager;
 
-    public StandardSession(WebSessionConfig config,
+    public BasicWebSession(WebSessionConfig config,
             Attributes attributes,
             WebSessionWrapperFactory wrapperFactory,
             Router router,
-            Manager manager) {
-        super(attributes);
+            Manager manager,
+            Streamer streamer,
+            Replicater replicater) {
+        super(attributes, manager, streamer, replicater);
         if (null == wrapperFactory) {
             throw new IllegalArgumentException("wrapperFactory is required.");
         } else if (null == router) {
@@ -68,23 +63,9 @@ public class StandardSession extends AbstractSession implements WADIHttpSession 
         }
         this.config = config;
         this.router = router;
-        this.manager = manager;
         
         wrapper = wrapperFactory.create(this);
         httpSessionEvent = new HttpSessionEvent(wrapper);
-    }
-
-    public synchronized void destroy() throws Exception {
-        manager.destroy(this);
-        super.destroy();
-    }
-
-    public byte[] getBodyAsByteArray() throws Exception {
-        throw new NotSerializableException();
-    }
-
-    public void setBodyAsByteArray(byte[] bytes) throws IOException, ClassNotFoundException {
-        throw new NotSerializableException();
     }
 
     public HttpSession getWrapper() {
@@ -95,6 +76,14 @@ public class StandardSession extends AbstractSession implements WADIHttpSession 
         return httpSessionEvent;
     }
 
+    public WebSessionConfig getConfig() {
+        return config;
+    }
+
+    public String getId() {
+        return router.augment(name);
+    }
+    
     public synchronized Object getAttribute(String name) {
         if (null == name) {
             throw new IllegalArgumentException("HttpSession attribute names must be non-null (see SRV.15.1.7.1)");
@@ -129,12 +118,26 @@ public class StandardSession extends AbstractSession implements WADIHttpSession 
         return super.removeState(name);
     }
 
-    public WebSessionConfig getConfig() {
-        return config;
+    protected void onDeserialization() {
+        for (Iterator iter = attributes.keySet().iterator(); iter.hasNext();) {
+            Object key = (Object) iter.next();
+            Object value = attributes.get(key);
+            if (value instanceof HttpSessionActivationListener) {
+                HttpSessionActivationListener listener = (HttpSessionActivationListener) value;
+                listener.sessionDidActivate(httpSessionEvent);
+            }
+        }
     }
-
-    public String getId() {
-        return router.augment(name);
+    
+    protected void onSerialization() {
+        for (Iterator iter = attributes.keySet().iterator(); iter.hasNext();) {
+            Object key = (Object) iter.next();
+            Object value = attributes.get(key);
+            if (value instanceof HttpSessionActivationListener) {
+                HttpSessionActivationListener listener = (HttpSessionActivationListener) value;
+                listener.sessionWillPassivate(httpSessionEvent);
+            }
+        }
     }
     
     protected void onAddSate(String name, Object oldValue, Object newValue) {
@@ -173,5 +176,5 @@ public class StandardSession extends AbstractSession implements WADIHttpSession 
             }
         }
     }
-
+    
 }

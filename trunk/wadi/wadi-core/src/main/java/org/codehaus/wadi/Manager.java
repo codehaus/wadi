@@ -17,7 +17,6 @@
 package org.codehaus.wadi;
 
 import org.codehaus.wadi.servicespace.ServiceName;
-import org.codehaus.wadi.web.WebSession;
 
 /**
  * Manager - A Session Manager abstraction. Responsibilities include Session creation, destruction, storage
@@ -36,7 +35,7 @@ public interface Manager extends Lifecycle {
      */
     void init(ManagerConfig config);
 
-    WebSession createWithName(String name) throws SessionAlreadyExistException;
+    Session createWithName(String name) throws SessionAlreadyExistException;
 
     /**
      * Create a new Session
@@ -44,14 +43,14 @@ public interface Manager extends Lifecycle {
      * @param invocation the Invocation
      * @return the Session  
      */
-    WebSession create(Invocation invocation);
+    Session create(Invocation invocation);
     
     /**
      * Destroy a Session
      * 
      * @param session the Session
      */
-    void destroy(WebSession session);
+    void destroy(Session session);
 
     /**
      * @return The maximum amount of time (in seconds) that a Session

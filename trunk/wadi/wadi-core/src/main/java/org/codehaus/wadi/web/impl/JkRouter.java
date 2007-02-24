@@ -16,7 +16,7 @@
  */
 package org.codehaus.wadi.web.impl;
 
-import org.codehaus.wadi.web.Router;
+import org.codehaus.wadi.Router;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>

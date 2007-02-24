@@ -16,7 +16,6 @@
  */
 package org.codehaus.wadi;
 
-import org.codehaus.wadi.web.WebSessionConfig;
 
 
 
@@ -25,5 +24,5 @@ import org.codehaus.wadi.web.WebSessionConfig;
  * @version $Revision$
  */
 public interface ManagerConfig {
-    void callback(Manager manager, SessionMonitor sessionMonitor, WebSessionConfig sessionConfig);
+    void callback(Manager manager, SessionMonitor sessionMonitor, SessionFactory sessionFactory);
 }

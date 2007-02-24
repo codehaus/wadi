@@ -15,13 +15,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Invocation;
 import org.codehaus.wadi.InvocationException;
+import org.codehaus.wadi.Session;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.test.MockInvocation;
 import org.codehaus.wadi.test.MyHttpServletRequest;
 import org.codehaus.wadi.test.MyHttpServletResponse;
 import org.codehaus.wadi.test.MyStack;
 import org.codehaus.wadi.test.TestUtil;
-import org.codehaus.wadi.web.WebSession;
 
 public class AbstractTestEvacuation extends TestCase {
 	protected Log _log = LogFactory.getLog(getClass());
@@ -49,9 +49,9 @@ public class AbstractTestEvacuation extends TestCase {
 
         TestUtil.waitForDispatcherSeeOthers(new Dispatcher[] { redD, greenD }, 5000);
 
-        WebSession session = red.getManager().create(null);
+        Session session = red.getManager().create(null);
         session.onEndProcessing();
-        String id = session.getId();
+        String name = session.getName();
 
         FilterChain fc = new FilterChain() {
             public void doFilter(ServletRequest req, ServletResponse res) throws IOException, ServletException {
@@ -60,8 +60,8 @@ public class AbstractTestEvacuation extends TestCase {
             }
         };
 
-        stopRedAndInvokeAgainstGreen(greenD, red, green, id, fc);
-        startRedAndInvokeAgainstRed(redD, greenD, red, id, fc);
+        stopRedAndInvokeAgainstGreen(greenD, red, green, name, fc);
+        startRedAndInvokeAgainstRed(redD, greenD, red, name, fc);
 	}
 
     private void startRedAndInvokeAgainstRed(Dispatcher redD, Dispatcher greenD, MyStack red, String id, FilterChain fc) throws Exception, InvocationException {

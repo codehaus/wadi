@@ -32,12 +32,12 @@ import org.apache.catalina.SessionListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Replicater;
+import org.codehaus.wadi.Router;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.web.Attributes;
-import org.codehaus.wadi.web.Router;
+import org.codehaus.wadi.web.BasicWebSession;
 import org.codehaus.wadi.web.WebSessionConfig;
 import org.codehaus.wadi.web.WebSessionWrapperFactory;
-import org.codehaus.wadi.web.impl.AtomicallyReplicableSession;
 
 /**
  * Interestingly, in Tomcat a Session is a facade (for internal use) over an HttpSession (for external use), but
@@ -50,7 +50,7 @@ import org.codehaus.wadi.web.impl.AtomicallyReplicableSession;
  * @version $Revision$
  */
 
-public class TomcatSession extends AtomicallyReplicableSession implements Session {
+public class TomcatSession extends BasicWebSession implements Session {
 
   protected static final Log _log = LogFactory.getLog(TomcatSession.class);
 
@@ -61,7 +61,7 @@ public class TomcatSession extends AtomicallyReplicableSession implements Sessio
           org.codehaus.wadi.Manager manager,
           Streamer streamer,
           Replicater replicater) {
-    super(config, attributes, wrapperFactory, router, manager, streamer, replicater);
+      super(config, attributes, wrapperFactory, router, manager, streamer, replicater);
   }
 
   public void destroy() {

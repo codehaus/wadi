@@ -18,7 +18,7 @@ package org.codehaus.wadi.replication.manager;
 import org.codehaus.wadi.Motable;
 import org.codehaus.wadi.Replicater;
 import org.codehaus.wadi.ReplicaterException;
-import org.codehaus.wadi.web.WebSession;
+import org.codehaus.wadi.Session;
 
 /**
  * 
@@ -35,7 +35,7 @@ public class ReplicaterAdapter implements Replicater {
     }
 
     public void create(Object tmp) {
-        WebSession session = castAndEnsureType(tmp);
+        Session session = castAndEnsureType(tmp);
         try {
             replicationManager.create(session.getName(), session);
         } catch (ReplicationException e) {
@@ -44,7 +44,7 @@ public class ReplicaterAdapter implements Replicater {
     }
 
     public void update(Object tmp) {
-        WebSession session = castAndEnsureType(tmp);
+        Session session = castAndEnsureType(tmp);
         try {
             replicationManager.update(session.getName(), session);
         } catch (ReplicationException e) {
@@ -53,12 +53,12 @@ public class ReplicaterAdapter implements Replicater {
     }
 
     public void destroy(Object tmp) {
-        WebSession session = castAndEnsureType(tmp);
+        Session session = castAndEnsureType(tmp);
         replicationManager.destroy(session.getName());
     }
 
     public void acquireFromOtherReplicater(Object tmp) {
-        WebSession session = castAndEnsureType(tmp);
+        Session session = castAndEnsureType(tmp);
         Motable acquiredMotable = (Motable) replicationManager.acquirePrimary(session.getName());
         if (null == acquiredMotable) {
             return;
@@ -74,10 +74,10 @@ public class ReplicaterAdapter implements Replicater {
         return true;
     }
     
-    private WebSession castAndEnsureType(Object tmp) {
-        if (false == tmp instanceof WebSession) {
+    private Session castAndEnsureType(Object tmp) {
+        if (false == tmp instanceof Session) {
             throw new IllegalArgumentException("tmp is not a Session");
         }
-        return (WebSession) tmp;
+        return (Session) tmp;
     }
 }

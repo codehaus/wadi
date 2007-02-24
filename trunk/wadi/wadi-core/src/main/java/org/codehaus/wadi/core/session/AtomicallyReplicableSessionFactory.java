@@ -14,15 +14,13 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.web.impl;
+package org.codehaus.wadi.core.session;
 
 import org.codehaus.wadi.Replicater;
 import org.codehaus.wadi.ReplicaterFactory;
+import org.codehaus.wadi.Session;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.web.AttributesFactory;
-import org.codehaus.wadi.web.Router;
-import org.codehaus.wadi.web.WebSession;
-import org.codehaus.wadi.web.WebSessionWrapperFactory;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -33,25 +31,17 @@ public class AtomicallyReplicableSessionFactory extends DistributableSessionFact
     protected final Replicater replicater;
     
     public AtomicallyReplicableSessionFactory(AttributesFactory attributesFactory,
-            WebSessionWrapperFactory wrapperFactory,
-            Router router,
             Streamer streamer,
             ReplicaterFactory replicaterFactory) {
-        super(attributesFactory, wrapperFactory, router, streamer);
+        super(attributesFactory, streamer);
         if (null == replicaterFactory) {
             throw new IllegalArgumentException("replicaterFactory is required");
         }
         this.replicater = replicaterFactory.create();
     }
 
-    public WebSession create() {
-        return new AtomicallyReplicableSession(config,
-                newAttributes(),
-                wrapperFactory,
-                router,
-                getManager(),
-                streamer,
-                replicater);
+    public Session create() {
+        return new AtomicallyReplicableSession(newAttributes(), getManager(), streamer, replicater);
     }
     
 }

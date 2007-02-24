@@ -14,28 +14,29 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.web;
+package org.codehaus.wadi.core.session;
 
+import org.codehaus.wadi.ValueFactory;
+import org.codehaus.wadi.web.Attributes;
+import org.codehaus.wadi.web.AttributesFactory;
 
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
+ * @version $Revision: 1497 $
  */
-public interface Router {
-    /**
-     * Strip any routing info from this session id.
-     *
-     * @param session a <code>String</code> value
-     * @return a <code>String</code> value
-     */
-    String strip(String session);
+public class StandardAttributesFactory implements AttributesFactory {
+    protected final ValueFactory valueFactory;
 
-    /**
-     * Add our routing info to this session id.
-     *
-     * @param session a <code>String</code> value
-     * @return a <code>String</code> value
-     */
-    String augment(String session);
+    public StandardAttributesFactory(ValueFactory valueFactory) {
+        if (null == valueFactory) {
+            throw new IllegalArgumentException("valueFactory is required");
+        }
+        this.valueFactory = valueFactory;
+    }
+
+    public Attributes create() {
+        return new StandardAttributes(valueFactory);
+    }
+    
 }

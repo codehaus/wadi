@@ -14,23 +14,17 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.web.impl;
+package org.codehaus.wadi.core.session;
 
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.Iterator;
 import java.util.Set;
-
-import javax.servlet.http.HttpSessionActivationListener;
 
 import org.codehaus.wadi.Manager;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.impl.Utils;
 import org.codehaus.wadi.web.Attributes;
-import org.codehaus.wadi.web.Router;
-import org.codehaus.wadi.web.WebSessionConfig;
-import org.codehaus.wadi.web.WebSessionWrapperFactory;
 
 /**
  * A Standard Session enhanced with functionality associated with
@@ -44,13 +38,8 @@ public class DistributableSession extends StandardSession {
     
     private final Streamer streamer;
 
-    public DistributableSession(WebSessionConfig config,
-            Attributes attributes,
-            WebSessionWrapperFactory wrapperFactory,
-            Router router,
-            Manager manager,
-            Streamer streamer) {
-        super(config, attributes, wrapperFactory, router, manager);
+    public DistributableSession(Attributes attributes, Manager manager, Streamer streamer) {
+        super(attributes, manager);
         if (null == streamer) {
             throw new IllegalArgumentException("streamer is required");
         }
@@ -82,25 +71,8 @@ public class DistributableSession extends StandardSession {
     }
     
     protected void onDeserialization() {
-        for (Iterator iter = attributes.keySet().iterator(); iter.hasNext();) {
-            Object key = (Object) iter.next();
-            Object value = attributes.get(key);
-            if (value instanceof HttpSessionActivationListener) {
-                HttpSessionActivationListener listener = (HttpSessionActivationListener) value;
-                listener.sessionDidActivate(httpSessionEvent);
-            }
-        }
     }
     
     protected void onSerialization() {
-        for (Iterator iter = attributes.keySet().iterator(); iter.hasNext();) {
-            Object key = (Object) iter.next();
-            Object value = attributes.get(key);
-            if (value instanceof HttpSessionActivationListener) {
-                HttpSessionActivationListener listener = (HttpSessionActivationListener) value;
-                listener.sessionWillPassivate(httpSessionEvent);
-            }
-        }
     }
-
 }

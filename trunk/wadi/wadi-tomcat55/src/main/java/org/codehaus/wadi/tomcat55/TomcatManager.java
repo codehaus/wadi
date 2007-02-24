@@ -43,10 +43,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Manager;
 import org.codehaus.wadi.ManagerConfig;
+import org.codehaus.wadi.SessionFactory;
 import org.codehaus.wadi.SessionMonitor;
 import org.codehaus.wadi.impl.SpringManagerFactory;
 import org.codehaus.wadi.web.WADIHttpSessionListener;
 import org.codehaus.wadi.web.WebSessionConfig;
+import org.codehaus.wadi.web.WebSessionFactory;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -71,7 +73,7 @@ public class TomcatManager implements ManagerConfig, Lifecycle, org.apache.catal
     return ((Context)_container).getServletContext();
   }
 
-  public void callback(Manager manager, SessionMonitor sessionMonitor, WebSessionConfig sessionConfig) {
+  public void callback(Manager manager, SessionMonitor sessionMonitor, SessionFactory sessionFactory) {
     // install Listeners ...
     Context context=((Context)_container);
 
@@ -94,7 +96,8 @@ public class TomcatManager implements ManagerConfig, Lifecycle, org.apache.catal
       if (listener instanceof HttpSessionAttributeListener)
 	all.add(listener);
     }
-    sessionConfig.setAttributeListeners((HttpSessionAttributeListener[])all.toArray(new HttpSessionAttributeListener[all.size()]));
+    WebSessionConfig webSessionConfig = ((WebSessionFactory) sessionFactory).getWebSessionConfig();
+    webSessionConfig.setAttributeListeners((HttpSessionAttributeListener[])all.toArray(new HttpSessionAttributeListener[all.size()]));
   }
 
   // org.apache.catalina.Lifecycle

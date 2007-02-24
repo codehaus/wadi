@@ -1,6 +1,5 @@
 /**
- *
- * Copyright 2003-2005 Core Developers Network Ltd.
+ * Copyright 2006 The Apache Software Foundation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -14,32 +13,47 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.tomcat55;
+package org.codehaus.wadi.web;
 
 import org.codehaus.wadi.ReplicaterFactory;
 import org.codehaus.wadi.Router;
 import org.codehaus.wadi.Session;
 import org.codehaus.wadi.Streamer;
-import org.codehaus.wadi.web.AttributesFactory;
-import org.codehaus.wadi.web.BasicWebSessionFactory;
-import org.codehaus.wadi.web.WebSessionWrapperFactory;
+import org.codehaus.wadi.core.session.AtomicallyReplicableSessionFactory;
 
 /**
- * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
+ * 
+ * @version $Revision: 1538 $
  */
-public class TomcatSessionFactory extends BasicWebSessionFactory {
+public class BasicWebSessionFactory extends AtomicallyReplicableSessionFactory implements WebSessionFactory {
 
-    public TomcatSessionFactory(AttributesFactory attributesFactory,
+    protected final WebSessionConfig webSessionConfig;
+    protected final Router router;
+    protected final WebSessionWrapperFactory wrapperFactory;
+
+    public BasicWebSessionFactory(AttributesFactory attributesFactory,
             Streamer streamer,
             ReplicaterFactory replicaterFactory,
             Router router,
             WebSessionWrapperFactory wrapperFactory) {
-        super(attributesFactory, streamer, replicaterFactory, router, wrapperFactory);
+        super(attributesFactory, streamer, replicaterFactory);
+        if (null == router) {
+            throw new IllegalArgumentException("router is required");
+        } else if (null == wrapperFactory) {
+            throw new IllegalArgumentException("wrapperFactory is required");
+        }
+        this.router = router;
+        this.wrapperFactory = wrapperFactory;
+        
+        webSessionConfig = new BasicWebSessionConfig();
     }
 
+    public WebSessionConfig getWebSessionConfig() {
+        return webSessionConfig;
+    }
+    
     public Session create() {
-        return new TomcatSession(webSessionConfig,
+        return new BasicWebSession(webSessionConfig,
                 newAttributes(),
                 wrapperFactory,
                 router,
@@ -47,5 +61,4 @@ public class TomcatSessionFactory extends BasicWebSessionFactory {
                 streamer,
                 replicater);
     }
-
 }

@@ -15,16 +15,13 @@
  *  limitations under the License.
  */
 
-package org.codehaus.wadi.web.impl;
+package org.codehaus.wadi.core.session;
 
 import org.codehaus.wadi.Manager;
 import org.codehaus.wadi.RehydrationException;
 import org.codehaus.wadi.Replicater;
 import org.codehaus.wadi.Streamer;
 import org.codehaus.wadi.web.Attributes;
-import org.codehaus.wadi.web.Router;
-import org.codehaus.wadi.web.WebSessionConfig;
-import org.codehaus.wadi.web.WebSessionWrapperFactory;
 
 
 /**
@@ -52,20 +49,11 @@ public class AtomicallyReplicableSession extends AbstractReplicableSession {
     protected transient boolean dirty = false;
     protected transient Semantics semantics = new ByReferenceSemantics();
 
-    public AtomicallyReplicableSession(WebSessionConfig config,
-            Attributes attributes,
-            WebSessionWrapperFactory wrapperFactory,
-            Router router,
+    public AtomicallyReplicableSession(Attributes attributes,
             Manager manager,
             Streamer streamer,
             Replicater replicater) {
-        super(config,
-                attributes,
-                wrapperFactory,
-                router,
-                manager,
-                streamer,
-                replicater);
+        super(attributes, manager, streamer, replicater);
     }
 
     public synchronized void rehydrate(long creationTime, long lastAccessedTime, int maxInactiveInterval, String name, byte[] body)
@@ -92,7 +80,7 @@ public class AtomicallyReplicableSession extends AbstractReplicableSession {
      * session to update this.
      */
     public synchronized void setMaxInactiveInterval(int maxInactiveInterval) {
-        if (maxInactiveInterval != maxInactiveInterval) {
+        if (this.maxInactiveInterval != maxInactiveInterval) {
             super.setMaxInactiveInterval(maxInactiveInterval);
             dirty = true;
         }
@@ -103,14 +91,14 @@ public class AtomicallyReplicableSession extends AbstractReplicableSession {
      * new value is the same as the old one. We would be second guessing
      * application code. I think it is up to the developer to make this check.
      */
-    public synchronized Object setAttribute(String name, Object value) {
-        Object tmp = super.setAttribute(name, value);
+    public synchronized Object addState(String key, Object value) {
+        Object oldState = super.addState(key, value);
         dirty = true;
-        return tmp;
-    }
-
-    public synchronized Object removeAttribute(String name) {
-        Object tmp = super.removeAttribute(name);
+        return oldState;
+    };
+    
+    public synchronized Object removeState(String key) {
+        Object tmp = super.removeState(key);
         dirty = tmp != null;
         return tmp;
     }
@@ -122,11 +110,11 @@ public class AtomicallyReplicableSession extends AbstractReplicableSession {
      * using ByReference semantics, this dirties. If we are using
      * ByValue semantics, it does not.
      */
-    public synchronized Object getAttribute(String name) {
-        Object tmp = super.getAttribute(name);
+    public synchronized Object getState(String key) {
+        Object tmp = super.getState(key);
         dirty = (tmp != null) && semantics.getAttributeDirties();
         return tmp;
-    }
+    };
 
     public synchronized void destroy() throws Exception {
         super.destroy();

@@ -22,7 +22,7 @@ import java.sql.Connection;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Replicater;
-import org.codehaus.wadi.web.impl.AbstractReplicableSession;
+import org.codehaus.wadi.core.session.AbstractReplicableSession;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -45,7 +45,7 @@ public class DatabaseReplicater implements Replicater {
 
 	public void create(Object tmp) {
 		AbstractReplicableSession session=(AbstractReplicableSession)tmp;
-		String name=session.getId();
+		String name=session.getName();
 		if (_log.isTraceEnabled()) _log.trace("create (database): "+name);
 		// write a row into the DB
 		Connection connection=null;
@@ -66,7 +66,7 @@ public class DatabaseReplicater implements Replicater {
 
 	public void update(Object tmp) { //TODO
 		AbstractReplicableSession session=(AbstractReplicableSession)tmp;
-		String name=session.getId();
+		String name=session.getName();
 		if (_log.isTraceEnabled()) _log.trace("update (database) : "+name);
 		// update a row in the DB
 		Connection connection=null;
@@ -87,7 +87,7 @@ public class DatabaseReplicater implements Replicater {
 
 	public void destroy(Object tmp) { //TODO
 		AbstractReplicableSession session=(AbstractReplicableSession)tmp;
-		String name=session.getId();
+		String name=session.getName();
 		if (_log.isTraceEnabled()) _log.trace("destroy (database) : "+name);
 		// remove a row in the DB
 		Connection connection=null;

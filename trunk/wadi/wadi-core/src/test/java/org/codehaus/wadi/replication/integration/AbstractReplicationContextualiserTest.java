@@ -24,17 +24,26 @@ import javax.servlet.ServletResponse;
 import junit.framework.TestCase;
 
 import org.codehaus.wadi.InvocationException;
+import org.codehaus.wadi.Router;
+import org.codehaus.wadi.Session;
+import org.codehaus.wadi.SessionFactory;
+import org.codehaus.wadi.ValueFactory;
 import org.codehaus.wadi.core.ConcurrentMotableMap;
+import org.codehaus.wadi.core.session.DistributableAttributesFactory;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.impl.ClusteredManager;
+import org.codehaus.wadi.impl.SimpleStreamer;
 import org.codehaus.wadi.impl.StackContext;
+import org.codehaus.wadi.replication.manager.ReplicaterAdapterFactory;
 import org.codehaus.wadi.servicespace.ServiceSpace;
 import org.codehaus.wadi.servicespace.ServiceSpaceName;
 import org.codehaus.wadi.test.MockInvocation;
 import org.codehaus.wadi.test.MyHttpServletRequest;
-import org.codehaus.wadi.web.Router;
+import org.codehaus.wadi.web.BasicWebSessionFactory;
+import org.codehaus.wadi.web.ValueHelperRegistry;
 import org.codehaus.wadi.web.WebSession;
 import org.codehaus.wadi.web.impl.DummyRouter;
+import org.codehaus.wadi.web.impl.StandardSessionWrapperFactory;
 
 /**
  * 
@@ -62,18 +71,18 @@ public abstract class AbstractReplicationContextualiserTest extends TestCase {
 	}
 
 	public void testGetSessionFromReplicationManager() throws Exception {
-		WebSession session = nodeInfo1.clusteredManager.create(null);
+		Session session = nodeInfo1.clusteredManager.create(null);
 		String attrValue = "bar";
 		String attrName = "foo";
-        session.setAttribute(attrName, attrValue);
+        session.addState(attrName, attrValue);
         session.onEndProcessing();
-		String sessionId = session.getId();
+		String sessionName = session.getName();
 
         nodeInfo1.serviceSpace.stop();
         
-        promoteNode(nodeInfo2, sessionId);
+        promoteNode(nodeInfo2, sessionName);
         
-        WebSession node2Session = (WebSession) nodeInfo2.mmap.acquire(sessionId);
+        WebSession node2Session = (WebSession) nodeInfo2.mmap.acquire(sessionName);
         assertNotNull(node2Session);
         String actualAttrValue = (String) node2Session.getAttribute(attrName);
         assertEquals(attrValue, actualAttrValue);
@@ -118,6 +127,17 @@ public abstract class AbstractReplicationContextualiserTest extends TestCase {
         StackContext stackContext = new StackContext(new ServiceSpaceName(new URI("name")), dispatcher) {
             protected Router newRouter() {
                 return new DummyRouter();
+            }
+            
+            protected SessionFactory newSessionFactory() {
+                ValueHelperRegistry valueHelperRegistry = newValueHelperRegistry();
+                ValueFactory valueFactory = newValueFactory(valueHelperRegistry);
+                SimpleStreamer streamer = newStreamer();
+                return new BasicWebSessionFactory(new DistributableAttributesFactory(valueFactory),
+                        streamer,
+                        new ReplicaterAdapterFactory(replicationManager),
+                        router,
+                        new StandardSessionWrapperFactory());
             }
         };
         stackContext.build();

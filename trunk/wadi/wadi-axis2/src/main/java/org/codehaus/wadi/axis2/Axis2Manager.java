@@ -19,7 +19,9 @@ package org.codehaus.wadi.axis2;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Hashtable;
+
 import javax.servlet.ServletContext;
+
 import org.apache.axis2.session.Session;
 import org.apache.axis2.session.SessionIdFactory;
 import org.apache.axis2.session.SessionManager;
@@ -27,10 +29,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.Manager;
 import org.codehaus.wadi.ManagerConfig;
+import org.codehaus.wadi.SessionFactory;
 import org.codehaus.wadi.SessionMonitor;
 import org.codehaus.wadi.impl.SpringManagerFactory;
 import org.codehaus.wadi.web.WADIHttpSession;
-import org.codehaus.wadi.web.WebSessionConfig;
 
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
 import EDU.oswego.cs.dl.util.concurrent.Rendezvous;
@@ -84,7 +86,7 @@ public class Axis2Manager implements SessionManager, ManagerConfig {
         return null; // Not relevant to Axis2 - this should not be on the Manager interface
     }
     
-    public void callback(Manager manager, SessionMonitor sessionMonitor, WebSessionConfig sessionConfig) {
+    public void callback(Manager manager, SessionMonitor sessionMonitor, SessionFactory sessionFactory) {
         _log.debug("callback()");
     }
     
@@ -102,8 +104,8 @@ public class Axis2Manager implements SessionManager, ManagerConfig {
     public Session createSession() {
         _log.debug("create()");
         Axis2Invocation invocation=Axis2Invocation.getThreadLocalInstance();
-        org.codehaus.wadi.web.WebSession session=_wadi.create(null);
-        invocation.setKey(session.getId());
+        org.codehaus.wadi.Session session=_wadi.create(null);
+        invocation.setKey(session.getName());
         invocation.setSession(session);
         WADIHttpSession httpSession = (WADIHttpSession)session;
         return (Axis2Session)httpSession.getWrapper();
