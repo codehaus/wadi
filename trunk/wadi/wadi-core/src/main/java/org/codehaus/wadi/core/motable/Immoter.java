@@ -14,35 +14,23 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.impl;
+package org.codehaus.wadi.core.motable;
 
-import org.codehaus.wadi.core.ConcurrentMotableMap;
-import org.codehaus.wadi.core.motable.Motable;
+import org.codehaus.wadi.core.contextualiser.Invocation;
+import org.codehaus.wadi.core.contextualiser.InvocationException;
 
 
 /**
- * A basic Emoter for MappedContextualisers
+ * Basic API for motion of Motables IN to a container
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class BaseMappedEmoter extends AbstractChainedEmoter {
-	private final ConcurrentMotableMap map;
 
-	public BaseMappedEmoter(ConcurrentMotableMap map) {
-        if (null == map) {
-            throw new IllegalArgumentException("map is required");
-        }
-        this.map = map;
-    }
-
-    public boolean emote(Motable emotable, Motable immotable) {
-        if (super.emote(emotable, immotable)) {
-            map.remove(immotable.getName());
-            return true;
-        } else {
-            return false;
-        }
-    }
+public interface Immoter {
+    boolean immote(Motable emotable, Motable immotable);
     
+    Motable newMotable();
+
+    boolean contextualise(Invocation invocation, String id, Motable immotable) throws InvocationException;
 }

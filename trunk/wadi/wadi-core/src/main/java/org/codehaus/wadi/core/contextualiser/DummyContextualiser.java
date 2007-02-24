@@ -16,9 +16,9 @@
  */
 package org.codehaus.wadi.core.contextualiser;
 
-import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.core.eviction.DummyEvicter;
 import org.codehaus.wadi.core.eviction.Evicter;
+import org.codehaus.wadi.core.motable.Immoter;
 import org.codehaus.wadi.core.motable.Motable;
 import org.codehaus.wadi.core.motable.SimpleMotable;
 

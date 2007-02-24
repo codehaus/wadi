@@ -15,8 +15,9 @@
  */
 package org.codehaus.wadi.impl;
 
-import org.codehaus.wadi.Immoter;
+import org.codehaus.wadi.core.motable.Immoter;
 import org.codehaus.wadi.core.motable.Motable;
+import org.codehaus.wadi.core.motable.RehydrationImmoter;
 
 import com.agical.rmock.extension.junit.RMockTestCase;
 

@@ -14,24 +14,29 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi;
+package org.codehaus.wadi.core.motable;
 
-import org.codehaus.wadi.core.contextualiser.Invocation;
-import org.codehaus.wadi.core.contextualiser.InvocationException;
-import org.codehaus.wadi.core.motable.Motable;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 
 /**
- * Basic API for motion of Motables IN to a container
+ * A basic Emoter for ChainedContextualisers
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
+public class AbstractChainedEmoter implements Emoter {
+	protected final Log _log = LogFactory.getLog(getClass());
 
-public interface Immoter {
-    boolean immote(Motable emotable, Motable immotable);
+    public boolean emote(Motable emotable, Motable immotable) {
+        try {
+            emotable.mote(immotable);
+            return true;
+        } catch (Exception e) {
+            _log.warn("problem transferring data ownership [" + emotable + "] -> [" + immotable + "]", e);
+            return false;
+        }
+    }
     
-    Motable newMotable();
-
-    boolean contextualise(Invocation invocation, String id, Motable immotable) throws InvocationException;
 }

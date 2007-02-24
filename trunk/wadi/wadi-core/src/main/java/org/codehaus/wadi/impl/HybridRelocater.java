@@ -20,12 +20,14 @@ import java.io.Serializable;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.Emoter;
-import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.core.contextualiser.Invocation;
 import org.codehaus.wadi.core.contextualiser.InvocationException;
 import org.codehaus.wadi.core.contextualiser.Relocater;
+import org.codehaus.wadi.core.motable.AbstractChainedEmoter;
+import org.codehaus.wadi.core.motable.Emoter;
+import org.codehaus.wadi.core.motable.Immoter;
 import org.codehaus.wadi.core.motable.Motable;
+import org.codehaus.wadi.core.motable.RehydrationImmoter;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.EndPoint;
 import org.codehaus.wadi.group.Envelope;

@@ -16,17 +16,17 @@
  */
 package org.codehaus.wadi.core.contextualiser;
 
-import org.codehaus.wadi.Emoter;
-import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.PoolableInvocationWrapper;
 import org.codehaus.wadi.PoolableInvocationWrapperPool;
 import org.codehaus.wadi.core.ConcurrentMotableMap;
 import org.codehaus.wadi.core.eviction.Evicter;
+import org.codehaus.wadi.core.motable.AbstractMappedImmoter;
+import org.codehaus.wadi.core.motable.BaseMappedEmoter;
+import org.codehaus.wadi.core.motable.Emoter;
+import org.codehaus.wadi.core.motable.Immoter;
 import org.codehaus.wadi.core.motable.Motable;
 import org.codehaus.wadi.core.session.Session;
 import org.codehaus.wadi.core.session.SessionFactory;
-import org.codehaus.wadi.impl.AbstractMappedImmoter;
-import org.codehaus.wadi.impl.BaseMappedEmoter;
 
 /**
  * A Contextualiser that stores its state in Memory as Java Objects

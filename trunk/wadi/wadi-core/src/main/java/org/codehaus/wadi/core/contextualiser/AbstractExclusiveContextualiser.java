@@ -22,11 +22,11 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import org.codehaus.wadi.Emoter;
-import org.codehaus.wadi.Immoter;
 import org.codehaus.wadi.PartitionMapper;
 import org.codehaus.wadi.core.ConcurrentMotableMap;
 import org.codehaus.wadi.core.eviction.Evicter;
+import org.codehaus.wadi.core.motable.Emoter;
+import org.codehaus.wadi.core.motable.Immoter;
 import org.codehaus.wadi.core.motable.Motable;
 import org.codehaus.wadi.impl.Utils;
 

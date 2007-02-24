@@ -14,29 +14,27 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.impl;
+package org.codehaus.wadi.core.motable;
 
-import org.codehaus.wadi.core.ConcurrentMotableMap;
-import org.codehaus.wadi.core.motable.Motable;
+import org.codehaus.wadi.core.contextualiser.Invocation;
+import org.codehaus.wadi.core.contextualiser.InvocationException;
 
 /**
+ * Abstract base for Immoters
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public abstract class AbstractMappedImmoter extends AbstractImmoter {
-    private final ConcurrentMotableMap map;
 
-    public AbstractMappedImmoter(ConcurrentMotableMap map) {
-        if (null == map) {
-            throw new IllegalArgumentException("map is requried");
-        }
-        this.map = map;
-    }
-
+public abstract class AbstractImmoter implements Immoter {
+	
     public boolean immote(Motable emotable, Motable immotable) {
-        map.put(emotable.getName(), immotable);
         return true;
     }
+    
+	public boolean contextualise(Invocation invocation, String id, Motable immotable) throws InvocationException {
+		// most Contextualisers cannot contextualise locally...
+		return false;
+	}
 
 }

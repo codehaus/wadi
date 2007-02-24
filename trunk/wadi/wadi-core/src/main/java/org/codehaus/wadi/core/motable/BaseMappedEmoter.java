@@ -14,29 +14,34 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.impl;
+package org.codehaus.wadi.core.motable;
 
-import org.codehaus.wadi.Immoter;
-import org.codehaus.wadi.core.contextualiser.Invocation;
-import org.codehaus.wadi.core.contextualiser.InvocationException;
-import org.codehaus.wadi.core.motable.Motable;
+import org.codehaus.wadi.core.ConcurrentMotableMap;
+
 
 /**
- * Abstract base for Immoters
+ * A basic Emoter for MappedContextualisers
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
+public class BaseMappedEmoter extends AbstractChainedEmoter {
+	private final ConcurrentMotableMap map;
 
-public abstract class AbstractImmoter implements Immoter {
-	
-    public boolean immote(Motable emotable, Motable immotable) {
-        return true;
+	public BaseMappedEmoter(ConcurrentMotableMap map) {
+        if (null == map) {
+            throw new IllegalArgumentException("map is required");
+        }
+        this.map = map;
+    }
+
+    public boolean emote(Motable emotable, Motable immotable) {
+        if (super.emote(emotable, immotable)) {
+            map.remove(immotable.getName());
+            return true;
+        } else {
+            return false;
+        }
     }
     
-	public boolean contextualise(Invocation invocation, String id, Motable immotable) throws InvocationException {
-		// most Contextualisers cannot contextualise locally...
-		return false;
-	}
-
 }
