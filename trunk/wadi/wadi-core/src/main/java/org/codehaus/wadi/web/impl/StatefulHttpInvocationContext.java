@@ -21,7 +21,6 @@ import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpSession;
 
 import org.codehaus.wadi.core.contextualiser.Invocation;
-import org.codehaus.wadi.core.contextualiser.InvocationContext;
 import org.codehaus.wadi.core.session.Session;
 import org.codehaus.wadi.web.HttpInvocationContext;
 import org.codehaus.wadi.web.WADIHttpSession;
@@ -30,11 +29,11 @@ import org.codehaus.wadi.web.WADIHttpSession;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision: 1886 $
  */
-public class StatefulHttpServletRequestWrapper extends HttpServletRequestWrapper implements HttpInvocationContext {
+public class StatefulHttpInvocationContext extends HttpServletRequestWrapper implements HttpInvocationContext {
 
     protected HttpSession _session;
 
-    public StatefulHttpServletRequestWrapper(Invocation invocation, Session context) {
+    public StatefulHttpInvocationContext(Invocation invocation, Session context) {
         super(((WebInvocation) invocation).getHreq());
         _session = context == null ? null : ((WADIHttpSession) context).getWrapper();
     }

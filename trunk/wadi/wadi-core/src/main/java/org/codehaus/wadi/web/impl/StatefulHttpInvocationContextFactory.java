@@ -28,7 +28,7 @@ import org.codehaus.wadi.core.session.Session;
 public class StatefulHttpInvocationContextFactory implements InvocationContextFactory {
 
 	public InvocationContext create(Invocation invocation, Session context) {
-		return new StatefulHttpServletRequestWrapper(invocation, context);
+		return new StatefulHttpInvocationContext(invocation, context);
 	}
 
 }
