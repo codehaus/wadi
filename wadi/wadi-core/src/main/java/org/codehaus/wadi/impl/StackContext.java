@@ -311,15 +311,15 @@ public class StackContext {
     
     protected Contextualiser newMemoryContextualiser(Contextualiser next, ConcurrentMotableMap mmap) {
         Evicter mevicter = new AbsoluteEvicter(sweepInterval, true, sessionTimeout);
-        InvocationContextFactory requestPool = new StatefulHttpInvocationContextFactory();
-        return newMemoryContextualiser(next, mmap, mevicter, requestPool);
+        InvocationContextFactory invocationContextFactory = new StatefulHttpInvocationContextFactory();
+        return newMemoryContextualiser(next, mmap, mevicter, invocationContextFactory);
     }
 
     protected MemoryContextualiser newMemoryContextualiser(Contextualiser next,
             ConcurrentMotableMap mmap,
             Evicter mevicter,
-            InvocationContextFactory requestPool) {
-        return new MemoryContextualiser(next, mevicter, mmap, sessionFactory, requestPool);
+            InvocationContextFactory invocationContextFactory) {
+        return new MemoryContextualiser(next, mevicter, mmap, sessionFactory, invocationContextFactory);
     }
 
     protected Contextualiser newClusteredContextualiser(Contextualiser contextualiser) {
