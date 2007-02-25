@@ -19,7 +19,6 @@ package org.codehaus.wadi.core.session;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.Set;
 
 import org.codehaus.wadi.core.manager.Manager;
 import org.codehaus.wadi.core.util.Streamer;
@@ -65,10 +64,6 @@ public class DistributableSession extends StandardSession {
         Utils.setContent(this, bytes, streamer);
     }
 
-    public synchronized Set getListenerNames() {
-        return ((DistributableAttributes) attributes).getListenerNames();
-    }
-    
     protected void onDeserialization() {
     }
     

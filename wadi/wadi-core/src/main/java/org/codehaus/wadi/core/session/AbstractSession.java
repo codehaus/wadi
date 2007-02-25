@@ -16,6 +16,8 @@
  */
 package org.codehaus.wadi.core.session;
 
+import java.util.Map;
+
 import org.codehaus.wadi.core.manager.Manager;
 import org.codehaus.wadi.core.motable.AbstractMotable;
 import org.codehaus.wadi.core.util.SimpleStreamer;
@@ -73,6 +75,11 @@ public abstract class AbstractSession extends AbstractMotable implements Session
         Object oldValue = attributes.remove(key);
         onRemoveState(key, oldValue);
         return oldValue;
+    }
+    
+    public Map getState() {
+        // TODO - incorrect as onAddState and onRemoteState are not fired if the Map is updated.
+        return attributes.getAttributes();
     }
     
     protected void onAddSate(String name, Object oldValue, Object newValue) {

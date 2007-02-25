@@ -17,6 +17,7 @@
 package org.codehaus.wadi.core.session;
 
 import java.io.Externalizable;
+import java.util.Map;
 
 import org.codehaus.wadi.core.motable.Motable;
 
@@ -48,5 +49,7 @@ public interface Session extends Motable, Externalizable {
      */
     Object removeState(String key);
 
+    Map getState();
+    
     void onEndProcessing();
 }

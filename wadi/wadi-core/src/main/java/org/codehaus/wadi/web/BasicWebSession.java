@@ -18,6 +18,7 @@ package org.codehaus.wadi.web;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 import javax.servlet.http.HttpSession;
@@ -93,7 +94,7 @@ public class BasicWebSession extends AtomicallyReplicableSession implements WADI
     }
 
     public synchronized Set getAttributeNameSet() {
-        return attributes.keySet();
+        return attributes.getAttributes().keySet();
     }
 
     public synchronized Enumeration getAttributeNameEnumeration() {
@@ -101,8 +102,7 @@ public class BasicWebSession extends AtomicallyReplicableSession implements WADI
     }
 
     public synchronized String[] getAttributeNameStringArray() {
-        return attributes.size() == 0 ? EMPTY_STRING_ARRAY : (String[]) attributes.keySet()
-                .toArray(new String[attributes.size()]);
+        return attributes.size() == 0 ? EMPTY_STRING_ARRAY : (String[]) attributes.keySet().toArray(new String[0]);
     }
 
     public synchronized Object setAttribute(String name, Object newValue) {
@@ -120,9 +120,8 @@ public class BasicWebSession extends AtomicallyReplicableSession implements WADI
     }
 
     protected void onDeserialization() {
-        for (Iterator iter = attributes.keySet().iterator(); iter.hasNext();) {
-            Object key = (Object) iter.next();
-            Object value = attributes.get(key);
+        for (Iterator iter = attributes.getAttributes().values().iterator(); iter.hasNext();) {
+            Object value = iter.next();
             if (value instanceof HttpSessionActivationListener) {
                 HttpSessionActivationListener listener = (HttpSessionActivationListener) value;
                 listener.sessionDidActivate(httpSessionEvent);
@@ -131,9 +130,8 @@ public class BasicWebSession extends AtomicallyReplicableSession implements WADI
     }
     
     protected void onSerialization() {
-        for (Iterator iter = attributes.keySet().iterator(); iter.hasNext();) {
-            Object key = (Object) iter.next();
-            Object value = attributes.get(key);
+        for (Iterator iter = attributes.getAttributes().values().iterator(); iter.hasNext();) {
+            Object value = iter.next();
             if (value instanceof HttpSessionActivationListener) {
                 HttpSessionActivationListener listener = (HttpSessionActivationListener) value;
                 listener.sessionWillPassivate(httpSessionEvent);

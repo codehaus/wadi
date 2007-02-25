@@ -16,8 +16,10 @@
  */
 package org.codehaus.wadi.core.session;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -27,8 +29,8 @@ import java.util.Set;
  * @version $Revision: 1497 $
  */
 public class StandardAttributes implements Attributes {
-    protected final Map attributes;
     protected final ValueFactory valueFactory;
+    protected Map attributes;
 
     public StandardAttributes(ValueFactory valueFactory) {
         if (null == valueFactory) {
@@ -36,11 +38,19 @@ public class StandardAttributes implements Attributes {
         }
         this.valueFactory = valueFactory;
         
-        attributes = new HashMap();
+        attributes = newAttributes();
+    }
+
+    protected Map newAttributes() {
+        return new HashMap();
+    }
+    
+    protected Map getAttributesMap() {
+        return attributes;
     }
 
     public synchronized Object get(Object key) {
-        Value a = (Value) attributes.get(key);
+        Value a = (Value) getAttributesMap().get(key);
         if (a == null) {
             return null;
         } else {
@@ -49,7 +59,7 @@ public class StandardAttributes implements Attributes {
     }
 
     public synchronized Object remove(Object key) {
-        Value a = (Value) attributes.remove(key);
+        Value a = (Value) getAttributesMap().remove(key);
         if (a == null) {
             return null;
         } else {
@@ -60,7 +70,7 @@ public class StandardAttributes implements Attributes {
     public synchronized Object put(Object key, Object newValue) {
         Value in = valueFactory.create();
         in.setValue(newValue);
-        Value out = (Value) attributes.put(key, in);
+        Value out = (Value) getAttributesMap().put(key, in);
         if (out == null) {
             return null;
         } else {
@@ -68,16 +78,96 @@ public class StandardAttributes implements Attributes {
         }
     }
 
-    public synchronized int size() {
-        return attributes.size();
+    public synchronized Map getAttributes() {
+        return new AttributesMap();
     }
-
-    public synchronized Set keySet() {
-        return new HashSet(attributes.keySet());
-    }
-
+    
     public synchronized void clear() {
-        attributes.clear();
+        getAttributesMap().clear();
+    }
+    
+    public synchronized boolean containsKey(Object key) {
+        return getAttributesMap().containsKey(key);
+    }
+    
+    public synchronized boolean isEmpty() {
+        return getAttributesMap().isEmpty();
+    }
+    
+    public synchronized Set keySet() {
+        return getAttributesMap().keySet();
+    }
+    
+    public synchronized int size() {
+        return getAttributesMap().size();
+    }
+
+    public Collection values() {
+        Collection values = new ArrayList();
+        Map attributesMap = getAttributesMap();
+        for (Iterator iter = attributesMap.values().iterator(); iter.hasNext();) {
+            Value value = (Value) iter.next();
+            values.add(value.getValue());
+        }
+        return values;
+    }
+
+    protected class AttributesMap implements Map {
+        
+        public Object put(Object key, Object value) {
+            return StandardAttributes.this.put(key, value);
+        }
+        
+        public void putAll(Map all) {
+            Map allValueHolders = new HashMap(all);
+            for (Iterator iter = allValueHolders.entrySet().iterator(); iter.hasNext();) {
+                Map.Entry entry = (Map.Entry) iter.next();
+                Object key = entry.getKey();
+                Object value = entry.getValue();
+                StandardAttributes.this.put(key, value);
+            }
+        }
+        
+        public Object remove(Object key) {
+            return StandardAttributes.this.remove(key);
+        }
+        
+        public Object get(Object key) {
+            return StandardAttributes.this.get(key);
+        }
+
+        public void clear() {
+            StandardAttributes.this.clear();
+        }
+
+        public boolean containsKey(Object key) {
+            return StandardAttributes.this.containsKey(key);
+        }
+
+        public boolean isEmpty() {
+            return StandardAttributes.this.isEmpty();
+        }
+
+        public Set keySet() {
+            return StandardAttributes.this.keySet();
+        }
+
+        public int size() {
+            return StandardAttributes.this.size();
+        }
+
+        public Collection values() {
+            return StandardAttributes.this.values();
+        }
+
+        public Set entrySet() {
+            throw new UnsupportedOperationException();
+        }
+        
+        public boolean containsValue(Object value) {
+            throw new UnsupportedOperationException();
+        }
+        
     }
 
 }
