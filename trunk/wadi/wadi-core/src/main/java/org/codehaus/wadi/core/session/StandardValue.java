@@ -36,5 +36,20 @@ public class StandardValue implements Value {
         value = newValue;
         return oldValue;
     }
+    
+    public boolean equals(Object obj) {
+        if (!(obj instanceof StandardValue)) {
+            return false;
+        }
+        StandardValue other = (StandardValue) obj;
+        if (null == value) {
+            return null == other.value; 
+        }
+        return value.equals(other.value);
+    }
 
+    public int hashCode() {
+        return null == value ? 1 : value.hashCode();
+    }
+    
 }

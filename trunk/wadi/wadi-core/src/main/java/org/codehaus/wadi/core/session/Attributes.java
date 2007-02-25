@@ -16,6 +16,7 @@
  */
 package org.codehaus.wadi.core.session;
 
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -31,9 +32,15 @@ public interface Attributes {
     
     Object put(Object key, Object newValue);
     
-    int size();
+    boolean containsKey(Object key);
+    
+    boolean isEmpty();
     
     Set keySet();
     
+    int size();
+    
     void clear();
+
+    Map getAttributes();
 }

@@ -23,7 +23,7 @@ import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
-import java.util.Set;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -35,93 +35,52 @@ import org.apache.commons.logging.LogFactory;
 public class LazyAttributes extends DistributableAttributes {
     protected static final Log _log = LogFactory.getLog(LazyAttributes.class);
 
-    protected transient byte[] _bytes;
+    protected byte[] bytes;
 
     public LazyAttributes(ValueFactory valueFactory) {
         super(valueFactory);
     }
 
+    protected Map getAttributesMap() {
+        if (null != bytes) {
+            deserialise();
+        }
+        return super.getAttributesMap();
+    }
+    
     protected void deserialise() {
         try {
-            // deserialise content at last minute ...
-            ByteArrayInputStream bais = new ByteArrayInputStream(_bytes);
+            ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
             ObjectInputStream ois = new ObjectInputStream(bais);
             super.readExternal(ois);
             ois.close();
         } catch (Exception e) {
             _log.error("unexpected problem lazily deserialising session attribute value - data lost", e);
         } finally {
-            _bytes = null;
+            bytes = null;
         }
     }
 
-    protected void serialise() throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream(); // TODO -
-                                                                    // pool
-                                                                    // these
-                                                                    // objects...
+    protected byte[] serialise() throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ObjectOutputStream oos = new ObjectOutputStream(baos);
         super.writeExternal(oos);
         oos.close();
-        _bytes = baos.toByteArray();
-    }
-
-    public synchronized Object get(Object key) {
-        if (_bytes != null)
-            deserialise();
-
-        return super.get(key);
-    }
-
-    public Object remove(Object key) {
-        if (_bytes != null)
-            deserialise();
-        return super.remove(key);
-    }
-
-    public Object put(Object key, Object newValue) {
-        if (_bytes != null)
-            deserialise();
-        return super.put(key, newValue);
-    }
-
-    public int size() {
-        if (_bytes != null)
-            deserialise();
-        return super.size();
-    }
-
-    public Set keySet() {
-        if (_bytes != null)
-            deserialise();
-        return super.keySet();
-    }
-
-    public void clear() {
-        _bytes = null;
-    }
-
-    public Set getListenerNames() {
-        if (_bytes != null)
-            deserialise();
-        return _listenerNames;
+        return baos.toByteArray();
     }
 
     public synchronized void writeExternal(ObjectOutput oo) throws IOException {
-        if (_bytes == null) {
-            serialise(); // rebuild cache
-        }
-
-        oo.writeInt(_bytes.length);
-        oo.write(_bytes);
+        bytes = serialise();
+        oo.writeInt(bytes.length);
+        oo.write(bytes);
     }
 
     public synchronized void readExternal(ObjectInput oi) throws IOException, ClassNotFoundException {
         int length = oi.readInt();
-        _bytes = new byte[length];
-        if (oi.read(_bytes) != length)
+        bytes = new byte[length];
+        if (oi.read(bytes) != length) {
             throw new IOException("data truncated whilst reading Session Attributes- data lost");
-        attributes.clear();
+        }
     }
 
 }

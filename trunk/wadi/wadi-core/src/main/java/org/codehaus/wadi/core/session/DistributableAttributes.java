@@ -20,13 +20,8 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
-
-import javax.servlet.http.HttpSessionActivationListener;
-import javax.servlet.http.HttpSessionBindingListener;
 
 
 /**
@@ -40,47 +35,14 @@ import javax.servlet.http.HttpSessionBindingListener;
  * @version $Revision: 1139 $
  */
 public class DistributableAttributes extends StandardAttributes implements Externalizable {
-    protected Set _listenerNames = new HashSet();
     
     public DistributableAttributes(ValueFactory valueFactory) {
         super(valueFactory);
     }
 
-    public Set getListenerNames() {
-        return _listenerNames;
-    }
-
-    public synchronized Object remove(Object key) {
-        Object oldValue = super.remove(key);
-        if (isListener(oldValue)) {
-            _listenerNames.remove(key);
-        }
-        return oldValue;
-    }
-
-    public synchronized Object put(Object key, Object newValue) {
-        Object oldValue = super.put(key, newValue);
-        boolean wasListener = isListener(oldValue);
-        boolean isListener = isListener(newValue);
-
-        if (wasListener == isListener)
-            return oldValue;
-
-        if (wasListener)
-            _listenerNames.remove(key);
-        if (isListener)
-            _listenerNames.add(key);
-
-        return oldValue;
-    }
-
-    protected boolean isListener(Object o) {
-        return o instanceof HttpSessionActivationListener || o instanceof HttpSessionBindingListener;
-    }
-
     public synchronized void readExternal(ObjectInput oi) throws IOException, ClassNotFoundException {
-        _listenerNames = (Set) oi.readObject();
         int size = oi.readInt();
+        attributes = newAttributes();
         for (int i = 0; i < size; i++) {
             Object key = oi.readObject();
             DistributableValue val = (DistributableValue) valueFactory.create();
@@ -90,8 +52,7 @@ public class DistributableAttributes extends StandardAttributes implements Exter
     }
 
     public synchronized void writeExternal(ObjectOutput oo) throws IOException {
-        oo.writeObject(_listenerNames);
-        oo.writeInt(size());
+        oo.writeInt(attributes.size());
         for (Iterator i = attributes.entrySet().iterator(); i.hasNext();) {
             Map.Entry e = (Map.Entry) i.next();
             Object key = e.getKey();
