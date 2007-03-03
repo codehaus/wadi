@@ -78,7 +78,7 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
             super(map);
         }
 
-        public Motable newMotable() {
+        public Motable newMotable(Motable emotable) {
             return sessionFactory.create();
         }
 

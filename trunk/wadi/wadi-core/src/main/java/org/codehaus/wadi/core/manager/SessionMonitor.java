@@ -26,6 +26,10 @@ public interface SessionMonitor {
     void notifySessionCreation(Session session);
 
     void notifySessionDestruction(Session session);
+
+    void notifyInboundSessionMigration(Session session);
+    
+    void notifyOutbountSessionMigration(Session session);
     
     void addSessionListener(SessionListener sessionListener);
     

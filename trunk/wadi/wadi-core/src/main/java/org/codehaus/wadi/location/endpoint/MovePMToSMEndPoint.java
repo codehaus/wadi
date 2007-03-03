@@ -19,18 +19,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.core.Lifecycle;
 import org.codehaus.wadi.core.contextualiser.Contextualiser;
-import org.codehaus.wadi.core.contextualiser.Invocation;
-import org.codehaus.wadi.core.contextualiser.InvocationException;
-import org.codehaus.wadi.core.motable.AbstractMotable;
-import org.codehaus.wadi.core.motable.Immoter;
-import org.codehaus.wadi.core.motable.Motable;
-import org.codehaus.wadi.core.motable.SimpleMotable;
+import org.codehaus.wadi.core.manager.SessionMonitor;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Envelope;
-import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.impl.ServiceEndpointBuilder;
-import org.codehaus.wadi.location.session.MoveIMToSM;
 import org.codehaus.wadi.location.session.MovePMToSM;
 import org.codehaus.wadi.location.session.MoveSMToIM;
 import org.codehaus.wadi.location.session.MoveSMToPM;
@@ -49,18 +42,24 @@ public class MovePMToSMEndPoint implements Lifecycle, MovePMToSMEndPointMessageL
     
     private final Dispatcher dispatcher;
     private final Contextualiser contextualiser;
+    private final SessionMonitor sessionMonitor;
     private final long inactiveTime;
     private final ServiceEndpointBuilder endpointBuilder;
 
+
     public MovePMToSMEndPoint(ServiceSpace serviceSpace,
             Contextualiser contextualiser,
+            SessionMonitor sessionMonitor,
             long inactiveTime) {
         if (null == serviceSpace) {
             throw new IllegalArgumentException("serviceSpace is required");
         } else if (null == contextualiser) {
             throw new IllegalArgumentException("contextualiser is required");
+        } else if (null == sessionMonitor) {
+            throw new IllegalArgumentException("sessionMonitor is required");
         }
         this.contextualiser = contextualiser;
+        this.sessionMonitor = sessionMonitor;
         this.inactiveTime = inactiveTime;
 
         dispatcher = serviceSpace.getDispatcher();
@@ -79,7 +78,11 @@ public class MovePMToSMEndPoint implements Lifecycle, MovePMToSMEndPointMessageL
         Object key = request.getKey();
         try {
             Peer imPeer = request.getIMPeer();
-            RelocationImmoter promoter = new RelocationImmoter(message, request);
+            RelocationImmoter promoter = new RelocationImmoter(sessionMonitor,
+                    dispatcher,
+                    message,
+                    request,
+                    inactiveTime);
             // if we own session, this will send the correct response...
             contextualiser.contextualise(null, (String) key, promoter, true);
             if (!promoter.isFound()) {
@@ -97,84 +100,6 @@ public class MovePMToSMEndPoint implements Lifecycle, MovePMToSMEndPointMessageL
         } catch (Exception e) {
             log.warn("problem handling relocation request: " + key, e);
         }
-    }
-
-    /**
-     * We receive a RelocationRequest and pass a RelocationImmoter down the
-     * Contextualiser stack. The Session is passed to us through the Immoter and
-     * we pass it back to the Request-ing node...
-     * 
-     * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
-     * @version $Revision:1815 $
-     */
-    class RelocationImmoter implements Immoter {
-        protected final Envelope message;
-        protected final MovePMToSM request;
-        protected boolean found = false;
-
-        public RelocationImmoter(Envelope message, MovePMToSM request) {
-            this.message = message;
-            this.request = request;
-        }
-
-        public Motable newMotable() {
-            return new PMToIMEmotable(message, request);
-        }
-
-        public boolean immote(Motable emotable, Motable immotable) {
-            found = true;
-            return true;
-        }
-        
-        public boolean contextualise(Invocation invocation, String id, Motable immotable)
-                throws InvocationException {
-            return false;
-        }
-
-        public boolean isFound() {
-            return found;
-        }
-
-    }
-
-    class PMToIMEmotable extends AbstractMotable {
-        private final Envelope message;
-        private final MovePMToSM get;
-
-        public PMToIMEmotable(Envelope message, MovePMToSM get) {
-            this.message = message;
-            this.get = get;
-        }
-
-        public byte[] getBodyAsByteArray() throws Exception {
-            throw new UnsupportedOperationException();
-        }
-
-        public void setBodyAsByteArray(byte[] bytes) throws Exception {
-            Motable immotable = new SimpleMotable();
-            immotable.init(creationTime, lastAccessedTime, maxInactiveInterval, name);
-            immotable.setBodyAsByteArray(bytes);
-
-            LocalPeer smPeer = dispatcher.getCluster().getLocalPeer();
-            Peer imPeer = get.getIMPeer();
-            MoveSMToIM request = new MoveSMToIM(immotable);
-            // send on state from StateMaster to InvocationMaster...
-            if (log.isTraceEnabled()) {
-                log.trace("exchanging MoveSMToIM between [" + smPeer + "]->[" + imPeer + "]");
-            }
-            Envelope message2 = dispatcher.exchangeSend(imPeer.getAddress(), request, inactiveTime, get
-                    .getIMCorrelationId());
-            // should receive response from IM confirming safe receipt...
-            if (message2 == null) {
-                // TODO throw exception
-                log.error("NO REPLY RECEIVED FOR MESSAGE IN TIMEFRAME - PANIC!");
-            } else {
-                MoveIMToSM response = (MoveIMToSM) message2.getPayload();
-                assert (response != null && response.getSuccess()); 
-                dispatcher.reply(message, new MoveSMToPM(true));
-            }
-        }
-
     }
 
 }

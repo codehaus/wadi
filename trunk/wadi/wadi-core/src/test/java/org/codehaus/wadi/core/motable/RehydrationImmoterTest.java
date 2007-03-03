@@ -31,7 +31,7 @@ public class RehydrationImmoterTest extends RMockTestCase {
         Immoter delegate = (Immoter) mock(Immoter.class);
         Motable motable = (Motable) mock(Motable.class);
         
-        Motable newMotable = delegate.newMotable();
+        Motable newMotable = delegate.newMotable(motable);
         
         motable.getCreationTime();
         int creationTime = 1;
@@ -54,7 +54,7 @@ public class RehydrationImmoterTest extends RMockTestCase {
         startVerification();
         
         RehydrationImmoter immoter = new RehydrationImmoter(delegate, motable);
-        immoter.newMotable();
+        immoter.newMotable(motable);
     }
     
 }

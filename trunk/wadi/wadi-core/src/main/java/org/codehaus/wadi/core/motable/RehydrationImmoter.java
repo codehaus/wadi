@@ -45,8 +45,8 @@ public class RehydrationImmoter implements Immoter {
         return delegate.immote(emotable, immotable);
     }
 
-    public Motable newMotable() {
-        Motable immotable = delegate.newMotable();
+    public Motable newMotable(Motable emotable) {
+        Motable immotable = delegate.newMotable(emotable);
         try {
             immotable.rehydrate(emotable.getCreationTime(),
                     emotable.getLastAccessedTime(),
