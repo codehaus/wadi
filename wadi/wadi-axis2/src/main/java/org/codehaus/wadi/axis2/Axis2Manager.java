@@ -27,11 +27,11 @@ import org.apache.axis2.session.SessionIdFactory;
 import org.apache.axis2.session.SessionManager;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.core.assembler.SpringManagerFactory;
 import org.codehaus.wadi.core.manager.Manager;
 import org.codehaus.wadi.core.manager.ManagerConfig;
 import org.codehaus.wadi.core.manager.SessionMonitor;
 import org.codehaus.wadi.core.session.SessionFactory;
-import org.codehaus.wadi.impl.SpringManagerFactory;
 import org.codehaus.wadi.web.WADIHttpSession;
 
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;

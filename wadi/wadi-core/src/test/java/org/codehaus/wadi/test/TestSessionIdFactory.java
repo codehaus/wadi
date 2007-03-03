@@ -20,7 +20,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.codehaus.wadi.core.manager.SessionIdFactory;
-import org.codehaus.wadi.impl.TomcatSessionIdFactory;
+import org.codehaus.wadi.core.manager.TomcatSessionIdFactory;
 
 import junit.framework.TestCase;
 
