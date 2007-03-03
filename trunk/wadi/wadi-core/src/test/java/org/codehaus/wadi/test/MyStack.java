@@ -18,6 +18,7 @@ package org.codehaus.wadi.test;
 
 import java.net.URI;
 
+import org.codehaus.wadi.core.assembler.StackContext;
 import org.codehaus.wadi.core.manager.ClusteredManager;
 import org.codehaus.wadi.core.manager.Router;
 import org.codehaus.wadi.core.session.DistributableAttributesFactory;
@@ -26,7 +27,6 @@ import org.codehaus.wadi.core.session.ValueFactory;
 import org.codehaus.wadi.core.session.ValueHelperRegistry;
 import org.codehaus.wadi.core.util.SimpleStreamer;
 import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.impl.StackContext;
 import org.codehaus.wadi.replication.manager.ReplicaterAdapterFactory;
 import org.codehaus.wadi.servicespace.ServiceSpace;
 import org.codehaus.wadi.servicespace.ServiceSpaceName;

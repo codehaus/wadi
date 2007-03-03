@@ -13,7 +13,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.impl;
+package org.codehaus.wadi.core.assembler;
 
 import java.util.Timer;
 
@@ -34,6 +34,7 @@ import org.codehaus.wadi.core.manager.ClusteredManager;
 import org.codehaus.wadi.core.manager.DummyManagerConfig;
 import org.codehaus.wadi.core.manager.Router;
 import org.codehaus.wadi.core.manager.SessionMonitor;
+import org.codehaus.wadi.core.manager.TomcatSessionIdFactory;
 import org.codehaus.wadi.core.session.AtomicallyReplicableSessionFactory;
 import org.codehaus.wadi.core.session.BasicValueHelperRegistry;
 import org.codehaus.wadi.core.session.DistributableAttributesFactory;

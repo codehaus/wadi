@@ -83,11 +83,10 @@
 
 // How hard can it be to generate a secure session id ? :-)
 
-package org.codehaus.wadi.impl;
+package org.codehaus.wadi.core.manager;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.core.manager.SessionIdFactory;
 
 import java.io.DataInputStream;
 import java.io.File;
