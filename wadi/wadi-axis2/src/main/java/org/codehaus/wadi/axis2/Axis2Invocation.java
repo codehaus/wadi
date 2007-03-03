@@ -23,10 +23,9 @@ import org.codehaus.wadi.core.contextualiser.InvocationContext;
 import org.codehaus.wadi.core.contextualiser.InvocationException;
 import org.codehaus.wadi.core.contextualiser.InvocationProxy;
 import org.codehaus.wadi.core.manager.Manager;
-import org.codehaus.wadi.core.manager.Router;
 import org.codehaus.wadi.core.session.Session;
 import org.codehaus.wadi.group.EndPoint;
-import org.codehaus.wadi.web.impl.StatefulHttpInvocationContext;
+
 import EDU.oswego.cs.dl.util.concurrent.Rendezvous;
 
 public class Axis2Invocation implements Invocation, Runnable {
@@ -56,9 +55,13 @@ public class Axis2Invocation implements Invocation, Runnable {
     public void setSession(Session session) {
         _session=(Axis2Session)session;
     }
-    
-    public Axis2Session getSession() {
+
+    public Axis2Session getAxis2Session() {
         return _session;
+    }
+
+    public Session getSession() {
+        return (Session) _session;
     }
     
     public Rendezvous getRendezvous() {
@@ -119,8 +122,7 @@ public class Axis2Invocation implements Invocation, Runnable {
     // request with this wrapper, we'll just take the session from it and make that available for the duration of the
     // invocation....
     public void invoke(InvocationContext wrapper) throws InvocationException {
-        StatefulHttpInvocationContext w=(StatefulHttpInvocationContext)wrapper; // hacky
-        _session=(Axis2Session)w.getSession();
+        _session=(Axis2Session)wrapper.getInvocation().getSession();
         invoke();
         _session=null;
     }
