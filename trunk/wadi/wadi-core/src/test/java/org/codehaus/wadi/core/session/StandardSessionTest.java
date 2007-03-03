@@ -17,34 +17,37 @@ package org.codehaus.wadi.core.session;
 
 import java.util.Map;
 
-import junit.framework.TestCase;
+import org.codehaus.wadi.core.manager.Manager;
+
+import com.agical.rmock.extension.junit.RMockTestCase;
 
 /**
  * 
  * @version $Revision: 1538 $
  */
-public class StandardAttributesTest extends TestCase {
+public class StandardSessionTest extends RMockTestCase {
 
     public void testGetAttributes() throws Exception {
-        StandardAttributes attributes = new StandardAttributes(new StandardValueFactory());
+        Manager manager = (Manager) mock(Manager.class);
+        StandardSession session = new StandardSession(new StandardAttributes(new StandardValueFactory()), manager);
         
         String key1 = "key1";
-        attributes.put(key1, "value1");
+        session.addState(key1, "value1");
         String key2 = "key2";
         String value2 = "value2";
-        attributes.put(key2, value2);
+        session.addState(key2, value2);
         
-        Map attributesMap = attributes.getAttributes();
-        assertEquals(2, attributesMap.size());
-        assertFalse(attributesMap.isEmpty());
-        assertSame(attributes.get(key1), attributesMap.get(key1));
+        Map stateMap = session.getState();
+        assertEquals(2, stateMap.size());
+        assertFalse(stateMap.isEmpty());
+        assertSame(session.getState(key1), stateMap.get(key1));
 
         String key3 = "key3";
-        attributesMap.put(key3, "value3");
-        assertSame(attributesMap.get(key3), attributes.get(key3));
+        stateMap.put(key3, "value3");
+        assertSame(stateMap.get(key3), session.getState(key3));
         
-        assertSame(value2, attributesMap.remove(key2));
-        assertNull(attributes.get(key2));
+        assertSame(value2, stateMap.remove(key2));
+        assertNull(session.getState(key2));
     }
     
 }

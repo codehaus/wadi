@@ -47,54 +47,6 @@ import org.codehaus.wadi.test.TestUtil;
 public class AbstractTestRelocation extends TestCase {
     protected Log _log = LogFactory.getLog(getClass());
 
-    static class MyInvocation implements Invocation {
-        protected Log _log = LogFactory.getLog(getClass());
-        protected StandardManager _manager;
-        protected String _key;
-        protected Session _session;
-
-        public void init(StandardManager manager, String key) {
-            _manager = manager;
-            _key = key;
-        }
-
-        public String getSessionKey() {
-            return _key;
-        }
-
-        public boolean isRelocatable() {
-            return true;
-        }
-
-        public void setSession(Session session) {
-            throw new UnsupportedOperationException("NYI");
-        }
-
-        public void invoke(InvocationContext wrapper) throws InvocationException {
-            throw new UnsupportedOperationException("NYI");
-        }
-
-        public void invoke() throws InvocationException {
-            assertTrue(_session != null);
-        }
-
-        public boolean isProxiedInvocation() {
-            throw new UnsupportedOperationException("NYI");
-        }
-
-        public void relocate(EndPoint endPoint) {
-            throw new UnsupportedOperationException("NYI - relocate to: " + endPoint);
-        }
-
-        public void sendError(int code, String message) throws InvocationException {
-            throw new UnsupportedOperationException("NYI");
-        }
-
-        public void setInvocationProxy(InvocationProxy proxy) {
-            throw new UnsupportedOperationException("NYI");
-        }
-        
-    }
 
     public void testSessionRelocation(Dispatcher redD, Dispatcher greenD) throws Exception {
         MyStack red = new MyStack(redD);

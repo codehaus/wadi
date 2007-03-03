@@ -78,10 +78,6 @@ public class StandardAttributes implements Attributes {
         }
     }
 
-    public synchronized Map getAttributes() {
-        return new AttributesMap();
-    }
-    
     public synchronized void clear() {
         getAttributesMap().clear();
     }
@@ -102,7 +98,7 @@ public class StandardAttributes implements Attributes {
         return getAttributesMap().size();
     }
 
-    public Collection values() {
+    public synchronized Collection values() {
         Collection values = new ArrayList();
         Map attributesMap = getAttributesMap();
         for (Iterator iter = attributesMap.values().iterator(); iter.hasNext();) {
@@ -110,64 +106,6 @@ public class StandardAttributes implements Attributes {
             values.add(value.getValue());
         }
         return values;
-    }
-
-    protected class AttributesMap implements Map {
-        
-        public Object put(Object key, Object value) {
-            return StandardAttributes.this.put(key, value);
-        }
-        
-        public void putAll(Map all) {
-            Map allValueHolders = new HashMap(all);
-            for (Iterator iter = allValueHolders.entrySet().iterator(); iter.hasNext();) {
-                Map.Entry entry = (Map.Entry) iter.next();
-                Object key = entry.getKey();
-                Object value = entry.getValue();
-                StandardAttributes.this.put(key, value);
-            }
-        }
-        
-        public Object remove(Object key) {
-            return StandardAttributes.this.remove(key);
-        }
-        
-        public Object get(Object key) {
-            return StandardAttributes.this.get(key);
-        }
-
-        public void clear() {
-            StandardAttributes.this.clear();
-        }
-
-        public boolean containsKey(Object key) {
-            return StandardAttributes.this.containsKey(key);
-        }
-
-        public boolean isEmpty() {
-            return StandardAttributes.this.isEmpty();
-        }
-
-        public Set keySet() {
-            return StandardAttributes.this.keySet();
-        }
-
-        public int size() {
-            return StandardAttributes.this.size();
-        }
-
-        public Collection values() {
-            return StandardAttributes.this.values();
-        }
-
-        public Set entrySet() {
-            throw new UnsupportedOperationException();
-        }
-        
-        public boolean containsValue(Object value) {
-            throw new UnsupportedOperationException();
-        }
-        
     }
 
 }

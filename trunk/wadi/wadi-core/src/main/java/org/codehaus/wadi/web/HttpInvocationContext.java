@@ -19,10 +19,12 @@ package org.codehaus.wadi.web;
 import javax.servlet.http.HttpServletRequest;
 
 import org.codehaus.wadi.core.contextualiser.InvocationContext;
+import org.codehaus.wadi.web.impl.WebInvocation;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
 public interface HttpInvocationContext extends HttpServletRequest, InvocationContext {
+    WebInvocation getWebInvocation();
 }

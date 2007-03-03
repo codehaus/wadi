@@ -18,7 +18,6 @@ package org.codehaus.wadi.web;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 
 import javax.servlet.http.HttpSession;
@@ -94,7 +93,7 @@ public class BasicWebSession extends AtomicallyReplicableSession implements WADI
     }
 
     public synchronized Set getAttributeNameSet() {
-        return attributes.getAttributes().keySet();
+        return attributes.keySet();
     }
 
     public synchronized Enumeration getAttributeNameEnumeration() {
@@ -120,7 +119,7 @@ public class BasicWebSession extends AtomicallyReplicableSession implements WADI
     }
 
     protected void onDeserialization() {
-        for (Iterator iter = attributes.getAttributes().values().iterator(); iter.hasNext();) {
+        for (Iterator iter = attributes.values().iterator(); iter.hasNext();) {
             Object value = iter.next();
             if (value instanceof HttpSessionActivationListener) {
                 HttpSessionActivationListener listener = (HttpSessionActivationListener) value;
@@ -130,7 +129,7 @@ public class BasicWebSession extends AtomicallyReplicableSession implements WADI
     }
     
     protected void onSerialization() {
-        for (Iterator iter = attributes.getAttributes().values().iterator(); iter.hasNext();) {
+        for (Iterator iter = attributes.values().iterator(); iter.hasNext();) {
             Object value = iter.next();
             if (value instanceof HttpSessionActivationListener) {
                 HttpSessionActivationListener listener = (HttpSessionActivationListener) value;
@@ -139,7 +138,8 @@ public class BasicWebSession extends AtomicallyReplicableSession implements WADI
         }
     }
     
-    protected void onAddSate(String name, Object oldValue, Object newValue) {
+    protected void onAddSate(Object key, Object oldValue, Object newValue) {
+        String name = (String) key;
         if (oldValue instanceof HttpSessionBindingListener) {
             ((HttpSessionBindingListener) oldValue).valueUnbound(new HttpSessionBindingEvent(wrapper, name, oldValue));
         }
@@ -162,7 +162,8 @@ public class BasicWebSession extends AtomicallyReplicableSession implements WADI
         }
     }
     
-    protected void onRemoveState(String name, Object oldValue) {
+    protected void onRemoveState(Object key, Object oldValue) {
+        String name = (String) key;
         if (oldValue instanceof HttpSessionBindingListener) {
             ((HttpSessionBindingListener) oldValue).valueUnbound(new HttpSessionBindingEvent(wrapper, name, oldValue));
         }

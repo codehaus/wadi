@@ -37,17 +37,17 @@ public interface Session extends Motable, Externalizable {
     /**
      * Map like contract to manipulate state information.
      */
-    Object addState(String key, Object value);
+    Object addState(Object key, Object value);
 
     /**
      * Map like contract to manipulate state information.
      */
-    Object getState(String key);
+    Object getState(Object key);
 
     /**
      * Map like contract to manipulate state information.
      */
-    Object removeState(String key);
+    Object removeState(Object key);
 
     Map getState();
     

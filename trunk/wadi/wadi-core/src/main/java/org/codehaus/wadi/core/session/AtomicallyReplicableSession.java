@@ -86,37 +86,27 @@ public class AtomicallyReplicableSession extends AbstractReplicableSession {
     }
 
     /**
-     * I don't think that the container can efficiently check to see whether the
-     * new value is the same as the old one. We would be second guessing
-     * application code. I think it is up to the developer to make this check.
-     */
-    public synchronized Object addState(String key, Object value) {
-        Object oldState = super.addState(key, value);
-        dirty = true;
-        return oldState;
-    };
-    
-    public synchronized Object removeState(String key) {
-        Object tmp = super.removeState(key);
-        dirty = tmp != null;
-        return tmp;
-    }
-
-    /**
      * this will sometimes dirty the session, since we are giving away
      * a ref to something inside the session which may then be
      * modified without our knowledge - strictly speaking, if we are
      * using ByReference semantics, this dirties. If we are using
      * ByValue semantics, it does not.
      */
-    public synchronized Object getState(String key) {
+    public synchronized Object getState(Object key) {
         Object tmp = super.getState(key);
         dirty = (tmp != null) && semantics.getAttributeDirties();
         return tmp;
     };
 
-    public synchronized void destroy() throws Exception {
-        super.destroy();
+    protected void onAddSate(Object key, Object oldValue, Object newValue) {
+        dirty = true;
+    }
+
+    protected void onRemoveState(Object key, Object oldValue) {
+        dirty = true;
+    }
+
+    protected void onDestroy() {
         dirty = false;
     }
     

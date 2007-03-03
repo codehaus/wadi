@@ -17,9 +17,11 @@
 package org.codehaus.wadi.core.contextualiser;
 
 
+
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision: 2268 $
  */
 public interface InvocationContext {
+    Invocation getInvocation();
 }

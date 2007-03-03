@@ -46,13 +46,15 @@ public interface Invocation {
      * @return the key
      */
     String getSessionKey();
-    
+
+    Session getSession();
+
     /**
      * Attach the relevant Session to this Invocation for its lifetime
      * 
      * @param session The Session
      */
-    public void setSession(Session session);
+    void setSession(Session session);
     
     /**
      * Send an error back to the client from which the Invocation originated

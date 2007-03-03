@@ -16,28 +16,19 @@
  */
 package org.codehaus.wadi.web.impl;
 
-import javax.servlet.http.HttpServletRequestWrapper;
-import javax.servlet.http.HttpSession;
-
 import org.codehaus.wadi.core.contextualiser.Invocation;
-import org.codehaus.wadi.web.HttpInvocationContext;
+import org.codehaus.wadi.core.contextualiser.InvocationContext;
+import org.codehaus.wadi.core.contextualiser.InvocationContextFactory;
+import org.codehaus.wadi.core.session.Session;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision: 1886 $
+ * @version $Revision$
  */
-public class StatelessHttpServletRequestWrapper extends HttpServletRequestWrapper implements HttpInvocationContext {
+public class BasicHttpInvocationContextFactory implements InvocationContextFactory {
 
-    public StatelessHttpServletRequestWrapper(Invocation invocation) {
-        super(((WebInvocation) invocation).getHreq());
-    }
-
-    public HttpSession getSession() {
-        return getSession(true);
-    }
-
-    public HttpSession getSession(boolean create) {
-        throw new UnsupportedOperationException();
-    }
+	public InvocationContext create(Invocation invocation, Session context) {
+		return new BasicHttpInvocationContext(invocation);
+	}
 
 }
