@@ -6,8 +6,6 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 
 import junit.framework.TestCase;
 
@@ -22,6 +20,8 @@ import org.codehaus.wadi.test.MyHttpServletRequest;
 import org.codehaus.wadi.test.MyHttpServletResponse;
 import org.codehaus.wadi.test.MyStack;
 import org.codehaus.wadi.test.TestUtil;
+import org.codehaus.wadi.web.HttpInvocationContext;
+import org.codehaus.wadi.web.impl.WebInvocation;
 
 public class AbstractTestEvacuation extends TestCase {
 	protected Log _log = LogFactory.getLog(getClass());
@@ -55,8 +55,9 @@ public class AbstractTestEvacuation extends TestCase {
 
         FilterChain fc = new FilterChain() {
             public void doFilter(ServletRequest req, ServletResponse res) throws IOException, ServletException {
-                HttpSession session = ((HttpServletRequest) req).getSession();
-                assertTrue(session != null);
+                HttpInvocationContext invocationContext = (HttpInvocationContext) req;
+                WebInvocation webInvocation = invocationContext.getWebInvocation();
+                assertTrue(webInvocation.getSession() != null);
             }
         };
 

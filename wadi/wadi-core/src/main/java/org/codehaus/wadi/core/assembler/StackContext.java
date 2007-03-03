@@ -76,7 +76,7 @@ import org.codehaus.wadi.servicespace.ServiceSpace;
 import org.codehaus.wadi.servicespace.ServiceSpaceName;
 import org.codehaus.wadi.servicespace.SingletonServiceHolder;
 import org.codehaus.wadi.servicespace.basic.BasicServiceSpace;
-import org.codehaus.wadi.web.impl.StatefulHttpInvocationContextFactory;
+import org.codehaus.wadi.web.impl.BasicHttpInvocationContextFactory;
 import org.codehaus.wadi.web.impl.JkRouter;
 import org.codehaus.wadi.web.impl.StandardHttpProxy;
 
@@ -312,7 +312,7 @@ public class StackContext {
     
     protected Contextualiser newMemoryContextualiser(Contextualiser next, ConcurrentMotableMap mmap) {
         Evicter mevicter = new AbsoluteEvicter(sweepInterval, true, sessionTimeout);
-        InvocationContextFactory invocationContextFactory = new StatefulHttpInvocationContextFactory();
+        InvocationContextFactory invocationContextFactory = new BasicHttpInvocationContextFactory();
         return newMemoryContextualiser(next, mmap, mevicter, invocationContextFactory);
     }
 

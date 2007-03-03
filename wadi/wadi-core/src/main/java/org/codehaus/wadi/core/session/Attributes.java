@@ -16,7 +16,7 @@
  */
 package org.codehaus.wadi.core.session;
 
-import java.util.Map;
+import java.util.Collection;
 import java.util.Set;
 
 /**
@@ -38,9 +38,9 @@ public interface Attributes {
     
     Set keySet();
     
+    Collection values();
+    
     int size();
     
     void clear();
-
-    Map getAttributes();
 }

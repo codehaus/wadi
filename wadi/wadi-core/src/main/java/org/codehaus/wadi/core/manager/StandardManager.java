@@ -28,7 +28,7 @@ import org.codehaus.wadi.core.contextualiser.InvocationContextFactory;
 import org.codehaus.wadi.core.contextualiser.InvocationException;
 import org.codehaus.wadi.core.session.Session;
 import org.codehaus.wadi.core.session.SessionFactory;
-import org.codehaus.wadi.web.impl.StatefulHttpInvocationContextFactory;
+import org.codehaus.wadi.web.impl.BasicHttpInvocationContextFactory;
 
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
 
@@ -48,7 +48,7 @@ public class StandardManager implements Lifecycle, Manager {
     protected final boolean errorIfSessionNotAcquired;
     protected final SynchronizedBoolean acceptingSessions = new SynchronizedBoolean(true);
     private final SessionMonitor sessionMonitor;
-    protected InvocationContextFactory invocationContextFactory = new StatefulHttpInvocationContextFactory();
+    protected InvocationContextFactory invocationContextFactory = new BasicHttpInvocationContextFactory();
     protected ManagerConfig config;
     protected int maxInactiveInterval = 30 * 60;
 

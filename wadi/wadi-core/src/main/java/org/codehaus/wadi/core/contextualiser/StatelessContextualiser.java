@@ -23,7 +23,8 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.core.motable.Immoter;
-import org.codehaus.wadi.web.impl.StatelessHttpServletRequestWrapper;
+import org.codehaus.wadi.web.HttpInvocationContext;
+import org.codehaus.wadi.web.impl.BasicHttpInvocationContext;
 import org.codehaus.wadi.web.impl.WebInvocation;
 
 //N.B.
@@ -78,8 +79,8 @@ public class StatelessContextualiser extends AbstractDelegatingContextualiser {
 			return next.contextualise(invocation, key, immoter, exclusiveOnly);
 		} else {
 			// wrap the request so that session is inaccessible and process here...
-            StatelessHttpServletRequestWrapper context = new StatelessHttpServletRequestWrapper(invocation);
-			invocation.invoke(context);
+            HttpInvocationContext invocationContext = new BasicHttpInvocationContext(invocation);
+			invocation.invoke(invocationContext);
 			return true;
 		}
 	}

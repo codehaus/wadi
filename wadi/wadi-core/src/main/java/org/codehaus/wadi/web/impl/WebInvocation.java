@@ -136,9 +136,12 @@ public class WebInvocation implements Invocation {
         return hres;
     }
 
+    public Session getSession() {
+        return session;
+    }
+    
     public void setSession(Session session) {
         this.session = session;
-        
     }
-
+    
 }
