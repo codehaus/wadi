@@ -58,7 +58,7 @@ public class Utils {
 	 * @return - the resulting immotable - in other words - the data's new representation in the target Contextualiser
 	 */
 	public static Motable mote(Emoter emoter, Immoter immoter, Motable emotable, String name) {
-        Motable immotable = immoter.newMotable();
+        Motable immotable = immoter.newMotable(emotable);
         boolean success = emoter.emote(emotable, immotable);
         if (!success) {
             return null;

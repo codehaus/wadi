@@ -89,7 +89,7 @@ public class SharedStoreContextualiser extends AbstractSharedContextualiser {
      */
     public class SharedJDBCImmoter extends AbstractImmoter {
 
-        public Motable newMotable() {
+        public Motable newMotable(Motable emotable) {
             StoreMotable motable = _store.create();
             motable.init(_store);
             return motable;

@@ -29,4 +29,10 @@ public class NoOpSessionListener implements SessionListener {
     public void onSessionDestruction(Session session) {
     }
 
+    public void onInboundSessionMigration(Session session) {
+    }
+
+    public void onOutbountSessionMigration(Session session) {
+    }
+
 }

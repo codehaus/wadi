@@ -107,7 +107,7 @@ public class StackContext {
     protected ConcurrentMotableMap memoryMap;
     protected Router router;
     private SimplePartitionManagerTiming simplePartitionManagerTiming;
-    private BasicSessionMonitor sessionMonitor;
+    private SessionMonitor sessionMonitor;
 
     public static PartitionBalancerSingletonServiceHolder newPartitionBalancerSingletonServiceHolder(ServiceSpace serviceSpace,
             int nbPartitions) throws ServiceAlreadyRegisteredException {
@@ -240,7 +240,7 @@ public class StackContext {
     }
 
     protected void registerMovePMToSMEndPoint(Contextualiser contextualiser) throws ServiceAlreadyRegisteredException {
-        MovePMToSMEndPoint movePMToSMEndPoint = new MovePMToSMEndPoint(serviceSpace, contextualiser, 2000);
+        MovePMToSMEndPoint movePMToSMEndPoint = new MovePMToSMEndPoint(serviceSpace, contextualiser, sessionMonitor, 2000);
 
         ServiceRegistry serviceRegistry = serviceSpace.getServiceRegistry();
         serviceRegistry.register(MovePMToSMEndPoint.NAME, movePMToSMEndPoint);
@@ -327,6 +327,7 @@ public class StackContext {
         return new ClusterContextualiser(contextualiser, 
                 new HybridRelocater(serviceSpace,
                         partitionManager,
+                        sessionMonitor,
                         simplePartitionManagerTiming.getSessionRelocationWaitTimeForRelocater()),
                 partitionManager, 
                 stateManager, 

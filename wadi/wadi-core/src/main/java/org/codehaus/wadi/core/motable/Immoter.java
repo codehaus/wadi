@@ -30,7 +30,7 @@ import org.codehaus.wadi.core.contextualiser.InvocationException;
 public interface Immoter {
     boolean immote(Motable emotable, Motable immotable);
     
-    Motable newMotable();
+    Motable newMotable(Motable emotable);
 
     boolean contextualise(Invocation invocation, String id, Motable immotable) throws InvocationException;
 }

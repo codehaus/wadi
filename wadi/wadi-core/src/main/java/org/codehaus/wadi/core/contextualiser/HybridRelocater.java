@@ -21,11 +21,13 @@ import java.io.Serializable;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.core.WADIRuntimeException;
+import org.codehaus.wadi.core.manager.SessionMonitor;
 import org.codehaus.wadi.core.motable.AbstractChainedEmoter;
 import org.codehaus.wadi.core.motable.Emoter;
 import org.codehaus.wadi.core.motable.Immoter;
 import org.codehaus.wadi.core.motable.Motable;
 import org.codehaus.wadi.core.motable.RehydrationImmoter;
+import org.codehaus.wadi.core.session.Session;
 import org.codehaus.wadi.core.util.Utils;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.EndPoint;
@@ -55,19 +57,24 @@ public class HybridRelocater implements Relocater {
 	private final Dispatcher dispatcher;
     private final LocalPeer localPeer;
 	private final PartitionManager partitionManager;
+	private final SessionMonitor sessionMonitor;
     private final long resTimeout;
 
     public HybridRelocater(ServiceSpace serviceSpace,
             PartitionManager partitionManager,
+            SessionMonitor sessionMonitor,
             long resTimeout) {
         if (null == serviceSpace) {
             throw new IllegalArgumentException("serviceSpace is required");
         } else if (null == partitionManager) {
             throw new IllegalArgumentException("partitionManager is required");
+        } else if (null == sessionMonitor) {
+            throw new IllegalArgumentException("sessionMonitor is required");
         } else if (1 > resTimeout) { 
             throw new IllegalArgumentException("resTimeout must be > 0");
         }
         this.partitionManager = partitionManager;
+        this.sessionMonitor = sessionMonitor;
         this.resTimeout = resTimeout;
 
         dispatcher = serviceSpace.getDispatcher();
@@ -140,6 +147,7 @@ public class HybridRelocater implements Relocater {
             Emoter emoter = new SMToIMEmoter(message);
             immoter = new RehydrationImmoter(immoter, emotable);
             Motable immotable = Utils.mote(emoter, immoter, emotable, name);
+            sessionMonitor.notifyInboundSessionMigration((Session) immotable);
             return immoter.contextualise(invocation, name, immotable);
         }
     }

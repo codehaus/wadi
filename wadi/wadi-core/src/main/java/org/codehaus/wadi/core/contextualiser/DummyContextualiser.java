@@ -46,7 +46,7 @@ public class DummyContextualiser extends AbstractContextualiser {
             return true;
         }
         
-        public Motable newMotable() {
+        public Motable newMotable(Motable emotable) {
             return new SimpleMotable();
         }
 

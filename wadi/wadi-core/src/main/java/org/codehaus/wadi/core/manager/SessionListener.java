@@ -26,4 +26,8 @@ public interface SessionListener {
     void onSessionCreation(Session session);
 
     void onSessionDestruction(Session session);
+
+    void onInboundSessionMigration(Session session);
+
+    void onOutbountSessionMigration(Session session);
 }

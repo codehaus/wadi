@@ -40,6 +40,20 @@ public class BasicSessionMonitor implements SessionMonitor {
     public void removeSessionListener(SessionListener sessionListener) {
         sessionListeners.remove(sessionListener);
     }
+    
+    public void notifyInboundSessionMigration(Session session) {
+        for (Iterator iter = sessionListeners.iterator(); iter.hasNext();) {
+            SessionListener listener = (SessionListener) iter.next();
+            listener.onInboundSessionMigration(session);
+        }
+    }
+    
+    public void notifyOutbountSessionMigration(Session session) {
+        for (Iterator iter = sessionListeners.iterator(); iter.hasNext();) {
+            SessionListener listener = (SessionListener) iter.next();
+            listener.onOutbountSessionMigration(session);
+        }
+    }
 
     public void notifySessionCreation(Session session) {
         for (Iterator iter = sessionListeners.iterator(); iter.hasNext();) {

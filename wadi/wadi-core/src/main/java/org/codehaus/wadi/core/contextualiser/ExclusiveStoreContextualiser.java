@@ -90,7 +90,7 @@ public class ExclusiveStoreContextualiser extends AbstractExclusiveContextualise
             super(map);
         }
 
-        public Motable newMotable() {
+        public Motable newMotable(Motable emotable) {
             StoreMotable motable = _store.create();
             motable.init(_store);
             return motable;

@@ -17,9 +17,10 @@ package org.codehaus.wadi.core.contextualiser;
 
 import java.io.IOException;
 
-import org.codehaus.wadi.core.contextualiser.HybridRelocater;
-import org.codehaus.wadi.core.contextualiser.Invocation;
+import org.codehaus.wadi.core.manager.SessionMonitor;
 import org.codehaus.wadi.core.motable.Immoter;
+import org.codehaus.wadi.core.motable.Motable;
+import org.codehaus.wadi.core.session.Session;
 import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Envelope;
@@ -64,6 +65,62 @@ public class HybridRelocaterTest extends RMockTestCase {
         immoter = (Immoter) mock(Immoter.class);
     }
     
+    public void testSuccessfulelocation() throws Exception {
+        final String key = "key";
+        int timeout = 100;
+        boolean shuttingDown = false;
+        boolean relocatable = true;
+        
+        Motable relocatedMotable = (Motable) mock(Motable.class);
+        
+        Partition partition = manager.getPartition(key);
+        recordPartitionExchange(key, timeout, shuttingDown, relocatable, partition);
+        Envelope envelope = (Envelope) mock(Envelope.class);
+        modify().returnValue(envelope);
+        envelope.getPayload();
+        modify().returnValue(new MoveSMToIM(relocatedMotable));
+
+        immoter.newMotable(relocatedMotable);
+        Session relocatedSession = (Session) mock(Session.class);
+        modify().returnValue(relocatedSession);
+        
+        recordRehydration(key, relocatedMotable, relocatedSession);
+
+        SessionMonitor sessionMonitor = (SessionMonitor) mock(SessionMonitor.class);
+        sessionMonitor.notifyInboundSessionMigration(relocatedSession);
+
+        recordReplyToSM(envelope, true);
+        
+        immoter.immote(relocatedMotable, relocatedSession);
+        modify().returnValue(true);
+        
+        immoter.contextualise(invocation, key, relocatedSession);
+        modify().returnValue(true);
+        startVerification();
+        
+        HybridRelocater relocater = new HybridRelocater(serviceSpace, manager, sessionMonitor, timeout);
+        boolean relocated = relocater.relocate(invocation, key, immoter, shuttingDown);
+        assertTrue(relocated);
+    }
+
+    private void recordRehydration(String key, Motable relocatedMotable, Session relocatedSession) throws Exception {
+        relocatedMotable.getCreationTime();
+        int creationTime = 1;
+        modify().returnValue(creationTime);
+        relocatedMotable.getLastAccessedTime();
+        int lastAccessedTime = 2;
+        modify().returnValue(lastAccessedTime);
+        relocatedMotable.getMaxInactiveInterval();
+        int maxInactiveInterval = 3;
+        modify().returnValue(maxInactiveInterval);
+        relocatedMotable.getName();
+        modify().returnValue(key);
+        relocatedMotable.getBodyAsByteArray();
+        byte[] body = new byte[0];
+        modify().returnValue(body);
+        relocatedSession.rehydrate(creationTime, lastAccessedTime, maxInactiveInterval, key, body);
+    }
+    
     public void testRelocatedSessionIsNull() throws Exception {
         final String key = "key";
         int timeout = 100;
@@ -76,6 +133,17 @@ public class HybridRelocaterTest extends RMockTestCase {
         envelope.getPayload();
         modify().returnValue(new MoveSMToIM(null));
 
+        recordReplyToSM(envelope, false);
+        
+        SessionMonitor sessionMonitor = (SessionMonitor) mock(SessionMonitor.class);
+        startVerification();
+        
+        HybridRelocater relocater = new HybridRelocater(serviceSpace, manager, sessionMonitor, timeout);
+        boolean relocated = relocater.relocate(invocation, key, immoter, shuttingDown);
+        assertFalse(relocated);
+    }
+
+    private void recordReplyToSM(Envelope envelope, final boolean success) throws MessageExchangeException {
         dispatcher.reply(envelope, null);
         modify().args(is.AS_RECORDED, new AbstractExpression() {
 
@@ -84,15 +152,10 @@ public class HybridRelocaterTest extends RMockTestCase {
 
             public boolean passes(Object arg0) {
                 MoveIMToSM arg = (MoveIMToSM) arg0;
-                return !arg.getSuccess();
+                return success == arg.getSuccess();
             }
             
         });
-        startVerification();
-        
-        HybridRelocater relocater = new HybridRelocater(serviceSpace, manager, timeout);
-        boolean relocated = relocater.relocate(invocation, key, immoter, shuttingDown);
-        assertFalse(relocated);
     }
 
     private void recordPartitionExchange(final String key,

@@ -105,7 +105,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser {
      * its emigration thence to another node.
      */
     class EmigrationImmoter implements Immoter {
-        public Motable newMotable() {
+        public Motable newMotable(Motable emotable) {
             return new SimpleMotable();
         }
 
