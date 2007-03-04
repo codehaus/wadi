@@ -101,6 +101,10 @@ public class TribesPeer implements Member, LocalPeer, Address, Serializable {
         return member.getPort();
     }
 
+    public int getSecurePort() {
+        return member.getSecurePort();
+    }
+    
     /**
      * getUniqueId
      *
