@@ -19,7 +19,7 @@ package org.codehaus.wadi.test;
 import java.net.URI;
 
 import org.codehaus.wadi.core.assembler.StackContext;
-import org.codehaus.wadi.core.manager.ClusteredManager;
+import org.codehaus.wadi.core.manager.Manager;
 import org.codehaus.wadi.core.manager.Router;
 import org.codehaus.wadi.core.session.DistributableAttributesFactory;
 import org.codehaus.wadi.core.session.SessionFactory;
@@ -35,7 +35,7 @@ import org.codehaus.wadi.web.impl.DummyRouter;
 import org.codehaus.wadi.web.impl.StandardSessionWrapperFactory;
 
 public class MyStack {
-    private ClusteredManager _manager;
+    private Manager _manager;
     private ServiceSpace serviceSpace;
 
     public MyStack(Dispatcher dispatcher) throws Exception {
@@ -74,7 +74,7 @@ public class MyStack {
         serviceSpace.stop();
     }
 
-    public ClusteredManager getManager() {
+    public Manager getManager() {
         return _manager;
     }
 

@@ -23,7 +23,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.codehaus.wadi.core.contextualiser.InvocationException;
-import org.codehaus.wadi.core.manager.ClusteredManager;
+import org.codehaus.wadi.core.manager.Manager;
 import org.codehaus.wadi.core.session.Session;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.vm.VMBroker;
@@ -49,9 +49,9 @@ public class Launcher {
     private final VMBroker broker;
     private final FilterChain filterChain;
     private final Latch latch;
-    private ClusteredManager redManager;
-    private ClusteredManager greenManager;
-    private ClusteredManager yellowManager;
+    private Manager redManager;
+    private Manager greenManager;
+    private Manager yellowManager;
     private volatile Long cpt;
     
     private Launcher() {
@@ -76,16 +76,16 @@ public class Launcher {
     }
 
     private void start() throws Exception {
-        redManager = newClusteredManager(broker, "red");
-        greenManager = newClusteredManager(broker, "green");
-        yellowManager = newClusteredManager(broker, "yellow");
+        redManager = newManager(broker, "red");
+        greenManager = newManager(broker, "green");
+        yellowManager = newManager(broker, "yellow");
         
         Session session = greenManager.createWithName(SESSION_ID);
         cpt = new Long(0);
         session.addState("attr1", cpt);
         session.onEndProcessing();
         
-        ClusteredManager managers[] = new ClusteredManager[] {redManager, greenManager, yellowManager};
+        Manager managers[] = new Manager[] {redManager, greenManager, yellowManager};
         Thread threads[] = new Thread[2];
         for (int i = 0; i < threads.length; i++) {
             threads[i] = new ThreadRunner(managers[i % 3], filterChain);
@@ -109,7 +109,7 @@ public class Launcher {
         System.exit(0);
     }
 
-    private ClusteredManager newClusteredManager(VMBroker broker, String nodeName) throws MessageExchangeException,
+    private Manager newManager(VMBroker broker, String nodeName) throws MessageExchangeException,
             Exception {
         VMDispatcher dispatcher = new VMDispatcher(broker, nodeName, null, 1000);
         dispatcher.start();
@@ -136,11 +136,10 @@ public class Launcher {
     }
 
     public class ThreadRunner extends Thread {
-        private final ClusteredManager manager;
-
+        private final Manager manager;
         private final FilterChain filterChain;
 
-        public ThreadRunner(ClusteredManager manager, FilterChain filterChain) {
+        public ThreadRunner(Manager manager, FilterChain filterChain) {
             this.manager = manager;
             this.filterChain = filterChain;
         }

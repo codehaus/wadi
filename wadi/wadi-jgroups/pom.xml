@@ -60,19 +60,6 @@
       <version>2.2.9.1</version>
     </dependency>
 
-    <!-- test -->
-    <!-- why isn't axion dragged in by wadi-core-test? -->
-    <dependency>
-      <groupId>axion</groupId><!-- for a number of tests -->
-      <artifactId>axion</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>commons-primitives</groupId><!-- for axion -->
-      <artifactId>commons-primitives</artifactId>
-      <version>1.0</version>
-      <scope>test</scope>
-    </dependency>
   </dependencies>
 
 </project>

@@ -38,10 +38,7 @@ public class SharedStoreContextualiser extends AbstractSharedContextualiser {
     private final Immoter immoter;
     private final Emoter emoter;
 
-	public SharedStoreContextualiser(Contextualiser next,
-            boolean cleanOnStart,
-            Store store,
-            boolean accessOnLoad) {
+	public SharedStoreContextualiser(Contextualiser next, boolean cleanOnStart, Store store) {
 		super(next);
         this.cleanOnStart = cleanOnStart;
         this.store = store;

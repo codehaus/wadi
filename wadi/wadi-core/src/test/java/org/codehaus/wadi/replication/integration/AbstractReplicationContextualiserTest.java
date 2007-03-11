@@ -26,7 +26,7 @@ import junit.framework.TestCase;
 import org.codehaus.wadi.core.ConcurrentMotableMap;
 import org.codehaus.wadi.core.assembler.StackContext;
 import org.codehaus.wadi.core.contextualiser.InvocationException;
-import org.codehaus.wadi.core.manager.ClusteredManager;
+import org.codehaus.wadi.core.manager.Manager;
 import org.codehaus.wadi.core.manager.Router;
 import org.codehaus.wadi.core.session.DistributableAttributesFactory;
 import org.codehaus.wadi.core.session.Session;
@@ -71,7 +71,7 @@ public abstract class AbstractReplicationContextualiserTest extends TestCase {
 	}
 
 	public void testGetSessionFromReplicationManager() throws Exception {
-		Session session = nodeInfo1.clusteredManager.create(null);
+		Session session = nodeInfo1.manager.create(null);
 		String attrValue = "bar";
 		String attrName = "foo";
         session.addState(attrName, attrValue);
@@ -91,7 +91,7 @@ public abstract class AbstractReplicationContextualiserTest extends TestCase {
     }
 
     private void promoteNode(NodeInfo nodeInfo, String sessionId) throws InvocationException {
-        nodeInfo.clusteredManager.contextualise(
+        nodeInfo.manager.contextualise(
                 new MockInvocation(new MyHttpServletRequest(sessionId), null,
                     new FilterChain() { 
                         public void doFilter(ServletRequest req, ServletResponse res){} 
@@ -146,12 +146,12 @@ public abstract class AbstractReplicationContextualiserTest extends TestCase {
 
     private static class NodeInfo {
         private final ServiceSpace serviceSpace;
-        private final ClusteredManager clusteredManager;
+        private final Manager manager;
         private final ConcurrentMotableMap mmap;
 
-        public NodeInfo(ServiceSpace serviceSpace, ClusteredManager clusteredManager, ConcurrentMotableMap mmap) {
+        public NodeInfo(ServiceSpace serviceSpace, Manager manager, ConcurrentMotableMap mmap) {
             this.serviceSpace = serviceSpace;
-            this.clusteredManager = clusteredManager;
+            this.manager = manager;
             this.mmap = mmap;
         }
         
