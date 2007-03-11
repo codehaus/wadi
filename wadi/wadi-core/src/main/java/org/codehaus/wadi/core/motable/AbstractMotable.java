@@ -19,7 +19,6 @@ package org.codehaus.wadi.core.motable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.io.Serializable;
 
 import org.codehaus.wadi.core.eviction.SimpleEvictable;
 
@@ -32,10 +31,10 @@ import EDU.oswego.cs.dl.util.concurrent.WriterPreferenceReadWriteLock;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision: 2244 $
  */
-public abstract class AbstractMotable extends SimpleEvictable implements Motable, Serializable {
+public abstract class AbstractMotable extends SimpleEvictable implements Motable {
     protected String name;
     protected boolean newSession = true;
-    protected transient ReadWriteLock readWriteLock;
+    protected ReadWriteLock readWriteLock;
 
     protected AbstractMotable() {
         readWriteLock = newReadWriteLock();
@@ -69,7 +68,7 @@ public abstract class AbstractMotable extends SimpleEvictable implements Motable
 
     public synchronized void mote(Motable recipient) throws Exception {
         recipient.copy(this);
-        destroy();
+        destroyForMotion();
     }
 
     public synchronized String getName() {

@@ -17,7 +17,6 @@
 package org.codehaus.wadi.core.session;
 
 import org.codehaus.wadi.core.manager.Manager;
-import org.codehaus.wadi.core.motable.Motable;
 import org.codehaus.wadi.core.util.Streamer;
 import org.codehaus.wadi.replication.Replicater;
 
@@ -37,11 +36,6 @@ public abstract class AbstractReplicableSession extends DistributableSession {
             throw new IllegalArgumentException("replicater is required");
         }
         this.replicater = replicater;
-    }
-
-    public synchronized void mote(Motable recipient) throws Exception {
-        recipient.copy(this);
-        destroyForMotion(); 
     }
 
     public synchronized void destroy() throws Exception {

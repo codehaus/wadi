@@ -21,6 +21,10 @@ package org.codehaus.wadi.replication;
  */
 public class ReplicaterException extends RuntimeException {
 
+    public ReplicaterException(String message, Throwable throwable) {
+        super(message, throwable);
+    }
+    
     public ReplicaterException(Throwable throwable) {
         super(throwable);
     }

@@ -16,10 +16,10 @@
  */
 package org.codehaus.wadi.core.eviction;
 
+import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.io.Serializable;
 
 
 /**
@@ -28,8 +28,7 @@ import java.io.Serializable;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision: 2244 $
  */
-
-public abstract class SimpleEvictable implements Evictable, Serializable {
+public abstract class SimpleEvictable implements Evictable, Externalizable {
     protected long creationTime;
     protected long lastAccessedTime;
     protected int maxInactiveInterval;
