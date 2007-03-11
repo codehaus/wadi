@@ -90,9 +90,7 @@ public class StandardManager implements Lifecycle, Manager {
     public void start() throws Exception {
         contextualiser.promoteToExclusive(null);
         contextualiser.start();
-        String version = getClass().getPackage().getImplementationVersion();
-        version = (version == null ? System.getProperty("wadi.version") : version);
-        log.info("WADI-" + version + " successfully installed");
+        log.info("WADI Manager Successfully Started");
     }
 
     public void stop() throws Exception {

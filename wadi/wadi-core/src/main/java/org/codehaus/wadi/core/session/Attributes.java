@@ -20,7 +20,6 @@ import java.util.Collection;
 import java.util.Set;
 
 /**
- * TODO - JavaDoc this type
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
