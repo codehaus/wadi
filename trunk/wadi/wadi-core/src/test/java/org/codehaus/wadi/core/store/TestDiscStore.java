@@ -22,9 +22,6 @@ import junit.framework.TestCase;
 
 import org.codehaus.wadi.core.motable.Motable;
 import org.codehaus.wadi.core.motable.SimpleMotable;
-import org.codehaus.wadi.core.store.DiscStore;
-import org.codehaus.wadi.core.store.Store;
-import org.codehaus.wadi.core.store.StoreMotable;
 import org.codehaus.wadi.core.util.SimpleStreamer;
 
 /**
@@ -34,11 +31,7 @@ import org.codehaus.wadi.core.util.SimpleStreamer;
 public class TestDiscStore extends TestCase {
 
     public void testDiscMotables() throws Exception {
-        testDiscMotables(new DiscStore(new SimpleStreamer(), new File("/tmp"), false, false));
-        testDiscMotables(new DiscStore(new SimpleStreamer(), new File("/tmp"), true, false));
-    }
-
-    public void testDiscMotables(Store store) throws Exception {
+        Store store = new DiscStore(new SimpleStreamer(), new File("/tmp"), false, false);
         Motable sm0 = new SimpleMotable();
         long creationTime = System.currentTimeMillis();
         long lastAccessedTime = creationTime + 1;
@@ -52,21 +45,16 @@ public class TestDiscStore extends TestCase {
         file.delete();
         assertFalse(file.exists());
 
-        StoreMotable edm0 = store.create();
-        edm0.init(store);
+        Motable edm0 = store.create();
         assertFalse(file.exists());
         edm0.copy(sm0);
         assertTrue(file.exists());
 
-        StoreMotable edm1 = store.create();
-        edm1.init(store, name);
-        assertTrue(file.exists());
-
         Motable sm1 = new SimpleMotable();
-        sm1.copy(edm1);
+        sm1.copy(edm0);
         assertTrue(file.exists());
 
-        edm1.destroy();
+        edm0.destroy();
         assertTrue(!file.exists());
 
         assertTrue(sm0.equals(sm1));

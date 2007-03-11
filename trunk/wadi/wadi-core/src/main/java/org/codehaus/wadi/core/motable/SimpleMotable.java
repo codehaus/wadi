@@ -16,7 +16,10 @@
  */
 package org.codehaus.wadi.core.motable;
 
-import java.io.Serializable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+
 
 
 /**
@@ -26,8 +29,7 @@ import java.io.Serializable;
  * @version $Revision$
  */
 
-public class SimpleMotable extends AbstractMotable implements Serializable {
-
+public class SimpleMotable extends AbstractMotable {
 	protected byte[] _bytes;
 
     public synchronized byte[] getBodyAsByteArray() {
@@ -38,6 +40,16 @@ public class SimpleMotable extends AbstractMotable implements Serializable {
         _bytes = bytes;
     }
     
+    public synchronized void readExternal(ObjectInput oi) throws IOException, ClassNotFoundException {
+        super.readExternal(oi);
+        _bytes = (byte[]) oi.readObject();
+    }
+
+    public synchronized void writeExternal(ObjectOutput oo) throws IOException {
+        super.writeExternal(oo);
+        oo.writeObject(_bytes);
+    }
+
     public boolean equals(Object object) {
         if (this==object)
             return true;

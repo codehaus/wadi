@@ -16,8 +16,6 @@
  */
 package org.codehaus.wadi.core.contextualiser;
 
-import java.io.File;
-
 import org.codehaus.wadi.core.ConcurrentMotableMap;
 import org.codehaus.wadi.core.eviction.Evicter;
 import org.codehaus.wadi.core.motable.AbstractMappedImmoter;
@@ -25,58 +23,50 @@ import org.codehaus.wadi.core.motable.BaseMappedEmoter;
 import org.codehaus.wadi.core.motable.Emoter;
 import org.codehaus.wadi.core.motable.Immoter;
 import org.codehaus.wadi.core.motable.Motable;
-import org.codehaus.wadi.core.store.DiscStore;
 import org.codehaus.wadi.core.store.Store;
-import org.codehaus.wadi.core.store.StoreMotable;
-import org.codehaus.wadi.core.util.Streamer;
 
 /**
- * Maps id:File where file contains Context content...
  *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
 public class ExclusiveStoreContextualiser extends AbstractExclusiveContextualiser {
     private final boolean clean;
-    private final boolean accessOnLoad;
-    protected final Store _store;
-    protected final Immoter _immoter;
-	protected final Emoter _emoter;
+    private final Store store;
+    private final Immoter immoter;
+    private final Emoter emoter;
 
 	public ExclusiveStoreContextualiser(Contextualiser next,
             boolean clean,
             Evicter evicter,
             ConcurrentMotableMap map,
-            Streamer streamer,
-            File dir,
-            boolean accessOnLoad) throws Exception {
+            Store store) throws Exception {
 	    super(next, evicter, map);
         this.clean = clean;
-        this.accessOnLoad = accessOnLoad;
+        this.store = store;
         
-        _store = new DiscStore(streamer, dir, true, false);
-        _immoter = new ExclusiveStoreImmoter(map);
-        _emoter = new BaseMappedEmoter(map);
+        immoter = new ExclusiveStoreImmoter(map);
+        emoter = new BaseMappedEmoter(map);
 	}
 
 	public Immoter getImmoter() {
-        return _immoter;
+        return immoter;
     }
 
     public Emoter getEmoter() {
-        return _emoter;
+        return emoter;
     }
 
     public void start() throws Exception {
         if (clean) {
-            _store.clean();
+            store.clean();
         } else {
             Store.Putter putter = new Store.Putter() {
                 public void put(String name, Motable motable) {
                     map.put(name, motable);
                 }
             };
-            _store.load(putter, accessOnLoad);
+            store.load(putter);
         }
         super.start();
     }
@@ -91,9 +81,7 @@ public class ExclusiveStoreContextualiser extends AbstractExclusiveContextualise
         }
 
         public Motable newMotable(Motable emotable) {
-            StoreMotable motable = _store.create();
-            motable.init(_store);
-            return motable;
+            return store.create();
         }
 
     }

@@ -22,14 +22,22 @@ import org.codehaus.wadi.core.motable.Motable;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public interface Store extends StoreMotableConfig {
+public interface Store {
     interface Putter {
         void put(String name, Motable motable);
     }
 
     void clean();
 
-    StoreMotable create();
+    Motable create();
 
-    void load(Putter putter, boolean accessOnLoad);
+    void load(Putter putter);
+    
+    void insert(Motable motable) throws Exception;
+    
+    void update(Motable motable) throws Exception;
+
+    void delete(Motable motable);
+    
+    byte[] loadBody(Motable motable) throws Exception;
 }

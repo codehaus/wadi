@@ -21,12 +21,8 @@ import org.codehaus.wadi.core.motable.AbstractImmoter;
 import org.codehaus.wadi.core.motable.Emoter;
 import org.codehaus.wadi.core.motable.Immoter;
 import org.codehaus.wadi.core.motable.Motable;
-import org.codehaus.wadi.core.store.DatabaseStore;
 import org.codehaus.wadi.core.store.Store;
-import org.codehaus.wadi.core.store.StoreMotable;
 import org.codehaus.wadi.core.util.Utils;
-
-import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
  * A Contextualiser which stores its Contexts in a shared database via JDBC.
@@ -36,105 +32,82 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-
 public class SharedStoreContextualiser extends AbstractSharedContextualiser {
-    private final boolean clean;
-    private final DatabaseStore _store;
-    private final Immoter _immoter;
-    private final Emoter _emoter;
-    private final boolean accessOnLoad;
+    private final boolean cleanOnStart;
+    private final Store store;
+    private final Immoter immoter;
+    private final Emoter emoter;
 
 	public SharedStoreContextualiser(Contextualiser next,
-            boolean clean,
-            DatabaseStore store,
+            boolean cleanOnStart,
+            Store store,
             boolean accessOnLoad) {
 		super(next);
-        this.clean = clean;
-        _store = store;
-        this.accessOnLoad = accessOnLoad;
+        this.cleanOnStart = cleanOnStart;
+        this.store = store;
         
-        _immoter = new SharedJDBCImmoter();
-        _emoter = new AbstractChainedEmoter();
+        immoter = new SharedImmoter();
+        emoter = new AbstractChainedEmoter();
     }
 
     public void start() throws Exception {
-        if (clean) {
-            _store.clean();
+        if (cleanOnStart) {
+            store.clean();
         }
         super.start();
     }
 
     public Immoter getImmoter() {
-        return _immoter;
+        return immoter;
     }
 
     public Emoter getEmoter() {
-        return _emoter;
+        return emoter;
     }
 
     public Immoter getDemoter(String name, Motable motable) {
         // TODO - should check _next... - just remove when we have an evicter sorted
-        return new SharedJDBCImmoter();
+        return new SharedImmoter();
+    }
+    
+    /**
+     * Shared Contextualisers do nothing at runtime. They exist only to load data at startup and store it at shutdown.
+     */
+    protected Motable get(String id, boolean exclusiveOnly) {
+        return null;
     }
 
-    protected Motable get(String id, boolean exclusiveOnly) {
-        throw new UnsupportedOperationException();
+    protected void load(Emoter emoter, Immoter immoter) {
+        // TODO - load only if we are the first.
+        store.load(new SharedPutter(emoter, immoter));
     }
 
     /**
-     * An Emoter that deals in terms of SharedJDBCMotables
+     * An Emoter that deals in terms of StoreMotables
      * 
      * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
      * @version $Revision$
      */
-    public class SharedJDBCImmoter extends AbstractImmoter {
+    protected class SharedImmoter extends AbstractImmoter {
 
         public Motable newMotable(Motable emotable) {
-            StoreMotable motable = _store.create();
-            motable.init(_store);
-            return motable;
+            return store.create();
         }
 
     }
 
-    class SharedPutter implements Store.Putter {
-
-        protected final Emoter _emoter;
-
-        protected final Immoter _immoter;
+    protected class SharedPutter implements Store.Putter {
+        protected final Emoter emoter;
+        protected final Immoter immoter;
 
         public SharedPutter(Emoter emoter, Immoter immoter) {
-            _emoter = emoter;
-            _immoter = immoter;
+            this.emoter = emoter;
+            this.immoter = immoter;
         }
 
         public void put(String name, Motable motable) {
-            Utils.mote(_emoter, _immoter, motable, name);
+            Utils.mote(emoter, immoter, motable, name);
         }
-    }
-
-    protected void load(Emoter emoter, Immoter immoter) {
-        // this should only happen when we are the first node in the cluster...
-        _store.load(new SharedPutter(emoter, immoter), accessOnLoad);
-    }
-
-    public Emoter getEvictionEmoter() {
-        // FIXME
-        throw new UnsupportedOperationException();
-    }
-
-    public void expire(Motable motable) {
-        // FIXME
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * Shared Contextualisers do nothing at runtime. They exist only to load
-     * data at startup and store it at shutdown.
-     */
-    public boolean contextualise(Invocation invocation, String key, Immoter immoter, Sync invocationLock,
-            boolean exclusiveOnly) throws InvocationException {
-        return false;
     }
 
 }

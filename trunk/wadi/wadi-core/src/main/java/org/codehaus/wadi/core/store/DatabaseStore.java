@@ -14,11 +14,9 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
 package org.codehaus.wadi.core.store;
 
 import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -36,355 +34,317 @@ import org.codehaus.wadi.core.motable.Motable;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class DatabaseStore implements Store, DatabaseMotableConfig {
-  
-  protected final Log _log=LogFactory.getLog(getClass());
-  protected final String _label;
-  protected final DataSource _dataSource;
-  protected final String _table;
-  protected final boolean _useNIO;
-  protected final boolean _reusingStore;
-  protected final boolean _build;
-  protected final boolean _hasBigInt;
-  protected final long _blobOffset;
-  
-  public DatabaseStore(String label, DataSource dataSource, String table, boolean useNIO, boolean reusingStore, boolean build) {
-    _label=label;
-    _dataSource=dataSource;
-    _table=table;
-    _useNIO=useNIO;
-    _reusingStore=reusingStore;
-    _build=build;
-    boolean usingAxion=_dataSource.getClass().getName().startsWith("org.axiondb.");
-    _hasBigInt=!usingAxion; // axion-1.0-M3-dev does not have the type 'BIGINT' use 'LONG' instead
-    _blobOffset=usingAxion?0:1; // axion-1.0-M3-dev copies from blobs starting at 0 instead of 1
+public class DatabaseStore implements Store {
+    private static final Log log = LogFactory.getLog(DatabaseStore.class);
+
+    private final DataSource ds;
+    private final String createTableDDL;
+    private final String selectAllSQL;
+    private final String selectMotableBodySQL;
+    private final String insertMotableSQL;
+    private final String updateMotableSQL;
+    private final String deleteMotableSQL;
+    private final String deleteAllSQL;
+    private final boolean accessOnLoad;
+
+    public DatabaseStore(DataSource dataSource,
+            String table,
+            boolean build,
+            boolean accessOnLoad) {
+        this(dataSource,
+                "CREATE TABLE " + table + " (name VARCHAR(50), creation_time LONG, last_accessed_time LONG, max_inactive_interval INT, body BLOB)",
+                "SELECT name, creation_time, last_accessed_time, max_inactive_interval FROM " + table,
+                "SELECT body FROM " + table + " WHERE name = ?",
+                "DELETE FROM " + table,
+                "INSERT INTO " + table + " (name, creation_time, last_accessed_time, max_inactive_interval, body) VALUES (?, ?, ?, ?, ?)",
+                "UPDATE " + table + " SET last_accessed_time = ?, max_inactive_interval = ?, body = ? WHERE name = ?",
+                "DELETE FROM " + table + " WHERE name = ?",
+                build,
+                accessOnLoad);
+    }
+
+    public DatabaseStore(DataSource dataSource,
+            String createTableDDL,
+            String selectAllSQL,
+            String selectMotableBodySQL,
+            String deleteAllSQL,
+            String insertMotableSQL,
+            String updateMotableSQL,
+            String deleteMotableSQL,
+            boolean build,
+            boolean accessOnLoad) {
+        this.ds = dataSource;
+        this.createTableDDL = createTableDDL;
+        this.selectAllSQL = selectAllSQL;
+        this.selectMotableBodySQL = selectMotableBodySQL;
+        this.insertMotableSQL = insertMotableSQL;
+        this.updateMotableSQL = updateMotableSQL;
+        this.deleteMotableSQL = deleteMotableSQL;
+        this.deleteAllSQL = deleteAllSQL;
+        this.accessOnLoad = accessOnLoad;
+
+        if (build) {
+            init();
+        }
+    }
+
+    public void clean() {
+        Connection conn = null;
+        try {
+            conn = ds.getConnection();
+            clean(conn);
+        } catch (SQLException e) {
+            log.warn("See nested", e);
+        } finally {
+            closeConnection(conn);
+        }
+    }
+
+    public void load(Putter putter) {
+        Connection conn = null;
+        try {
+            conn = ds.getConnection();
+            load(putter, conn);
+        } catch (SQLException e) {
+            log.warn("See nested", e);
+        } finally {
+            closeConnection(conn);
+        }
+    }
+
+    public byte[] loadBody(Motable motable) throws Exception {
+        Connection conn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        
+        String name = motable.getName();
+        byte[] body = null;
+        try {
+            conn = getConnection();
+            ps = conn.prepareStatement(selectMotableBodySQL);
+            ps.setString(1, name);
+            rs = ps.executeQuery();
+            if (rs.next()) {
+                body = loadBody(rs);
+                if (log.isTraceEnabled()) {
+                    log.trace("Body of Motable [" + name + "] has been loaded");
+                }
+                return body;
+            } else {
+                return null;
+            }
+        } catch (SQLException e) {
+            log.warn("See nested", e);
+            throw e;
+        } finally {
+            closeResultSet(rs);
+            closeStatement(ps);
+            closeConnection(conn);
+        }
+    }
+
+    public void update(Motable motable) throws Exception {
+        Connection conn = null;
+        PreparedStatement ps = null;
+        try {
+            conn = getConnection();
+            ps = conn.prepareStatement(updateMotableSQL);
+            int i = 1;
+            ps.setLong(i++, motable.getLastAccessedTime());
+            ps.setInt(i++, motable.getMaxInactiveInterval());
+            byte[] body = motable.getBodyAsByteArray();
+            ps.setBinaryStream(i++, new ByteArrayInputStream(body), body.length);
+            String name = motable.getName();
+            ps.setString(i++, name);
+            int nbUpdate = ps.executeUpdate();
+            if (1 != nbUpdate) {
+                throw new AssertionError("[" + nbUpdate + "] updated for Motable [" + name + "]");
+            }
+            if (log.isTraceEnabled()) {
+                log.trace("Motable [" + name + "] has been updated");
+            }
+        } catch (SQLException e) {
+            log.warn("See nested", e);
+            throw e;
+        } finally {
+            closeStatement(ps);
+            closeConnection(conn);
+        }
+    }
+
+    public void insert(Motable motable) throws Exception {
+        Connection conn = null;
+        PreparedStatement ps = null;
+        try {
+            conn = getConnection();
+            ps = conn.prepareStatement(insertMotableSQL);
+            int i = 1;
+            String name = motable.getName();
+            ps.setString(i++, name);
+            ps.setLong(i++, motable.getCreationTime());
+            ps.setLong(i++, motable.getLastAccessedTime());
+            ps.setInt(i++, motable.getMaxInactiveInterval());
+            byte[] body = motable.getBodyAsByteArray();
+            ps.setBinaryStream(i++, new ByteArrayInputStream(body), body.length);
+            ps.executeUpdate();
+            if (log.isTraceEnabled()) {
+                log.trace("Motable [" + name + "] has been inserted");
+            }
+        } catch (SQLException e) {
+            log.warn("See nested", e);
+            throw e;
+        } finally {
+            closeStatement(ps);
+            closeConnection(conn);
+        }
+    }
+
+    public void delete(Motable motable) {
+        Connection conn = null;
+        try {
+            conn = getConnection();
+            delete(motable, conn);
+        } catch (SQLException e) {
+            log.warn("See nested", e);
+        } finally {
+            closeConnection(conn);
+        }
+    }
+
+    public Motable create() {
+        return new BasicStoreMotable(this);
+    }
     
-    if (_build) {
-      try {
-        init();
-      } catch (SQLException e) {
-        _log.warn("unexpected exception", e);
-      }
+    protected Connection getConnection() throws SQLException {
+        return ds.getConnection();
     }
-  }
-  
-  public String getLabel() {
-    return _label;
-  }
-  
-  public DataSource getDataSource() {
-    return _dataSource;
-  }
-  
-  public Connection getConnection() throws SQLException {
-    return _dataSource.getConnection();
-  }
-  
-  public String getTable() {
-    return _table;
-  }
-  
-  public boolean getReusingStore() {
-    return _reusingStore;
-  }
-  
-  // Store
-  
-  public void init() throws SQLException {
-      Connection c=_dataSource.getConnection();
-      String bigInt=_hasBigInt?"bigint":"long"; // Axion release does not yet support BIGINT type...
-      Statement s=c.createStatement();
-      try {
-          // should now work for MySQL, Axion and Derby...
-          String statement="CREATE TABLE "+_table+"(Name varchar(50), CreationTime "+bigInt+", LastAccessedTime "+bigInt+", MaxInactiveInterval int, Body blob)"; // TODO - parameterise Name width
-          s.execute(statement);
-      } catch (SQLException e) {
-          // ignore - table may already exist...
-          _log.warn(e);
-      } finally {
-          try {
-              if (s!=null)
-                  s.close();
-          } catch (SQLException e) {
-              _log.warn("problem closing database statement", e);
-          }
-          try {
-              if (c!=null)
-                  c.close();
-          } catch (SQLException e) {
-              _log.warn("problem closing database connection", e);
-          }
-      }
-  }
-  
-  public void destroy() throws SQLException {
-      Connection c=_dataSource.getConnection();
-      Statement s=c.createStatement();
-      try {
-          s.execute("DROP TABLE "+_table);
-      } catch (SQLException e) {
-          // ignore - table may have already been deleted...
-          _log.warn(e);
-      } finally {
-          //		s.execute("SHUTDOWN");
-          try {
-              if (s!=null)
-                  s.close();
-          } catch (SQLException e) {
-              _log.warn("problem closing database statement", e);
-          }
-          try {
-              if (c!=null)
-                  c.close();
-          } catch (SQLException e) {
-              _log.warn("problem closing database connection", e);
-          }
-      }
-  }
-  
-  public void clean() {
-    Connection connection=null;
-    Statement s=null;
-    try {
-      connection=_dataSource.getConnection();
-      s=connection.createStatement();
-      s.executeUpdate("DELETE FROM "+_table);
-      if (_log.isTraceEnabled()) _log.trace("removed (database) sessions from last run"); // TODO - how many ?
-    } catch (SQLException e) {
-      if (_log.isErrorEnabled()) _log.error("remove (database) failed", e);
-    } finally {
-      try {
-        if (s!=null)
-          s.close();
-      } catch (SQLException e) {
-        _log.warn("problem closing database statement", e);
-      }
-      try {
-        if (connection!=null)
-          connection.close();
-      } catch (SQLException e) {
-        _log.warn("problem closing database connection", e);
-      }
-    }
-  }
-  
-  public void load(Putter putter, boolean accessOnLoad) {
-      long time=System.currentTimeMillis();
-      Statement s=null;
-      int count=0;
-      Connection connection=null;
-      try {
-          connection=_dataSource.getConnection();
-          try {
-              s=connection.createStatement();
-              ResultSet rs=s.executeQuery("SELECT Name, CreationTime, LastAccessedTime, MaxInactiveInterval FROM "+_table);
-              String name=null;
-              while (rs.next()) {
-                  try {
-                      int i=1;
-                      DatabaseMotable motable=new DatabaseMotable();
-                      name=(String)rs.getObject(i++);
-                      long creationTime=rs.getLong(i++);
-                      long lastAccessedTime=rs.getLong(i++);
-                      lastAccessedTime=accessOnLoad?time:lastAccessedTime;
-                      int maxInactiveInterval=rs.getInt(i++);
-                      motable.init(creationTime, lastAccessedTime, maxInactiveInterval, name);
-                      motable.init(this);
-                      if (motable.getTimedOut(time)) {
-                          if (_log.isWarnEnabled()) _log.warn("LOADED DEAD SESSION: "+motable.getName());
-                          // we should expire it immediately, rather than promoting it...
-                          // perhaps we could be even cleverer ?
-                      }
-                      putter.put(name, motable);
-                      count++;
-                  } catch (Exception e) {
-                      if (_log.isErrorEnabled()) _log.error("load (shared database) failed: "+name, e);
-                  }
-              }
-              if (_log.isInfoEnabled()) _log.info("loaded sessions: " + count);
-          } catch (SQLException e) {
-              _log.warn("list (shared database) failed", e);
-          } finally {
-              if (s!=null)
-                  try {
-                      s.close();
-                  } catch (SQLException e) {
-                      if (_log.isWarnEnabled()) _log.warn("load (shared database) problem", e);
-                  }
-          }
-          
-          if (!_reusingStore) {
-              try {
-                  s=connection.createStatement();
-                  s.executeUpdate("DELETE FROM "+_table);
-              } catch (SQLException e) {
-                  _log.warn("removal (shared database) failed", e);
-              } finally {
-                  if (s!=null)
-                      try {
-                          s.close();
-                      } catch (SQLException e) {
-                          if (_log.isWarnEnabled()) _log.warn("load (shared database) problem", e);
-                      }
-              }
-          }
-      } catch (SQLException e) {
-          if (_log.isWarnEnabled()) _log.warn("load (shared database) problem", e);
-      } finally {
-          try {
-              if (connection!=null)
-                  connection.close();
-          } catch (SQLException e) {
-              _log.warn("problem closing database connection", e);
-          }
-      }
-  }
-  
-  public void loadHeader(Connection connection, Motable motable) {
-    String name=motable.getName();
-    Statement s=null;
-    try {
-      s=connection.createStatement();
-      ResultSet rs=s.executeQuery("SELECT CreationTime, LastAccessedTime, MaxInactiveInterval FROM "+_table+" WHERE Name='"+name+"'");
-      int i=1;
-      if (rs.next()) {
-        long creationTime=rs.getLong(i++);
-        long lastAccessedTime=rs.getLong(i++);
-        int maxInactiveInterval=rs.getInt(i++);
-        
-        motable.init(creationTime, lastAccessedTime, maxInactiveInterval);
-        
-        if (_log.isTraceEnabled()) {
-            _log.trace("loaded (database ["+_table+"]): "+name);
-        }
-      }
-    } catch (SQLException e) {
-      if (_log.isWarnEnabled()) _log.warn("load (database ["+_table+"]) failed: "+name, e);
-    } finally {
-      if (s!=null)
+    
+    protected void init() {
+        Connection conn = null;
+        Statement s = null;
         try {
-          s.close();
+            conn = ds.getConnection();
+            s = conn.createStatement();
+            s.execute(createTableDDL);
         } catch (SQLException e) {
-          if (_log.isWarnEnabled()) _log.warn("load (database ["+_table+"]) problem: "+name, e);
+            // ignore - table may already exist...
+            log.warn("See nested", e);
+        } finally {
+            closeStatement(s);
+            closeConnection(conn);
         }
     }
-  }
-  
-  public Object loadBody(Connection connection, Motable motable) throws Exception {
-    String name=motable.getName();
-    Statement s=null;
-    Object body=null;
-    try {
-      s=connection.createStatement();
-      ResultSet rs=s.executeQuery("SELECT Body FROM "+_table+" WHERE Name='"+name+"'");
-      int i=1;
-      if (rs.next()) {
-        if (_useNIO) {
-          // hmm...
-          throw new UnsupportedOperationException("NYI");
-        } else {
-          Blob blob=rs.getBlob(i++);
-          body=blob.getBytes(_blobOffset, (int)blob.length()); // TODO - axion starts copying from '0', not '1' - needs fixing...
-        }
-        if (_log.isTraceEnabled()) _log.trace("loaded (database): "+_label+"/"+_table+"/"+name+": "+((byte[])body).length+" bytes");
-        return body;
-      } else {
-        return null;
-      }
-    } catch (SQLException e) {
-      if (_log.isWarnEnabled()) _log.warn("load (database ["+_table+"]) failed: "+name, e);
-      throw e;
-    } finally {
-      if (s!=null)
+
+    protected byte[] loadBody(ResultSet rs) throws SQLException {
+        boolean usingAxion = ds.getClass().getName().startsWith("org.axiondb.");
+        Blob blob = rs.getBlob("body");
+        // axion-1.0-M3-dev copies from blobs starting at 0 instead of 1
+        return blob.getBytes(usingAxion ? 0 : 1, (int) blob.length());
+    }
+    
+    protected void load(Putter putter, Connection conn) {
+        long time = System.currentTimeMillis();
+        int count = 0;
+        Statement s = null;
+        ResultSet rs = null;
         try {
-          s.close();
+            s = conn.createStatement();
+            rs = s.executeQuery(selectAllSQL);
+            while (rs.next()) {
+                Motable motable = load(putter, time, rs, conn);
+                if (null != motable) {
+                    putter.put(motable.getName(), motable);
+                    count++;
+                }
+            }
+            log.info("[" + count + "] Motables loaded");
         } catch (SQLException e) {
-          if (_log.isWarnEnabled()) _log.warn("load (database ["+_table+"]) problem: "+name, e);
+            log.warn("See nested", e);
+        } finally {
+            closeResultSet(rs);
+            closeStatement(s);
         }
     }
-  }
-  
-  public void update(Connection connection, Motable motable) throws Exception {
-    PreparedStatement ps=null;
-    String name=motable.getName();
-    byte[] body=motable.getBodyAsByteArray();
-    InputStream is=new ByteArrayInputStream(body);
-    try {
-      ps=connection.prepareStatement("UPDATE "+_table+" SET LastAccessedTime=?, MaxInactiveInterval=?, Body=? where Name=?");
-      int i=1;
-      ps.setLong(i++, motable.getLastAccessedTime());
-      ps.setInt(i++, motable.getMaxInactiveInterval());
-      if (_useNIO) {
-        i++; // hmm...
-        throw new UnsupportedOperationException("NYI");
-      } else {
-        ps.setBinaryStream(i++, is, body.length);
-      }
-      ps.setString(i++, name);
-      ps.executeUpdate();
-      if (_log.isTraceEnabled()) _log.trace("updated (database): "+_label+"/"+_table+"/"+name+": "+body.length+" bytes");
-    } catch (SQLException e) {
-      if (_log.isErrorEnabled()) _log.error("update (database) failed: "+name, e);
-      throw e;
-    } finally {
-      if (ps!=null)
-        ps.close();
+
+    protected Motable load(Putter putter, long time, ResultSet rs, Connection conn) {
+        Motable motable = new BasicStoreMotable(this);
+        String name = null;
+        try {
+            name = rs.getString("name");
+            long creationTime = rs.getLong("creation_time");
+            long lastAccessedTime = rs.getLong("last_accessed_time");
+            lastAccessedTime = accessOnLoad ? time : lastAccessedTime;
+            int maxInactiveInterval = rs.getInt("max_inactive_interval");
+            motable.init(creationTime, lastAccessedTime, maxInactiveInterval, name);
+            if (motable.getTimedOut(time)) {
+                log.warn("Loaded dead Motable [" + motable.getName() + "]");
+                delete(motable, conn);
+                return null;
+            }
+        } catch (Exception e) {
+            log.warn("See nested", e);
+            return null;
+        }
+        return motable;
     }
-  }
-  
-  public void insert(Connection connection, Motable motable, Object body) throws Exception {
-    PreparedStatement ps=null;
-    String name=motable.getName();
-    try {
-      ps=connection.prepareStatement("INSERT INTO "+_table+" (Name, CreationTime, LastAccessedTime, MaxInactiveInterval, Body) VALUES (?, ?, ?, ?, ?)");
-      int i=1;
-      ps.setString(i++, name);
-      ps.setLong(i++, motable.getCreationTime());
-      ps.setLong(i++, motable.getLastAccessedTime());
-      ps.setInt(i++, motable.getMaxInactiveInterval());
-      if (_useNIO) {
-        i++; // hmm...
-        throw new UnsupportedOperationException("NYI");
-      } else {
-        ps.setObject(i++, body);
-      }
-      ps.executeUpdate();
-      if (_log.isTraceEnabled()) _log.trace("stored (database): "+_label+"/"+_table+"/"+name+": "+((byte[])body).length+" bytes");
-    } catch (SQLException e) {
-      if (_log.isErrorEnabled()) _log.error("store (database) failed: "+name, e);
-      throw e;
-    } finally {
-      if (ps!=null)
-        ps.close();
+
+    protected void clean(Connection conn) {
+        Statement s = null;
+        try {
+            s = conn.createStatement();
+            int nbDeleted = s.executeUpdate(deleteAllSQL);
+            log.debug("Removed [" +nbDeleted + "] Motables");
+        } catch (SQLException e) {
+            log.warn("See nested", e);
+        } finally {
+            closeStatement(s);
+        }
     }
-  }
-  
-  public void delete(Connection connection, Motable motable) {
-    Statement s=null;
-    try {
-      s=connection.createStatement();
-      s.executeUpdate("DELETE FROM "+_table+" WHERE Name='"+motable.getName()+"'");
-      if (_log.isTraceEnabled()) _log.trace("removed (database ): "+_label+"/"+_table+"/"+motable);
-    } catch (SQLException e) {
-      if (_log.isErrorEnabled()) _log.error("remove (database ["+_table+"]) failed: "+motable, e);
-    } finally {
-      try {
-        if (s!=null)
-          s.close();
-      } catch (SQLException e) {
-        _log.warn("problem closing database connection", e);
-      }
+
+    protected void delete(Motable motable, Connection conn) {
+        PreparedStatement ps = null;
+        try {
+            ps = conn.prepareStatement(deleteMotableSQL);
+            ps.setString(1, motable.getName());
+            ps.executeUpdate();
+            if (log.isTraceEnabled()) {
+                log.trace("Motable [" +  motable + "] has been deleted");
+            }
+        } catch (SQLException e) {
+            log.warn("See nested", e);
+        } finally {
+            closeStatement(ps);
+        }
     }
-  }
-  
-  public StoreMotable create() {
-    return new DatabaseMotable();
-  }
-  
-  // DatabaseMotableConfig
-  
-  public boolean getUseNIO() {
-    return _useNIO;
-  }
-  
+
+    protected void closeResultSet(ResultSet rs) {
+        try {
+            if (null != rs) {
+                rs.close();
+            }
+        } catch (SQLException e) {
+            log.warn("See nested", e);
+        }
+    }
+    
+    protected void closeStatement(Statement s) {
+        try {
+            if (null != s) {
+                s.close();
+            }
+        } catch (SQLException e) {
+            log.warn("See nested", e);
+        }
+    }
+    
+    protected void closeConnection(Connection c) {
+        try {
+            if (null != c) {
+                c.close();
+            }
+        } catch (SQLException e) {
+            log.warn("See nested", e);
+        }
+    }
+
 }

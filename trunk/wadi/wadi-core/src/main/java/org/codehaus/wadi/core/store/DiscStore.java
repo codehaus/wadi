@@ -17,31 +17,34 @@
 package org.codehaus.wadi.core.store;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.core.motable.Motable;
 import org.codehaus.wadi.core.util.Streamer;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class DiscStore implements Store, DiscMotableConfig {
+public class DiscStore implements Store {
     private final Log _log = LogFactory.getLog(DiscStore.class);
 
     protected final Streamer _streamer;
     protected final File _dir;
-    protected final boolean _useNIO;
-    protected final DirectByteBufferCache _cache = new DirectByteBufferCache();
     protected final boolean _reusingStore;
+    private final boolean accessOnLoad;
 
-    public DiscStore(Streamer streamer, File dir, boolean useNIO, boolean reusingStore) throws Exception {
+    public DiscStore(Streamer streamer, File dir, boolean reusingStore, boolean accessOnLoad) throws Exception {
         _streamer = streamer;
         _dir = dir;
-        _useNIO = useNIO;
         _reusingStore = reusingStore;
+        this.accessOnLoad = accessOnLoad;
 
         if (!dir.exists()) {
             _log.info("Creating directory: " + _dir.getCanonicalPath());
@@ -68,16 +71,26 @@ public class DiscStore implements Store, DiscMotableConfig {
         }
     }
 
-    public void load(Putter putter, boolean accessOnLoad) {
+    public void load(Putter putter) {
         long time = System.currentTimeMillis();
         String[] list = _dir.list();
         int suffixLength = ".".length() + _streamer.getSuffix().length();
         for (int i = 0; i < list.length; i++) {
             String name = list[i];
             String id = name.substring(0, name.length() - suffixLength);
-            DiscMotable motable = new DiscMotable();
+            
+            Motable motable = new BasicStoreMotable(this);
+            File file = new File(_dir, id + _streamer.getSuffixWithDot());
+            FileInputStream fis = null;
+            ObjectInputStream ois = null;
             try {
-                motable.init(this, id);
+                fis = new FileInputStream(file);
+                ois = new ObjectInputStream(fis);
+                long creationTime = ois.readLong();
+                long lastAccessedTime = ois.readLong();
+                int maxInactiveInterval = ois.readInt();
+                name = (String) ois.readObject();
+                motable.init(creationTime, lastAccessedTime, maxInactiveInterval, name);
                 if (accessOnLoad) {
                     motable.setLastAccessedTime(time);
                 }
@@ -85,38 +98,111 @@ public class DiscStore implements Store, DiscMotableConfig {
                     putter.put(id, motable);
                 }
             } catch (Exception e) {
-                _log.error("failed to load [" + name + "]", e);
+                _log.warn("load (exclusive disc) failed [" + file + "]", e);
+            } finally {
+                try {
+                    if (null != ois) {
+                        ois.close();
+                    }
+                } catch (IOException e) {
+                    _log.warn("load (exclusive disc) problem [" + file + "]", e);
+                }
             }
         }
         _log.info("loaded (exclusive disc): " + list.length);
     }
 
-    public StoreMotable create() {
-        return new DiscMotable();
-    }
-
-    public File getDirectory() {
-        return _dir;
-    }
-
-    public String getSuffix() {
-        return _streamer.getSuffixWithDot();
-    }
-
-    public boolean getUseNIO() {
-        return _useNIO;
-    }
-
-    public ByteBuffer take(int size) {
-        return _cache.take(size);
-    }
-
-    public void put(ByteBuffer buffer) {
-        _cache.put(buffer);
+    public Motable create() {
+        return new BasicStoreMotable(this);
     }
 
     public boolean getReusingStore() {
         return _reusingStore;
+    }
+
+    public void delete(Motable motable) {
+        File file = new File(_dir, motable.getName() + _streamer.getSuffixWithDot());
+        if (file.exists()) {
+            file.delete();
+            if (_log.isTraceEnabled()) {
+                _log.trace("removed (exclusive disc) [" + file + "]");
+            }
+        }
+    }
+
+    public void insert(Motable motable) throws Exception {
+        File file = new File(_dir, motable.getName() + _streamer.getSuffixWithDot());
+
+        ObjectOutputStream oos = null;
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(file);
+            oos = new ObjectOutputStream(fos);
+
+            oos.writeLong(motable.getCreationTime());
+            oos.writeLong(motable.getLastAccessedTime());
+            oos.writeInt(motable.getMaxInactiveInterval());
+            oos.writeObject(motable.getName());
+            byte[] bodyAsByteArray = motable.getBodyAsByteArray();
+            oos.writeInt(bodyAsByteArray.length);
+            oos.flush();
+            if (bodyAsByteArray.length > 0) {
+                fos.write(bodyAsByteArray);
+            }
+            if (_log.isTraceEnabled()) {
+                _log.trace("stored disc motable): " + file + ": " + bodyAsByteArray.length + " bytes");
+            }
+        } catch (Exception e) {
+            _log.warn("store exclusive disc failed. File [" + file + "]", e);
+            throw e;
+        } finally {
+            try {
+                if (oos != null) {
+                    oos.close();
+                }
+            } catch (IOException e) {
+                _log.warn("store exclusive disc) problem. File [" + file + "]", e);
+            }
+        }
+    }
+
+    public byte[] loadBody(Motable motable) throws Exception {
+        File file = new File(_dir, motable.getName() + _streamer.getSuffixWithDot());
+
+        FileInputStream fis = null;
+        try {
+            fis = new FileInputStream(file);
+            ObjectInputStream ois = new ObjectInputStream(fis);
+            ois.readLong();
+            ois.readLong();
+            ois.readInt();
+            ois.readObject();
+            int bodyLength = ois.readInt();
+            byte[] body = new byte[bodyLength];
+            fis.read(body);
+            if (_log.isTraceEnabled())  {
+                _log.trace("loaded exclusive disc: " + file + ": " + bodyLength + " bytes");
+            }
+            return body;
+        } catch (Exception e) {
+            _log.error("load exclusive disc failed: " + file, e);
+            throw e;
+        } finally {
+            try {
+                if (null != fis) {
+                    fis.close();
+                }
+            } catch (IOException e) {
+                _log.warn("load exclusive disc problem: " + file, e);
+            }
+        }
+    }
+
+    public void update(Motable motable) throws Exception {
+        File file = new File(_dir, motable.getName() + _streamer.getSuffixWithDot());
+        file.delete();
+
+        insert(motable);
     }
 
 }

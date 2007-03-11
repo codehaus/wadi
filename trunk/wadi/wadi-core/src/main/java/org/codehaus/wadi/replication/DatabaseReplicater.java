@@ -17,11 +17,9 @@
 
 package org.codehaus.wadi.replication;
 
-import java.sql.Connection;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.core.session.AbstractReplicableSession;
+import org.codehaus.wadi.core.motable.Motable;
 import org.codehaus.wadi.core.store.DatabaseStore;
 
 /**
@@ -29,82 +27,43 @@ import org.codehaus.wadi.core.store.DatabaseStore;
  * @version $Revision$
  */
 public class DatabaseReplicater implements Replicater {
+	private static final Log _log = LogFactory.getLog(DatabaseReplicater.class);
+    
+	protected final DatabaseStore store;
 
-	protected final Log _log = LogFactory.getLog(getClass());
-	protected final DatabaseStore _store;
-	protected boolean _reusingStore;
+	public DatabaseReplicater(DatabaseStore store) {
+        if (null == store) {
+            throw new IllegalArgumentException("store is required");
+        }
+        this.store = store;
+    }
 
-	public DatabaseReplicater(DatabaseStore store, boolean reusingStore) {
-		_store=store;
-		_reusingStore=reusingStore;
-	}
+    public void create(Object tmp) {
+        Motable motable = (Motable) tmp;
+        try {
+            store.insert(motable);
+        } catch (Exception e) {
+            throw new ReplicaterException("problem creating replicant", e);
+        }
+    }
 
-	public boolean getReusingStore() {
-		return _reusingStore;
-	}
+    public void update(Object tmp) {
+        Motable motable = (Motable) tmp;
+        try {
+            store.update(motable);
+        } catch (Exception e) {
+            throw new ReplicaterException("problem updating replicant", e);
+        }
+    }
 
-	public void create(Object tmp) {
-		AbstractReplicableSession session=(AbstractReplicableSession)tmp;
-		String name=session.getName();
-		if (_log.isTraceEnabled()) _log.trace("create (database): "+name);
-		// write a row into the DB
-		Connection connection=null;
-		try {
-			connection=_store.getConnection();
-			_store.insert(connection, session, session.getBodyAsByteArray());
-		} catch (Exception e) {
-		  _log.warn("problem creating replicant", e);
-		} finally {
-			if (connection!=null)
-				try {
-					connection.close();
-				} catch (Exception e) {
-				  _log.warn("problem releasing connection", e);
-				}
-		}
-	}
-
-	public void update(Object tmp) { //TODO
-		AbstractReplicableSession session=(AbstractReplicableSession)tmp;
-		String name=session.getName();
-		if (_log.isTraceEnabled()) _log.trace("update (database) : "+name);
-		// update a row in the DB
-		Connection connection=null;
-		try {
-			connection=_store.getConnection();
-			_store.update(connection, session);
-		} catch (Exception e) {
-		  _log.warn("problem updating replicant", e);
-		} finally {
-			if (connection!=null)
-				try {
-					connection.close();
-				} catch (Exception e) {
-				  _log.warn("problem releasing connection", e);
-				}
-		}
-	}
-
-	public void destroy(Object tmp) { //TODO
-		AbstractReplicableSession session=(AbstractReplicableSession)tmp;
-		String name=session.getName();
-		if (_log.isTraceEnabled()) _log.trace("destroy (database) : "+name);
-		// remove a row in the DB
-		Connection connection=null;
-		try {
-			connection=_store.getConnection();
-			_store.delete(connection, session);
-		} catch (Exception e) {
-		  _log.warn("problem destroying replicant", e);
-		} finally {
-			if (connection!=null)
-				try {
-					connection.close();
-				} catch (Exception e) {
-				  _log.warn("problem releasing connection", e);
-				}
-		}
-	}
+    public void destroy(Object tmp) {
+        Motable motable = (Motable) tmp;
+        try {
+            store.delete(motable);
+        } catch (Exception e) {
+            _log.warn("problem destroying replicant", e);
+        }
+    }
 
     public void acquireFromOtherReplicater(Object tmp) {
     }
