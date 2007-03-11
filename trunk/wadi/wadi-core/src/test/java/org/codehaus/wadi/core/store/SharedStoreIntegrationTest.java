@@ -51,7 +51,7 @@ public class SharedStoreIntegrationTest extends TestCase {
         
         StackContext stackContext = new StackContext(new ServiceSpaceName(new URI("Space")), dispatcher) {
             protected Contextualiser newSharedStoreContextualiser(Contextualiser next) {
-                return new SharedStoreContextualiser(next, false, store);
+                return new SharedStoreContextualiser(next, store);
             }
             protected Contextualiser newReplicaAwareContextualiser(Contextualiser next) {
                 return next;

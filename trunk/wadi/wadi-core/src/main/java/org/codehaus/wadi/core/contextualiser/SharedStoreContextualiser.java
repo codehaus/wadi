@@ -33,14 +33,12 @@ import org.codehaus.wadi.core.util.Utils;
  * @version $Revision$
  */
 public class SharedStoreContextualiser extends AbstractSharedContextualiser {
-    private final boolean cleanOnStart;
     private final Store store;
     private final Immoter immoter;
     private final Emoter emoter;
 
-	public SharedStoreContextualiser(Contextualiser next, boolean cleanOnStart, Store store) {
+	public SharedStoreContextualiser(Contextualiser next, Store store) {
 		super(next);
-        this.cleanOnStart = cleanOnStart;
         this.store = store;
         
         immoter = new SharedImmoter();
@@ -48,9 +46,6 @@ public class SharedStoreContextualiser extends AbstractSharedContextualiser {
     }
 
     public void start() throws Exception {
-        if (cleanOnStart) {
-            store.clean();
-        }
         super.start();
     }
 
