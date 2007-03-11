@@ -85,8 +85,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser {
             // evacuate sessions to their respective partition masters...
             return getImmoter();
         } else {
-            // we must be the last node, push the sessions downwards into shared
-            // store...
+            // we must be the last node, push the sessions downwards into shared store...
             return next.getSharedDemoter();
         }
     }
