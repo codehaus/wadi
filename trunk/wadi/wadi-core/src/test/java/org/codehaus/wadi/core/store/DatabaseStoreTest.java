@@ -47,7 +47,7 @@ public class DatabaseStoreTest extends RMockTestCase {
         beginSection(s.ordered("Create table"));
         Connection connection = dataSource.getConnection();
         Statement statement = connection.createStatement();
-        statement.execute("CREATE TABLE TABLE_NAME (name VARCHAR(50), creation_time LONG, last_accessed_time LONG, max_inactive_interval INT, body BLOB)");
+        statement.execute("CREATE TABLE TABLE_NAME (name VARCHAR(50), creation_time BIGINT, last_accessed_time BIGINT, max_inactive_interval INTEGER, body BLOB)");
         statement.close();
         connection.close();
         endSection();

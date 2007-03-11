@@ -41,16 +41,6 @@
     </dependency>
 
     <!-- test -->
-    <!-- axion -->
-    <dependency>
-      <groupId>axion</groupId>
-      <artifactId>axion</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>commons-primitives</groupId>
-      <artifactId>commons-primitives</artifactId>
-    </dependency>
-    <!--  -->
     <dependency>
       <groupId>org.codehaus.wadi</groupId>
       <artifactId>wadi-group</artifactId>
@@ -65,7 +55,6 @@
       <type>test-jar</type>
       <scope>test</scope>
     </dependency>
-    <!--  -->
 
   </dependencies>
 

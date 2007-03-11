@@ -3,7 +3,7 @@
 import java.net.URI;
 
 import org.codehaus.wadi.core.assembler.StackContext;
-import org.codehaus.wadi.core.manager.ClusteredManager;
+import org.codehaus.wadi.core.manager.Manager;
 import org.codehaus.wadi.core.manager.Router;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.servicespace.ServiceSpace;
@@ -11,7 +11,7 @@ import org.codehaus.wadi.servicespace.ServiceSpaceName;
 import org.codehaus.wadi.web.impl.DummyRouter;
 
 public class SampleStack {
-    private ClusteredManager manager;
+    private Manager manager;
     private ServiceSpace serviceSpace;
     
     public void create(Dispatcher dispatcher) throws Exception {
@@ -26,7 +26,7 @@ public class SampleStack {
         manager = stackContext.getManager();
     }
 
-    public ClusteredManager getManager() {
+    public Manager getManager() {
         return manager;
     }
 

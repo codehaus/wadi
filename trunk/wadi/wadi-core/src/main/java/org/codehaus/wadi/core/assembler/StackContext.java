@@ -32,6 +32,7 @@ import org.codehaus.wadi.core.eviction.Evicter;
 import org.codehaus.wadi.core.manager.BasicSessionMonitor;
 import org.codehaus.wadi.core.manager.ClusteredManager;
 import org.codehaus.wadi.core.manager.DummyManagerConfig;
+import org.codehaus.wadi.core.manager.Manager;
 import org.codehaus.wadi.core.manager.Router;
 import org.codehaus.wadi.core.manager.SessionMonitor;
 import org.codehaus.wadi.core.manager.TomcatSessionIdFactory;
@@ -181,7 +182,9 @@ public class StackContext {
         router = newRouter();
         sessionFactory = newSessionFactory();
 
-        Contextualiser contextualiser = newReplicaAwareContextualiser(new DummyContextualiser());
+        Contextualiser contextualiser = new DummyContextualiser();
+        contextualiser = newSharedStoreContextualiser(contextualiser);
+        contextualiser = newReplicaAwareContextualiser(contextualiser);
         contextualiser = newClusteredContextualiser(contextualiser);
 
         memoryMap = new OswegoConcurrentMotableMap();
@@ -334,6 +337,10 @@ public class StackContext {
                 new SynchronizedBoolean(false));
     }
 
+    protected Contextualiser newSharedStoreContextualiser(Contextualiser next) {
+        return next;
+    }
+
     protected Contextualiser newReplicaAwareContextualiser(Contextualiser next) {
         ReplicationManager sessionRepManager = new MotableReplicationManager(replicationManager);
         return new ReplicaAwareContextualiser(next, sessionRepManager, stateManager);
@@ -363,7 +370,7 @@ public class StackContext {
         return stateManager;
     }
 
-    public ClusteredManager getManager() {
+    public Manager getManager() {
         return manager;
     }
 

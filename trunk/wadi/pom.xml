@@ -330,29 +330,6 @@
 	<version>${geronimo-spec-servlet.version}</version>
 	<scope>provided</scope>
       </dependency>
-      <!-- axion -->
-      <dependency>
-	<groupId>axion</groupId><!-- for a number of tests -->
-	<artifactId>axion</artifactId>
-	<version>1.0-M3-dev</version>
-	<scope>test</scope>
-	<exclusions>
-	  <exclusion>
-	    <groupId>javacc</groupId>
-	    <artifactId>javacc</artifactId>
-	  </exclusion>
-	  <exclusion>
-	    <groupId>commons-logging</groupId>
-	    <artifactId>commons-logging</artifactId>
-	  </exclusion>
-	</exclusions>
-      </dependency>
-      <dependency>
-	<groupId>commons-primitives</groupId><!-- for axion -->
-	<artifactId>commons-primitives</artifactId>
-	<version>1.0</version>
-	<scope>test</scope>
-      </dependency>
       <dependency>
 	<groupId>org.springframework</groupId>
 	<artifactId>spring-mock</artifactId>

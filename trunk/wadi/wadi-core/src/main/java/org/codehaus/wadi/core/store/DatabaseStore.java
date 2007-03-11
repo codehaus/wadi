@@ -52,7 +52,7 @@ public class DatabaseStore implements Store {
             boolean build,
             boolean accessOnLoad) {
         this(dataSource,
-                "CREATE TABLE " + table + " (name VARCHAR(50), creation_time LONG, last_accessed_time LONG, max_inactive_interval INT, body BLOB)",
+                "CREATE TABLE " + table + " (name VARCHAR(50), creation_time BIGINT, last_accessed_time BIGINT, max_inactive_interval INTEGER, body BLOB)",
                 "SELECT name, creation_time, last_accessed_time, max_inactive_interval FROM " + table,
                 "SELECT body FROM " + table + " WHERE name = ?",
                 "DELETE FROM " + table,
