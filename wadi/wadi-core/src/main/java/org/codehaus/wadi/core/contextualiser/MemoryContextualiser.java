@@ -60,14 +60,12 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
 
     protected boolean handleLocally(Invocation invocation, String id, Motable motable) throws InvocationException {
         motable.setLastAccessedTime(System.currentTimeMillis());
-        // we need a solution - MemoryContextualiser needs to separate Contexts and Motables cleanly...
         invocation.setSession((Session) motable); 
-        if (!invocation.isProxiedInvocation()) {
-            // take wrapper from pool...
+        if (invocation.isProxiedInvocation()) {
+            invocation.invoke();
+        } else {
             InvocationContext wrapper = invocationContextFactory.create(invocation, (Session) motable);
             invocation.invoke(wrapper);
-        } else {
-            invocation.invoke();
         }
         return true;
     }

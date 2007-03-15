@@ -27,6 +27,7 @@ import org.codehaus.wadi.core.contextualiser.HybridRelocater;
 import org.codehaus.wadi.core.contextualiser.InvocationContextFactory;
 import org.codehaus.wadi.core.contextualiser.MemoryContextualiser;
 import org.codehaus.wadi.core.contextualiser.SerialContextualiser;
+import org.codehaus.wadi.core.contextualiser.SharedStoreContextualiser;
 import org.codehaus.wadi.core.eviction.AbsoluteEvicter;
 import org.codehaus.wadi.core.eviction.Evicter;
 import org.codehaus.wadi.core.manager.BasicSessionMonitor;
@@ -43,6 +44,7 @@ import org.codehaus.wadi.core.session.DistributableValueFactory;
 import org.codehaus.wadi.core.session.SessionFactory;
 import org.codehaus.wadi.core.session.ValueFactory;
 import org.codehaus.wadi.core.session.ValueHelperRegistry;
+import org.codehaus.wadi.core.store.Store;
 import org.codehaus.wadi.core.util.SimpleStreamer;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.location.balancing.BasicPartitionBalancer;
@@ -199,6 +201,7 @@ public class StackContext {
                         memoryMap,
                         router,
                         sessionMonitor,
+                        newInvocationContextFactory(),
                         false,
                         new StandardHttpProxy("jsessionid"));
         manager.init(new DummyManagerConfig());
@@ -209,6 +212,10 @@ public class StackContext {
         registerReplicaStorage();
         registerReplicationManager();
         registerClusteredManager(manager);
+    }
+
+    protected InvocationContextFactory newInvocationContextFactory() {
+        return new BasicHttpInvocationContextFactory();
     }
 
     protected BasicSessionMonitor newSessionMonitor() {
@@ -315,7 +322,7 @@ public class StackContext {
     
     protected Contextualiser newMemoryContextualiser(Contextualiser next, ConcurrentMotableMap mmap) {
         Evicter mevicter = new AbsoluteEvicter(sweepInterval, true, sessionTimeout);
-        InvocationContextFactory invocationContextFactory = new BasicHttpInvocationContextFactory();
+        InvocationContextFactory invocationContextFactory = newInvocationContextFactory();
         return newMemoryContextualiser(next, mmap, mevicter, invocationContextFactory);
     }
 
@@ -338,7 +345,16 @@ public class StackContext {
     }
 
     protected Contextualiser newSharedStoreContextualiser(Contextualiser next) {
-        return next;
+        Store sharedStore = getSharedStore();
+        if (null == sharedStore) {
+            return next;
+        } else {
+            return new SharedStoreContextualiser(next, sharedStore, stateManager);
+        }
+    }
+
+    protected Store getSharedStore() {
+        return null;
     }
 
     protected Contextualiser newReplicaAwareContextualiser(Contextualiser next) {

@@ -55,6 +55,7 @@ import org.codehaus.wadi.core.session.StandardValueFactory;
 import org.codehaus.wadi.core.session.ValueFactory;
 import org.codehaus.wadi.core.util.SimpleStreamer;
 import org.codehaus.wadi.replication.DummyReplicaterFactory;
+import org.codehaus.wadi.web.impl.BasicHttpInvocationContextFactory;
 import org.codehaus.wadi.web.impl.DummyRouter;
 import org.codehaus.wadi.web.impl.StandardSessionWrapperFactory;
 
@@ -94,6 +95,7 @@ public class TestHttpSession extends TestCase {
             motableMap,
             router,
             sessionMonitor,
+            new BasicHttpInvocationContextFactory(),
             true);
     protected DummyManagerConfig _standardConfig = new DummyManagerConfig();
     private WADIHttpSessionListener wadiHttpSessionListener;

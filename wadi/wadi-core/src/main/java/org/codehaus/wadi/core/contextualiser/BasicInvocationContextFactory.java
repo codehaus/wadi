@@ -1,6 +1,5 @@
 /**
- *
- * Copyright 2003-2005 Core Developers Network Ltd.
+ * Copyright 2007 The Apache Software Foundation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,13 +15,16 @@
  */
 package org.codehaus.wadi.core.contextualiser;
 
-
-
+import org.codehaus.wadi.core.session.Session;
 
 /**
- * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision: 2268 $
+ * 
+ * @version $Revision: 1538 $
  */
-public interface InvocationContext {
-    Invocation getInvocation();
+public class BasicInvocationContextFactory implements InvocationContextFactory {
+
+    public InvocationContext create(Invocation invocation, Session session) {
+        return new BasicInvocationContext(invocation);
+    }
+    
 }

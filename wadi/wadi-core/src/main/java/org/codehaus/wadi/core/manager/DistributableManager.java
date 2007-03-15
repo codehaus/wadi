@@ -18,6 +18,7 @@ package org.codehaus.wadi.core.manager;
 
 import org.codehaus.wadi.core.ConcurrentMotableMap;
 import org.codehaus.wadi.core.contextualiser.Contextualiser;
+import org.codehaus.wadi.core.contextualiser.InvocationContextFactory;
 import org.codehaus.wadi.core.session.SessionFactory;
 
 /**
@@ -32,6 +33,7 @@ public class DistributableManager extends StandardManager {
             ConcurrentMotableMap map,
             Router router,
             SessionMonitor sessionMonitor,
+            InvocationContextFactory invocationContextFactory,
             boolean errorIfSessionNotAcquired) {
         super(sessionFactory,
                 sessionIdFactory,
@@ -39,6 +41,7 @@ public class DistributableManager extends StandardManager {
                 map,
                 router,
                 sessionMonitor,
+                invocationContextFactory,
                 errorIfSessionNotAcquired);
     }
 
