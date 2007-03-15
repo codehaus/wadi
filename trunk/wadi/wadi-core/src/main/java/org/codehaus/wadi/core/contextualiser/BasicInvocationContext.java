@@ -1,6 +1,5 @@
 /**
- *
- * Copyright 2003-2005 Core Developers Network Ltd.
+ * Copyright 2007 The Apache Software Foundation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -18,11 +17,24 @@ package org.codehaus.wadi.core.contextualiser;
 
 
 
-
 /**
- * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision: 2268 $
+ * 
+ * @version $Revision: 1538 $
  */
-public interface InvocationContext {
-    Invocation getInvocation();
+public class BasicInvocationContext implements InvocationContext {
+
+    private final Invocation invocation;
+
+    public BasicInvocationContext(Invocation invocation) {
+        if (null == invocation) {
+            throw new IllegalArgumentException("invocation is required");
+        }
+        this.invocation = invocation;
+    }
+
+
+    public Invocation getInvocation() {
+        return invocation;
+    }
+
 }

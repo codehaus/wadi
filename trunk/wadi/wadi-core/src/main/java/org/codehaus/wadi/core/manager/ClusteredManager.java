@@ -19,6 +19,7 @@ package org.codehaus.wadi.core.manager;
 import org.codehaus.wadi.core.ConcurrentMotableMap;
 import org.codehaus.wadi.core.contextualiser.Contextualiser;
 import org.codehaus.wadi.core.contextualiser.Invocation;
+import org.codehaus.wadi.core.contextualiser.InvocationContextFactory;
 import org.codehaus.wadi.core.contextualiser.InvocationException;
 import org.codehaus.wadi.core.contextualiser.InvocationProxy;
 import org.codehaus.wadi.core.session.SessionFactory;
@@ -43,6 +44,7 @@ public class ClusteredManager extends DistributableManager {
             ConcurrentMotableMap sessionMap, 
             Router router, 
             SessionMonitor sessionMonitor,
+            InvocationContextFactory invocationContextFactory,
             boolean errorIfSessionNotAcquired,
             InvocationProxy proxy) {
         super(sessionFactory,
@@ -51,6 +53,7 @@ public class ClusteredManager extends DistributableManager {
                 sessionMap, 
                 router, 
                 sessionMonitor,
+                invocationContextFactory,
                 errorIfSessionNotAcquired);
         if (null == stateManager) {
             throw new IllegalArgumentException("stateManager is required");

@@ -23,6 +23,7 @@ import org.codehaus.wadi.core.motable.Immoter;
 import org.codehaus.wadi.core.motable.Motable;
 import org.codehaus.wadi.core.store.Store;
 import org.codehaus.wadi.core.util.Utils;
+import org.codehaus.wadi.location.statemanager.StateManager;
 
 /**
  * A Contextualiser which stores its Contexts in a shared database via JDBC.
@@ -36,10 +37,17 @@ public class SharedStoreContextualiser extends AbstractSharedContextualiser {
     private final Store store;
     private final Immoter immoter;
     private final Emoter emoter;
+    private final StateManager stateManager;
 
-	public SharedStoreContextualiser(Contextualiser next, Store store) {
+	public SharedStoreContextualiser(Contextualiser next, Store store, StateManager stateManager) {
 		super(next);
+        if (null == store) {
+            throw new IllegalArgumentException("store is required");
+        } else if (null == stateManager) {
+            throw new IllegalArgumentException("stateManager is required");
+        }
         this.store = store;
+        this.stateManager = stateManager;
         
         immoter = new SharedImmoter();
         emoter = new AbstractChainedEmoter();
@@ -70,7 +78,6 @@ public class SharedStoreContextualiser extends AbstractSharedContextualiser {
     }
 
     protected void load(Emoter emoter, Immoter immoter) {
-        // TODO - load only if we are the first.
         store.load(new SharedPutter(emoter, immoter));
     }
 
@@ -98,6 +105,7 @@ public class SharedStoreContextualiser extends AbstractSharedContextualiser {
         }
 
         public void put(String name, Motable motable) {
+            stateManager.insert(name);
             Utils.mote(emoter, immoter, motable, name);
         }
     }
