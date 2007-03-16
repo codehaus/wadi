@@ -15,9 +15,11 @@
  */
 package org.codehaus.wadi.core.contextualiser;
 
+import org.codehaus.wadi.core.manager.SessionMonitor;
 import org.codehaus.wadi.core.motable.Emoter;
 import org.codehaus.wadi.core.motable.Immoter;
 import org.codehaus.wadi.core.motable.Motable;
+import org.codehaus.wadi.core.session.Session;
 import org.codehaus.wadi.core.store.Store;
 import org.codehaus.wadi.core.store.Store.Putter;
 import org.codehaus.wadi.location.statemanager.StateManager;
@@ -36,6 +38,7 @@ public class SharedStoreContextualiserTest extends RMockTestCase {
         Contextualiser next = (Contextualiser) mock(Contextualiser.class);
         Store store = (Store) mock(Store.class);
         StateManager stateManager = (StateManager) mock(StateManager.class);
+        SessionMonitor sessionMonitor = (SessionMonitor) mock(SessionMonitor.class);
         Emoter emoter = (Emoter) mock(Emoter.class);
         Immoter immoter = (Immoter) mock(Immoter.class);
         
@@ -52,14 +55,22 @@ public class SharedStoreContextualiserTest extends RMockTestCase {
 
         stateManager.insert(name);
         
-        Motable newMotable = immoter.newMotable(motable);
-        emoter.emote(motable, newMotable);
+        Session newSession = (Session) mock(Session.class);
+        immoter.newMotable(motable);
+        modify().returnValue(newSession);
+        emoter.emote(motable, newSession);
         modify().returnValue(true);
-        immoter.immote(motable, newMotable);
+        immoter.immote(motable, newSession);
         modify().returnValue(true);
+        
+        sessionMonitor.notifySessionCreation(newSession);
+        
         startVerification();
         
-        SharedStoreContextualiser contextualiser = new SharedStoreContextualiser(next, store, stateManager);
+        SharedStoreContextualiser contextualiser = new SharedStoreContextualiser(next,
+                store,
+                stateManager,
+                sessionMonitor);
         contextualiser.load(emoter, immoter);
     }
     

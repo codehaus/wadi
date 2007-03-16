@@ -349,7 +349,7 @@ public class StackContext {
         if (null == sharedStore) {
             return next;
         } else {
-            return new SharedStoreContextualiser(next, sharedStore, stateManager);
+            return new SharedStoreContextualiser(next, sharedStore, stateManager, sessionMonitor);
         }
     }
 

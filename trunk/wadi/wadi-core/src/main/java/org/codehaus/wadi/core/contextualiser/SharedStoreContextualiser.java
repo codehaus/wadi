@@ -16,11 +16,13 @@
  */
 package org.codehaus.wadi.core.contextualiser;
 
+import org.codehaus.wadi.core.manager.SessionMonitor;
 import org.codehaus.wadi.core.motable.AbstractChainedEmoter;
 import org.codehaus.wadi.core.motable.AbstractImmoter;
 import org.codehaus.wadi.core.motable.Emoter;
 import org.codehaus.wadi.core.motable.Immoter;
 import org.codehaus.wadi.core.motable.Motable;
+import org.codehaus.wadi.core.session.Session;
 import org.codehaus.wadi.core.store.Store;
 import org.codehaus.wadi.core.util.Utils;
 import org.codehaus.wadi.location.statemanager.StateManager;
@@ -38,16 +40,23 @@ public class SharedStoreContextualiser extends AbstractSharedContextualiser {
     private final Immoter immoter;
     private final Emoter emoter;
     private final StateManager stateManager;
+    private final SessionMonitor sessionMonitor;
 
-	public SharedStoreContextualiser(Contextualiser next, Store store, StateManager stateManager) {
+	public SharedStoreContextualiser(Contextualiser next,
+            Store store,
+            StateManager stateManager,
+            SessionMonitor sessionMonitor) {
 		super(next);
         if (null == store) {
             throw new IllegalArgumentException("store is required");
         } else if (null == stateManager) {
             throw new IllegalArgumentException("stateManager is required");
+        } else if (null == sessionMonitor) {
+            throw new IllegalArgumentException("sessionMonitor is required");
         }
         this.store = store;
         this.stateManager = stateManager;
+        this.sessionMonitor = sessionMonitor;
         
         immoter = new SharedImmoter();
         emoter = new AbstractChainedEmoter();
@@ -106,7 +115,8 @@ public class SharedStoreContextualiser extends AbstractSharedContextualiser {
 
         public void put(String name, Motable motable) {
             stateManager.insert(name);
-            Utils.mote(emoter, immoter, motable, name);
+            Session session = (Session) Utils.mote(emoter, immoter, motable, name);
+            sessionMonitor.notifySessionCreation(session);
         }
     }
 
