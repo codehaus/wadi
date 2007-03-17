@@ -110,80 +110,6 @@ public class Utils {
         }
 	}
 
-	/**
-	 * If a lock is free, acquire it, ignoring any interruptions, else fail.
-	 *
-	 * @param sync - the lock
-	 * @return - whether or not the lock was acquired
-	 */
-	public static boolean attemptUninterrupted(String lockType, String lockName, Sync sync) {
-        boolean interrupted = false;
-	    boolean acquired = false;
-        do {
-            try {
-                if (_lockLog.isTraceEnabled()) {
-                    _lockLog.trace(lockType + " - acquiring: " + lockName + " [" + Thread.currentThread().getName()
-                            + "]" + " : " + sync);
-                }
-                acquired = sync.attempt(0);
-                if (_lockLog.isTraceEnabled()) {
-                    _lockLog.trace(lockType + " - acquired : " + lockName + " [" + Thread.currentThread().getName()
-                            + "]" + " : " + sync);
-                }
-            } catch (InterruptedException e) {
-                _log.trace("unexpected interruption - ignoring", e);
-                interrupted = true;
-            }
-        } while (Thread.interrupted());
-
-        if (!acquired) {
-            if (_lockLog.isTraceEnabled()) {
-                _lockLog.trace(lockType + " - acquisition FAILED: " + lockName + " ["
-                        + Thread.currentThread().getName() + "]" + " : " + sync);
-            }
-        }
-        
-        if (interrupted) {
-            Thread.currentThread().interrupt();
-        }
-
-        return acquired;
-	}
-
-	public static Object byteArrayToObject(byte[] bytes, Streamer streamer) throws IOException, ClassNotFoundException {
-	    ByteArrayInputStream bais=new ByteArrayInputStream(bytes);
-	    ObjectInput oi=streamer.getInputStream(bais);
-	    Object tmp=oi.readObject(); // TODO - ClassLoading ?
-	    oi.close();
-	    return tmp;
-	}
-
-	public static Object safeByteArrayToObject(byte[] bytes, Streamer streamer) {
-	    try {
-	        return byteArrayToObject(bytes, streamer);
-	    } catch (Exception e) {
-	      _log.error("unexpected problem whilst unmarshalling", e);
-	        return null;
-	    }
-	}
-
-	public static byte[] objectToByteArray(Object object, Streamer streamer) throws IOException {
-	    ByteArrayOutputStream baos=new ByteArrayOutputStream();
-	    ObjectOutput oo=streamer.getOutputStream(baos);
-	    oo.writeObject(object);
-	    oo.close();
-	    return baos.toByteArray();
-	}
-
-    public static byte[] safeObjectToByteArray(Object object, Streamer streamer) {
-        try {
-            return objectToByteArray(object, streamer);
-        } catch (Exception e) {
-	  _log.error("unexpected problem whilst marshalling", e);
-            return null;
-        }
-    }
-
     public static byte[] getContent(Externalizable object, Streamer streamer) throws IOException {
         ByteArrayOutputStream baos=new ByteArrayOutputStream();
         ObjectOutput oo=streamer.getOutputStream(baos);
@@ -192,80 +118,12 @@ public class Utils {
         return baos.toByteArray();
     }
 
-    public static byte[] safeGetContent(Externalizable object, Streamer streamer) {
-        try {
-            return getContent(object, streamer);
-        } catch (Exception e) {
-	  _log.error("unexpected problem whilst marshalling", e);
-            return null;
-        }
-    }
-
     public static Externalizable setContent(Externalizable object, byte[] content, Streamer streamer) throws IOException, ClassNotFoundException {
         ByteArrayInputStream bais=new ByteArrayInputStream(content);
         ObjectInput oi=streamer.getInputStream(bais);
         object.readExternal(oi);
         oi.close();
         return object;
-    }
-
-    public static Externalizable safeSetContent(Externalizable object, byte[] content, Streamer streamer) {
-        try {
-            return setContent(object, content, streamer);
-        } catch (Exception e) {
-	  _log.error("unexpected problem whilst marshalling", e);
-            return null;
-        }
-    }
-
-    public static void safePut(Object item, Puttable puttable) {
-        do {
-            try {
-                puttable.put(item);
-            } catch (InterruptedException e) {
-                if (_log.isTraceEnabled()) _log.trace("unexpected interruption - ignoring", e);
-            }
-        } while (Thread.interrupted());
-    }
-
-    public static Object safeTake(Takable takable) {
-        do {
-            try {
-                return takable.take();
-            } catch (InterruptedException e) {
-                if (_log.isTraceEnabled()) _log.trace("unexpected interruption - ignoring", e);
-            }
-        } while (Thread.interrupted());
-
-        throw new IllegalStateException();
-    }
-
-    public static void safeSleep(long period) {
-        long end=System.currentTimeMillis()+(period);
-        do {
-            try {
-                Thread.sleep(end-System.currentTimeMillis());
-            } catch (InterruptedException e) {
-                // ignore
-            }
-        } while (Thread.interrupted());
-     }
-
-    public static void safeAcquire(Sync sync) {
-        do {
-            try {
-                sync.acquire();
-            } catch (InterruptedException e) {
-                if (_log.isTraceEnabled()) _log.trace("unexpected interruption - ignoring", e);
-            }
-        } while (Thread.interrupted());
-    }
-
-    public static File createTempDirectory(String prefix, String suffix, File directory) throws IOException {
-    	File dir=File.createTempFile(prefix, suffix, directory);
-    	dir.delete();
-    	dir.mkdir();
-    	return dir;
     }
 
 }
