@@ -18,6 +18,7 @@ package org.codehaus.wadi.core.contextualiser;
 
 import org.codehaus.wadi.core.ConcurrentMotableMap;
 import org.codehaus.wadi.core.eviction.Evicter;
+import org.codehaus.wadi.core.manager.SessionMonitor;
 import org.codehaus.wadi.core.motable.AbstractMappedImmoter;
 import org.codehaus.wadi.core.motable.BaseMappedEmoter;
 import org.codehaus.wadi.core.motable.Emoter;
@@ -36,26 +37,29 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
 	private final SessionFactory sessionFactory;
     private final Immoter _immoter;
     private final Emoter _emoter;
-    private final Emoter _evictionEmoter;
     private final InvocationContextFactory invocationContextFactory;
+    private final SessionMonitor sessionMonitor;
 
 	public MemoryContextualiser(Contextualiser next,
             Evicter evicter,
             ConcurrentMotableMap map,
             SessionFactory sessionFactory,
-            InvocationContextFactory invocationContextFactory) {
+            InvocationContextFactory invocationContextFactory,
+            SessionMonitor sessionMonitor) {
 		super(next, evicter, map);
         if (null == sessionFactory) {
             throw new IllegalArgumentException("sessionFactory is required");
         } else if (null == invocationContextFactory) {
             throw new IllegalArgumentException("invocationContextFactory is required");
+        } else if (null == sessionMonitor) {
+            throw new IllegalArgumentException("sessionMonitor is required");
         }
         this.sessionFactory = sessionFactory;
         this.invocationContextFactory = invocationContextFactory;
+        this.sessionMonitor = sessionMonitor;
         
         _immoter = new MemoryImmoter(map);
-        _emoter = new BaseMappedEmoter(map);
-        _evictionEmoter = _emoter;
+        _emoter = new MemoryEmoter(map);
     }
 
     protected boolean handleLocally(Invocation invocation, String id, Motable motable) throws InvocationException {
@@ -70,23 +74,6 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
         return true;
     }
 
-    class MemoryImmoter extends AbstractMappedImmoter {
-
-        public MemoryImmoter(ConcurrentMotableMap map) {
-            super(map);
-        }
-
-        public Motable newMotable(Motable emotable) {
-            return sessionFactory.create();
-        }
-
-        public boolean contextualise(Invocation invocation, String id, Motable immotable)
-                throws InvocationException {
-            return handleLocally(invocation, id, immotable);
-        }
-
-    }
-
     public Immoter getImmoter() {
         return _immoter;
     }
@@ -99,8 +86,34 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
         return immoter == null ? _immoter : immoter;
     }
 
-    public Emoter getEvictionEmoter() {
-        return _evictionEmoter;
+    protected class MemoryImmoter extends AbstractMappedImmoter {
+
+        public MemoryImmoter(ConcurrentMotableMap map) {
+            super(map);
+        }
+
+        public Motable newMotable(Motable emotable) {
+            return sessionFactory.create();
+        }
+
+        public boolean contextualise(Invocation invocation, String id, Motable immotable)
+                throws InvocationException {
+            sessionMonitor.notifyInboundSessionMigration((Session) immotable);
+            return handleLocally(invocation, id, immotable);
+        }
+
     }
 
+    protected class MemoryEmoter extends BaseMappedEmoter {
+
+        public MemoryEmoter(ConcurrentMotableMap map) {
+            super(map);
+        }
+        
+        public boolean emote(Motable emotable, Motable immotable) {
+            sessionMonitor.notifyOutboundSessionMigration((Session) emotable);
+            return super.emote(emotable, immotable);
+        }
+        
+    }
 }

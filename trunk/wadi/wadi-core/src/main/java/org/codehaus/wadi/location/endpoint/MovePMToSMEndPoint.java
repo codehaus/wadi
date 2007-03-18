@@ -19,7 +19,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.core.Lifecycle;
 import org.codehaus.wadi.core.contextualiser.Contextualiser;
-import org.codehaus.wadi.core.manager.SessionMonitor;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.Peer;
@@ -42,24 +41,19 @@ public class MovePMToSMEndPoint implements Lifecycle, MovePMToSMEndPointMessageL
     
     private final Dispatcher dispatcher;
     private final Contextualiser contextualiser;
-    private final SessionMonitor sessionMonitor;
     private final long inactiveTime;
     private final ServiceEndpointBuilder endpointBuilder;
 
 
     public MovePMToSMEndPoint(ServiceSpace serviceSpace,
             Contextualiser contextualiser,
-            SessionMonitor sessionMonitor,
             long inactiveTime) {
         if (null == serviceSpace) {
             throw new IllegalArgumentException("serviceSpace is required");
         } else if (null == contextualiser) {
             throw new IllegalArgumentException("contextualiser is required");
-        } else if (null == sessionMonitor) {
-            throw new IllegalArgumentException("sessionMonitor is required");
         }
         this.contextualiser = contextualiser;
-        this.sessionMonitor = sessionMonitor;
         this.inactiveTime = inactiveTime;
 
         dispatcher = serviceSpace.getDispatcher();
@@ -78,8 +72,7 @@ public class MovePMToSMEndPoint implements Lifecycle, MovePMToSMEndPointMessageL
         Object key = request.getKey();
         try {
             Peer imPeer = request.getIMPeer();
-            RelocationImmoter promoter = new RelocationImmoter(sessionMonitor,
-                    dispatcher,
+            RelocationImmoter promoter = new RelocationImmoter(dispatcher,
                     message,
                     request,
                     inactiveTime);

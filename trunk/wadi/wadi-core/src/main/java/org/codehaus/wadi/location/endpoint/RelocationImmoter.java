@@ -19,12 +19,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.core.contextualiser.Invocation;
 import org.codehaus.wadi.core.contextualiser.InvocationException;
-import org.codehaus.wadi.core.manager.SessionMonitor;
 import org.codehaus.wadi.core.motable.AbstractMotable;
 import org.codehaus.wadi.core.motable.Immoter;
 import org.codehaus.wadi.core.motable.Motable;
 import org.codehaus.wadi.core.motable.SimpleMotable;
-import org.codehaus.wadi.core.session.Session;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.LocalPeer;
@@ -45,19 +43,16 @@ import org.codehaus.wadi.location.session.MoveSMToPM;
 class RelocationImmoter implements Immoter {
     private static final Log log = LogFactory.getLog(MovePMToSMEndPoint.class);
 
-    private final SessionMonitor sessionMonitor;
     private final Dispatcher dispatcher;
     private final long inactiveTime;
     protected final Envelope message;
     protected final MovePMToSM pmToSm;
     protected boolean found = false;
 
-    public RelocationImmoter(SessionMonitor sessionMonitor,
-            Dispatcher dispatcher,
+    public RelocationImmoter(Dispatcher dispatcher,
             Envelope message,
             MovePMToSM request,
             long inactiveTime) {
-        this.sessionMonitor = sessionMonitor;
         this.dispatcher = dispatcher;
         this.message = message;
         this.pmToSm = request;
@@ -65,7 +60,6 @@ class RelocationImmoter implements Immoter {
     }
 
     public Motable newMotable(Motable emotable) {
-        sessionMonitor.notifyOutbountSessionMigration((Session) emotable);
         return new PMToIMEmotable(message);
     }
 
