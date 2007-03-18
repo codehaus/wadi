@@ -48,7 +48,7 @@ public class BasicSessionMonitor implements SessionMonitor {
         }
     }
     
-    public void notifyOutbountSessionMigration(Session session) {
+    public void notifyOutboundSessionMigration(Session session) {
         for (Iterator iter = sessionListeners.iterator(); iter.hasNext();) {
             SessionListener listener = (SessionListener) iter.next();
             listener.onOutbountSessionMigration(session);

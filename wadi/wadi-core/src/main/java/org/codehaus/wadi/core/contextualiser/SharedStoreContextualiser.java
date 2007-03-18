@@ -74,11 +74,6 @@ public class SharedStoreContextualiser extends AbstractSharedContextualiser {
         return emoter;
     }
 
-    public Immoter getDemoter(String name, Motable motable) {
-        // TODO - should check _next... - just remove when we have an evicter sorted
-        return new SharedImmoter();
-    }
-    
     /**
      * Shared Contextualisers do nothing at runtime. They exist only to load data at startup and store it at shutdown.
      */

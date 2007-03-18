@@ -52,7 +52,7 @@ public abstract class AbstractSharedContextualiser extends AbstractMotingContext
     }
     
     public Immoter getDemoter(String name, Motable motable) {
-        return getImmoter();
+        return next.getDemoter(name, motable);
     }
 
     protected void load(Emoter emoter, Immoter immoter) {

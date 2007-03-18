@@ -17,7 +17,6 @@ package org.codehaus.wadi.core.contextualiser;
 
 import java.io.IOException;
 
-import org.codehaus.wadi.core.manager.SessionMonitor;
 import org.codehaus.wadi.core.motable.Immoter;
 import org.codehaus.wadi.core.motable.Motable;
 import org.codehaus.wadi.core.session.Session;
@@ -86,9 +85,6 @@ public class HybridRelocaterTest extends RMockTestCase {
         
         recordRehydration(key, relocatedMotable, relocatedSession);
 
-        SessionMonitor sessionMonitor = (SessionMonitor) mock(SessionMonitor.class);
-        sessionMonitor.notifyInboundSessionMigration(relocatedSession);
-
         recordReplyToSM(envelope, true);
         
         immoter.immote(relocatedMotable, relocatedSession);
@@ -98,7 +94,7 @@ public class HybridRelocaterTest extends RMockTestCase {
         modify().returnValue(true);
         startVerification();
         
-        HybridRelocater relocater = new HybridRelocater(serviceSpace, manager, sessionMonitor, timeout);
+        HybridRelocater relocater = new HybridRelocater(serviceSpace, manager, timeout);
         boolean relocated = relocater.relocate(invocation, key, immoter, shuttingDown);
         assertTrue(relocated);
     }
@@ -134,11 +130,9 @@ public class HybridRelocaterTest extends RMockTestCase {
         modify().returnValue(new MoveSMToIM(null));
 
         recordReplyToSM(envelope, false);
-        
-        SessionMonitor sessionMonitor = (SessionMonitor) mock(SessionMonitor.class);
         startVerification();
         
-        HybridRelocater relocater = new HybridRelocater(serviceSpace, manager, sessionMonitor, timeout);
+        HybridRelocater relocater = new HybridRelocater(serviceSpace, manager, timeout);
         boolean relocated = relocater.relocate(invocation, key, immoter, shuttingDown);
         assertFalse(relocated);
     }

@@ -29,7 +29,7 @@ public interface SessionMonitor {
 
     void notifyInboundSessionMigration(Session session);
     
-    void notifyOutbountSessionMigration(Session session);
+    void notifyOutboundSessionMigration(Session session);
     
     void addSessionListener(SessionListener sessionListener);
     

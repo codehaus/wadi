@@ -250,7 +250,7 @@ public class StackContext {
     }
 
     protected void registerMovePMToSMEndPoint(Contextualiser contextualiser) throws ServiceAlreadyRegisteredException {
-        MovePMToSMEndPoint movePMToSMEndPoint = new MovePMToSMEndPoint(serviceSpace, contextualiser, sessionMonitor, 2000);
+        MovePMToSMEndPoint movePMToSMEndPoint = new MovePMToSMEndPoint(serviceSpace, contextualiser, 2000);
 
         ServiceRegistry serviceRegistry = serviceSpace.getServiceRegistry();
         serviceRegistry.register(MovePMToSMEndPoint.NAME, movePMToSMEndPoint);
@@ -330,14 +330,13 @@ public class StackContext {
             ConcurrentMotableMap mmap,
             Evicter mevicter,
             InvocationContextFactory invocationContextFactory) {
-        return new MemoryContextualiser(next, mevicter, mmap, sessionFactory, invocationContextFactory);
+        return new MemoryContextualiser(next, mevicter, mmap, sessionFactory, invocationContextFactory, sessionMonitor);
     }
 
     protected Contextualiser newClusteredContextualiser(Contextualiser contextualiser) {
         return new ClusterContextualiser(contextualiser, 
                 new HybridRelocater(serviceSpace,
                         partitionManager,
-                        sessionMonitor,
                         simplePartitionManagerTiming.getSessionRelocationWaitTimeForRelocater()),
                 partitionManager, 
                 stateManager, 
