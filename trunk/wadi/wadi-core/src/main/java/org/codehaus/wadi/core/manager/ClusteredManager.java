@@ -22,10 +22,10 @@ import org.codehaus.wadi.core.contextualiser.Invocation;
 import org.codehaus.wadi.core.contextualiser.InvocationContextFactory;
 import org.codehaus.wadi.core.contextualiser.InvocationException;
 import org.codehaus.wadi.core.contextualiser.InvocationProxy;
+import org.codehaus.wadi.core.session.Session;
 import org.codehaus.wadi.core.session.SessionFactory;
 import org.codehaus.wadi.location.partitionmanager.PartitionManager;
 import org.codehaus.wadi.location.statemanager.StateManager;
-import org.codehaus.wadi.web.WebSession;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -80,7 +80,7 @@ public class ClusteredManager extends DistributableManager {
         partitionManager.stop();
     }
 
-    protected void onSessionDestruction(WebSession session) {
+    protected void onSessionDestruction(Session session) {
         super.onSessionDestruction(session);
         stateManager.remove(session.getName());
     }
