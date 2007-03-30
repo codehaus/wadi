@@ -96,9 +96,16 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
             return sessionFactory.create();
         }
 
+        public boolean immote(Motable emotable, Motable immotable) {
+            boolean success = super.immote(emotable, immotable);
+            if (success) {
+                sessionMonitor.notifyInboundSessionMigration((Session) immotable);
+            }
+            return success;
+        }
+        
         public boolean contextualise(Invocation invocation, String id, Motable immotable)
                 throws InvocationException {
-            sessionMonitor.notifyInboundSessionMigration((Session) immotable);
             return handleLocally(invocation, id, immotable);
         }
 
