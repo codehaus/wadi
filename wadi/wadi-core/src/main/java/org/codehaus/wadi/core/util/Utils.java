@@ -19,7 +19,6 @@ package org.codehaus.wadi.core.util;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Externalizable;
-import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
@@ -30,9 +29,7 @@ import org.codehaus.wadi.core.motable.Emoter;
 import org.codehaus.wadi.core.motable.Immoter;
 import org.codehaus.wadi.core.motable.Motable;
 
-import EDU.oswego.cs.dl.util.concurrent.Puttable;
 import EDU.oswego.cs.dl.util.concurrent.Sync;
-import EDU.oswego.cs.dl.util.concurrent.Takable;
 import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 
 /**
