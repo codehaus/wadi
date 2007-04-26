@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<document>
+    <properties>
+        <title>WADI - Developing with WADI and Eclipse</title>
+    </properties>
+    <body>
+        <section name="Documentation">            
+            <p>
+                Since WADI uses <a href="http://maven.apache.org">Maven 2</a> its simple to get started.
+                <ol>
+                    <li><a href="./get_code.html">Get</a> the code.</li>
+                    <li>from the command line cd to the wadi directory and use 'cvs up -Pd' (this will cause a lot of old empty directories to be deleted)</li>
+                    <li>run mvn install</li>
+                    <li>run mvn eclipse:eclipse</li>
+                    <li>fire up Eclipse</li>
+                    <li>
+                        prepare the classpath
+                        <ol>
+                            <li>Choose Window -> Preferences -> Java -> Build Path -> Classpath Variables</li>
+                            <li>Hit the New... button</li>
+                            <li>Specify M2_REPO as the name</li>
+                            <li>Specify ~/.m2/repository (or where ever your maven 2 repo lives) as the Path</li>
+                        </ol>        
+                    </li>
+                    <li>
+                        add the modules as projects
+                        <ol>
+                            <li>Use right click -> Import... ->Existing Project into Workspace</li>
+                            <li>Hit the Next button</li>
+                            <li>Choose the location of the module (i.e. $WADI/modules/core) the modules are eclipse projects, the root is not a project.</li>
+                            <li>Hit the Finish button</li>
+                        </ol>
+                    </li>
+                    <li>if Eclipse does not recognize that this project is shared then choose Project->Share... from the Package Explorer context menu</li>
+                </ol>
+             </p>
+        </section>
+    </body>
+</document>
