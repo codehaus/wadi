@@ -1,6 +1,8 @@
 package org.codehaus.wadi.tribes;
 
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.Collections;
 
 import org.apache.catalina.tribes.Channel;
 import org.apache.catalina.tribes.ChannelException;
@@ -16,18 +18,40 @@ import org.codehaus.wadi.group.impl.AbstractDispatcher;
 
 public class TribesDispatcher extends AbstractDispatcher implements ChannelListener {
     protected TribesCluster cluster;
-    protected String localPeerName = null;
+    protected final String localPeerName;
+    protected final Collection staticMembers;
     
-    public TribesDispatcher(String clusterName, String localPeerName, EndPoint endPoint, long inactiveTime, String config) {
+    public TribesDispatcher(String clusterName,
+            String localPeerName,
+            EndPoint endPoint,
+            long inactiveTime,
+            String config) {
+        this(clusterName, localPeerName, endPoint, inactiveTime, config, Collections.EMPTY_LIST);
+    }
+
+    public TribesDispatcher(String clusterName,
+            String localPeerName,
+            EndPoint endPoint,
+            long inactiveTime,
+            String config,
+            Collection staticMembers) {
         super(inactiveTime);
+        if (null == staticMembers) {
+            throw new IllegalArgumentException("staticMembers is required");
+        }
         //todo, create some sort of config file
         byte[] domain = getBytes(clusterName);
-        PeerInfo localPeerInfo=new PeerInfo(endPoint);
-        cluster = new TribesCluster(domain, this, localPeerInfo);
         this.localPeerName = localPeerName;
+        this.staticMembers = staticMembers;
+        
+        PeerInfo localPeerInfo = new PeerInfo(endPoint);
+        cluster = new TribesCluster(domain, this, localPeerInfo);
     }
-    
-    
+
+    public Collection getStaticMembers() {
+        return staticMembers;
+    }
+
     private byte[] getBytes(String s) {
         try {
             return s.getBytes("UTF-8");

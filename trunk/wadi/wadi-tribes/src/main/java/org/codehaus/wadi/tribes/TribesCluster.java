@@ -3,8 +3,10 @@ package org.codehaus.wadi.tribes;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +19,7 @@ import org.apache.catalina.tribes.MembershipListener;
 import org.apache.catalina.tribes.group.GroupChannel;
 import org.apache.catalina.tribes.group.interceptors.DomainFilterInterceptor;
 import org.apache.catalina.tribes.group.interceptors.MessageDispatchInterceptor;
+import org.apache.catalina.tribes.group.interceptors.StaticMembershipInterceptor;
 import org.apache.catalina.tribes.group.interceptors.TcpFailureDetector;
 import org.apache.catalina.tribes.membership.McastService;
 import org.codehaus.wadi.group.Address;
@@ -55,6 +58,9 @@ public class TribesCluster implements Cluster {
         //comment out for java 1.5
         channel.addInterceptor(new MessageDispatchInterceptor());
         channel.addMembershipListener(new WadiListener(this));
+        
+        addStaticMembers(dispatcher);
+        
         ((McastService)channel.getMembershipService()).setMcastAddr("224.0.0.4");
         ((McastService)channel.getMembershipService()).setDomain(clusterDomain);
     	try {
@@ -71,7 +77,7 @@ public class TribesCluster implements Cluster {
         //channel.addInterceptor(new MessageTrackInterceptor());//for debug only
         channel.addInterceptor(new TcpFailureDetector());//this one should always be at the bottom
     }
-    
+
     public String getClusterName() {
         return new String(clusterDomain);
     }
@@ -293,8 +299,16 @@ public class TribesCluster implements Cluster {
         this.strategy = electionStrategy;
     }
 
-    public ElectionStrategy getElectionStrategy() {
-        return strategy;
+    protected void addStaticMembers(TribesDispatcher dispatcher) {
+        Collection staticMembers = dispatcher.getStaticMembers();
+        if (!staticMembers.isEmpty()) {
+            StaticMembershipInterceptor smi = new StaticMembershipInterceptor();
+            for (Iterator iter = staticMembers.iterator(); iter.hasNext();) {
+                Member member = (Member) iter.next();
+                smi.addStaticMember(member);
+            }
+            channel.addInterceptor(smi);
+        }
     }
 
 }
