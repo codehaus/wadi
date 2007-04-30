@@ -17,9 +17,6 @@
 package org.codehaus.wadi.activecluster;
 
 import java.io.Serializable;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
 
 import javax.jms.Destination;
 import javax.jms.JMSException;
@@ -29,12 +26,10 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.ClusterException;
-import org.codehaus.wadi.group.ClusterListener;
 import org.codehaus.wadi.group.EndPoint;
-import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.Envelope;
+import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.MessageExchangeException;
-import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.command.ClusterCommand;
 import org.codehaus.wadi.group.impl.AbstractDispatcher;
 
@@ -54,7 +49,6 @@ public class ActiveClusterDispatcher extends AbstractDispatcher implements javax
     protected final LocalPeer _localPeer;
 
     public ActiveClusterDispatcher(String clusterName, String localPeerName, String clusterUri, EndPoint endPoint, long inactiveTime) throws Exception {
-        super(inactiveTime);
         _clusterName = clusterName;
         _localPeerName = localPeerName;
         _clusterUri = clusterUri;
@@ -88,49 +82,22 @@ public class ActiveClusterDispatcher extends AbstractDispatcher implements javax
         }
     }
 
-    public Envelope createMessage() {
+    public Envelope createEnvelope() {
         return new ActiveClusterEnvelope();
     }
 
-    public void send(Address target, Envelope message) throws MessageExchangeException {
-        if (_messageLog.isTraceEnabled()) {
-            _messageLog.trace("outgoing: " + message.getPayload() + " {" + getPeerName(message.getReplyTo())
-                    + "->" + getPeerName(message.getAddress()) + "} - " + message.getTargetCorrelationId()
-                    + "/" + message.getSourceCorrelationId() + " on " + Thread.currentThread().getName());
-        }
-        
+    protected void doSend(Address target, Envelope envelope) throws MessageExchangeException {
         Destination targetDestination = ((ActiveClusterPeer) target).getACDestination();
         try {
             ObjectMessage objectMsg = _cluster.getACCluster().createObjectMessage();
-            _cluster.getACCluster().send(targetDestination, ((ActiveClusterEnvelope) message).fill(objectMsg));
+            _cluster.getACCluster().send(targetDestination, ((ActiveClusterEnvelope) envelope).fill(objectMsg));
         } catch (JMSException e) {
             throw new MessageExchangeException(e);
         }
     }
 
-    public Address getAddress(String nodeName) {
-        Map destToNode = _cluster.getACCluster().getNodes();
-        for (Iterator iter = destToNode.entrySet().iterator(); iter.hasNext();) {
-            Map.Entry entry = (Map.Entry) iter.next();
-            Destination destination = (Destination) entry.getKey();
-            Peer peer = _cluster.getPeerFromBackEndKey(destination);
-            if (peer.getName().equals(nodeName)) {
-                return peer.getAddress();
-            }
-        }
-        throw new IllegalArgumentException("Node [" + nodeName + "] is undefined.");
-    }
-
     public String getPeerName(Address address) {
         return ((ActiveClusterPeer) address).getName();
-    }
-
-    public void findRelevantSessionNames(int numPartitions, Collection[] resultSet) {
-        throw new UnsupportedOperationException("NYI");
-    }
-
-    public void setClusterListener(ClusterListener listener) {
-        _cluster.addClusterListener(listener);
     }
 
     public void onMessage(javax.jms.Message message) {
@@ -151,7 +118,7 @@ public class ActiveClusterDispatcher extends AbstractDispatcher implements javax
         if (payload instanceof ClusterCommand) {
             ((ClusterCommand) payload).execute(wadiMsg, _cluster);
         } else {
-            onMessage(wadiMsg);
+            onEnvelope(wadiMsg);
         }
     }
     

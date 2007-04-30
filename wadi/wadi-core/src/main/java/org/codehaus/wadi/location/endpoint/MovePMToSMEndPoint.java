@@ -22,6 +22,7 @@ import org.codehaus.wadi.core.contextualiser.Contextualiser;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.Peer;
+import org.codehaus.wadi.group.impl.EnvelopeHelper;
 import org.codehaus.wadi.group.impl.ServiceEndpointBuilder;
 import org.codehaus.wadi.location.session.MovePMToSM;
 import org.codehaus.wadi.location.session.MoveSMToIM;
@@ -80,10 +81,13 @@ public class MovePMToSMEndPoint implements Lifecycle, MovePMToSMEndPointMessageL
             contextualiser.contextualise(null, (String) key, promoter, true);
             if (!promoter.isFound()) {
                 log.warn("state not found - perhaps it has just been destroyed: " + key);
-                MoveSMToIM req = new MoveSMToIM(null);
+                Envelope reply = dispatcher.createEnvelope();
+                reply.setPayload(new MoveSMToIM(null));
+                EnvelopeHelper.setAsReply(reply);
+
                 // send on null state from StateMaster to InvocationMaster...
                 log.info("sending 0 bytes to : " + imPeer);
-                Envelope ignore = dispatcher.exchangeSend(imPeer.getAddress(), req, inactiveTime, request
+                Envelope ignore = dispatcher.exchangeSend(imPeer.getAddress(), reply, inactiveTime, request
                         .getIMCorrelationId());
                 log.info("received: " + ignore);
                 // StateMaster replies to PartitionMaster indicating failure...

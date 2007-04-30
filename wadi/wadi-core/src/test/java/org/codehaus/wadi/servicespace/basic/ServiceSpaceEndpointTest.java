@@ -29,7 +29,7 @@ public class ServiceSpaceEndpointTest extends AbstractServiceSpaceTestCase {
 
     public void testDispatch() throws Exception {
         Envelope message = (Envelope) mock(Envelope.class);
-        dispatcher.onMessage(message);
+        dispatcher.onEnvelope(message);
         
         startVerification();
         
@@ -40,39 +40,39 @@ public class ServiceSpaceEndpointTest extends AbstractServiceSpaceTestCase {
     public void testTestDispatchMessageOK() {
         beginSection(s.ordered("Get ServiceSpaceName and test for equality"));
         Envelope message = (Envelope) mock(Envelope.class);
-        ServiceSpaceMessageHelper.getServiceSpaceNameStatic(message);
+        ServiceSpaceEnvelopeHelper.getServiceSpaceNameStatic(message);
         modify().returnValue(serviceSpaceName);
         endSection();
 
         startVerification();
         
         ServiceSpaceEndpoint endpoint = new ServiceSpaceEndpoint(serviceSpace, dispatcher);
-        assertTrue(endpoint.testDispatchMessage(message));
+        assertTrue(endpoint.testDispatchEnvelope(message));
     }
 
     public void testTestDispatchMessageServiceSpaceIsDifferent() throws Exception {
         beginSection(s.ordered("Get ServiceSpaceName and test for equality"));
         Envelope message = (Envelope) mock(Envelope.class);
-        ServiceSpaceMessageHelper.getServiceSpaceNameStatic(message);
+        ServiceSpaceEnvelopeHelper.getServiceSpaceNameStatic(message);
         modify().returnValue(new ServiceSpaceName(new URI("NEW_SPACE")));
         endSection();
 
         startVerification();
         
         ServiceSpaceEndpoint endpoint = new ServiceSpaceEndpoint(serviceSpace, dispatcher);
-        assertFalse(endpoint.testDispatchMessage(message));
+        assertFalse(endpoint.testDispatchEnvelope(message));
     }
 
     public void testTestDispatchMessageServiceSpaceIsUndefined() throws Exception {
         beginSection(s.ordered("Get ServiceSpaceName and test for equality"));
         Envelope message = (Envelope) mock(Envelope.class);
-        ServiceSpaceMessageHelper.getServiceSpaceNameStatic(message);
+        ServiceSpaceEnvelopeHelper.getServiceSpaceNameStatic(message);
         endSection();
 
         startVerification();
         
         ServiceSpaceEndpoint endpoint = new ServiceSpaceEndpoint(serviceSpace, dispatcher);
-        assertFalse(endpoint.testDispatchMessage(message));
+        assertFalse(endpoint.testDispatchEnvelope(message));
     }
 
 }

@@ -18,14 +18,15 @@ package org.codehaus.wadi.group;
 
 import java.util.Map;
 import java.util.Set;
+
 import junit.framework.TestCase;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.group.impl.AbstractMsgDispatcher;
-import org.codehaus.wadi.group.impl.RendezVousMsgDispatcher;
-import org.codehaus.wadi.group.impl.SeniorityElectionStrategy;
+import org.codehaus.wadi.group.impl.EnvelopeHelper;
+
 import EDU.oswego.cs.dl.util.concurrent.Latch;
-import EDU.oswego.cs.dl.util.concurrent.WaitableInt;
 
 public abstract class AbstractTestGroup extends TestCase {
 
@@ -55,21 +56,15 @@ public abstract class AbstractTestGroup extends TestCase {
     class MyClusterListener implements ClusterListener {
 
         public int _numRemotePeers=0;
-        public WaitableInt _numCoordinators=new WaitableInt(0);
-        public Peer _lastCoordinator=null;
 
-        public void onListenerRegistration(Cluster cluster, Set existing, Peer coordinator) {
-            _lastCoordinator = coordinator;
-            _numCoordinators.increment();
+        public void onListenerRegistration(Cluster cluster, Set existing) {
             _numRemotePeers += existing.size();
         }
-        
-        public void onMembershipChanged(Cluster cluster, Set joiners, Set leavers, Peer coordinator) {
-            _lastCoordinator=coordinator;
-            _numCoordinators.increment();
+
+        public void onMembershipChanged(Cluster cluster, Set joiners, Set leavers) {
             _numRemotePeers+=joiners.size();
             _numRemotePeers-=leavers.size();
-            _log.info(cluster.getLocalPeer().getName()+" - onMembershipChanged - joiners:"+joiners+", leavers:"+leavers+", coordinator:"+coordinator);
+            _log.info(cluster.getLocalPeer().getName()+" - onMembershipChanged - joiners:"+joiners+", leavers:"+leavers);
         }
 
     }
@@ -82,11 +77,8 @@ public abstract class AbstractTestGroup extends TestCase {
         
         MyClusterListener listener0=new MyClusterListener();
         Cluster cluster0=dispatcher0.getCluster();
-        cluster0.setElectionStrategy(new SeniorityElectionStrategy());
         cluster0.addClusterListener(listener0);
 
-        assertTrue(listener0._numCoordinators.get()>=1); // we have received at least one MembershipChanged notification by the time start has finished
-        assertTrue(listener0._lastCoordinator.equals(cluster0.getLocalPeer()));
         assertTrue(cluster0.waitOnMembershipCount(1, 10000));
         _log.info(cluster0);
         _log.info(dispatcher0);
@@ -95,16 +87,11 @@ public abstract class AbstractTestGroup extends TestCase {
         dispatcher1.start();
 
         Cluster cluster1=dispatcher1.getCluster();
-        cluster1.setElectionStrategy(new SeniorityElectionStrategy());
         MyClusterListener listener1=new MyClusterListener();
         cluster1.addClusterListener(listener1);
 
-        assertTrue(listener1._lastCoordinator.equals(cluster1.getRemotePeers().values().iterator().next())); // green knows red is coord
-        assertTrue(listener1._numCoordinators.get()>=1);
         assertTrue(cluster0.waitOnMembershipCount(2, 10000));
         assertTrue(cluster1.waitOnMembershipCount(2, 10000));
-        assertTrue(listener0._numCoordinators.get()>=2); // red has now held at least 2 coord elections
-        assertTrue(listener0._lastCoordinator.equals(cluster0.getLocalPeer())); // red knowns red is coord
         _log.info(cluster1);
         _log.info(dispatcher1);
 
@@ -124,7 +111,6 @@ public abstract class AbstractTestGroup extends TestCase {
         cluster1.removeClusterListener(listener1);
         assertTrue(cluster0.waitOnMembershipCount(1, 10000));
         //assertTrue(listener0._numChanges.get()>=3); - how do we ensure that this has been called ?
-        assertTrue(listener0._lastCoordinator.equals(cluster0.getLocalPeer()));
 
         assertEquals(0, listener0._numRemotePeers);
         assertEquals(0, cluster0.getRemotePeers().size());
@@ -144,9 +130,9 @@ public abstract class AbstractTestGroup extends TestCase {
             _latch=latch;
         }
         
-        public void dispatch(Envelope om) throws Exception {
-            Address content=(Address)om.getPayload();
-            Address target=om.getAddress();
+        public void dispatch(Envelope envelope) throws Exception {
+            Address content=(Address)envelope.getPayload();
+            Address target=envelope.getAddress();
             assertSame(_local, content);
             assertSame(_local, target);
             assertSame(content, target);
@@ -164,18 +150,19 @@ public abstract class AbstractTestGroup extends TestCase {
             _local=local;
         }
         
-        public void dispatch(Envelope om) throws Exception {
-            Address content=(Address)om.getPayload();
-            Address target=om.getAddress();
+        public void dispatch(Envelope envelope) throws Exception {
+            Address content=(Address)envelope.getPayload();
+            Address target=envelope.getAddress();
             assertSame(_local, content);
             assertSame(_local, target);
             assertSame(content, target);
             
             // reply - round tripping payload...
-            _dispatcher.reply(om, content);
+            _dispatcher.reply(envelope, content);
         }
         
     }
+    
     public void testDispatcher() throws Exception {
         String clusterName="org.codehaus.wadi.cluster.TEST-"+Math.random();
 
@@ -208,7 +195,7 @@ public abstract class AbstractTestGroup extends TestCase {
         dispatcher1.unregister(async, 10, 500); // what are these params for ?
         
         // sync - send a message red->green and reply green->red
-        ServiceEndpoint rv=new RendezVousMsgDispatcher(dispatcher0, Address.class);
+        ServiceEndpoint rv=new RendezVousEndPoint(dispatcher0);
         dispatcher0.register(rv);
         ServiceEndpoint sync=new SyncServiceEndpoint(dispatcher1, Address.class, cluster1.getLocalPeer().getAddress());
         dispatcher1.register(sync);
@@ -226,5 +213,28 @@ public abstract class AbstractTestGroup extends TestCase {
         assertTrue(cluster0.waitOnMembershipCount(1, 10000));
 
         dispatcher0.stop();
+    }
+    
+    protected class RendezVousEndPoint implements ServiceEndpoint {
+        private final Dispatcher dispatcher;
+        
+        public RendezVousEndPoint(Dispatcher dispatcher) {
+            if (null == dispatcher) {
+                throw new IllegalArgumentException("dispatcher is required.");
+            }
+            this.dispatcher = dispatcher;
+        }
+
+        public void dispatch(Envelope envelope) throws Exception {
+            dispatcher.addRendezVousEnvelope(envelope);
+        }
+
+        public void dispose(int nbAttemp, long delayMillis) {
+        }
+
+        public boolean testDispatchEnvelope(Envelope envelope) {
+            return EnvelopeHelper.isReply(envelope);
+        }
+        
     }
 }

@@ -127,11 +127,12 @@ public class BasicReplicationManagerTest extends RMockTestCase {
     }
 
     private void recordCreateReplicationManagerProxy() {
+        replicationManagerProxy = (ReplicationManager) mock(ReplicationManagerMixInServiceProxy.class);
+
         beginSection(s.ordered("Create ReplicationManager proxy"));
         ServiceProxyFactory serviceProxyFactory =
             serviceSpace.getServiceProxyFactory(ReplicationManager.NAME, new Class[] {ReplicationManager.class});
         serviceProxyFactory.getProxy();
-        replicationManagerProxy = (ReplicationManager) mock(ReplicationManager.class);
         modify().returnValue(replicationManagerProxy);
         endSection();
     }
@@ -154,6 +155,9 @@ public class BasicReplicationManagerTest extends RMockTestCase {
     }
 
     public interface ReplicaStorageMixInServiceProxy extends ReplicaStorage, ServiceProxy {
+    }
+    
+    public interface ReplicationManagerMixInServiceProxy extends ReplicationManager, ServiceProxy {
     }
     
 }

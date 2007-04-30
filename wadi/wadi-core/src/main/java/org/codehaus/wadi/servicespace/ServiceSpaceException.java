@@ -21,12 +21,26 @@ package org.codehaus.wadi.servicespace;
  */
 public class ServiceSpaceException extends RuntimeException {
 
-    public ServiceSpaceException(String arg0) {
-        super(arg0);
+    private final ServiceSpaceName serviceSpaceName;
+
+    public ServiceSpaceException(ServiceSpaceName serviceSpaceName, String message) {
+        super(message);
+        if (null == serviceSpaceName) {
+            throw new IllegalArgumentException("serviceSpaceName is required");
+        }
+        this.serviceSpaceName = serviceSpaceName;
     }
 
-    public ServiceSpaceException(Throwable arg0) {
-        super(arg0);
+    public ServiceSpaceException(ServiceSpaceName serviceSpaceName, Throwable cause) {
+        super(cause);
+        if (null == serviceSpaceName) {
+            throw new IllegalArgumentException("serviceSpaceName is required");
+        }
+        this.serviceSpaceName = serviceSpaceName;
+    }
+
+    public ServiceSpaceName getServiceSpaceName() {
+        return serviceSpaceName;
     }
 
 }

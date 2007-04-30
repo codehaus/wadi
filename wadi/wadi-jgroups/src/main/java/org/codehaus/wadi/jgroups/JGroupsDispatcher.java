@@ -42,8 +42,7 @@ public class JGroupsDispatcher extends AbstractDispatcher {
     protected final org.jgroups.Address _localJGAddress;
     protected final MessageDispatcher _dispatcher;
 
-    public JGroupsDispatcher(String clusterName, String localPeerName, EndPoint endPoint, long inactiveTime, String config) throws ChannelException {
-        super(inactiveTime);
+    public JGroupsDispatcher(String clusterName, String localPeerName, EndPoint endPoint, String config) throws ChannelException {
         _cluster = new JGroupsCluster(clusterName, localPeerName, config, this, endPoint);
         _localJGAddress = ((JGroupsPeer) _cluster.getLocalPeer()).getJGAddress();
         _dispatcher = new MessageDispatcher(_cluster.getChannel(), _cluster, _cluster, null);
@@ -71,12 +70,12 @@ public class JGroupsDispatcher extends AbstractDispatcher {
         _dispatcher.stop();
     }
 
-    public Envelope createMessage() {
+    public Envelope createEnvelope() {
         return new JGroupsEnvelope();
     }
 
-    public void send(Address target, Envelope message) throws MessageExchangeException {
-        _cluster.send(target, message);
+    protected void doSend(Address target, Envelope envelope) throws MessageExchangeException {
+        _cluster.send(target, envelope);
     }
 
     public String getPeerName(Address address) {
@@ -86,10 +85,6 @@ public class JGroupsDispatcher extends AbstractDispatcher {
 
     public Cluster getCluster() {
         return _cluster;
-    }
-
-    public Address getAddress(String name) {
-        throw new UnsupportedOperationException();
     }
 
     protected void hook() {

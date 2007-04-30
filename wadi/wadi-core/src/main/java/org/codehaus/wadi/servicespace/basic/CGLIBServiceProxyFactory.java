@@ -76,13 +76,13 @@ public class CGLIBServiceProxyFactory implements ServiceProxyFactory {
         return metaData;
     }
 
-    public Object getProxy() {
+    public ServiceProxy getProxy() {
         CGLIBServiceProxy serviceProxy = new CGLIBServiceProxy(new InvocationMetaData(metaData), invoker);
         Callback callback = new ProxyMethodInterceptor(serviceProxy);
         try {
             Factory proxy = (Factory) fastClass.newInstance();
             proxy.setCallbacks(new Callback[] {callback, serviceProxy});
-            return proxy;
+            return (ServiceProxy) proxy;
         } catch (InvocationTargetException e) {
             Throwable cause = e.getCause();
             if (cause instanceof RuntimeException) {

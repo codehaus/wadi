@@ -111,7 +111,7 @@ public class Launcher {
 
     private Manager newManager(VMBroker broker, String nodeName) throws MessageExchangeException,
             Exception {
-        VMDispatcher dispatcher = new VMDispatcher(broker, nodeName, null, 1000);
+        VMDispatcher dispatcher = new VMDispatcher(broker, nodeName, null);
         dispatcher.start();
 
         SampleStack stack = new SampleStack();

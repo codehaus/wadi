@@ -15,90 +15,61 @@
  */
 package org.codehaus.wadi.group.vm;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
-import junit.framework.TestCase;
+import java.util.Collections;
 
 import org.codehaus.wadi.group.Cluster;
-import org.codehaus.wadi.group.ClusterEvent;
 import org.codehaus.wadi.group.ClusterListener;
-import org.codehaus.wadi.group.Peer;
+
+import com.agical.rmock.extension.junit.RMockTestCase;
 
 /**
  * 
  * @version $Revision: 1603 $
  */
-public class TestVMCluster extends TestCase {
+public class TestVMCluster extends RMockTestCase {
+    
+    private VMBroker cluster;
+    private VMDispatcher dispatcher1;
+    private Cluster cluster1;
+    private VMDispatcher dispatcher2;
+    private Cluster cluster2;
+
+    protected void setUp() throws Exception {
+        cluster = new VMBroker("clusterName");
+        
+        dispatcher1 = new VMDispatcher(cluster, "node1", null);
+        cluster1 = dispatcher1.getCluster();
+        
+        dispatcher2 = new VMDispatcher(cluster, "node2", null);
+        cluster2 = dispatcher2.getCluster();
+    }
     
     public void testExistingPeerSeeJoiningPeerAndViceVersa() throws Exception {
-        VMBroker cluster = new VMBroker("clusterName");
+        ClusterListener listener1 = (ClusterListener) mock(ClusterListener.class);
+        ClusterListener listener2 = (ClusterListener) mock(ClusterListener.class);
         
-        VMDispatcher dispatcher1 = new VMDispatcher(cluster, "node1", null, 1000);
-        MockClusterListener listener1 = new MockClusterListener();
-        dispatcher1.getCluster().addClusterListener(listener1);
+        listener1.onListenerRegistration(cluster1, Collections.EMPTY_SET);
+        listener2.onListenerRegistration(cluster2, Collections.singleton(cluster1.getLocalPeer()));
+        listener1.onMembershipChanged(cluster1, Collections.singleton(cluster2.getLocalPeer()), Collections.EMPTY_SET);
+        
+        startVerification();
+        
+        cluster1.addClusterListener(listener1);
         dispatcher1.start();
         
-        assertTrue(listener1.events.isEmpty());
-        
-        VMDispatcher dispatcher2 = new VMDispatcher(cluster, "node2", null, 1000);
-        MockClusterListener listener2 = new MockClusterListener();
-        dispatcher2.getCluster().addClusterListener(listener2);
+        cluster2.addClusterListener(listener2);
         dispatcher2.start();
-        
-        assertEquals(1, listener1.events.size());
-        ClusterEvent event = (ClusterEvent) listener1.events.get(0);
-        assertSame(dispatcher2.getCluster().getLocalPeer(), event.getPeer());
-        assertSame(ClusterEvent.PEER_ADDED, event.getType());
-        listener1.clearEvents();
-        
-        assertEquals(1, listener2.events.size());
-        event = (ClusterEvent) listener2.events.get(0);
-        assertSame(dispatcher1.getCluster().getLocalPeer(), event.getPeer());
-        assertSame(ClusterEvent.PEER_ADDED, event.getType());
-        listener2.clearEvents();
     }
     
     public void testAddClusterListenerAfterStartSeeExistingPeer() throws Exception {
-        VMBroker cluster = new VMBroker("clusterName");
+        ClusterListener listener2 = (ClusterListener) mock(ClusterListener.class);
+        listener2.onListenerRegistration(dispatcher2.getCluster(), Collections.singleton(cluster1.getLocalPeer()));
+
+        startVerification();
         
-        VMDispatcher dispatcher1 = new VMDispatcher(cluster, "node1", null, 1000);
         dispatcher1.start();
-        
-        VMDispatcher dispatcher2 = new VMDispatcher(cluster, "node2", null, 1000);
         dispatcher2.start();
-
-        MockClusterListener listener2 = new MockClusterListener();
-        dispatcher2.getCluster().addClusterListener(listener2);
-        
-        assertEquals(1, listener2.events.size());
-        ClusterEvent event = (ClusterEvent) listener2.events.get(0);
-        assertSame(dispatcher1.getCluster().getLocalPeer(), event.getPeer());
-        assertSame(ClusterEvent.PEER_ADDED, event.getType());
+        cluster2.addClusterListener(listener2);
     }
 
-    private static class MockClusterListener implements ClusterListener {
-        public final List events = new ArrayList();
-
-        public void clearEvents() {
-            events.clear();
-        }
-
-        public void onListenerRegistration(Cluster cluster, Set existing, Peer coordinator) {
-        }
-        
-        public void onMembershipChanged(Cluster cluster, Set joiners, Set leavers, Peer coordinator) {
-            for (Iterator iter = joiners.iterator(); iter.hasNext();) {
-                Peer joiner = (Peer) iter.next();
-                events.add(new ClusterEvent(cluster, joiner, ClusterEvent.PEER_ADDED));
-            }
-            for (Iterator iter = leavers.iterator(); iter.hasNext();) {
-                Peer joiner = (Peer) iter.next();
-                events.add(new ClusterEvent(cluster, joiner, ClusterEvent.PEER_REMOVED));
-            }
-        }
-
-    }
 }

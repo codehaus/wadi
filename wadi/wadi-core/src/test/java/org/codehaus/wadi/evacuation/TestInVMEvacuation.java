@@ -16,21 +16,23 @@
 */
 package org.codehaus.wadi.evacuation;
 
+import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.vm.VMBroker;
 import org.codehaus.wadi.group.vm.VMDispatcher;
 
 
 public class TestInVMEvacuation extends AbstractTestEvacuation {
-	
-	public TestInVMEvacuation(String arg0) {
-		super(arg0);
-	}
-	
-	public void testEvacuation() throws Exception {
-        VMBroker cluster = new VMBroker("TEST");
-		long timeout=5000;
-		testEvacuation(new VMDispatcher(cluster, "red", null, timeout), new VMDispatcher(cluster, "green", null, timeout));
-	}
-	
+
+    private VMBroker cluster;
+
+    protected void setUp() throws Exception {
+        cluster = new VMBroker("TEST");
+        super.setUp();
+    }
+
+    protected Dispatcher newDispatcher(String name) throws Exception {
+        return new VMDispatcher(cluster, name, null);
+    }
+    
 }
 

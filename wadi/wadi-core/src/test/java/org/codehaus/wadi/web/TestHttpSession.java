@@ -43,6 +43,7 @@ import org.codehaus.wadi.core.contextualiser.DummyContextualiser;
 import org.codehaus.wadi.core.manager.BasicSessionMonitor;
 import org.codehaus.wadi.core.manager.ClusteredManager;
 import org.codehaus.wadi.core.manager.DummyManagerConfig;
+import org.codehaus.wadi.core.manager.DummyRouter;
 import org.codehaus.wadi.core.manager.Manager;
 import org.codehaus.wadi.core.manager.Router;
 import org.codehaus.wadi.core.manager.SessionIdFactory;
@@ -56,7 +57,6 @@ import org.codehaus.wadi.core.session.ValueFactory;
 import org.codehaus.wadi.core.util.SimpleStreamer;
 import org.codehaus.wadi.replication.DummyReplicaterFactory;
 import org.codehaus.wadi.web.impl.BasicHttpInvocationContextFactory;
-import org.codehaus.wadi.web.impl.DummyRouter;
 import org.codehaus.wadi.web.impl.StandardSessionWrapperFactory;
 
 /**

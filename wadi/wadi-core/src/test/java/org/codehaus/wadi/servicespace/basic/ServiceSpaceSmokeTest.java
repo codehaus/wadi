@@ -42,10 +42,10 @@ public class ServiceSpaceSmokeTest extends TestCase {
     public void testSmoke() throws Exception {
         ServiceSpaceName serviceSpace1Name = new ServiceSpaceName(new URI("space1"));
         VMBroker broker = new VMBroker("CLUSTER");
-        VMDispatcher dispatcher1 = new VMDispatcher(broker, "node1", null, 1000);
+        VMDispatcher dispatcher1 = new VMDispatcher(broker, "node1", null);
         dispatcher1.start();
         
-        VMDispatcher dispatcher2 = new VMDispatcher(broker, "node2", null, 1000);
+        VMDispatcher dispatcher2 = new VMDispatcher(broker, "node2", null);
         dispatcher2.start();
         
         Lifecycle service1 = new MockService();
@@ -56,7 +56,7 @@ public class ServiceSpaceSmokeTest extends TestCase {
         ServiceName service1Name = new ServiceName("service1");
         space1OnDisp1.getServiceRegistry().register(service1Name, service1);
         space1OnDisp1.start();
-        ServiceSpaceTracker spaceTrackerOnDisp1 = new ServiceSpaceTracker();
+        EventTracker spaceTrackerOnDisp1 = new EventTracker();
         space1OnDisp1.addServiceSpaceListener(spaceTrackerOnDisp1);
         
         BasicServiceSpace space1OnDisp2 = new BasicServiceSpace(serviceSpace1Name, dispatcher2);
@@ -85,7 +85,7 @@ public class ServiceSpaceSmokeTest extends TestCase {
         assertEquals(1, hostingPeers.size());
         assertEquals("node1", ((Peer) hostingPeers.iterator().next()).getName());
         
-        ServiceSpaceTracker spaceTrackerOnDisp2 = new ServiceSpaceTracker();
+        EventTracker spaceTrackerOnDisp2 = new EventTracker();
         space1OnDisp2.addServiceSpaceListener(spaceTrackerOnDisp2);
         
         space1OnDisp1.stop();
@@ -116,7 +116,7 @@ public class ServiceSpaceSmokeTest extends TestCase {
         assertEquals("node1", ((Peer) hostingPeers.iterator().next()).getName());
     }
     
-    private static class ServiceSpaceTracker implements ServiceSpaceListener {
+    private static class EventTracker implements ServiceSpaceListener {
         private final List received = new ArrayList();
         
         public void receive(ServiceSpaceLifecycleEvent event, Set newHostingPeers) {

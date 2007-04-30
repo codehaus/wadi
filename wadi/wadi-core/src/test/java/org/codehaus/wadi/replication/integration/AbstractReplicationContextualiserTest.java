@@ -17,33 +17,21 @@ package org.codehaus.wadi.replication.integration;
 
 import java.net.URI;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-
 import junit.framework.TestCase;
 
 import org.codehaus.wadi.core.ConcurrentMotableMap;
 import org.codehaus.wadi.core.assembler.StackContext;
+import org.codehaus.wadi.core.contextualiser.BasicInvocationContextFactory;
+import org.codehaus.wadi.core.contextualiser.InvocationContextFactory;
 import org.codehaus.wadi.core.contextualiser.InvocationException;
+import org.codehaus.wadi.core.contextualiser.ThrowExceptionIfNoSessionInvocation;
+import org.codehaus.wadi.core.manager.DummyRouter;
 import org.codehaus.wadi.core.manager.Manager;
 import org.codehaus.wadi.core.manager.Router;
-import org.codehaus.wadi.core.session.DistributableAttributesFactory;
 import org.codehaus.wadi.core.session.Session;
-import org.codehaus.wadi.core.session.SessionFactory;
-import org.codehaus.wadi.core.session.ValueFactory;
-import org.codehaus.wadi.core.session.ValueHelperRegistry;
-import org.codehaus.wadi.core.util.SimpleStreamer;
 import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.replication.manager.ReplicaterAdapterFactory;
 import org.codehaus.wadi.servicespace.ServiceSpace;
 import org.codehaus.wadi.servicespace.ServiceSpaceName;
-import org.codehaus.wadi.test.MockInvocation;
-import org.codehaus.wadi.test.MyHttpServletRequest;
-import org.codehaus.wadi.web.BasicWebSessionFactory;
-import org.codehaus.wadi.web.WebSession;
-import org.codehaus.wadi.web.impl.DummyRouter;
-import org.codehaus.wadi.web.impl.StandardSessionWrapperFactory;
 
 /**
  * 
@@ -82,20 +70,16 @@ public abstract class AbstractReplicationContextualiserTest extends TestCase {
         
         promoteNode(nodeInfo2, sessionName);
         
-        WebSession node2Session = (WebSession) nodeInfo2.mmap.acquire(sessionName);
+        Session node2Session = (Session) nodeInfo2.mmap.acquire(sessionName);
         assertNotNull(node2Session);
-        String actualAttrValue = (String) node2Session.getAttribute(attrName);
+        String actualAttrValue = (String) node2Session.getState(attrName);
         assertEquals(attrValue, actualAttrValue);
         
         assertNull(nodeInfo1.mmap.acquire(attrName));
     }
 
     private void promoteNode(NodeInfo nodeInfo, String sessionId) throws InvocationException {
-        nodeInfo.manager.contextualise(
-                new MockInvocation(new MyHttpServletRequest(sessionId), null,
-                    new FilterChain() { 
-                        public void doFilter(ServletRequest req, ServletResponse res){} 
-                    }));
+        nodeInfo.manager.contextualise(new ThrowExceptionIfNoSessionInvocation(sessionId));
     }
 
     private void waitForStableCluster() throws InterruptedException {
@@ -125,19 +109,11 @@ public abstract class AbstractReplicationContextualiserTest extends TestCase {
         dispatcher.start();
         
         StackContext stackContext = new StackContext(new ServiceSpaceName(new URI("name")), dispatcher) {
+            protected InvocationContextFactory newInvocationContextFactory() {
+                return new BasicInvocationContextFactory();
+            }
             protected Router newRouter() {
                 return new DummyRouter();
-            }
-            
-            protected SessionFactory newSessionFactory() {
-                ValueHelperRegistry valueHelperRegistry = newValueHelperRegistry();
-                ValueFactory valueFactory = newValueFactory(valueHelperRegistry);
-                SimpleStreamer streamer = newStreamer();
-                return new BasicWebSessionFactory(new DistributableAttributesFactory(valueFactory),
-                        streamer,
-                        new ReplicaterAdapterFactory(replicationManager),
-                        router,
-                        new StandardSessionWrapperFactory());
             }
         };
         stackContext.build();

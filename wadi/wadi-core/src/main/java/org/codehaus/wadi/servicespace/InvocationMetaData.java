@@ -17,6 +17,7 @@ package org.codehaus.wadi.servicespace;
 
 import java.io.Serializable;
 
+import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.servicespace.replyaccessor.TwoWay;
 import org.codehaus.wadi.servicespace.resultcombiner.ReturnFirstSuccessThenFailure;
@@ -33,8 +34,10 @@ public class InvocationMetaData implements Serializable {
     private transient long timeout = DEFAULT_TIMEOUT;
     private boolean oneWay;
     private boolean ignoreMessageExchangeExceptionOnSend;
+    private boolean clusterAggregation;
     private ReplyRequiredAssessor replyAssessor = TwoWay.ASSESSOR;
     private transient InvocationResultCombiner invocationResultCombiner = ReturnFirstSuccessThenFailure.COMBINER;
+
 
     public InvocationMetaData() {
     }
@@ -47,6 +50,8 @@ public class InvocationMetaData implements Serializable {
         timeout = prototype.timeout;
         replyAssessor = prototype.replyAssessor;
         oneWay = prototype.oneWay;
+        ignoreMessageExchangeExceptionOnSend = prototype.ignoreMessageExchangeExceptionOnSend;
+        clusterAggregation = prototype.clusterAggregation;
         invocationResultCombiner = prototype.invocationResultCombiner;
     }
 
@@ -117,4 +122,12 @@ public class InvocationMetaData implements Serializable {
         this.ignoreMessageExchangeExceptionOnSend = ignoreMessageExchangeExceptionOnSend;
     }
 
+    public boolean isClusterAggregation() {
+        return clusterAggregation;
+    }
+
+    public void setClusterAggregation(boolean clusterAggregation) {
+        this.clusterAggregation = clusterAggregation;
+    }
+    
 }

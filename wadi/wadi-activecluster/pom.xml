@@ -21,8 +21,19 @@
 
   <dependencies>
     <dependency>
-      <groupId>concurrent</groupId>
-      <artifactId>concurrent</artifactId>
+      <groupId>org.codehaus.wadi</groupId>
+      <artifactId>wadi-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>incubator-activemq</groupId>
+      <artifactId>activecluster</artifactId>
+      <version>${activemq.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>incubator-activemq</groupId>
+      <artifactId>activemq</artifactId>
+      <version>${activemq.version}</version>
     </dependency>
     <dependency>
       <groupId>geronimo-spec</groupId>
@@ -31,51 +42,25 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>incubator-activemq</groupId>
-      <artifactId>activecluster</artifactId>
-      <version>${activemq.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.codehaus.wadi</groupId>
-      <artifactId>wadi-group</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.codehaus.wadi</groupId>
-      <artifactId>wadi-group</artifactId>
-      <version>${project.version}</version>
-      <type>test-jar</type>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>geronimo-spec</groupId>
-      <artifactId>geronimo-spec-servlet</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.codehaus.wadi</groupId>
-      <artifactId>wadi-core</artifactId>
-      <version>${project.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.codehaus.wadi</groupId>
-      <artifactId>wadi-core</artifactId>
-      <version>${project.version}</version>
-      <type>test-jar</type>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>incubator-activemq</groupId>
-      <artifactId>activemq</artifactId>
-      <version>${activemq.version}</version>
-    </dependency>
-    <dependency>
       <groupId>mx4j</groupId>
       <artifactId>mx4j-remote</artifactId>
       <version>${mx4j.version}</version>
       <scope>runtime</scope>
+    </dependency>
+    
+    <dependency>
+      <groupId>org.codehaus.wadi</groupId>
+      <artifactId>wadi-group</artifactId>
+      <version>${project.version}</version>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.wadi</groupId>
+      <artifactId>wadi-core</artifactId>
+      <version>${project.version}</version>
+      <type>test-jar</type>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 

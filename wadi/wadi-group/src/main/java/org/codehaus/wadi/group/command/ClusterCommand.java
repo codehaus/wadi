@@ -26,5 +26,5 @@ import org.codehaus.wadi.group.Envelope;
  * @version $Revision: 1538 $
  */
 public interface ClusterCommand extends Serializable {
-    void execute(Envelope msg, Cluster cluster);
+    void execute(Envelope envelope, Cluster cluster);
 }

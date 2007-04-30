@@ -17,20 +17,20 @@ package org.codehaus.wadi.servicespace.basic;
 
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Envelope;
-import org.codehaus.wadi.group.MessageListener;
+import org.codehaus.wadi.group.EnvelopeListener;
 import org.codehaus.wadi.servicespace.ServiceSpace;
 
 /**
  * 
  * @version $Revision: $
  */
-public class ServiceResponseListener implements MessageListener {
+public class ServiceResponseListener implements EnvelopeListener {
     
     private final ServiceSpace serviceSpace;
     private final Dispatcher dispatcher;
-    private final MessageListener next;
+    private final EnvelopeListener next;
     
-    public ServiceResponseListener(ServiceSpace serviceSpace, MessageListener next) {
+    public ServiceResponseListener(ServiceSpace serviceSpace, EnvelopeListener next) {
         if (null == serviceSpace) {
             throw new IllegalArgumentException("serviceSpace is required");
         } else if (null == next) {
@@ -42,11 +42,11 @@ public class ServiceResponseListener implements MessageListener {
         dispatcher = serviceSpace.getDispatcher();
     }
 
-    public void onMessage(Envelope message) {
+    public void onEnvelope(Envelope message) {
         if (EnvelopeServiceHelper.isServiceReply(message)) {
             handleServiceReply(message);
         } else {
-            next.onMessage(message);
+            next.onEnvelope(message);
         }
     }
 

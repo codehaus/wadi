@@ -33,8 +33,8 @@ public abstract class AbstractMsgDispatcher implements ServiceEndpoint {
         _type = type;
     }
 
-    public boolean testDispatchMessage(Envelope om) {
-        Serializable payload = om.getPayload();
+    public boolean testDispatchEnvelope(Envelope envelope) {
+        Serializable payload = envelope.getPayload();
         if (null == payload) {
             return false;
         }

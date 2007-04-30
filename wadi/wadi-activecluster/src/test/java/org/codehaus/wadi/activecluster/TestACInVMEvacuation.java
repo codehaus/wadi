@@ -18,21 +18,17 @@ package org.codehaus.wadi.activecluster;
 
 import org.codehaus.wadi.activecluster.ActiveClusterDispatcher;
 import org.codehaus.wadi.evacuation.AbstractTestEvacuation;
+import org.codehaus.wadi.group.Dispatcher;
 
 
 public class TestACInVMEvacuation extends AbstractTestEvacuation {
+    private final String clusterName = ACTestUtil.CLUSTER_NAME;
+    private final String clusterUri = ACTestUtil.CLUSTER_URI_VM;
+    private final long timeout = ACTestUtil.CLUSTER_INACTIVE_TIME;
 	
-	public TestACInVMEvacuation(String name) {
-        super(name);
+    protected Dispatcher newDispatcher(String name) throws Exception {
+        return new ActiveClusterDispatcher(clusterName, name, clusterUri, null, timeout);
     }
-
-    public void testEvacuation() throws Exception {
-        String clusterName = ACTestUtil.CLUSTER_NAME;
-        String clusterUri = ACTestUtil.CLUSTER_URI_VM;
-        long timeout = ACTestUtil.CLUSTER_INACTIVE_TIME;
-        testEvacuation(new ActiveClusterDispatcher(clusterName, "red", clusterUri, null, timeout),
-                new ActiveClusterDispatcher(clusterName, "green", clusterUri, null, timeout));
-    }
-	
+    
 }
 

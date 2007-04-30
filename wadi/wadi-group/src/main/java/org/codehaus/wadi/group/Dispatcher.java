@@ -23,8 +23,11 @@ import java.util.Collection;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision: 1563 $
  */
-public interface Dispatcher extends MessageListener {
-	
+public interface Dispatcher extends EnvelopeListener {
+    void addInterceptor(EnvelopeInterceptor interceptor);
+
+    void removeInterceptor(EnvelopeInterceptor interceptor);
+    
     void register(ServiceEndpoint internalDispatcher);
 
     void unregister(ServiceEndpoint internalDispatcher, int nbAttemp, long delayMillis);
@@ -34,11 +37,11 @@ public interface Dispatcher extends MessageListener {
      * 
      * @param target
      *            The Address of the Peer to which the Message should be sent
-     * @param message
+     * @param envelope
      *            The Message itself
      * @throws MessageExchangeException
      */
-    void send(Address target, Envelope message) throws MessageExchangeException;
+    void send(Address target, Envelope envelope) throws MessageExchangeException;
 
     /**
      * send a Serializable pojo to an Address - async - no reply expected
@@ -147,20 +150,15 @@ public interface Dispatcher extends MessageListener {
      */
     Envelope exchangeSend(Address target, String sourceCorrelationId, Serializable pojo, long timeout) throws MessageExchangeException;
 
-    Envelope exchangeSend(Address target, Envelope om, long timeout) throws MessageExchangeException;
+    Envelope exchangeSend(Address target, Envelope envelope, long timeout) throws MessageExchangeException;
 
-    Envelope exchangeSend(Address target, Envelope om, long timeout, String targetCorrelationId) throws MessageExchangeException;
+    Envelope exchangeSend(Address target, Envelope envelope, long timeout, String targetCorrelationId) throws MessageExchangeException;
     
     void reply(Address from, Address to, String sourceCorrelationId, Serializable body) throws MessageExchangeException;
 
-    void reply(Envelope message, Serializable body) throws MessageExchangeException;
+    void reply(Envelope request, Serializable body) throws MessageExchangeException;
 
     void reply(Envelope request, Envelope reply) throws MessageExchangeException;
-
-    void forward(Envelope message, Address destination) throws MessageExchangeException;
-
-    // can we lose this ?
-    void forward(Envelope message, Address destination, Serializable body) throws MessageExchangeException;
 
     void addRendezVousEnvelope(Envelope envelope);
 
@@ -174,7 +172,7 @@ public interface Dispatcher extends MessageListener {
 
     void stop() throws MessageExchangeException;
 
-    Envelope createMessage();
+    Envelope createEnvelope();
 
     Cluster getCluster();
 
@@ -183,9 +181,6 @@ public interface Dispatcher extends MessageListener {
     // should be implemented as getPeer(Address address).getName() - but then we
     // will need to introduce a ClusterPeer ?
     String getPeerName(Address address);
-
-    // needed by BasicReplicaStorage stuff - can we lose it ?
-    Address getAddress(String name);
     
-
+    DispatcherContext getContext();
 }

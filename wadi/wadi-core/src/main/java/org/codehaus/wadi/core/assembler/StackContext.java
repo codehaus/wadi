@@ -112,16 +112,6 @@ public class StackContext {
     private SimplePartitionManagerTiming simplePartitionManagerTiming;
     private SessionMonitor sessionMonitor;
 
-    public static PartitionBalancerSingletonServiceHolder newPartitionBalancerSingletonServiceHolder(ServiceSpace serviceSpace,
-            int nbPartitions) throws ServiceAlreadyRegisteredException {
-        ServiceRegistry serviceRegistry = serviceSpace.getServiceRegistry();
-        SingletonServiceHolder holder = serviceRegistry.registerSingleton(PartitionBalancerSingletonService.NAME,
-                new BasicPartitionBalancerSingletonService(serviceSpace,
-                        new BasicPartitionBalancer(serviceSpace.getDispatcher(), nbPartitions)));
-        BasicPartitionBalancerSingletonServiceHolder balancerHolder = new BasicPartitionBalancerSingletonServiceHolder(holder);
-        return balancerHolder;
-    }
-    
     public StackContext(ServiceSpaceName serviceSpaceName, Dispatcher underlyingDispatcher) {
         this(serviceSpaceName, underlyingDispatcher, 30 * 60);
     }
@@ -302,14 +292,22 @@ public class StackContext {
     }
     
     protected PartitionManager newPartitionManager() throws ServiceAlreadyRegisteredException {
-        PartitionBalancerSingletonServiceHolder balancerHolder = newPartitionBalancerSingletonServiceHolder(serviceSpace,
-                numPartitions);
+        PartitionBalancerSingletonServiceHolder balancerHolder = newPartitionBalancerSingletonServiceHolder();
 
         return new SimplePartitionManager(serviceSpace, 
                 numPartitions,
                 partitionMapper, 
                 balancerHolder, 
                 simplePartitionManagerTiming);
+    }
+
+    protected PartitionBalancerSingletonServiceHolder newPartitionBalancerSingletonServiceHolder()
+            throws ServiceAlreadyRegisteredException {
+        ServiceRegistry serviceRegistry = serviceSpace.getServiceRegistry();
+        SingletonServiceHolder holder = serviceRegistry.registerSingleton(PartitionBalancerSingletonService.NAME,
+                new BasicPartitionBalancerSingletonService(serviceSpace, new BasicPartitionBalancer(serviceSpace
+                        .getDispatcher(), numPartitions)));
+        return new BasicPartitionBalancerSingletonServiceHolder(holder);
     }
 
     protected ReplicationManager newReplicationManager() {

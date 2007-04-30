@@ -35,8 +35,6 @@ import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.command.BootRemotePeer;
 import org.codehaus.wadi.group.impl.AbstractCluster;
 
-import EDU.oswego.cs.dl.util.concurrent.Latch;
-
 /**
  * 
  * @version $Revision: 1603 $
@@ -48,7 +46,7 @@ class ActiveClusterCluster extends AbstractCluster {
     protected org.apache.activecluster.Cluster _acCluster;
     protected Destination _clusterACDestination;
     protected Destination _localACDestination;
-    protected Latch _startLatch;
+    protected final long _inactiveTime = 5000;
 
     public ActiveClusterCluster(String clusterName, String localPeerName, String clusterUri, EndPoint endPoint, ActiveClusterDispatcher dispatcher) throws JMSException {
         super(clusterName, localPeerName, dispatcher);
@@ -89,7 +87,6 @@ class ActiveClusterCluster extends AbstractCluster {
         public void run() {
             Node node = event.getNode();
             EndPoint endPoint=(EndPoint)node.getState().get("EndPoint");
-            _startLatch.release();
             _cluster.set(ActiveClusterCluster.this);
             ActiveClusterPeer remotePeer = new ActiveClusterPeer(ActiveClusterCluster.this, node.getName(), endPoint);
             remotePeer.init(node.getDestination());
@@ -173,7 +170,6 @@ class ActiveClusterCluster extends AbstractCluster {
     };
 
     public synchronized void start() throws ClusterException {
-        _startLatch = new Latch();
         try {
             _acCluster = _clusterFactory.createCluster(_clusterName);
             _acCluster.addClusterListener(new ACListener());
@@ -195,16 +191,6 @@ class ActiveClusterCluster extends AbstractCluster {
         }
 
         _log.info(_localPeerName + " - " + "connected to Cluster");
-
-        boolean isFirstPeer;
-        try {
-            isFirstPeer = !_startLatch.attempt(_inactiveTime);
-        } catch (InterruptedException e) {
-            throw (IllegalStateException) new IllegalStateException().initCause(e);
-        }
-        if (isFirstPeer) {
-            setFirstPeer();
-        }
     }
 
     public synchronized void stop() throws ClusterException {
@@ -213,7 +199,6 @@ class ActiveClusterCluster extends AbstractCluster {
         } catch (JMSException e) {
             throw new ClusterException(e);
         }
-        _startLatch = null;
     }
 
     public boolean equals(Object obj) {

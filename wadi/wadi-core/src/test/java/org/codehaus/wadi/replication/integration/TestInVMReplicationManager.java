@@ -28,6 +28,6 @@ public class TestInVMReplicationManager extends AbstractReplicationManagerTest {
             cluster = new VMBroker(clusterName);
             cluster.setMessageRecorder(new SysOutMessageRecorder());
         }
-        return new VMDispatcher(cluster, nodeName, null, timeout);
+        return new VMDispatcher(cluster, nodeName, null);
     }
 }

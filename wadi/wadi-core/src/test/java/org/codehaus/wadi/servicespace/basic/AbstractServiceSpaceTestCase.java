@@ -23,8 +23,10 @@ import java.util.Map;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.Dispatcher;
+import org.codehaus.wadi.group.DispatcherContext;
 import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.Peer;
+import org.codehaus.wadi.group.impl.BasicDispatcherContext;
 import org.codehaus.wadi.servicespace.ServiceSpace;
 import org.codehaus.wadi.servicespace.ServiceSpaceName;
 
@@ -84,6 +86,9 @@ public class AbstractServiceSpaceTestCase extends RMockTestCase {
         dispatcher = (Dispatcher) mock(Dispatcher.class);
         dispatcher.getCluster();
         modify().multiplicity(expect.from(0)).returnValue(cluster);
+        
+        dispatcher.getContext();
+        modify().multiplicity(expect.from(0)).returnValue(new BasicDispatcherContext());
     }
 
     private void setUpServiceSpace() throws URISyntaxException {

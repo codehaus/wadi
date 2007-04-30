@@ -15,14 +15,18 @@
  */
 package org.codehaus.wadi.group.command;
 
+import java.io.Serializable;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.Envelope;
+import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.Peer;
+import org.codehaus.wadi.group.ServiceEndpoint;
+import org.codehaus.wadi.group.impl.EnvelopeHelper;
 import org.codehaus.wadi.group.impl.ServiceEndpointBuilder;
 
 
@@ -33,8 +37,8 @@ import org.codehaus.wadi.group.impl.ServiceEndpointBuilder;
 public class BootRemotePeer implements ClusterCommand {
     private static final Log log = LogFactory.getLog(BootRemotePeer.class);
     
-    private transient final Cluster cluster;
     private transient final Peer targetPeer;
+    private transient final Dispatcher dispatcher;
 
     public BootRemotePeer(Cluster cluster, Peer targetPeer) {
         if (null == cluster) {
@@ -43,13 +47,15 @@ public class BootRemotePeer implements ClusterCommand {
             throw new IllegalArgumentException("targetPeer is required");
         }
         this.targetPeer = targetPeer;
-        this.cluster = cluster;
+        
+        dispatcher = cluster.getDispatcher();
+        addCallback();
     }
 
-    public void execute(Envelope msg, Cluster cluster) {
+    public void execute(Envelope envelope, Cluster cluster) {
         LocalPeer localPeer = cluster.getLocalPeer();
         try {
-            cluster.getDispatcher().reply(msg, new BootPeerResponse(localPeer));
+            cluster.getDispatcher().reply(envelope, new BootPeerResponse(localPeer));
         } catch (MessageExchangeException e) {
             log.error(e);
         }
@@ -57,8 +63,6 @@ public class BootRemotePeer implements ClusterCommand {
 
     public Peer getSerializedPeer() {
         ServiceEndpointBuilder endpointBuilder = new ServiceEndpointBuilder();
-        Dispatcher dispatcher = cluster.getDispatcher();
-        endpointBuilder.addCallback(dispatcher, BootPeerResponse.class);
         Envelope message = null;
         try {
             message = dispatcher.exchangeSend(targetPeer.getAddress(), this, 5000);
@@ -76,4 +80,26 @@ public class BootRemotePeer implements ClusterCommand {
         return peerResponse.getPeer();
     }
     
+    protected void addCallback() {
+        dispatcher.register(new ServiceEndpoint() {
+
+            public void dispatch(Envelope envelope) throws Exception {
+                dispatcher.addRendezVousEnvelope(envelope);
+            }
+
+            public void dispose(int nbAttemp, long delayMillis) {
+            }
+
+            public boolean testDispatchEnvelope(Envelope envelope) {
+                boolean reply = EnvelopeHelper.isReply(envelope);
+                if (!reply) {
+                    return false;
+                }
+                Serializable payload = envelope.getPayload();
+                return payload instanceof BootPeerResponse;
+            }
+            
+        });
+    }
+
 }

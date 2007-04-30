@@ -23,8 +23,8 @@ import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.ClusterException;
 import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.Envelope;
+import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.impl.AbstractCluster;
@@ -46,33 +46,25 @@ public class BasicServiceSpaceDispatcher extends AbstractDispatcher {
 
     private final ServiceSpace serviceSpace;
     private final Dispatcher underlyingDispatcher;
-    private final ServiceSpaceMessageHelper messageHelper;
+    private final ServiceSpaceEnvelopeHelper messageHelper;
     private final BasicServiceSpaceCluster serviceSpaceCluster;
-    private final long waitTimeToBootServiceSpace;
 
-    public BasicServiceSpaceDispatcher(BasicServiceSpace serviceSpace, long waitTimeToBootServiceSpace) {
+    public BasicServiceSpaceDispatcher(BasicServiceSpace serviceSpace) {
         super(new ExecuteInThread());
         if (null == serviceSpace) {
             throw new IllegalArgumentException("serviceSpace is required");
-        } else if (0 > waitTimeToBootServiceSpace) {
-            throw new IllegalArgumentException("waitTimeToBootServiceSpace must be greater than 0");
         }
         this.serviceSpace = serviceSpace;
-        this.waitTimeToBootServiceSpace = waitTimeToBootServiceSpace;
         this.underlyingDispatcher = serviceSpace.getUnderlyingDispatcher();
 
-        messageHelper = new ServiceSpaceMessageHelper(serviceSpace);
+        messageHelper = new ServiceSpaceEnvelopeHelper(serviceSpace);
         serviceSpaceCluster = new BasicServiceSpaceCluster();
     }
 
-    public Envelope createMessage() {
-        Envelope message = underlyingDispatcher.createMessage();
+    public Envelope createEnvelope() {
+        Envelope message = underlyingDispatcher.createEnvelope();
         messageHelper.setServiceSpaceName(message);
         return message;
-    }
-
-    public Address getAddress(String name) {
-        return underlyingDispatcher.getAddress(name);
     }
 
     public Cluster getCluster() {
@@ -83,15 +75,15 @@ public class BasicServiceSpaceDispatcher extends AbstractDispatcher {
         return underlyingDispatcher.getPeerName(address);
     }
 
-    public void send(Address target, Envelope message) throws MessageExchangeException {
-        underlyingDispatcher.send(target, message);
+    protected void doSend(Address target, Envelope envelope) throws MessageExchangeException {
+        underlyingDispatcher.send(target, envelope);
     }
 
     public synchronized void start() throws MessageExchangeException {
         try {
             serviceSpaceCluster.start();
         } catch (Exception e) {
-            throw new ServiceSpaceException(e);
+            throw new ServiceSpaceException(serviceSpace.getServiceSpaceName(), e);
         }
     }
 
@@ -99,7 +91,7 @@ public class BasicServiceSpaceDispatcher extends AbstractDispatcher {
         try {
             serviceSpaceCluster.stop();
         } catch (Exception e) {
-            throw new ServiceSpaceException(e);
+            throw new ServiceSpaceException(serviceSpace.getServiceSpaceName(), e);
         }
     }
 
@@ -162,21 +154,10 @@ public class BasicServiceSpaceDispatcher extends AbstractDispatcher {
                 for (Iterator iter = hostingPeers.iterator(); iter.hasNext();) {
                     Peer peer = (Peer) iter.next();
                     _addressToPeer.put(peer.getAddress(), peer);
-                    startLatch.release();
                 }
                 if (!hostingPeers.isEmpty()) {
                     notifyMembershipChanged(hostingPeers, Collections.EMPTY_SET);
                 }
-            }
-            
-            boolean isFirstPeer;
-            try {
-                isFirstPeer = !startLatch.attempt(waitTimeToBootServiceSpace);
-            } catch (InterruptedException e) {
-                throw (IllegalStateException) new IllegalStateException().initCause(e);
-            }
-            if (isFirstPeer) {
-                setFirstPeer();
             }
         }
 

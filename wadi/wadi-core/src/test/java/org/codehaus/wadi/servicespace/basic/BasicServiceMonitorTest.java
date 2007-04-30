@@ -168,7 +168,7 @@ public class BasicServiceMonitorTest extends AbstractServiceSpaceTestCase {
 
         VMEnvelope message = new VMEnvelope();
         message.setPayload(newServiceLifecycleEvent(remote1, state));
-        assertTrue(endpoint.testDispatchMessage(message));
+        assertTrue(endpoint.testDispatchEnvelope(message));
         endpoint.dispatch(message);
         
         hostingPeers = monitor.getHostingPeers();
@@ -178,7 +178,7 @@ public class BasicServiceMonitorTest extends AbstractServiceSpaceTestCase {
         monitor.addServiceLifecycleListener(listener);
         
         message.setPayload(eventRemote2);
-        assertTrue(endpoint.testDispatchMessage(message));
+        assertTrue(endpoint.testDispatchEnvelope(message));
         endpoint.dispatch(message);
         
         hostingPeers = monitor.getHostingPeers();

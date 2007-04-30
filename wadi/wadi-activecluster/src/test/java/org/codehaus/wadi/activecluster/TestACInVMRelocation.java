@@ -15,7 +15,7 @@
  */
 package org.codehaus.wadi.activecluster;
 
-import org.codehaus.wadi.activecluster.ActiveClusterDispatcher;
+import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.relocation.AbstractTestRelocation;
 
 /**
@@ -23,13 +23,12 @@ import org.codehaus.wadi.relocation.AbstractTestRelocation;
  * @version $Revision: 1603 $
  */
 public class TestACInVMRelocation extends AbstractTestRelocation {
+    private final String clusterName = ACTestUtil.CLUSTER_NAME;
+    private final long timeout = ACTestUtil.CLUSTER_INACTIVE_TIME;
+    private final String clusterUri = ACTestUtil.CLUSTER_URI_VM;
 
-    public void testSessionRelocation() throws Exception {
-        String clusterName = ACTestUtil.CLUSTER_NAME;
-        long timeout = ACTestUtil.CLUSTER_INACTIVE_TIME;
-        String clusterUri = ACTestUtil.CLUSTER_URI_VM;
-        testSessionRelocation(new ActiveClusterDispatcher(clusterName, "red", clusterUri, null, timeout),
-                new ActiveClusterDispatcher(clusterName, "green", clusterUri, null, timeout));
+    protected Dispatcher newDispatcher(String name) throws Exception {
+        return new ActiveClusterDispatcher(clusterName, name, clusterUri, null, timeout);
     }
-	
+    
 }

@@ -27,17 +27,17 @@ import org.codehaus.wadi.group.Envelope;
  * 
  * @version $Revision: 1603 $
  */
-public class SerializeMessageTransformer implements MessageTransformer {
+public class SerializeMessageTransformer implements EnvelopeTransformer {
     private final VMBroker cluster;
     
     public SerializeMessageTransformer(VMBroker cluster) {
         this.cluster = cluster;
     }
 
-    public Envelope transform(Envelope message) {
-        Serializable payload = message.getPayload();
+    public Envelope transform(Envelope envelope) {
+        Serializable payload = envelope.getPayload();
         if (null == payload) {
-            return message;
+            return envelope;
         }
         
         try {
@@ -56,7 +56,7 @@ public class SerializeMessageTransformer implements MessageTransformer {
             throw (IllegalStateException) new IllegalStateException().initCause(e);
         }
         
-        VMEnvelope clone = new VMEnvelope((VMEnvelope) message);
+        VMEnvelope clone = new VMEnvelope((VMEnvelope) envelope);
         clone.setPayload(payload);
         
         return clone;

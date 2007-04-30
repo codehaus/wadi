@@ -20,7 +20,7 @@ import java.io.IOException;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.MessageExchangeException;
-import org.codehaus.wadi.group.MessageListener;
+import org.codehaus.wadi.group.EnvelopeListener;
 import org.codehaus.wadi.servicespace.InvocationInfo;
 import org.codehaus.wadi.servicespace.InvocationMetaData;
 import org.codehaus.wadi.servicespace.InvocationResult;
@@ -40,7 +40,7 @@ public class ServiceInvocationListenerTest extends RMockTestCase {
 
     private ServiceSpace serviceSpace;
     private ServiceRegistry serviceRegistry;
-    private MessageListener next;
+    private EnvelopeListener next;
     private ServiceName serviceName;
     private Dispatcher dispatcher;
 
@@ -48,7 +48,7 @@ public class ServiceInvocationListenerTest extends RMockTestCase {
         serviceSpace = (ServiceSpace) mock(ServiceSpace.class);
         dispatcher = serviceSpace.getDispatcher();
         serviceRegistry = serviceSpace.getServiceRegistry();
-        next = (MessageListener) mock(MessageListener.class);
+        next = (EnvelopeListener) mock(EnvelopeListener.class);
         serviceName = new ServiceName("name");
     }
     
@@ -57,13 +57,13 @@ public class ServiceInvocationListenerTest extends RMockTestCase {
         
         beginSection(s.ordered("Check if service message and dispatch to next"));
         EnvelopeServiceHelper.getServiceName(envelope);
-        next.onMessage(envelope);
+        next.onEnvelope(envelope);
         endSection();
         
         startVerification();
         
         ServiceInvocationListener invocationListener = new ServiceInvocationListener(serviceSpace, next);
-        invocationListener.onMessage(envelope);
+        invocationListener.onEnvelope(envelope);
     }
 
     public void testOneWayServiceMessage() throws Exception {
@@ -77,7 +77,7 @@ public class ServiceInvocationListenerTest extends RMockTestCase {
         startVerification();
         
         ServiceInvocationListener invocationListener = new ServiceInvocationListener(serviceSpace, next);
-        invocationListener.onMessage(envelope);
+        invocationListener.onEnvelope(envelope);
     }
 
     public void testRequestReplyServiceMessage() throws Exception {
@@ -92,7 +92,7 @@ public class ServiceInvocationListenerTest extends RMockTestCase {
         startVerification();
         
         ServiceInvocationListener invocationListener = new ServiceInvocationListener(serviceSpace, next);
-        invocationListener.onMessage(envelope);
+        invocationListener.onEnvelope(envelope);
     }
 
     public void testServiceMethodThrowException() throws Exception {
@@ -107,14 +107,14 @@ public class ServiceInvocationListenerTest extends RMockTestCase {
         startVerification();
         
         ServiceInvocationListener invocationListener = new ServiceInvocationListener(serviceSpace, next);
-        invocationListener.onMessage(envelope);
+        invocationListener.onEnvelope(envelope);
     }
     
     private void recordSuccessfulReply(Envelope envelope) throws MessageExchangeException {
         final String sayHelloResult = "sayHelloResult";
         modify().returnValue(sayHelloResult);
         
-        Envelope reply = dispatcher.createMessage();
+        Envelope reply = dispatcher.createEnvelope();
         EnvelopeServiceHelper.tagAsServiceReply(reply);
         reply.setPayload(null);
         modify().args(new AbstractExpression() {
@@ -138,7 +138,7 @@ public class ServiceInvocationListenerTest extends RMockTestCase {
         final Exception exception = new Exception();
         modify().throwException(exception);
         
-        Envelope reply = dispatcher.createMessage();
+        Envelope reply = dispatcher.createEnvelope();
         EnvelopeServiceHelper.tagAsServiceReply(reply);
         reply.setPayload(null);
         modify().args(new AbstractExpression() {

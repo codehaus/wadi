@@ -24,18 +24,15 @@ public class TribesDispatcher extends AbstractDispatcher implements ChannelListe
     public TribesDispatcher(String clusterName,
             String localPeerName,
             EndPoint endPoint,
-            long inactiveTime,
             String config) {
-        this(clusterName, localPeerName, endPoint, inactiveTime, config, Collections.EMPTY_LIST);
+        this(clusterName, localPeerName, endPoint, config, Collections.EMPTY_LIST);
     }
 
     public TribesDispatcher(String clusterName,
             String localPeerName,
             EndPoint endPoint,
-            long inactiveTime,
             String config,
             Collection staticMembers) {
-        super(inactiveTime);
         if (null == staticMembers) {
             throw new IllegalArgumentException("staticMembers is required");
         }
@@ -60,12 +57,8 @@ public class TribesDispatcher extends AbstractDispatcher implements ChannelListe
         }
     }
 
-    public Envelope createMessage() {
+    public Envelope createEnvelope() {
         return new TribesEnvelope();
-    }
-
-    public Address getAddress(String name) {
-        return (Address)cluster.getLocalPeer();
     }
 
     public Cluster getCluster() {
@@ -76,7 +69,7 @@ public class TribesDispatcher extends AbstractDispatcher implements ChannelListe
         return ((TribesPeer)address).getName();
     }
 
-    public void send(Address target, Envelope message) throws MessageExchangeException {
+    protected void doSend(Address target, Envelope envelope) throws MessageExchangeException {
         Member[] peers;
         if (target instanceof TribesClusterAddress) {
             TribesClusterAddress clusterAddress = (TribesClusterAddress) target;
@@ -85,7 +78,7 @@ public class TribesDispatcher extends AbstractDispatcher implements ChannelListe
             peers = new Member[] { (TribesPeer) target };
         }
         try {
-            cluster.channel.send(peers,message,Channel.SEND_OPTIONS_ASYNCHRONOUS);
+            cluster.channel.send(peers, envelope, Channel.SEND_OPTIONS_ASYNCHRONOUS);
         }catch ( ChannelException x ) {
             throw new MessageExchangeException(x);
         }
@@ -98,7 +91,7 @@ public class TribesDispatcher extends AbstractDispatcher implements ChannelListe
             msg.setAddress((Address) cluster.channel.getLocalMember(false));
             Runnable r = new Runnable() {
                 public void run() {
-                    onMessage(msg);
+                    onEnvelope(msg);
                 }
             };
             try {
@@ -110,11 +103,8 @@ public class TribesDispatcher extends AbstractDispatcher implements ChannelListe
     }
     
     public boolean accept(Serializable serializable, Member member) {
-        boolean result = (serializable instanceof TribesEnvelope);
-        //System.out.println("\n\n\nMEGA DEBUG\nAccept called on:"+this+" with "+serializable+ " result:"+result);
-        return result;
+        return serializable instanceof TribesEnvelope;
     }
-    
 
     /**
      * start

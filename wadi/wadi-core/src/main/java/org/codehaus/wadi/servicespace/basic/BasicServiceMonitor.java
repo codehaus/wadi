@@ -144,8 +144,8 @@ public class BasicServiceMonitor implements ServiceMonitor, Lifecycle {
     
     protected class ServiceLifecycleEndpoint implements ServiceEndpoint {
 
-        public void dispatch(Envelope om) throws Exception {
-            ServiceLifecycleEvent event = (ServiceLifecycleEvent) om.getPayload();
+        public void dispatch(Envelope envelope) throws Exception {
+            ServiceLifecycleEvent event = (ServiceLifecycleEvent) envelope.getPayload();
             processLifecycleEvent(event);
         }
 
@@ -153,8 +153,8 @@ public class BasicServiceMonitor implements ServiceMonitor, Lifecycle {
             return;
         }
 
-        public boolean testDispatchMessage(Envelope om) {
-            Serializable payload = om.getPayload();
+        public boolean testDispatchEnvelope(Envelope envelope) {
+            Serializable payload = envelope.getPayload();
             if (!(payload instanceof ServiceLifecycleEvent)) {
                 return false;
             }

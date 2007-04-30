@@ -24,8 +24,6 @@ import java.util.Map;
 public interface Cluster {
     String getClusterName();
     
-    void setElectionStrategy(ElectionStrategy strategy);
-
     Map getRemotePeers();
     
     int getPeerCount();
@@ -52,11 +50,5 @@ public interface Cluster {
      */
     boolean waitOnMembershipCount(int membershipCount, long timeout) throws InterruptedException;
     
-    /**
-     * @return - the number of millis that a Peer may remain silent before being declared suspect/dead..
-     */
-    long getInactiveTime();
-    
     Peer getPeerFromAddress(Address address);
-    
 }

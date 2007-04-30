@@ -53,7 +53,6 @@ public class BasicPartitionBalancer implements PartitionBalancer {
     }
 
     public void start() throws Exception {
-        endpointBuilder.addCallback(dispatcher, PartitionBalancingInfoState.class);
     }
 
     public void stop() throws Exception {

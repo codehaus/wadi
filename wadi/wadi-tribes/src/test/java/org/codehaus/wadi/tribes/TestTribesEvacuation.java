@@ -19,15 +19,17 @@ package org.codehaus.wadi.tribes;
 import java.io.Serializable;
 
 import org.codehaus.wadi.evacuation.AbstractTestEvacuation;
+import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.EndPoint;
-import org.codehaus.wadi.tribes.TribesDispatcher;
 
 public class TestTribesEvacuation extends AbstractTestEvacuation {
 
-  public TestTribesEvacuation(String name) {
-        super(name);
-    }
+    String clusterName = "dummy" + System.currentTimeMillis();
 
+    protected Dispatcher newDispatcher(String name) throws Exception {
+        return new TribesDispatcher(clusterName, "red", new MockEndPoint("red"), "");
+    }
+    
     static class MockEndPoint implements EndPoint, Serializable {
         protected String uri;
 
@@ -40,12 +42,5 @@ public class TestTribesEvacuation extends AbstractTestEvacuation {
         }
 
     }
-
-    public void testEvacuation() throws Exception {
-        String clusterName = "dummy" + System.currentTimeMillis();
-        long timeout = 5000;
-        testEvacuation(new TribesDispatcher(clusterName, "red", new MockEndPoint("red"), timeout, ""),
-                new TribesDispatcher(clusterName, "green", new MockEndPoint("green"), timeout, ""));
-    }
-
+    
 }

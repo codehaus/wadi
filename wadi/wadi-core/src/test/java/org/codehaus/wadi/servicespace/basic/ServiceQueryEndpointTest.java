@@ -50,7 +50,7 @@ public class ServiceQueryEndpointTest extends AbstractServiceSpaceTestCase {
         VMEnvelope message = new VMEnvelope();
         ServiceQueryEvent serviceQueryEvent = new ServiceQueryEvent(serviceSpaceName, serviceName1, remote1);
         message.setPayload(serviceQueryEvent);
-        assertTrue(endpoint.testDispatchMessage(message));
+        assertTrue(endpoint.testDispatchEnvelope(message));
         endpoint.dispatch(message);
     }
 
@@ -65,7 +65,7 @@ public class ServiceQueryEndpointTest extends AbstractServiceSpaceTestCase {
         VMEnvelope message = new VMEnvelope();
         ServiceQueryEvent serviceQueryEvent = new ServiceQueryEvent(serviceSpaceName, serviceName1, remote1);
         message.setPayload(serviceQueryEvent);
-        assertTrue(endpoint.testDispatchMessage(message));
+        assertTrue(endpoint.testDispatchEnvelope(message));
         endpoint.dispatch(message);
     }
 

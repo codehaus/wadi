@@ -42,11 +42,11 @@ public class VMLocalClusterListener implements ClusterListener {
         return localCluster;
     }
 
-    void notifyExistingPeers(Set existingPeers, Peer coordinator) {
-        notifyExistingPeersToPeer(existingPeers, coordinator, peer);
+    void notifyExistingPeers(Set existingPeers) {
+        notifyExistingPeersToPeer(existingPeers, peer);
     }
     
-    void notifyExistingPeersToPeer(Set existingPeers, Peer coordinator, Peer target) {
+    void notifyExistingPeersToPeer(Set existingPeers, Peer target) {
         if (false == localCluster.isRunning()) {
             return;
         }
@@ -56,10 +56,10 @@ public class VMLocalClusterListener implements ClusterListener {
         }
         
         existingPeers.remove(peer);
-        delegate.onMembershipChanged(localCluster, existingPeers, Collections.EMPTY_SET, coordinator);
+        delegate.onListenerRegistration(localCluster, existingPeers);
     }
 
-    void notifyJoiningPeerToPeers(Peer coordinator, Peer joining) {
+    void notifyJoiningPeerToPeers(Peer joining) {
         if (false == localCluster.isRunning()) {
             return;
         }
@@ -68,10 +68,10 @@ public class VMLocalClusterListener implements ClusterListener {
             return;
         }
 
-        delegate.onMembershipChanged(localCluster, Collections.singleton(joining), Collections.EMPTY_SET, coordinator);
+        delegate.onMembershipChanged(localCluster, Collections.singleton(joining), Collections.EMPTY_SET);
     }
 
-    void notifyLeavingPeerToPeers(Peer coordinator, Peer leaving) {
+    void notifyLeavingPeerToPeers(Peer leaving) {
         if (false == localCluster.isRunning()) {
             return;
         }
@@ -80,13 +80,13 @@ public class VMLocalClusterListener implements ClusterListener {
             return;
         }
 
-        delegate.onMembershipChanged(localCluster, Collections.EMPTY_SET, Collections.singleton(leaving), coordinator);
+        delegate.onMembershipChanged(localCluster, Collections.EMPTY_SET, Collections.singleton(leaving));
     }
 
-    public void onListenerRegistration(Cluster cluster, Set existing, Peer coordinator) {
+    public void onListenerRegistration(Cluster cluster, Set existing) {
     }
     
-    public void onMembershipChanged(Cluster cluster, Set joiners, Set leavers, Peer coordinator) {
+    public void onMembershipChanged(Cluster cluster, Set joiners, Set leavers) {
         if (false == localCluster.isRunning()) {
             return;
         }
@@ -105,7 +105,7 @@ public class VMLocalClusterListener implements ClusterListener {
             leavers=Collections.unmodifiableSet(newLeavers);
         }
         
-        delegate.onMembershipChanged(localCluster, joiners, leavers, coordinator);
+        delegate.onMembershipChanged(localCluster, joiners, leavers);
     }
 
     public boolean equals(Object obj) {

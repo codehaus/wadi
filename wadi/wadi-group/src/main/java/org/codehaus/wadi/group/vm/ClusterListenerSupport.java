@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.codehaus.wadi.group.LocalPeer;
-import org.codehaus.wadi.group.Peer;
 
 /**
  * 
@@ -37,12 +36,12 @@ class ClusterListenerSupport {
         this.broker = broker;
     }
 
-    public void addClusterListener(VMLocalClusterListener listener, Peer coordinator) {
+    public void addClusterListener(VMLocalClusterListener listener) {
         synchronized (listeners) {
             listeners.add(listener);
         }
         Set snapshotExistingPeers = snapshotExistingPeers();
-        listener.notifyExistingPeers(snapshotExistingPeers, coordinator);
+        listener.notifyExistingPeers(snapshotExistingPeers);
     }
 
     public void removeClusterListener(VMLocalClusterListener listener) {
@@ -51,35 +50,35 @@ class ClusterListenerSupport {
         }
     }
 
-    public void notifyMembershipChanged(LocalPeer peer, boolean joining, Peer coordinator) {
+    public void notifyMembershipChanged(LocalPeer peer, boolean joining) {
         Collection snapshotListeners;
         synchronized (listeners) {
             snapshotListeners = new ArrayList(listeners);
         }
         
         if (joining) {
-            notifyNewMembership(peer, coordinator, snapshotListeners);
+            notifyNewMembership(peer, snapshotListeners);
         } else {
-            notifyRemovedMembership(peer, coordinator, snapshotListeners);
+            notifyRemovedMembership(peer, snapshotListeners);
         }
     }
 
-    private void notifyNewMembership(LocalPeer peer, Peer coordinator, Collection listeners) {
+    private void notifyNewMembership(LocalPeer peer, Collection listeners) {
         Set existingPeers = snapshotExistingPeers();
         for (Iterator iter = listeners.iterator(); iter.hasNext();) {
             VMLocalClusterListener listener = (VMLocalClusterListener) iter.next();
-            listener.notifyExistingPeersToPeer(existingPeers, coordinator, peer);
+            listener.notifyExistingPeersToPeer(existingPeers, peer);
         }
         for (Iterator iter = listeners.iterator(); iter.hasNext();) {
             VMLocalClusterListener listener = (VMLocalClusterListener) iter.next();
-            listener.notifyJoiningPeerToPeers(coordinator, peer);
+            listener.notifyJoiningPeerToPeers(peer);
         }
     }
 
-    private void notifyRemovedMembership(LocalPeer peer, Peer coordinator, Collection listeners) {
+    private void notifyRemovedMembership(LocalPeer peer, Collection listeners) {
         for (Iterator iter = listeners.iterator(); iter.hasNext();) {
             VMLocalClusterListener listener = (VMLocalClusterListener) iter.next();
-            listener.notifyLeavingPeerToPeers(coordinator, peer);
+            listener.notifyLeavingPeerToPeers(peer);
         }
     }
 

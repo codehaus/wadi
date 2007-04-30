@@ -58,19 +58,19 @@ public class BasicServiceInvoker implements ServiceInvoker {
     }
 
     public InvocationResult invoke(InvocationInfo invInfo) {
-        Envelope message = dispatcher.createMessage();
+        Envelope message = dispatcher.createEnvelope();
         message.setPayload(invInfo);
         EnvelopeServiceHelper.setServiceName(targetServiceName, message);
         message.setReplyTo(dispatcher.getCluster().getLocalPeer().getAddress());
 
         if (invInfo.getMetaData().isClusterTargeted()) {
-            return invokeClusterInvocation(invInfo, message);
+            return invokeOnCluster(invInfo, message);
         } else {
-            return invokePeersInvocation(invInfo, message);
+            return invokeOnPeers(invInfo, message);
         }
     }
 
-    protected InvocationResult invokePeersInvocation(InvocationInfo invInfo, Envelope envelope) {
+    protected InvocationResult invokeOnPeers(InvocationInfo invInfo, Envelope envelope) {
         InvocationMetaData metaData = invInfo.getMetaData();
         Peer[] targetPeers = metaData.getTargets();
         Quipu quipu = null;
@@ -79,18 +79,14 @@ public class BasicServiceInvoker implements ServiceInvoker {
             envelope.setSourceCorrelationId(quipu.getCorrelationId());
         }
 
-        try {
-            sendInvocation(invInfo, envelope, targetPeers);
-        } catch (MessageExchangeException e) {
-            return new InvocationResult(e);
-        }
-        
-        if (metaData.isOneWay()) {
-            return null;
-        }
-        
         Collection messages;
         try {
+            sendInvocation(invInfo, envelope, targetPeers);
+
+            if (metaData.isOneWay()) {
+                return null;
+            }
+            
             messages = dispatcher.attemptMultiRendezVous(quipu, metaData.getTimeout());
         } catch (MessageExchangeException e) {
             return new InvocationResult(e);
@@ -106,11 +102,7 @@ public class BasicServiceInvoker implements ServiceInvoker {
             try {
                 dispatcher.send(address, envelope);
             } catch (MessageExchangeException e) {
-                if (invInfo.getMetaData().isIgnoreMessageExchangeExceptionOnSend()) {
-                    log.warn("Ignoring exception", e);
-                } else {
-                    throw e;
-                }
+                invInfo.handleOneWayException(e);
             }
         }
     }
@@ -126,25 +118,69 @@ public class BasicServiceInvoker implements ServiceInvoker {
         return combiner.combine(invocationResults);
     }
 
-    protected InvocationResult invokeClusterInvocation(InvocationInfo invInfo, Envelope message) {
+    protected InvocationResult invokeOnCluster(InvocationInfo invInfo, Envelope message) {
         InvocationMetaData metaData = invInfo.getMetaData();
         Address target = dispatcher.getCluster().getAddress();
         if (metaData.isOneWay()) {
-            try {
-                dispatcher.send(target, message);
-            } catch (MessageExchangeException e) {
-                return new InvocationResult(e);
-            }
-            return null;
+            return invokeOnClusterOneWay(message, invInfo, target);
         } else {
-            Envelope replyMessage;
-            try {
-                replyMessage = dispatcher.exchangeSend(target, message, metaData.getTimeout());
-            } catch (MessageExchangeException e) {
-                return new InvocationResult(e);
-            }
-            return (InvocationResult) replyMessage.getPayload();
+            return invokeOnClusterRequestReply(message, metaData, target);
         }
+    }
+
+    protected InvocationResult invokeOnClusterRequestReply(Envelope message,
+            InvocationMetaData metaData,
+            Address target) {
+        boolean clusterAggregation = metaData.isClusterAggregation();
+        if (clusterAggregation) {
+            return invokeOnClusterWithAggregation(message, metaData, target);
+        } else {
+            return invokeOnClusterFirstResponse(message, metaData, target);
+        }
+    }
+
+    protected InvocationResult invokeOnClusterFirstResponse(Envelope message,
+            InvocationMetaData metaData,
+            Address target) {
+        Envelope replyMessage;
+        try {
+            replyMessage = dispatcher.exchangeSend(target, message, metaData.getTimeout());
+        } catch (MessageExchangeException e) {
+            return new InvocationResult(e);
+        }
+        return (InvocationResult) replyMessage.getPayload();
+    }
+
+    protected InvocationResult invokeOnClusterWithAggregation(Envelope message,
+            InvocationMetaData metaData,
+            Address target) {
+        int nbPeer = dispatcher.getCluster().getPeerCount();
+        Quipu quipu = dispatcher.newRendezVous(nbPeer);
+        message.setSourceCorrelationId(quipu.getCorrelationId());
+        
+        Collection messages;
+        try {
+            dispatcher.send(target, message);
+            
+            messages = dispatcher.attemptMultiRendezVous(quipu, metaData.getTimeout());
+        } catch (MessageExchangeException e) {
+            return new InvocationResult(e);
+        }
+        
+        return combineResults(metaData, messages);
+    }
+
+    protected InvocationResult invokeOnClusterOneWay(Envelope message, InvocationInfo invInfo, Address target) {
+        try {
+            dispatcher.send(target, message);
+        } catch (MessageExchangeException e) {
+            try {
+                invInfo.handleOneWayException(e);
+            } catch (MessageExchangeException e1) {
+                throw (AssertionError) new AssertionError("Should never happen").initCause(e);
+            }
+        }
+        return null;
     }
 
 }
