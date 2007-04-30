@@ -1,44 +1,43 @@
 package org.codehaus.wadi.evacuation;
 
-import java.io.IOException;
-
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-
 import junit.framework.TestCase;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.core.contextualiser.Invocation;
-import org.codehaus.wadi.core.contextualiser.InvocationException;
+import org.codehaus.wadi.core.contextualiser.ThrowExceptionIfNoSessionInvocation;
 import org.codehaus.wadi.core.session.Session;
 import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.test.MockInvocation;
-import org.codehaus.wadi.test.MyHttpServletRequest;
-import org.codehaus.wadi.test.MyHttpServletResponse;
 import org.codehaus.wadi.test.MyStack;
 import org.codehaus.wadi.test.TestUtil;
-import org.codehaus.wadi.web.HttpInvocationContext;
-import org.codehaus.wadi.web.impl.WebInvocation;
 
-public class AbstractTestEvacuation extends TestCase {
+public abstract class AbstractTestEvacuation extends TestCase {
 	protected Log _log = LogFactory.getLog(getClass());
 	
-	public AbstractTestEvacuation(String arg0) {
-		super(arg0);
-	}
-	
+    private Dispatcher redD;
+    private Dispatcher greenD;
+
 	protected void setUp() throws Exception {
-		super.setUp();
+        redD = newDispatcher("red");
+        redD.start();
+        // Implementation note: we really need to wait some time to have a "stable" Dispatcher. For instance, in the
+        // case of ActiveCluster, 
+        Thread.sleep(1000);
+
+        greenD = newDispatcher("green");
+        greenD.start();
+        // Implementation note: we really need to wait some time to have a "stable" Dispatcher. For instance, in the
+        // case of ActiveCluster, 
+        Thread.sleep(1000);
+    }
+
+    protected void tearDown() throws Exception {
+        redD.stop();
+        greenD.stop();
 	}
 	
-	protected void tearDown() throws Exception {
-		super.tearDown();
-	}
-	
-	public void testEvacuation(Dispatcher redD, Dispatcher greenD) throws Exception {
+    protected abstract Dispatcher newDispatcher(String name) throws Exception;
+
+	public void testEvacuation() throws Exception {
 		MyStack red = new MyStack(redD);
         red.start();
         redD = red.getServiceSpace().getDispatcher();
@@ -53,31 +52,22 @@ public class AbstractTestEvacuation extends TestCase {
         session.onEndProcessing();
         String name = session.getName();
 
-        FilterChain fc = new FilterChain() {
-            public void doFilter(ServletRequest req, ServletResponse res) throws IOException, ServletException {
-                HttpInvocationContext invocationContext = (HttpInvocationContext) req;
-                WebInvocation webInvocation = invocationContext.getWebInvocation();
-                assertTrue(webInvocation.getSession() != null);
-            }
-        };
-
-        stopRedAndInvokeAgainstGreen(greenD, red, green, name, fc);
-        startRedAndInvokeAgainstRed(redD, greenD, red, name, fc);
+        stopRedAndInvokeAgainstGreen(greenD, red, green, name);
+        startRedAndInvokeAgainstRed(redD, greenD, red, name);
 	}
 
-    private void startRedAndInvokeAgainstRed(Dispatcher redD, Dispatcher greenD, MyStack red, String id, FilterChain fc) throws Exception, InvocationException {
+    private void startRedAndInvokeAgainstRed(Dispatcher redD, Dispatcher greenD, MyStack red, String id) throws Exception {
         red.start();
         TestUtil.waitForDispatcherSeeOthers(new Dispatcher[] { redD, greenD }, 5000);
-        Invocation invocation = new MockInvocation(new MyHttpServletRequest(id), new MyHttpServletResponse(), fc);
-        boolean success = red.getManager().contextualise(invocation);
+        boolean success = red.getManager().contextualise(new ThrowExceptionIfNoSessionInvocation(id));
         assertTrue(success);
     }
 
-    private void stopRedAndInvokeAgainstGreen(Dispatcher greenD, MyStack red, MyStack green, String id, FilterChain fc) throws Exception, InvocationException {
+    private void stopRedAndInvokeAgainstGreen(Dispatcher greenD, MyStack red, MyStack green, String id) throws Exception {
         red.stop();
         TestUtil.waitForDispatcherSeeOthers(new Dispatcher[] { greenD }, 5000);
-        Invocation invocation = new MockInvocation(new MyHttpServletRequest(id), new MyHttpServletResponse(), fc);
-        boolean success = green.getManager().contextualise(invocation);
+        boolean success = green.getManager().contextualise(new ThrowExceptionIfNoSessionInvocation(id));
         assertTrue(success);
     }
+    
 }

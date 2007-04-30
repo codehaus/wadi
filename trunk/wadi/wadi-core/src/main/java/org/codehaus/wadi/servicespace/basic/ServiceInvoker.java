@@ -17,11 +17,12 @@ package org.codehaus.wadi.servicespace.basic;
 
 import org.codehaus.wadi.servicespace.InvocationInfo;
 import org.codehaus.wadi.servicespace.InvocationResult;
+import org.codehaus.wadi.servicespace.ServiceProxyException;
 
 /**
  * 
  * @version $Revision: $
  */
 public interface ServiceInvoker {
-    InvocationResult invoke(InvocationInfo invInfo);
+    InvocationResult invoke(InvocationInfo invInfo) throws ServiceProxyException;
 }

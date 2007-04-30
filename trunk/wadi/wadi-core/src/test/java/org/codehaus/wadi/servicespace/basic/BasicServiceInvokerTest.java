@@ -32,6 +32,7 @@ import org.codehaus.wadi.servicespace.InvocationMetaData;
 import org.codehaus.wadi.servicespace.InvocationResult;
 import org.codehaus.wadi.servicespace.InvocationResultCombiner;
 import org.codehaus.wadi.servicespace.ServiceName;
+import org.codehaus.wadi.servicespace.ServiceProxyException;
 import org.codehaus.wadi.servicespace.ServiceSpace;
 
 import com.agical.rmock.core.describe.ExpressionDescriber;
@@ -48,12 +49,16 @@ public class BasicServiceInvokerTest extends RMockTestCase {
     private ServiceName serviceName;
     private Dispatcher dispatcher;
     private Cluster cluster;
+    private Address clusterAddress;
     private LocalPeer localPeer;
     private Peer peer1;
     private Peer peer2;
     private Address localAddress;
     private Address address1;
     private Address address2;
+    private InvocationMetaData metaData;
+    private InvocationInfo invocInfo;
+    private InvocationResultCombiner resultCombiner;
 
     protected void setUp() throws Exception {
         serviceSpace = (ServiceSpace) mock(ServiceSpace.class);
@@ -61,8 +66,16 @@ public class BasicServiceInvokerTest extends RMockTestCase {
         serviceName = new ServiceName("name");
         
         cluster = dispatcher.getCluster();
+        modify().multiplicity(expect.from(0));
+        
         localPeer = cluster.getLocalPeer();
         localAddress = localPeer.getAddress();
+        
+        clusterAddress = cluster.getAddress();
+        modify().multiplicity(expect.from(0));
+        
+        cluster.getPeerCount();
+        modify().multiplicity(expect.from(0)).returnValue(2);
         
         peer1 = (Peer) mock(Peer.class);
         address1 = peer1.getAddress();
@@ -71,13 +84,16 @@ public class BasicServiceInvokerTest extends RMockTestCase {
         peer2 = (Peer) mock(Peer.class);
         address2 = peer2.getAddress();
         modify().multiplicity(expect.from(0));
+        
+        resultCombiner = (InvocationResultCombiner) mock(InvocationResultCombiner.class);
+        
+        metaData = new InvocationMetaData();
+        invocInfo = new InvocationInfo("name", new Class[0], new Object[0], metaData);
     }
     
     public void testOneWayInvoke() throws Exception {
-        InvocationMetaData invocationMetaData = new InvocationMetaData();
-        invocationMetaData.setTargets(new Peer[] {peer1, peer2});
-        invocationMetaData.setOneWay(true);
-        InvocationInfo invocInfo = new InvocationInfo("name", new Class[0], new Object[0], invocationMetaData);
+        metaData.setTargets(new Peer[] {peer1, peer2});
+        metaData.setOneWay(true);
         
         beginSection(s.ordered("Prepare and send invocations"));
         Envelope envelope = recordPrepareOneWayMessage(invocInfo);
@@ -92,21 +108,17 @@ public class BasicServiceInvokerTest extends RMockTestCase {
     }
 
     public void testRequestReplyInvoke() throws Exception {
-        InvocationResultCombiner resultCombiner = (InvocationResultCombiner) mock(InvocationResultCombiner.class);
-        
-        InvocationMetaData invocationMetaData = new InvocationMetaData();
-        invocationMetaData.setTargets(new Peer[] {peer1, peer2});
-        invocationMetaData.setInvocationResultCombiner(resultCombiner);
-        InvocationInfo invocInfo = new InvocationInfo("name", new Class[0], new Object[0], invocationMetaData);
+        metaData.setTargets(new Peer[] {peer1, peer2});
+        metaData.setInvocationResultCombiner(resultCombiner);
         
         beginSection(s.ordered("Prepare and send invocations"));
         Envelope envelope = recordPrepareOneWayMessage(invocInfo);
 
-        Quipu quipu = recordReplyMessage(invocationMetaData, envelope);
+        Quipu quipu = recordReplyMessage(metaData, envelope);
         
         recordSendInvocations(envelope);
         
-        recordProcessResults(resultCombiner, invocationMetaData, quipu);
+        recordProcessResults(metaData, quipu);
         
         endSection();
         startVerification();
@@ -115,15 +127,90 @@ public class BasicServiceInvokerTest extends RMockTestCase {
         serviceInvoker.invoke(invocInfo);
     }
 
-    public void testExceptionWhenSendingInvocation() throws Exception {
-        InvocationMetaData invocationMetaData = new InvocationMetaData();
-        invocationMetaData.setTargets(new Peer[] {peer1});
-        invocationMetaData.setOneWay(true);
-        InvocationInfo invocInfo = new InvocationInfo("name", new Class[0], new Object[0], invocationMetaData);
+    public void testClusterOneWay() throws Exception {
+        metaData.setOneWay(true);
         
         beginSection(s.ordered("Prepare and send invocation"));
         Envelope envelope = recordPrepareOneWayMessage(invocInfo);
         
+        dispatcher.send(clusterAddress, envelope);
+        endSection();
+        
+        startVerification();
+        
+        BasicServiceInvoker serviceInvoker = new BasicServiceInvoker(serviceSpace, serviceName);
+        serviceInvoker.invoke(invocInfo);
+    }
+
+    public void testClusterRequestReply() throws Exception {
+        beginSection(s.ordered("Prepare and send invocation"));
+        Envelope envelope = recordPrepareOneWayMessage(invocInfo);
+        
+        Envelope replyMessage = dispatcher.exchangeSend(clusterAddress, envelope, metaData.getTimeout());
+        replyMessage.getPayload();
+        InvocationResult expectedResult = new InvocationResult("result");
+        modify().returnValue(expectedResult);
+
+        endSection();
+        
+        startVerification();
+        
+        BasicServiceInvoker serviceInvoker = new BasicServiceInvoker(serviceSpace, serviceName);
+        InvocationResult actualResult = serviceInvoker.invoke(invocInfo);
+        assertSame(expectedResult, actualResult);
+    }
+    
+    public void testClusterAggregation() throws Exception {
+        metaData.setClusterAggregation(true);
+        metaData.setInvocationResultCombiner(resultCombiner);
+        
+        beginSection(s.ordered("Prepare and send invocation"));
+        Envelope envelope = recordPrepareOneWayMessage(invocInfo);
+        
+        Quipu quipu = recordReplyMessage(2, envelope);
+        
+        dispatcher.send(clusterAddress, envelope);
+        
+        recordProcessResults(metaData, quipu);
+        endSection();
+        
+        startVerification();
+        
+        BasicServiceInvoker serviceInvoker = new BasicServiceInvoker(serviceSpace, serviceName);
+        serviceInvoker.invoke(invocInfo);
+    }
+    
+    public void testExceptionWhenSendingOneWayInvokeThrowServiceProxyException() throws Exception {
+        metaData.setTargets(new Peer[] {peer1});
+        metaData.setOneWay(true);
+        
+        beginSection(s.ordered("Prepare and send invocation"));
+        Envelope envelope = recordPrepareOneWayMessage(invocInfo);
+        
+        envelope.setAddress(address1);
+        dispatcher.send(address1, envelope);
+        MessageExchangeException expectedException = new MessageExchangeException("");
+        modify().throwException(expectedException);
+        endSection();
+        
+        startVerification();
+        
+        BasicServiceInvoker serviceInvoker = new BasicServiceInvoker(serviceSpace, serviceName);
+        try {
+            serviceInvoker.invoke(invocInfo);
+            fail();
+        } catch (ServiceProxyException e) {
+        }
+    }
+
+    public void testExceptionWhenSendingRequestReplyInvokeReturnMessageExchangeException() throws Exception {
+        metaData.setTargets(new Peer[] {peer1});
+        
+        beginSection(s.ordered("Prepare and send invocation"));
+        Envelope envelope = recordPrepareOneWayMessage(invocInfo);
+        
+        recordReplyMessage(metaData, envelope);
+
         envelope.setAddress(address1);
         dispatcher.send(address1, envelope);
         MessageExchangeException expectedException = new MessageExchangeException("");
@@ -138,7 +225,7 @@ public class BasicServiceInvokerTest extends RMockTestCase {
         assertSame(expectedException, result.getThrowable());
     }
     
-    private void recordProcessResults(InvocationResultCombiner resultCombiner, InvocationMetaData invocationMetaData, Quipu quipu) throws MessageExchangeException {
+    private void recordProcessResults(InvocationMetaData invocationMetaData, Quipu quipu) throws MessageExchangeException {
         Envelope replyEnvelope = (Envelope) mock(Envelope.class);
         dispatcher.attemptMultiRendezVous(quipu, invocationMetaData.getTimeout());
         modify().returnValue(Collections.singleton(replyEnvelope));
@@ -165,7 +252,10 @@ public class BasicServiceInvokerTest extends RMockTestCase {
     }
 
     private Quipu recordReplyMessage(InvocationMetaData invocationMetaData, Envelope envelope) {
-        int nbTargets = invocationMetaData.getTargets().length;
+        return recordReplyMessage(invocationMetaData.getTargets().length, envelope);
+    }
+
+    private Quipu recordReplyMessage(int nbTargets, Envelope envelope) {
         dispatcher.newRendezVous(nbTargets);
         Quipu quipu = new Quipu(nbTargets, "1");
         modify().returnValue(quipu);
@@ -175,7 +265,7 @@ public class BasicServiceInvokerTest extends RMockTestCase {
     }
 
     private Envelope recordPrepareOneWayMessage(InvocationInfo invocInfo) {
-        Envelope envelope = dispatcher.createMessage();
+        Envelope envelope = dispatcher.createEnvelope();
         envelope.setPayload(invocInfo);
         EnvelopeServiceHelper.setServiceName(serviceName, envelope);
         envelope.setReplyTo(localAddress);

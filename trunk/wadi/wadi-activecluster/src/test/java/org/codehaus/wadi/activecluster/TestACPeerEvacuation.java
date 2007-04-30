@@ -16,22 +16,17 @@
 */
 package org.codehaus.wadi.activecluster;
 
-import org.codehaus.wadi.activecluster.ActiveClusterDispatcher;
 import org.codehaus.wadi.evacuation.AbstractTestEvacuation;
+import org.codehaus.wadi.group.Dispatcher;
 
 
 public class TestACPeerEvacuation extends AbstractTestEvacuation {
+    private final String clusterUri = ACTestUtil.CLUSTER_URI_PEER;
+    private final String clusterName = ACTestUtil.CLUSTER_NAME;
+    private final long timeout = ACTestUtil.CLUSTER_INACTIVE_TIME;
     
-    public TestACPeerEvacuation(String name) {
-        super(name);
-    }
-
-    public void testEvacuation() throws Exception {
-        String clusterUri = ACTestUtil.CLUSTER_URI_PEER;
-        String clusterName = ACTestUtil.CLUSTER_NAME;
-        long timeout = ACTestUtil.CLUSTER_INACTIVE_TIME;
-        testEvacuation(new ActiveClusterDispatcher(clusterName, "red", clusterUri, null, timeout),
-                new ActiveClusterDispatcher(clusterName, "green", clusterUri, null, timeout));
+    protected Dispatcher newDispatcher(String name) throws Exception {
+        return new ActiveClusterDispatcher(clusterName, name, clusterUri, null, timeout);
     }
 
 }

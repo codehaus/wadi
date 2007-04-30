@@ -46,16 +46,16 @@ class ServiceEndpointWrapper implements ServiceEndpoint {
         return count;
     }
 
-    public void dispatch(Envelope om) throws Exception {
-        delegate.dispatch(om);
+    public void dispatch(Envelope envelope) throws Exception {
+        delegate.dispatch(envelope);
     }
 
     public void dispose(int nbAttemp, long delayMillis) {
         delegate.dispose(nbAttemp, delayMillis);
     }
 
-    public boolean testDispatchMessage(Envelope om) {
-        return delegate.testDispatchMessage(om);
+    public boolean testDispatchEnvelope(Envelope envelope) {
+        return delegate.testDispatchEnvelope(envelope);
     }
     
 }

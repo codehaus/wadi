@@ -18,19 +18,23 @@ package org.codehaus.wadi.group.impl;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Dispatcher;
+import org.codehaus.wadi.group.DispatcherContext;
 import org.codehaus.wadi.group.Envelope;
+import org.codehaus.wadi.group.EnvelopeInterceptor;
 import org.codehaus.wadi.group.MessageExchangeException;
-import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.Quipu;
 import org.codehaus.wadi.group.ServiceEndpoint;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
+import EDU.oswego.cs.dl.util.concurrent.CopyOnWriteArrayList;
 import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
 import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 
@@ -43,50 +47,71 @@ import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 public abstract class AbstractDispatcher implements Dispatcher {
 	
 	protected final ThreadPool _executor;
-	protected final Log _messageLog = LogFactory.getLog("org.codehaus.wadi.MESSAGES");
     protected Log _log = LogFactory.getLog(getClass());
     protected final Map _rvMap = new ConcurrentHashMap();
-
-    private final MessageDispatcherManager inboundMessageDispatcher; 
+    protected final List interceptors;
+    private final DispatcherContext context;
+    
+    private final EnvelopeDispatcherManager inboundEnvelopeDispatcher; 
 
     public AbstractDispatcher(ThreadPool executor) {
         _executor = executor;
         
-        inboundMessageDispatcher = new BasicMessageDispatcherManager(this, _executor);
+        interceptors = new CopyOnWriteArrayList();
+        inboundEnvelopeDispatcher = new BasicEnvelopeDispatcherManager(this, _executor);
+        context = new BasicDispatcherContext();
     }
 
-	public AbstractDispatcher(long inactiveTime) {
+	public AbstractDispatcher() {
         this(new PooledExecutorAdapter(10));
 	}
+    
+	public DispatcherContext getContext() {
+	    return context;
+	}
+    
+    public void addInterceptor(EnvelopeInterceptor interceptor) {
+        interceptor.registerLoopbackEnvelopeListener(this);
+        interceptors.add(interceptor);
+    }
 	
+    public void removeInterceptor(EnvelopeInterceptor interceptor) {
+        interceptors.remove(interceptor);
+        interceptor.unregisterLoopbackEnvelopeListener(this);
+    }
+    
 	public void register(ServiceEndpoint msgDispatcher) {
-        inboundMessageDispatcher.register(msgDispatcher);
+        inboundEnvelopeDispatcher.register(msgDispatcher);
     }
     
     public void unregister(ServiceEndpoint msgDispatcher, int nbAttemp, long delayMillis) {
-        inboundMessageDispatcher.unregister(msgDispatcher, nbAttemp, delayMillis);
+        inboundEnvelopeDispatcher.unregister(msgDispatcher, nbAttemp, delayMillis);
     }
 
-    public void onMessage(Envelope message) {
-        if (_messageLog.isTraceEnabled()) {
-            _messageLog.trace("incoming: " + message.getPayload() + " {" + message.getReplyTo() + "->"
-                    + message.getAddress() + "} - " + message.getTargetCorrelationId() + "/"
-                    + message.getSourceCorrelationId() + " on " + Thread.currentThread().getName());
+    public final void onEnvelope(Envelope envelope) {
+        envelope = onInboundEnvelope(envelope);
+        if (null == envelope) {
+            return;
         }
-        inboundMessageDispatcher.onMessage(message);
+        
+        doOnEnvelope(envelope);
+    }
+
+    protected void doOnEnvelope(Envelope envelope) {
+        inboundEnvelopeDispatcher.onEnvelope(envelope);
     }
 	
 	class SimpleCorrelationIDFactory {
-		
-		protected final SynchronizedInt _count=new SynchronizedInt(0);
-		
-		public String create() {
-			return Integer.toString(_count.increment());
-		}
-		
-	}
-	
-	protected final SimpleCorrelationIDFactory _factory=new SimpleCorrelationIDFactory();
+
+        protected final SynchronizedInt _count = new SynchronizedInt(0);
+
+        public String create() {
+            return Integer.toString(_count.increment());
+        }
+
+    }
+
+    protected final SimpleCorrelationIDFactory _factory = new SimpleCorrelationIDFactory();
 
     public void addRendezVousEnvelope(Envelope envelope) {
         String targetCorrelationId = envelope.getTargetCorrelationId();
@@ -106,12 +131,6 @@ public abstract class AbstractDispatcher implements Dispatcher {
         }
     }
     
-	public Quipu setRendezVous(String correlationId, int numLlamas) {
-        Quipu rv = new Quipu(numLlamas, correlationId);
-        _rvMap.put(correlationId, rv);
-        return rv;
-    }
-	
     public Quipu newRendezVous(int numLlamas) {
         return setRendezVous(_factory.create(), numLlamas);
     }
@@ -154,18 +173,14 @@ public abstract class AbstractDispatcher implements Dispatcher {
         return response;
     }
     
-    public Envelope exchangeSend(Address target, Object pojo, long timeout) throws MessageExchangeException {
-        return exchangeSend(target, (Serializable)pojo, timeout);
-    }
-	
 	public Envelope exchangeSend(Address to, Serializable body, long timeout) throws MessageExchangeException {
 		return exchangeSend(to, body, timeout, null);
 	}
 	
-	public void reply(Envelope message, Serializable body) throws MessageExchangeException {
-        Envelope reply = createMessage();
+	public void reply(Envelope envelope, Serializable body) throws MessageExchangeException {
+        Envelope reply = createEnvelope();
         reply.setPayload(body);
-        reply(message, reply);
+        reply(envelope, reply);
 	}
 
     public void reply(Envelope request, Envelope reply) throws MessageExchangeException {
@@ -175,19 +190,17 @@ public abstract class AbstractDispatcher implements Dispatcher {
         reply.setAddress(to);
         String incomingCorrelationId = request.getSourceCorrelationId();
         reply.setTargetCorrelationId(incomingCorrelationId);
-        if (_log.isTraceEnabled()) {
-            _log.trace("reply [" + reply + "]");
-        }
+        EnvelopeHelper.setAsReply(reply);
         send(to, reply);
     }
 
     public void send(Address to, Serializable body) throws MessageExchangeException {
         try {
-            Envelope om = createMessage();
-            om.setReplyTo(getCluster().getLocalPeer().getAddress());
-            om.setAddress(to);
-            om.setPayload(body);
-            send(to, om);
+            Envelope envelope = createEnvelope();
+            envelope.setReplyTo(getCluster().getLocalPeer().getAddress());
+            envelope.setAddress(to);
+            envelope.setPayload(body);
+            send(to, envelope);
         } catch (Exception e) {
             _log.error("problem sending " + body, e);
         }
@@ -195,60 +208,64 @@ public abstract class AbstractDispatcher implements Dispatcher {
 	
     public void send(Address target, String sourceCorrelationId, Serializable pojo) throws MessageExchangeException {
         try {
-            Envelope om = createMessage();
-            om.setReplyTo(getCluster().getLocalPeer().getAddress());
-            om.setAddress(target);
-            om.setPayload(pojo);
-            om.setSourceCorrelationId(sourceCorrelationId);
-            send(target, om);
+            Envelope envelope = createEnvelope();
+            envelope.setReplyTo(getCluster().getLocalPeer().getAddress());
+            envelope.setAddress(target);
+            envelope.setPayload(pojo);
+            envelope.setSourceCorrelationId(sourceCorrelationId);
+            send(target, envelope);
         } catch (Exception e) {
             _log.error("problem sending " + pojo, e);
         }
     }
 
     public void send(Address source, Address target, String sourceCorrelationId, Serializable pojo) throws MessageExchangeException {
-        Envelope om=createMessage();
-        om.setReplyTo(source);
-        om.setAddress(target);
-        om.setSourceCorrelationId(sourceCorrelationId);
-        om.setPayload(pojo);
-        if (_log.isTraceEnabled()) {
-            _log.trace("send {" + sourceCorrelationId + "}: " + getPeerName(source) + " -> " + getPeerName(target) + " : " + pojo);
-        }
-        send(target, om);
+        Envelope envelope = createEnvelope();
+        envelope.setReplyTo(source);
+        envelope.setAddress(target);
+        envelope.setSourceCorrelationId(sourceCorrelationId);
+        envelope.setPayload(pojo);
+        send(target, envelope);
 	}
 	
-	public Envelope exchangeSend(Address target, Serializable pojo, long timeout, String targetCorrelationId) throws MessageExchangeException {
-	    Envelope message = createMessage();
-        message.setPayload(pojo);
-        return exchangeSend(target, message, timeout, targetCorrelationId);
-	}
-    
-    public Envelope exchangeSend(Address target, Envelope om, long timeout) throws MessageExchangeException {
-        return exchangeSend(target, om, timeout, null);
+    public final void send(Address target, Envelope envelope) throws MessageExchangeException {
+        envelope = onOutboundEnvelope(envelope);
+        if (null == envelope) {
+            return;
+        }
+        
+        doSend(target, envelope);
     }
 
-	public Envelope exchangeSend(Address target, Envelope om, long timeout, String targetCorrelationId) throws MessageExchangeException {
+	public Envelope exchangeSend(Address target, Serializable pojo, long timeout, String targetCorrelationId) throws MessageExchangeException {
+	    Envelope envelope = createEnvelope();
+        envelope.setPayload(pojo);
+        return exchangeSend(target, envelope, timeout, targetCorrelationId);
+	}
+    
+    public Envelope exchangeSend(Address target, Envelope envelope, long timeout) throws MessageExchangeException {
+        return exchangeSend(target, envelope, timeout, null);
+    }
+
+	public Envelope exchangeSend(Address target, Envelope envelope, long timeout, String targetCorrelationId) throws MessageExchangeException {
 	    Address from=getCluster().getLocalPeer().getAddress();
-	    om.setReplyTo(from);
-	    om.setAddress(target);
+	    envelope.setReplyTo(from);
+	    envelope.setAddress(target);
 	    Quipu rv= newRendezVous(1);
-	    om.setSourceCorrelationId(rv.getCorrelationId());
+	    envelope.setSourceCorrelationId(rv.getCorrelationId());
 	    if (targetCorrelationId!=null) {
-	        om.setTargetCorrelationId(targetCorrelationId);
+	        envelope.setTargetCorrelationId(targetCorrelationId);
         }
 	    if (_log.isTraceEnabled()) {
-            _log.trace("exchangeSend [" + om + "]");
+            _log.trace("exchangeSend [" + envelope + "]");
         }
-	    send(target, om);
+	    send(target, envelope);
 	    return attemptRendezVous(rv, timeout);
 	}
 	
 	public Envelope exchangeSend(Address target, String sourceCorrelationId, Serializable pojo, long timeout) {
-		Quipu rv=null;
-		// set up a rendez-vous...
-		rv=setRendezVous(sourceCorrelationId, 1);
-		// send the message...
+		Quipu rv = null;
+        rv = setRendezVous(sourceCorrelationId, 1);
         try {
             send(getCluster().getLocalPeer().getAddress(), target, sourceCorrelationId, pojo);
             return attemptRendezVous(rv, timeout);
@@ -257,26 +274,23 @@ public abstract class AbstractDispatcher implements Dispatcher {
         }
 	}
 	
-	public void reply(Address from, Address to, String incomingCorrelationId, Serializable body) throws MessageExchangeException {
-        Envelope om=createMessage();
-        om.setReplyTo(from);
-        om.setAddress(to);
-        om.setTargetCorrelationId(incomingCorrelationId);
-        om.setPayload(body);
-        if (_log.isTraceEnabled()) {
-            _log.trace("reply: " + getPeerName(from) + " -> " + getPeerName(to) + " {" + incomingCorrelationId + "} : " + body);
-        }
-        send(to, om);
-	}
-	
-	public void forward(Envelope message, Address destination) throws MessageExchangeException {
-        forward(message, destination, message.getPayload());
-	}
-	
-	public void forward(Envelope message, Address destination, Serializable body) throws MessageExchangeException {
-        send(message.getReplyTo(), destination, message.getSourceCorrelationId(), body);
+	public void reply(Address from, Address to, String incomingCorrelationId, Serializable body)
+            throws MessageExchangeException {
+        Envelope envelope = createEnvelope();
+        envelope.setReplyTo(from);
+        envelope.setAddress(to);
+        envelope.setTargetCorrelationId(incomingCorrelationId);
+        envelope.setPayload(body);
+        EnvelopeHelper.setAsReply(envelope);
+        send(to, envelope);
 	}
 
+    protected Quipu setRendezVous(String correlationId, int numLlamas) {
+        Quipu rv = new Quipu(numLlamas, correlationId);
+        _rvMap.put(correlationId, rv);
+        return rv;
+    }
+    
 	protected void hook() {
         AbstractCluster._cluster.set(getCluster());
 	}
@@ -284,5 +298,29 @@ public abstract class AbstractDispatcher implements Dispatcher {
     public ThreadPool getExecutor() {
         return _executor;
     }
-    
+
+    protected abstract void doSend(Address target, Envelope envelope) throws MessageExchangeException;
+
+    protected Envelope onOutboundEnvelope(Envelope envelope) {
+        for (Iterator iter = interceptors.iterator(); iter.hasNext();) {
+            EnvelopeInterceptor interceptor = (EnvelopeInterceptor) iter.next();
+            envelope = interceptor.onOutboundEnvelope(envelope);
+            if (null == envelope) {
+                return null;
+            }
+        }
+        return envelope;
+    }
+
+    protected Envelope onInboundEnvelope(Envelope envelope) {
+        for (Iterator iter = interceptors.iterator(); iter.hasNext();) {
+            EnvelopeInterceptor interceptor = (EnvelopeInterceptor) iter.next();
+            envelope = interceptor.onInboundEnvelope(envelope);
+            if (null == envelope) {
+                return null;
+            }
+        }
+        return envelope;
+    }
+
 }

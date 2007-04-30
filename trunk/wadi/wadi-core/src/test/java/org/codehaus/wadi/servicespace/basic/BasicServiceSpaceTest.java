@@ -101,6 +101,8 @@ public class BasicServiceSpaceTest extends AbstractServiceSpaceTestCase {
     }
 
     public void testSuccessfulStop() throws Exception {
+        recordStartPhase();
+
         beginSection(s.ordered("Get and Start ServiceMonitor and Stop ServiceSpace"));
         serviceMonitor.start();
         
@@ -120,12 +122,16 @@ public class BasicServiceSpaceTest extends AbstractServiceSpaceTestCase {
         startVerification();
         
         SwapMockBasicServiceSpace serviceSpace = new SwapMockBasicServiceSpace(serviceSpaceName, dispatcher);
+        serviceSpace.start();
+        
         ServiceMonitor serviceMonitor = serviceSpace.getServiceMonitor(new ServiceName("name1"));
         serviceMonitor.start();
         serviceSpace.stop();
     }
 
     public void testServiceRegistryAndDispatcherStopFailure() throws Exception {
+        recordStartPhase();
+        
         beginSection(s.ordered("Stop Phase with ServiceRegistry and Dispatcher failure"));
         serviceRegistry.stop();
         modify().throwException(new Exception());
@@ -142,6 +148,7 @@ public class BasicServiceSpaceTest extends AbstractServiceSpaceTestCase {
         startVerification();
         
         SwapMockBasicServiceSpace serviceSpace = new SwapMockBasicServiceSpace(serviceSpaceName, dispatcher);
+        serviceSpace.start();
         serviceSpace.stop();
     }
     
@@ -167,7 +174,7 @@ public class BasicServiceSpaceTest extends AbstractServiceSpaceTestCase {
         beginSection(s.ordered("STARTING"));
         ServiceSpaceLifecycleEvent event = new ServiceSpaceLifecycleEvent(serviceSpaceName, remote1, 
                 LifecycleState.STARTING);
-        Envelope message = recordMessage(event);
+        Envelope message = recordEnvelope(event);
         
         serviceSpaceDispatcher.send(address1, new ServiceSpaceLifecycleEvent(serviceSpaceName, localPeer,
                 LifecycleState.AVAILABLE));
@@ -182,7 +189,7 @@ public class BasicServiceSpaceTest extends AbstractServiceSpaceTestCase {
         serviceSpace.addServiceSpaceListener(listener);
         
         message.setPayload(event);
-        assertTrue(lifecycleEndpoint.testDispatchMessage(message));
+        assertTrue(lifecycleEndpoint.testDispatchEnvelope(message));
         lifecycleEndpoint.dispatch(message);
         
         Set hostingPeers = serviceSpace.getHostingPeers();
@@ -195,7 +202,7 @@ public class BasicServiceSpaceTest extends AbstractServiceSpaceTestCase {
         beginSection(s.ordered("STARTED "));
         ServiceSpaceLifecycleEvent startedEvent = new ServiceSpaceLifecycleEvent(serviceSpaceName, remote1, 
                 LifecycleState.STARTED);
-        Envelope startedMessage = recordReceiveEvent(startedEvent, false);
+        Envelope startedEnvelope = recordReceiveEvent(startedEvent, false);
         
         ServiceSpaceLifecycleEvent event = new ServiceSpaceLifecycleEvent(serviceSpaceName, remote1,
                 LifecycleState.FAILED);
@@ -208,15 +215,15 @@ public class BasicServiceSpaceTest extends AbstractServiceSpaceTestCase {
         serviceSpace.start();
         serviceSpace.addServiceSpaceListener(listener);
         
-        startedMessage.setPayload(startedEvent);
-        assertTrue(lifecycleEndpoint.testDispatchMessage(startedMessage));
-        lifecycleEndpoint.dispatch(startedMessage);
+        startedEnvelope.setPayload(startedEvent);
+        assertTrue(lifecycleEndpoint.testDispatchEnvelope(startedEnvelope));
+        lifecycleEndpoint.dispatch(startedEnvelope);
         
         Set hostingPeers = serviceSpace.getHostingPeers();
         assertEquals(1, hostingPeers.size());
         assertTrue(hostingPeers.contains(remote1));
 
-        clusterListener.onMembershipChanged(cluster, Collections.EMPTY_SET, Collections.singleton(remote1), null);
+        clusterListener.onMembershipChanged(cluster, Collections.EMPTY_SET, Collections.singleton(remote1));
         hostingPeers = serviceSpace.getHostingPeers();
         assertTrue(hostingPeers.isEmpty());
     }
@@ -240,7 +247,7 @@ public class BasicServiceSpaceTest extends AbstractServiceSpaceTestCase {
         serviceSpace.addServiceSpaceListener(listener);
         
         startedMessage.setPayload(startedEvent);
-        assertTrue(lifecycleEndpoint.testDispatchMessage(startedMessage));
+        assertTrue(lifecycleEndpoint.testDispatchEnvelope(startedMessage));
         lifecycleEndpoint.dispatch(startedMessage);
         
         Set hostingPeers = serviceSpace.getHostingPeers();
@@ -248,7 +255,7 @@ public class BasicServiceSpaceTest extends AbstractServiceSpaceTestCase {
         assertTrue(hostingPeers.contains(remote1));
         
         message.setPayload(event);
-        assertTrue(lifecycleEndpoint.testDispatchMessage(message));
+        assertTrue(lifecycleEndpoint.testDispatchEnvelope(message));
         lifecycleEndpoint.dispatch(message);
         
         hostingPeers = serviceSpace.getHostingPeers();
@@ -268,7 +275,7 @@ public class BasicServiceSpaceTest extends AbstractServiceSpaceTestCase {
         serviceSpace.addServiceSpaceListener(listener);
         
         message.setPayload(event);
-        assertTrue(lifecycleEndpoint.testDispatchMessage(message));
+        assertTrue(lifecycleEndpoint.testDispatchEnvelope(message));
         lifecycleEndpoint.dispatch(message);
         
         Set hostingPeers = serviceSpace.getHostingPeers();
@@ -277,13 +284,13 @@ public class BasicServiceSpaceTest extends AbstractServiceSpaceTestCase {
     }
     
     private Envelope recordReceiveEvent(ServiceSpaceLifecycleEvent event, boolean newHostingPeersEmpty) {
-        Envelope message = recordMessage(event);
+        Envelope message = recordEnvelope(event);
         listener.receive(event, 
                 newHostingPeersEmpty ? Collections.EMPTY_SET : Collections.singleton(event.getHostingPeer()));
         return message;
     }
 
-    private Envelope recordMessage(ServiceSpaceLifecycleEvent event) {
+    private Envelope recordEnvelope(ServiceSpaceLifecycleEvent event) {
         Envelope startedMessage = (Envelope) mock(Envelope.class);
         startedMessage.setPayload(event);
         startedMessage.getPayload();
@@ -310,35 +317,39 @@ public class BasicServiceSpaceTest extends AbstractServiceSpaceTestCase {
         modify().args(is.NOT_NULL);
 
         serviceSpaceDispatcher.unregister(null, 0, 0);
-        modify().args(is.NOT_NULL, is.ANYTHING, is.ANYTHING);
+        modify().args(is.ANYTHING, is.ANYTHING, is.ANYTHING);
+        
+        serviceSpaceDispatcher.unregister(null, 0, 0);
+        modify().args(is.ANYTHING, is.ANYTHING, is.ANYTHING);
     }
 
     private void recordEndPointsRegistration() {
         beginSection(s.unordered("Register EndPoints"));
+        
+        serviceSpaceDispatcher.register(null);
+        modify().args(is.NOT_NULL);
+        
         serviceSpaceDispatcher.register(null);
         modify().args(is.NOT_NULL);
         modify().perform(new Action() {
-
             public Object invocation(Object[] arguments, MethodHandle methodHandle) throws Throwable {
                 lifecycleEndpoint = (ServiceEndpoint) arguments[0];
                 return null;
             }
-            
         });
         
         cluster.addClusterListener(null);
         modify().args(is.NOT_NULL);
         modify().perform(new Action() {
-
             public Object invocation(Object[] arguments, MethodHandle methodHandle) throws Throwable {
                 clusterListener = (ClusterListener) arguments[0];
                 return null;
             }
-            
         });
-        
+
         dispatcher.register(null);
         modify().args(is.NOT_NULL);
+        
         endSection();
     }
     
@@ -353,11 +364,11 @@ public class BasicServiceSpaceTest extends AbstractServiceSpaceTestCase {
         beginSection(s.ordered("Create message and send with ServiceSpaceName"));
         Envelope message = (Envelope) mock(Envelope.class);
 
-        dispatcher.createMessage();
+        dispatcher.createEnvelope();
         modify().returnValue(message);
 
         beginSection(s.unordered("Set message fields"));
-        ServiceSpaceMessageHelper.setServiceSpaceName(serviceSpaceName, message);
+        ServiceSpaceEnvelopeHelper.setServiceSpaceName(serviceSpaceName, message);
 
         ServiceSpaceLifecycleEvent event = newLifecycleEvent(state);
         message.setPayload(event);

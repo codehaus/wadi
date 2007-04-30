@@ -30,9 +30,9 @@ import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.ClusterListener;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Envelope;
+import org.codehaus.wadi.group.EnvelopeListener;
 import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.MessageExchangeException;
-import org.codehaus.wadi.group.MessageListener;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.ServiceEndpoint;
 import org.codehaus.wadi.servicespace.LifecycleState;
@@ -60,25 +60,19 @@ public class BasicServiceSpace implements ServiceSpace, Lifecycle {
     private final LocalPeer localPeer;
     private final StartableServiceRegistry serviceRegistry;
     private final ServiceSpaceName name;
-    private final Dispatcher underlyingDispatcher;
-    private final long waitTimeToBootServiceSpace;
-    private final Dispatcher dispatcher;
+    protected final Dispatcher underlyingDispatcher;
+    protected final Dispatcher dispatcher;
     private final ServiceEndpoint serviceSpaceEndpoint;
     private final ServiceEndpoint lifecycleEndpoint;
+    private final ServiceEndpoint serviceSpaceRVEndPoint;
     private final ClusterListener underlyingClusterListener;
-    private final ServiceSpaceMessageHelper messageHelper;
+    private final ServiceSpaceEnvelopeHelper envelopeHelper;
 
     public BasicServiceSpace(ServiceSpaceName name, Dispatcher underlyingDispatcher) {
-        this(name, underlyingDispatcher, 5000);
-    }
-    
-    public BasicServiceSpace(ServiceSpaceName name, Dispatcher underlyingDispatcher, long waitTimeToBootServiceSpace) {
         if (null == name) {
             throw new IllegalArgumentException("name is required");
         } else if (null == underlyingDispatcher) {
             throw new IllegalArgumentException("underlyingDispatcher is required");
-        } else if (0 > waitTimeToBootServiceSpace) {
-            throw new IllegalArgumentException("waitTimeToBootServiceSpace must be greater than 0");
         }
         monitors = new ArrayList();
         hostingPeers = new HashSet();
@@ -86,20 +80,21 @@ public class BasicServiceSpace implements ServiceSpace, Lifecycle {
 
         this.name = name;
         this.underlyingDispatcher = underlyingDispatcher;
-        this.waitTimeToBootServiceSpace = waitTimeToBootServiceSpace;
         this.dispatcher = newDispatcher();
 
         localPeer = dispatcher.getCluster().getLocalPeer();
         serviceRegistry = newServiceRegistry();
         
-        MessageListener messageListener = dispatcher; 
+        underlyingClusterListener = new UnderlyingClusterListener();
+        
+        EnvelopeListener messageListener = dispatcher; 
         messageListener = new ServiceInvocationListener(this, messageListener);
         messageListener = new ServiceResponseListener(this, messageListener);
         serviceSpaceEndpoint = new ServiceSpaceEndpoint(this, messageListener);
         
         lifecycleEndpoint = new ServiceSpaceLifecycleEndpoint();
-        underlyingClusterListener = new UnderlyingClusterListener();
-        messageHelper = new ServiceSpaceMessageHelper(this);
+        serviceSpaceRVEndPoint = new RendezVousEndPoint(this);
+        envelopeHelper = new ServiceSpaceEnvelopeHelper(this);
     }
     
     public LocalPeer getLocalPeer() {
@@ -157,9 +152,13 @@ public class BasicServiceSpace implements ServiceSpace, Lifecycle {
         }
 
         serviceRegistry.start();
+        
+        registerServiceSpace();
     }
 
     public void stop() throws Exception {
+        unregisterServiceSpace();
+        
         synchronized (hostingPeers) {
             hostingPeers.clear();
         }
@@ -202,12 +201,31 @@ public class BasicServiceSpace implements ServiceSpace, Lifecycle {
         return underlyingDispatcher;
     }
 
+    protected void registerServiceSpace() {
+        ServiceSpaceRegistry registry = getServiceSpaceRegistry();
+        registry.register(this);
+    }
+
+    protected void unregisterServiceSpace() {
+        ServiceSpaceRegistry registry = getServiceSpaceRegistry();
+        registry.unregister(this);
+    }
+    
+    protected ServiceSpaceRegistry getServiceSpaceRegistry() {
+        ServiceSpaceRegistryFactory registryFactory = newServiceSpaceRegistryFactory();
+        return registryFactory.getRegistryFor(underlyingDispatcher);
+    }
+
+    protected ServiceSpaceRegistryFactory newServiceSpaceRegistryFactory() {
+        return new ServiceSpaceRegistryFactory();
+    }
+
     protected StartableServiceRegistry newServiceRegistry() {
         return new BasicServiceRegistry(this);
     }
 
     protected Dispatcher newDispatcher() {
-        return new BasicServiceSpaceDispatcher(this, waitTimeToBootServiceSpace);
+        return new BasicServiceSpaceDispatcher(this);
     }
     
     protected ServiceMonitor newServiceMonitor(ServiceName serviceName) {
@@ -215,6 +233,7 @@ public class BasicServiceSpace implements ServiceSpace, Lifecycle {
     }
 
     protected void registerEndPoints() {
+        dispatcher.register(serviceSpaceRVEndPoint);
         dispatcher.register(lifecycleEndpoint);
         underlyingDispatcher.getCluster().addClusterListener(underlyingClusterListener);
         underlyingDispatcher.register(serviceSpaceEndpoint);
@@ -224,6 +243,7 @@ public class BasicServiceSpace implements ServiceSpace, Lifecycle {
         underlyingDispatcher.unregister(serviceSpaceEndpoint, 10, 500);
         underlyingDispatcher.getCluster().removeClusterListener(underlyingClusterListener);
         dispatcher.unregister(lifecycleEndpoint, 10, 500);
+        dispatcher.unregister(serviceSpaceRVEndPoint, 10, 500);
     }
     
     protected void multicastLifecycleEvent(LifecycleState state) {
@@ -232,8 +252,8 @@ public class BasicServiceSpace implements ServiceSpace, Lifecycle {
         for (Iterator iter = peerMulticasted.values().iterator(); iter.hasNext();) {
             Peer peer = (Peer) iter.next();
             try {
-                Envelope message = underlyingDispatcher.createMessage();
-                messageHelper.setServiceSpaceName(message);
+                Envelope message = underlyingDispatcher.createEnvelope();
+                envelopeHelper.setServiceSpaceName(message);
                 message.setReplyTo(underlyingDispatcher.getCluster().getLocalPeer().getAddress());
                 message.setAddress(peer.getAddress());
                 message.setPayload(event);
@@ -275,10 +295,26 @@ public class BasicServiceSpace implements ServiceSpace, Lifecycle {
         notifyListeners(event, copyHostingPeers);
     }
     
+    public int hashCode() {
+        return name.hashCode();
+    }
+
+    public boolean equals(Object obj) {
+        if (!(obj instanceof BasicServiceSpace)) {
+            return false;
+        }
+        BasicServiceSpace other = (BasicServiceSpace) obj;
+        return name.equals(other.name);
+    }
+    
+    public String toString() {
+        return "ServiceSpace [" + name + "]";
+    }
+
     protected class ServiceSpaceLifecycleEndpoint implements ServiceEndpoint {
 
-        public void dispatch(Envelope om) throws Exception {
-            ServiceSpaceLifecycleEvent event = (ServiceSpaceLifecycleEvent) om.getPayload();
+        public void dispatch(Envelope envelope) throws Exception {
+            ServiceSpaceLifecycleEvent event = (ServiceSpaceLifecycleEvent) envelope.getPayload();
             processLifecycleEvent(event);
         }
 
@@ -286,8 +322,8 @@ public class BasicServiceSpace implements ServiceSpace, Lifecycle {
             return;
         }
 
-        public boolean testDispatchMessage(Envelope om) {
-            Serializable payload = om.getPayload();
+        public boolean testDispatchEnvelope(Envelope envelope) {
+            Serializable payload = envelope.getPayload();
             if (!(payload instanceof ServiceSpaceLifecycleEvent)) {
                 return false;
             }
@@ -299,10 +335,10 @@ public class BasicServiceSpace implements ServiceSpace, Lifecycle {
 
     public class UnderlyingClusterListener implements ClusterListener {
 
-        public void onListenerRegistration(Cluster cluster, Set existing, Peer coordinator) {
+        public void onListenerRegistration(Cluster cluster, Set existing) {
         }
 
-        public void onMembershipChanged(Cluster cluster, Set joiners, Set leavers, Peer coordinator) {
+        public void onMembershipChanged(Cluster cluster, Set joiners, Set leavers) {
             for (Iterator iter = leavers.iterator(); iter.hasNext();) {
                 Peer leaver = (Peer) iter.next();
                 boolean leaverIsHostingPeer;
@@ -316,9 +352,5 @@ public class BasicServiceSpace implements ServiceSpace, Lifecycle {
         }
 
     }
-
-    public String toString() {
-        return "ServiceSpace [" + name + "]";
-    }
-
+    
 }

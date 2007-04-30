@@ -28,5 +28,5 @@ public interface ServiceProxyFactory {
 
     InvocationMetaData getInvocationMetaData();
 
-    Object getProxy();
+    ServiceProxy getProxy();
 }

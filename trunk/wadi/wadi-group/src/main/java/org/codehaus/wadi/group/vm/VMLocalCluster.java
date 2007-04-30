@@ -18,14 +18,14 @@ package org.codehaus.wadi.group.vm;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.ClusterException;
 import org.codehaus.wadi.group.ClusterListener;
 import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.group.ElectionStrategy;
-import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.Envelope;
+import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.Peer;
 
@@ -37,7 +37,6 @@ public class VMLocalCluster implements Cluster {
     private final VMBroker delegate;
     private final LocalPeer node;
     private final VMDispatcher dispatcher;
-    private ElectionStrategy electionStrategy;
     private boolean running;
 
     public VMLocalCluster(VMBroker delegate, LocalPeer node, VMDispatcher dispatcher) {
@@ -108,10 +107,6 @@ public class VMLocalCluster implements Cluster {
         return remotePeers;
     }
 
-    public void setElectionStrategy(ElectionStrategy electionStrategy) {
-        this.electionStrategy = electionStrategy;
-    }
-
     public void start() throws ClusterException {
     }
 
@@ -132,22 +127,8 @@ public class VMLocalCluster implements Cluster {
         return node;
     }
     
-    void doElection(Peer coordinator) {
-        if (null != electionStrategy) {
-            Peer newElected = electionStrategy.doElection(this);
-            if (null != newElected && !newElected.equals(coordinator)) {
-                coordinator = newElected;
-                delegate.setCoordinator(newElected);
-            }
-        }
-    }
-
     boolean isRunning() {
         return running;
-    }
-    
-    public long getInactiveTime() {
-        return delegate.getInactiveTime();
     }
     
     public String toString() {

@@ -18,15 +18,13 @@ package org.codehaus.wadi.group.vm;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.ClusterException;
 import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.group.ElectionStrategy;
-import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.Envelope;
+import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.MessageExchangeException;
-import org.codehaus.wadi.group.Peer;
-import org.codehaus.wadi.group.impl.SeniorityElectionStrategy;
 
 /**
  *
@@ -39,10 +37,8 @@ public class VMBroker {
     private final Address address;
     private final Map nodeNameToDispatcher = new HashMap();
     private final ClusterListenerSupport listenerSupport;
-    private ElectionStrategy electionStrategy=new SeniorityElectionStrategy();
     private MessageRecorder messageRecorder;
-    private MessageTransformer messageTransformer;
-    private Peer coordinator;
+    private EnvelopeTransformer messageTransformer;
 
     public VMBroker(String name) {
         this.name = name;
@@ -75,10 +71,8 @@ public class VMBroker {
             nodeNameToDispatcher.put(nodeName, dispatcher);
         }
 
-        electOnEachNode();
-
         // notify new peer of existing members...
-        listenerSupport.notifyMembershipChanged(localPeer, true, coordinator);
+        listenerSupport.notifyMembershipChanged(localPeer, true);
     }
 
     void unregisterDispatcher(VMDispatcher dispatcher) {
@@ -92,9 +86,7 @@ public class VMBroker {
             throw new IllegalArgumentException("unknown dispatcher");
         }
 
-        electOnEachNode();
-
-        listenerSupport.notifyMembershipChanged(localPeer, false, coordinator);
+        listenerSupport.notifyMembershipChanged(localPeer, false);
     }
 
     void send(Address to, Envelope message) throws MessageExchangeException {
@@ -131,10 +123,6 @@ public class VMBroker {
         throw new IllegalArgumentException("Node node having the name:" + name);
     }
 
-    void setCoordinator(Peer coordinator) {
-        this.coordinator = coordinator;
-    }
-
     Map getPeers() {
         Map snapshotMap = snapshotDispatcherMap();
         for (Iterator iter = snapshotMap.entrySet().iterator(); iter.hasNext();) {
@@ -150,7 +138,7 @@ public class VMBroker {
     }
 
     void addClusterListener(VMLocalClusterListener listener) {
-        listenerSupport.addClusterListener(listener, coordinator);
+        listenerSupport.addClusterListener(listener);
     }
 
     void removeClusterListener(VMLocalClusterListener listener) {
@@ -198,7 +186,7 @@ public class VMBroker {
             Map.Entry entry = (Map.Entry) iter.next();
             Dispatcher dispatcher = (Dispatcher) entry.getValue();
             if (dispatcher.getCluster().getLocalPeer().getAddress().equals(to)) {
-                dispatcher.onMessage(message);
+                dispatcher.onEnvelope(message);
                 return;
             }
         }
@@ -211,22 +199,8 @@ public class VMBroker {
         for (Iterator iter = snapshotMap.entrySet().iterator(); iter.hasNext();) {
             Map.Entry entry = (Map.Entry) iter.next();
             Dispatcher dispatcher = (Dispatcher) entry.getValue();
-            dispatcher.onMessage(message);
+            dispatcher.onEnvelope(message);
         }
     }
 
-    private void electOnEachNode() {
-        synchronized (nodeNameToDispatcher) {
-            for (Iterator iter = nodeNameToDispatcher.values().iterator(); iter.hasNext();) {
-                VMDispatcher remainingDispatcher = (VMDispatcher) iter.next();
-                electCoordinator(remainingDispatcher);
-            }
-        }
-    }
-
-    private void electCoordinator(VMDispatcher dispatcher) {
-        if (null != electionStrategy) {
-            coordinator = electionStrategy.doElection(dispatcher.getCluster());
-        }
-    }
 }

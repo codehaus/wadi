@@ -46,12 +46,6 @@ public class ServiceEndpointBuilder {
         }
     }
 
-    public void addCallback(Dispatcher dispatcher, Class type) {
-        ServiceEndpoint msgDispatcher = new RendezVousMsgDispatcher(dispatcher, type);
-        builtDispatchers.add(msgDispatcher);
-        dispatcher.register(msgDispatcher);
-    }
-
     public void dispose(int nbAttemp, long delayMillis) {
         for (Iterator iter = builtDispatchers.iterator(); iter.hasNext();) {
             ServiceEndpoint msgDispatcher = (ServiceEndpoint) iter.next();

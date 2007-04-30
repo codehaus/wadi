@@ -21,9 +21,9 @@ import org.codehaus.wadi.group.Envelope;
  * 
  * @version $Revision: 1603 $
  */
-public class NoOpMessageTransformer implements MessageTransformer {
+public class NoOpMessageTransformer implements EnvelopeTransformer {
 
-    public Envelope transform(Envelope message) {
-        return message;
+    public Envelope transform(Envelope envelope) {
+        return envelope;
     }
 }

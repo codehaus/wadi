@@ -17,20 +17,14 @@
 package org.codehaus.wadi.jgroups;
 
 import org.codehaus.wadi.evacuation.AbstractTestEvacuation;
-import org.codehaus.wadi.jgroups.JGroupsDispatcher;
+import org.codehaus.wadi.group.Dispatcher;
 
 public class TestJGEvacuation extends AbstractTestEvacuation {
+    private final String clusterName = JGTestUtil.TEST_CLUSTER_NAME;
+    private final String clusterConfig = JGTestUtil.TEST_CLUSTER_CONFIG;
 
-  public TestJGEvacuation(String name) {
-        super(name);
+    protected Dispatcher newDispatcher(String name) throws Exception {
+        return new JGroupsDispatcher(clusterName, name, null, clusterConfig);
     }
-
-    public void testEvacuation() throws Exception {
-        String clusterName = JGTestUtil.TEST_CLUSTER_NAME;
-        String clusterConfig = JGTestUtil.TEST_CLUSTER_CONFIG;
-        long timeout = 5000;
-        testEvacuation(new JGroupsDispatcher(clusterName, "red", null, timeout, clusterConfig), 
-                new JGroupsDispatcher(clusterName, "green", null, timeout, clusterConfig));
-    }
-
+    
 }

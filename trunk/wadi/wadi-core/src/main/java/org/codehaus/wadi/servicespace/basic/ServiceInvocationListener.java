@@ -23,7 +23,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.MessageExchangeException;
-import org.codehaus.wadi.group.MessageListener;
+import org.codehaus.wadi.group.EnvelopeListener;
 import org.codehaus.wadi.servicespace.InvocationInfo;
 import org.codehaus.wadi.servicespace.InvocationMetaData;
 import org.codehaus.wadi.servicespace.InvocationResult;
@@ -36,15 +36,15 @@ import org.codehaus.wadi.servicespace.ServiceSpace;
  * 
  * @version $Revision: $
  */
-public class ServiceInvocationListener implements MessageListener {
+public class ServiceInvocationListener implements EnvelopeListener {
     private static final Log log = LogFactory.getLog(ServiceInvocationListener.class);
     
     private final ServiceSpace serviceSpace;
     private final Dispatcher dispatcher;
     private final ServiceRegistry serviceRegistry;
-    private final MessageListener next;
+    private final EnvelopeListener next;
     
-    public ServiceInvocationListener(ServiceSpace serviceSpace, MessageListener next) {
+    public ServiceInvocationListener(ServiceSpace serviceSpace, EnvelopeListener next) {
         if (null == serviceSpace) {
             throw new IllegalArgumentException("serviceSpace is required");
         } else if (null == next) {
@@ -57,12 +57,12 @@ public class ServiceInvocationListener implements MessageListener {
         serviceRegistry = serviceSpace.getServiceRegistry();
     }
 
-    public void onMessage(Envelope message) {
+    public void onEnvelope(Envelope message) {
         ServiceName serviceName = EnvelopeServiceHelper.getServiceName(message);
         if (null != serviceName) {
             handleServiceMessage(serviceName, message);
         } else {
-            next.onMessage(message);
+            next.onEnvelope(message);
         }
     }
 
@@ -78,7 +78,7 @@ public class ServiceInvocationListener implements MessageListener {
             result = new InvocationResult(e);
         }
         if (!metaData.isOneWay() && metaData.getReplyAssessor().isReplyRequired(result)) {
-            Envelope reply = dispatcher.createMessage();
+            Envelope reply = dispatcher.createEnvelope();
             EnvelopeServiceHelper.tagAsServiceReply(reply);
             reply.setPayload(result);
             try {

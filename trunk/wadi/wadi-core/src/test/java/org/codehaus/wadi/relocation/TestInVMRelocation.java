@@ -15,6 +15,7 @@
  */
 package org.codehaus.wadi.relocation;
 
+import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.vm.VMBroker;
 import org.codehaus.wadi.group.vm.VMDispatcher;
 
@@ -23,11 +24,15 @@ import org.codehaus.wadi.group.vm.VMDispatcher;
  * @version $Revision: 1603 $
  */
 public class TestInVMRelocation extends AbstractTestRelocation {
+    private VMBroker cluster;
 
-	public void testSessionRelocation() throws Exception {
-        VMBroker cluster = new VMBroker("TEST");
-		long timeout=5000;
-		testSessionRelocation(new VMDispatcher(cluster, "red", null, timeout), new VMDispatcher(cluster, "green", null, timeout));
-	}
+    protected void setUp() throws Exception {
+        cluster = new VMBroker("TEST");
+        super.setUp();
+    }
+    
+    protected Dispatcher newDispatcher(String name) throws Exception {
+        return new VMDispatcher(cluster, name, null);
+    }
     
 }

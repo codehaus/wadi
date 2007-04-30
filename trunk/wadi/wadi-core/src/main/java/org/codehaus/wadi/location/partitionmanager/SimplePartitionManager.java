@@ -40,9 +40,6 @@ import org.codehaus.wadi.location.balancing.PartitionInfoUpdate;
 import org.codehaus.wadi.location.balancing.RetrieveBalancingInfoEvent;
 import org.codehaus.wadi.location.partition.BasicPartitionRepopulateTask;
 import org.codehaus.wadi.location.partition.PartitionEvacuationRequest;
-import org.codehaus.wadi.location.partition.PartitionEvacuationResponse;
-import org.codehaus.wadi.location.partition.PartitionRepopulateResponse;
-import org.codehaus.wadi.location.partition.PartitionTransferAcknowledgement;
 import org.codehaus.wadi.location.partition.PartitionTransferRequest;
 import org.codehaus.wadi.location.partitionmanager.facade.PartitionFacade;
 import org.codehaus.wadi.location.partitionmanager.facade.PartitionFacadeDelegate;
@@ -111,9 +108,6 @@ public class SimplePartitionManager implements PartitionManager, PartitionManage
         initializePartitionFacades();
         
         endpointBuilder.addSEI(dispatcher, PartitionManagerMessageListener.class, this);
-        endpointBuilder.addCallback(dispatcher, PartitionTransferAcknowledgement.class);
-        endpointBuilder.addCallback(dispatcher, PartitionEvacuationResponse.class);
-        endpointBuilder.addCallback(dispatcher, PartitionRepopulateResponse.class);
         
         queueRebalancing();
         

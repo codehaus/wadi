@@ -27,6 +27,7 @@ import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.Peer;
+import org.codehaus.wadi.group.impl.EnvelopeHelper;
 import org.codehaus.wadi.location.session.MoveIMToSM;
 import org.codehaus.wadi.location.session.MovePMToSM;
 import org.codehaus.wadi.location.session.MoveSMToIM;
@@ -95,12 +96,16 @@ class RelocationImmoter implements Immoter {
 
             LocalPeer smPeer = dispatcher.getCluster().getLocalPeer();
             Peer imPeer = pmToSm.getIMPeer();
-            MoveSMToIM request = new MoveSMToIM(immotable);
+            
+            Envelope reply = dispatcher.createEnvelope();
+            reply.setPayload(new MoveSMToIM(immotable));
+            EnvelopeHelper.setAsReply(reply);
+
             // send on state from StateMaster to InvocationMaster...
             if (log.isTraceEnabled()) {
                 log.trace("exchanging MoveSMToIM between [" + smPeer + "]->[" + imPeer + "]");
             }
-            Envelope message2 = dispatcher.exchangeSend(imPeer.getAddress(), request, inactiveTime, pmToSm.getIMCorrelationId());
+            Envelope message2 = dispatcher.exchangeSend(imPeer.getAddress(), reply, inactiveTime, pmToSm.getIMCorrelationId());
             // should receive response from IM confirming safe receipt...
             if (message2 == null) {
                 // TODO throw exception

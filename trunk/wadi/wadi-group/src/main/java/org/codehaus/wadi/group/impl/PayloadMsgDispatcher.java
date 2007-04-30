@@ -35,11 +35,11 @@ class PayloadMsgDispatcher extends AbstractMsgMethodDispatcher {
         super(dispatcher, target, method, type);
     }
 
-    public void dispatch(Envelope om) throws Exception {
+    public void dispatch(Envelope envelope) throws Exception {
         Object[] singleton = (Object[]) _singleton.get();
-        singleton[0] = om.getPayload();
+        singleton[0] = envelope.getPayload();
         Object response = invoke(singleton);
-        _dispatcher.reply(om, (Serializable) response);
+        _dispatcher.reply(envelope, (Serializable) response);
     }
 
     public String toString() {

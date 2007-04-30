@@ -26,8 +26,11 @@ import org.codehaus.wadi.servicespace.InvocationResultCombiner;
  * @version $Revision: 1538 $
  */
 public class ReturnFirstSuccessThenFailure implements InvocationResultCombiner {
-    public static final ReturnFirstSuccessThenFailure COMBINER = new ReturnFirstSuccessThenFailure();
+    public static final InvocationResultCombiner COMBINER = new ReturnFirstSuccessThenFailure();
 
+    protected ReturnFirstSuccessThenFailure() {
+    }
+    
     public InvocationResult combine(Collection invocationResults) {
         if (null == invocationResults || invocationResults.isEmpty()) {
             throw new IllegalArgumentException("No InvocationResults are provided");

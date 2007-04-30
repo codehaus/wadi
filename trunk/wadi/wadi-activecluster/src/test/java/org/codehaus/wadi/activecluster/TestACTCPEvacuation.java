@@ -16,6 +16,7 @@
 package org.codehaus.wadi.activecluster;
 
 import org.codehaus.wadi.evacuation.AbstractTestEvacuation;
+import org.codehaus.wadi.group.Dispatcher;
 
 /**
  * 
@@ -23,24 +24,25 @@ import org.codehaus.wadi.evacuation.AbstractTestEvacuation;
  */
 public class TestACTCPEvacuation extends AbstractTestEvacuation {
 	
-	public TestACTCPEvacuation(String name) {
-		super(name);
-	}
-	
-	public void testEvacuation() throws Exception {
-        String clusterName = ACTestUtil.CLUSTER_NAME;
-        String clusterUri = ACTestUtil.CLUSTER_URI_TCP;
-        long timeout = ACTestUtil.CLUSTER_INACTIVE_TIME;
+    private final String clusterName = ACTestUtil.CLUSTER_NAME;
+    private final String clusterUri = ACTestUtil.CLUSTER_URI_TCP;
+    private final long timeout = ACTestUtil.CLUSTER_INACTIVE_TIME;
+    private ACTestUtil testUtil;
 
-        ACTestUtil testUtil = new ACTestUtil();
+    protected void setUp() throws Exception {
+        super.setUp();
+        testUtil = new ACTestUtil();
         testUtil.startTCPService();
-        try {
-            testEvacuation(new ActiveClusterDispatcher(clusterName, "red", clusterUri, null, timeout), 
-                    new ActiveClusterDispatcher(clusterName, "green", clusterUri, null, timeout));
-        } finally {
-            testUtil.stopTCPService();
-        }
-	}
-	
+    }
+
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        testUtil.stopTCPService();
+    }
+    
+    protected Dispatcher newDispatcher(String name) throws Exception {
+        return new ActiveClusterDispatcher(clusterName, name, clusterUri, null, timeout);
+    }
+    
 }
 

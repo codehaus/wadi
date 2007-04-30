@@ -24,15 +24,15 @@ import org.codehaus.wadi.servicespace.ServiceName;
  * @version $Revision: $
  */
 public class EnvelopeServiceHelper {
-    private static final String PROPERTY_KEY_TARGET_SERVICE_NAME = "TargetServiceName";
-    private static final String PROPERTY_KEY_SERVICE_REPLY = "ServiceReply";
+    private static final String PROPERTY_TARGET_SERVICE_NAME = "wadi/TargetServiceName";
+    private static final String PROPERTY_KEY_SERVICE_REPLY = "wadi/ServiceReply";
 
     public static void setServiceName(ServiceName serviceName, Envelope envelope) {
-        envelope.setProperty(PROPERTY_KEY_TARGET_SERVICE_NAME, serviceName);
+        envelope.setProperty(PROPERTY_TARGET_SERVICE_NAME, serviceName);
     }
 
     public static ServiceName getServiceName(Envelope envelope) {
-        return (ServiceName) envelope.getProperty(PROPERTY_KEY_TARGET_SERVICE_NAME);
+        return (ServiceName) envelope.getProperty(PROPERTY_TARGET_SERVICE_NAME);
     }
     
     public static boolean isServiceReply(Envelope envelope) {

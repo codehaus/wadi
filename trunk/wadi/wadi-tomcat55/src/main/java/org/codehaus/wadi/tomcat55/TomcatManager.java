@@ -41,7 +41,6 @@ import org.apache.catalina.util.LifecycleSupport;
 import org.apache.catalina.wadi.Filter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.core.assembler.SpringManagerFactory;
 import org.codehaus.wadi.core.manager.Manager;
 import org.codehaus.wadi.core.manager.ManagerConfig;
 import org.codehaus.wadi.core.manager.SessionMonitor;
@@ -120,7 +119,7 @@ public class TomcatManager implements ManagerConfig, Lifecycle, org.apache.catal
   public void start() throws LifecycleException {
 	  try {
 		  InputStream is=getServletContext().getResourceAsStream("/WEB-INF/wadi-web.xml");
-		  _wadi=SpringManagerFactory.create(is, "SessionManager");
+//		  _wadi=SpringManagerFactory.create(is, "SessionManager");
 	  } catch (Exception e) {
 		  throw new RuntimeException("Required resource: '/WEB-INF/wadi-web.xml' not found - please check the web app.", e);
 	  }

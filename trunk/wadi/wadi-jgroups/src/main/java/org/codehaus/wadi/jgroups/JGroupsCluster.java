@@ -281,7 +281,7 @@ public class JGroupsCluster extends AbstractCluster implements MembershipListene
             wadiMsg.setCluster(this);
             wadiMsg.setAddress((JGroupsPeer) getPeer(wadiMsg.getAddress()));
             wadiMsg.setReplyTo((JGroupsPeer) getPeer(wadiMsg.getReplyTo()));
-            _dispatcher.onMessage(wadiMsg);
+            _dispatcher.onEnvelope(wadiMsg);
         }
     }
 
@@ -305,9 +305,6 @@ public class JGroupsCluster extends AbstractCluster implements MembershipListene
         try {
             msg.setCluster(this);
             msg.setAddress(target);
-            if (_messageLog.isTraceEnabled())
-                _messageLog.trace("outgoing: " + msg.getPayload() + " {" + _localPeer.getName() + "->" + tgt.getName()
-                        + "} - " + msg.getTargetCorrelationId() + "/" + msg.getSourceCorrelationId());
             msg.setCluster(null);
             _channel.send(tgt.getJGAddress(), _localJGAddress, msg);
         } catch (Exception e) {

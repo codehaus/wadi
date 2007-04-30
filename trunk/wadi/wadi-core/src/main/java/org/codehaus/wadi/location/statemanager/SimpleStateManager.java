@@ -28,17 +28,10 @@ import org.codehaus.wadi.location.partitionmanager.Partition;
 import org.codehaus.wadi.location.partitionmanager.PartitionManager;
 import org.codehaus.wadi.location.partitionmanager.facade.PartitionFacadeException;
 import org.codehaus.wadi.location.session.DeleteIMToPM;
-import org.codehaus.wadi.location.session.DeletePMToIM;
 import org.codehaus.wadi.location.session.EvacuateIMToPM;
-import org.codehaus.wadi.location.session.EvacuatePMToIM;
 import org.codehaus.wadi.location.session.InsertIMToPM;
 import org.codehaus.wadi.location.session.InsertPMToIM;
 import org.codehaus.wadi.location.session.MoveIMToPM;
-import org.codehaus.wadi.location.session.MoveIMToSM;
-import org.codehaus.wadi.location.session.MovePMToIM;
-import org.codehaus.wadi.location.session.MovePMToIMInvocation;
-import org.codehaus.wadi.location.session.MoveSMToIM;
-import org.codehaus.wadi.location.session.MoveSMToPM;
 import org.codehaus.wadi.location.session.ReleaseEntryRequest;
 import org.codehaus.wadi.location.session.ReleaseEntryResponse;
 import org.codehaus.wadi.servicespace.ServiceSpace;
@@ -70,20 +63,6 @@ public class SimpleStateManager implements StateManager, StateManagerMessageList
 
     public void start() throws Exception {
         endpointBuilder.addSEI(dispatcher, StateManagerMessageListener.class, this);
-        endpointBuilder.addCallback(dispatcher, InsertPMToIM.class);
-        endpointBuilder.addCallback(dispatcher, DeletePMToIM.class);
-        endpointBuilder.addCallback(dispatcher, EvacuatePMToIM.class);
-
-        // GridState - Relocate - 5 messages - IM->PM->SM->IM->SM->PM
-        endpointBuilder.addCallback(dispatcher, MoveSMToIM.class);
-        endpointBuilder.addCallback(dispatcher, MoveIMToSM.class);
-        endpointBuilder.addCallback(dispatcher, MoveSMToPM.class);
-        // or possibly - IM->PM->IM (failure)
-        endpointBuilder.addCallback(dispatcher, MovePMToIM.class);
-        // or possibly - IM->PM->IM (Invocation relocation)
-        endpointBuilder.addCallback(dispatcher, MovePMToIMInvocation.class);
-
-        endpointBuilder.addCallback(dispatcher, ReleaseEntryResponse.class);
     }
 
     public void stop() throws Exception {
@@ -127,20 +106,20 @@ public class SimpleStateManager implements StateManager, StateManagerMessageList
         }
     }
 
-    public void onInsertIMToPM(Envelope om, InsertIMToPM request) {
-        partitionManager.getPartition(request.getKey()).onMessage(om, request);
+    public void onInsertIMToPM(Envelope envelope, InsertIMToPM request) {
+        partitionManager.getPartition(request.getKey()).onMessage(envelope, request);
     }
 
-    public void onDeleteIMToPM(Envelope om, DeleteIMToPM request) {
-        partitionManager.getPartition(request.getKey()).onMessage(om, request);
+    public void onDeleteIMToPM(Envelope envelope, DeleteIMToPM request) {
+        partitionManager.getPartition(request.getKey()).onMessage(envelope, request);
     }
 
-    public void onEvacuateIMToPM(Envelope om, EvacuateIMToPM request) {
-        partitionManager.getPartition(request.getKey()).onMessage(om, request);
+    public void onEvacuateIMToPM(Envelope envelope, EvacuateIMToPM request) {
+        partitionManager.getPartition(request.getKey()).onMessage(envelope, request);
     }
 
-    public void onMoveIMToPM(Envelope message, MoveIMToPM request) {
-        partitionManager.getPartition(request.getKey()).onMessage(message, request);
+    public void onMoveIMToPM(Envelope envelope, MoveIMToPM request) {
+        partitionManager.getPartition(request.getKey()).onMessage(envelope, request);
     }
 
     public boolean offerEmigrant(Motable emotable) {

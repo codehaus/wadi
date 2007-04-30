@@ -16,7 +16,7 @@
 package org.codehaus.wadi.servicespace.basic;
 
 import org.codehaus.wadi.group.Envelope;
-import org.codehaus.wadi.group.MessageListener;
+import org.codehaus.wadi.group.EnvelopeListener;
 import org.codehaus.wadi.group.ServiceEndpoint;
 import org.codehaus.wadi.servicespace.ServiceSpace;
 import org.codehaus.wadi.servicespace.ServiceSpaceName;
@@ -27,10 +27,10 @@ import org.codehaus.wadi.servicespace.ServiceSpaceName;
  */
 public class ServiceSpaceEndpoint implements ServiceEndpoint {
     private final ServiceSpace serviceSpace;
-    private final ServiceSpaceMessageHelper messageHelper;
-    private final MessageListener messageListener;
+    private final ServiceSpaceEnvelopeHelper messageHelper;
+    private final EnvelopeListener messageListener;
     
-    public ServiceSpaceEndpoint(ServiceSpace serviceSpace, MessageListener messageListener) {
+    public ServiceSpaceEndpoint(ServiceSpace serviceSpace, EnvelopeListener messageListener) {
         if (null == serviceSpace) {
             throw new IllegalArgumentException("serviceSpace is required");
         } else if (null == messageListener) {
@@ -39,19 +39,19 @@ public class ServiceSpaceEndpoint implements ServiceEndpoint {
         this.serviceSpace = serviceSpace;
         this.messageListener = messageListener;
         
-        messageHelper = new ServiceSpaceMessageHelper(serviceSpace);
+        messageHelper = new ServiceSpaceEnvelopeHelper(serviceSpace);
     }
 
-    public void dispatch(Envelope om) throws Exception {
-        messageListener.onMessage(om);
+    public void dispatch(Envelope envelope) throws Exception {
+        messageListener.onEnvelope(envelope);
     }
 
     public void dispose(int nbAttemp, long delayMillis) {
         return;
     }
 
-    public boolean testDispatchMessage(Envelope om) {
-        ServiceSpaceName serviceSpaceName = messageHelper.getServiceSpaceName(om);
+    public boolean testDispatchEnvelope(Envelope envelope) {
+        ServiceSpaceName serviceSpaceName = messageHelper.getServiceSpaceName(envelope);
         if (null == serviceSpaceName) {
             return false;
         }

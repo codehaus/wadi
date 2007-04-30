@@ -16,12 +16,10 @@
  */
 package org.codehaus.wadi.location.partitionmanager.facade;
 
-import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.Peer;
-import org.codehaus.wadi.group.PeerInfo;
 import org.codehaus.wadi.location.balancing.PartitionInfo;
 import org.codehaus.wadi.location.partitionmanager.AbstractPartition;
 import org.codehaus.wadi.location.partitionmanager.Partition;
@@ -118,16 +116,4 @@ public class PartitionFacadeDelegate extends AbstractPartition implements Partit
         return (Partition) synchronizedPartitionRef.get();
     }
 
-	public Address getAddress() {
-		return getContent().getAddress();
-	}
-
-	public String getName() {
-		return getContent().getName();
-	}
-
-	public PeerInfo getPeerInfo() {
-		return getContent().getPeerInfo();
-	}
-    
 }

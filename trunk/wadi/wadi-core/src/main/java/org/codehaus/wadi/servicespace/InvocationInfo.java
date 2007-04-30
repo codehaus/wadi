@@ -17,12 +17,18 @@ package org.codehaus.wadi.servicespace;
 
 import java.io.Serializable;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.group.MessageExchangeException;
+
 
 /**
  * 
  * @version $Revision: 1538 $
  */
 public class InvocationInfo implements Serializable {
+    private static final Log log = LogFactory.getLog(InvocationInfo.class);
+    
     private final String methodName;
     private final Class[] paramTypes;
     private final Object[] params;
@@ -58,6 +64,18 @@ public class InvocationInfo implements Serializable {
 
     public InvocationMetaData getMetaData() {
         return metaData;
+    }
+
+    public void handleOneWayException(MessageExchangeException e) throws MessageExchangeException, ServiceProxyException {
+        if (metaData.isOneWay()) {
+            if (metaData.isIgnoreMessageExchangeExceptionOnSend()) {
+                log.debug("Explicitly ignoring MessageExchangeException", e);
+            } else {
+                throw new ServiceProxyException("Cannot send [" + this + "]", e);
+            }
+        } else {
+            throw e;
+        }
     }
 
     public String toString() {

@@ -15,28 +15,14 @@
  */
 package org.codehaus.wadi.relocation;
 
-import java.io.IOException;
-
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-
 import junit.framework.TestCase;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.core.contextualiser.BasicInvocation;
 import org.codehaus.wadi.core.contextualiser.Invocation;
-import org.codehaus.wadi.core.contextualiser.InvocationContext;
-import org.codehaus.wadi.core.contextualiser.InvocationException;
-import org.codehaus.wadi.core.contextualiser.InvocationProxy;
-import org.codehaus.wadi.core.manager.StandardManager;
 import org.codehaus.wadi.core.session.Session;
 import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.group.EndPoint;
-import org.codehaus.wadi.test.MockInvocation;
-import org.codehaus.wadi.test.MyHttpServletRequest;
-import org.codehaus.wadi.test.MyHttpServletResponse;
 import org.codehaus.wadi.test.MyStack;
 import org.codehaus.wadi.test.TestUtil;
 
@@ -44,11 +30,33 @@ import org.codehaus.wadi.test.TestUtil;
  * 
  * @version $Revision: 1538 $
  */
-public class AbstractTestRelocation extends TestCase {
+public abstract class AbstractTestRelocation extends TestCase {
     protected Log _log = LogFactory.getLog(getClass());
+    private Dispatcher redD;
+    private Dispatcher greenD;
 
+    protected void setUp() throws Exception {
+        redD = newDispatcher("red");
+        redD.start();
+        // Implementation note: we really need to wait some time to have a "stable" Dispatcher. For instance, in the
+        // case of ActiveCluster, 
+        Thread.sleep(1000);
+        
+        greenD = newDispatcher("green");
+        greenD.start();
+        // Implementation note: we really need to wait some time to have a "stable" Dispatcher. For instance, in the
+        // case of ActiveCluster, 
+        Thread.sleep(1000);
+    }
 
-    public void testSessionRelocation(Dispatcher redD, Dispatcher greenD) throws Exception {
+    protected void tearDown() throws Exception {
+        redD.stop();
+        greenD.stop();
+    }
+    
+    protected abstract Dispatcher newDispatcher(String name) throws Exception;
+
+    public void testSessionRelocation() throws Exception {
         MyStack red = new MyStack(redD);
         red.start();
         redD = red.getServiceSpace().getDispatcher();
@@ -65,12 +73,7 @@ public class AbstractTestRelocation extends TestCase {
 
         assertTrue(name != null);
 
-        FilterChain fc = new FilterChain() {
-            public void doFilter(ServletRequest req, ServletResponse res) throws IOException, ServletException {
-            }
-        };
-
-        Invocation invocation = new MockInvocation(new MyHttpServletRequest(name), new MyHttpServletResponse(), fc);
+        Invocation invocation = new BasicInvocation(name);
         boolean success = green.getManager().contextualise(invocation);
         assertTrue(success);
 

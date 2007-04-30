@@ -22,7 +22,9 @@ import java.util.Collection;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.Dispatcher;
+import org.codehaus.wadi.group.DispatcherContext;
 import org.codehaus.wadi.group.Envelope;
+import org.codehaus.wadi.group.EnvelopeInterceptor;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.Quipu;
 import org.codehaus.wadi.group.ServiceEndpoint;
@@ -36,6 +38,18 @@ public class SharedDispatcher implements Dispatcher {
         _delegate.start();
     }
 
+    public DispatcherContext getContext() {
+        return _delegate.getContext();
+    }
+    
+    public void addInterceptor(EnvelopeInterceptor interceptor) {
+        _delegate.addInterceptor(interceptor);
+    }
+    
+    public void removeInterceptor(EnvelopeInterceptor interceptor) {
+        _delegate.removeInterceptor(interceptor);
+    }
+    
     public Collection attemptMultiRendezVous(Quipu rv, long timeout) throws MessageExchangeException {
         return _delegate.attemptMultiRendezVous(rv, timeout);
     }
@@ -44,8 +58,8 @@ public class SharedDispatcher implements Dispatcher {
         return _delegate.attemptRendezVous(rv, timeout);
     }
 
-    public Envelope createMessage() {
-        return _delegate.createMessage();
+    public Envelope createEnvelope() {
+        return _delegate.createEnvelope();
     }
 
     public Envelope exchangeSend(Address target, Serializable pojo, long timeout) throws MessageExchangeException {
@@ -58,18 +72,6 @@ public class SharedDispatcher implements Dispatcher {
 
     public Envelope exchangeSend(Address target, String sourceCorrelationId, Serializable pojo, long timeout) throws MessageExchangeException {
         return _delegate.exchangeSend(target, sourceCorrelationId, pojo, timeout);
-    }
-
-    public void forward(Envelope message, Address destination) throws MessageExchangeException {
-        _delegate.forward(message, destination);
-    }
-
-    public void forward(Envelope message, Address destination, Serializable body) throws MessageExchangeException {
-        _delegate.forward(message, destination, body);
-    }
-
-    public Address getAddress(String name) {
-        return _delegate.getAddress(name);
     }
 
     public Cluster getCluster() {
@@ -88,12 +90,12 @@ public class SharedDispatcher implements Dispatcher {
         _delegate.reply(from, to, sourceCorrelationId, body);
     }
 
-    public void reply(Envelope message, Serializable body) throws MessageExchangeException {
-        _delegate.reply(message, body);
+    public void reply(Envelope envelope, Serializable body) throws MessageExchangeException {
+        _delegate.reply(envelope, body);
     }
 
-    public void send(Address target, Envelope message) throws MessageExchangeException {
-        _delegate.send(target, message);
+    public void send(Address target, Envelope envelope) throws MessageExchangeException {
+        _delegate.send(target, envelope);
     }
 
     public void send(Address target, Serializable pojo) throws MessageExchangeException {
@@ -120,16 +122,16 @@ public class SharedDispatcher implements Dispatcher {
         _delegate.unregister(internalDispatcher, nbAttemp, delayMillis);
     }
 
-    public void onMessage(Envelope message) {
-        _delegate.onMessage(message);
+    public void onEnvelope(Envelope message) {
+        _delegate.onEnvelope(message);
     }
 
-    public Envelope exchangeSend(Address target, Envelope om, long timeout, String targetCorrelationId) throws MessageExchangeException {
-        return _delegate.exchangeSend(target, om, timeout, targetCorrelationId);
+    public Envelope exchangeSend(Address target, Envelope envelope, long timeout, String targetCorrelationId) throws MessageExchangeException {
+        return _delegate.exchangeSend(target, envelope, timeout, targetCorrelationId);
     }
 
-    public Envelope exchangeSend(Address target, Envelope om, long timeout) throws MessageExchangeException {
-        return _delegate.exchangeSend(target, om, timeout);
+    public Envelope exchangeSend(Address target, Envelope envelope, long timeout) throws MessageExchangeException {
+        return _delegate.exchangeSend(target, envelope, timeout);
     }
 
     public void reply(Envelope request, Envelope reply) throws MessageExchangeException {

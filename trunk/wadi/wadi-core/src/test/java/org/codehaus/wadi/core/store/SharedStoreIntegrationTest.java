@@ -22,12 +22,10 @@ import junit.framework.TestCase;
 import org.apache.derby.jdbc.EmbeddedDataSource;
 import org.codehaus.wadi.core.ConcurrentMotableMap;
 import org.codehaus.wadi.core.assembler.StackContext;
-import org.codehaus.wadi.core.contextualiser.BasicInvocation;
 import org.codehaus.wadi.core.contextualiser.BasicInvocationContextFactory;
 import org.codehaus.wadi.core.contextualiser.Contextualiser;
-import org.codehaus.wadi.core.contextualiser.InvocationContext;
 import org.codehaus.wadi.core.contextualiser.InvocationContextFactory;
-import org.codehaus.wadi.core.contextualiser.InvocationException;
+import org.codehaus.wadi.core.contextualiser.ThrowExceptionIfNoSessionInvocation;
 import org.codehaus.wadi.core.manager.Manager;
 import org.codehaus.wadi.core.session.Session;
 import org.codehaus.wadi.group.vm.VMBroker;
@@ -83,16 +81,11 @@ public class SharedStoreIntegrationTest extends TestCase {
         
         // Ensures that the session is successfully migrated; its name is registered by a partition.
         Manager managerGreen = stackContextGreen.getManager();
-        managerGreen.contextualise(new BasicInvocation(name) {
-            public void invoke(InvocationContext context) throws InvocationException {
-                Session session = getSession();
-                assertNotNull(session);
-            }
-        });
+        managerGreen.contextualise(new ThrowExceptionIfNoSessionInvocation(name));
     }
 
     private StackContext newStackContext(String dispatcherName, VMBroker cluster, final Store store) throws Exception {
-        VMDispatcher dispatcher = new VMDispatcher(cluster, dispatcherName, null, 5000);
+        VMDispatcher dispatcher = new VMDispatcher(cluster, dispatcherName, null);
         dispatcher.start();
         StackContext stackContext = new StackContext(new ServiceSpaceName(new URI("Space")), dispatcher) {
             protected InvocationContextFactory newInvocationContextFactory() {

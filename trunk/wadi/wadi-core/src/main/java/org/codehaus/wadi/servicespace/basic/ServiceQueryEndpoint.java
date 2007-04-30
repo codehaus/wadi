@@ -45,8 +45,8 @@ public class ServiceQueryEndpoint implements ServiceEndpoint {
         this.serviceSpace = serviceSpace;
     }
 
-    public void dispatch(Envelope om) throws Exception {
-        ServiceQueryEvent event = (ServiceQueryEvent) om.getPayload();
+    public void dispatch(Envelope envelope) throws Exception {
+        ServiceQueryEvent event = (ServiceQueryEvent) envelope.getPayload();
         ServiceName serviceName = event.getServiceName();
         if (registry.isServiceStarted(serviceName)) {
             Dispatcher dispatcher = serviceSpace.getDispatcher();
@@ -63,8 +63,8 @@ public class ServiceQueryEndpoint implements ServiceEndpoint {
         return;
     }
 
-    public boolean testDispatchMessage(Envelope om) {
-        Serializable payload = om.getPayload();
+    public boolean testDispatchEnvelope(Envelope envelope) {
+        Serializable payload = envelope.getPayload();
         return payload instanceof ServiceQueryEvent;
     }
     

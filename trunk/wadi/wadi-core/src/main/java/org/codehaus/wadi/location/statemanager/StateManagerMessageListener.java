@@ -27,11 +27,11 @@ import org.codehaus.wadi.location.session.MoveIMToPM;
  * @version $Revision: 1603 $
  */
 public interface StateManagerMessageListener {
-    void onInsertIMToPM(Envelope om, InsertIMToPM request);
+    void onInsertIMToPM(Envelope envelope, InsertIMToPM request);
 
-    void onDeleteIMToPM(Envelope om, DeleteIMToPM request);
+    void onDeleteIMToPM(Envelope envelope, DeleteIMToPM request);
 
-    void onEvacuateIMToPM(Envelope om, EvacuateIMToPM request);
+    void onEvacuateIMToPM(Envelope envelope, EvacuateIMToPM request);
 
-    void onMoveIMToPM(Envelope message, MoveIMToPM request);
+    void onMoveIMToPM(Envelope envelope, MoveIMToPM request);
 }

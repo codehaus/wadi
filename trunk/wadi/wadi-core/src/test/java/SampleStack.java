@@ -3,12 +3,12 @@
 import java.net.URI;
 
 import org.codehaus.wadi.core.assembler.StackContext;
+import org.codehaus.wadi.core.manager.DummyRouter;
 import org.codehaus.wadi.core.manager.Manager;
 import org.codehaus.wadi.core.manager.Router;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.servicespace.ServiceSpace;
 import org.codehaus.wadi.servicespace.ServiceSpaceName;
-import org.codehaus.wadi.web.impl.DummyRouter;
 
 public class SampleStack {
     private Manager manager;

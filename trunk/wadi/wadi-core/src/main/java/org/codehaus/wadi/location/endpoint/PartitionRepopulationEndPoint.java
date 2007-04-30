@@ -29,7 +29,6 @@ import org.codehaus.wadi.group.impl.ServiceEndpointBuilder;
 import org.codehaus.wadi.location.partition.PartitionRepopulateRequest;
 import org.codehaus.wadi.location.partition.PartitionRepopulateResponse;
 import org.codehaus.wadi.location.partitionmanager.PartitionMapper;
-import org.codehaus.wadi.location.statemanager.SimpleStateManager;
 import org.codehaus.wadi.servicespace.ServiceName;
 import org.codehaus.wadi.servicespace.ServiceSpace;
 
@@ -40,7 +39,7 @@ import org.codehaus.wadi.servicespace.ServiceSpace;
 public class PartitionRepopulationEndPoint implements Lifecycle, PartitionRepopulationEndPointMessageListener {
     public static final ServiceName NAME = new ServiceName("PartitionRepopulationEndPoint");
     
-    private static final Log log = LogFactory.getLog(SimpleStateManager.class);
+    private static final Log log = LogFactory.getLog(PartitionRepopulationEndPoint.class);
     
     private final Contextualiser contextualiser;
     private final Dispatcher dispatcher;

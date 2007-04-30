@@ -30,9 +30,7 @@ public class VMDispatcher extends AbstractDispatcher {
     private final VMLocalPeer localNode;
     private final VMLocalCluster cluster;
     
-    public VMDispatcher(VMBroker cluster, String nodeName, EndPoint endPoint, long inactiveTime) {
-        super(inactiveTime);
-        
+    public VMDispatcher(VMBroker cluster, String nodeName, EndPoint endPoint) {
         localNode = new VMLocalPeer(nodeName);
         this.cluster = new VMLocalCluster(cluster, localNode, this);
     }
@@ -66,18 +64,14 @@ public class VMDispatcher extends AbstractDispatcher {
             ". Was:" + address.getClass().getName());
     }
 
-    public void send(Address target, Envelope message) throws MessageExchangeException {
-        cluster.send(target, message);
+    protected void doSend(Address target, Envelope envelope) throws MessageExchangeException {
+        cluster.send(target, envelope);
     }
 
-    public Envelope createMessage() {
+    public Envelope createEnvelope() {
         return new VMEnvelope();
     }
 
-    public Address getAddress(String name) {
-        return cluster.getAddress(name);
-    }
-    
     public String toString() {
         return "VMDispatcher for node " + localNode;
     }

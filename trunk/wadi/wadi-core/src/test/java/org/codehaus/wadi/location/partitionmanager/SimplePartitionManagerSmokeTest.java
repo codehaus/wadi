@@ -100,7 +100,7 @@ public class SimplePartitionManagerSmokeTest extends RMockTestCase {
     }
 
     private SimplePartitionManager newManager(VMBroker broker, int index, Contextualiser contextualiser) throws Exception {
-        final Dispatcher dispatcher = new VMDispatcher(broker, Integer.toString(index), null, 1000);
+        final Dispatcher dispatcher = new VMDispatcher(broker, Integer.toString(index), null);
         dispatcher.start();
 
         ServiceSpace serviceSpace = new BasicServiceSpace(new ServiceSpaceName(URI.create("serviceSpace")), dispatcher);
