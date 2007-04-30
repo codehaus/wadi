@@ -23,7 +23,6 @@ import java.util.Map;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.group.DispatcherContext;
 import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.impl.BasicDispatcherContext;

@@ -17,7 +17,6 @@ package org.codehaus.wadi.servicespace;
 
 import java.io.Serializable;
 
-import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.servicespace.replyaccessor.TwoWay;
 import org.codehaus.wadi.servicespace.resultcombiner.ReturnFirstSuccessThenFailure;
