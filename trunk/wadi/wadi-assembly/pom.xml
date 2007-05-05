@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<project
-  xmlns="http://maven.apache.org/POM/4.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"
-  >
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
   <parent>
     <groupId>org.codehaus.wadi</groupId>
@@ -55,74 +51,46 @@
       <version>${project.version}</version>
       <type>war</type>
     </dependency>
-    <dependency>
-      <groupId>org.codehaus.wadi</groupId>
-      <artifactId>wadi-axis2</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency><!-- connection pooling -->
-      <groupId>commons-dbcp</groupId>
-      <artifactId>commons-dbcp</artifactId>
-      <version>${commons-dbcp.version}</version>
-      <exclusions>
-	<exclusion>
-	  <groupId>jdbc</groupId>
-	  <artifactId>jdbc</artifactId>
-	</exclusion>
-	<exclusion>
-	  <groupId>xml-apis</groupId>
-	  <artifactId>xml-apis</artifactId>
-	</exclusion>
-	<exclusion>
-	  <groupId>xerces</groupId>
-	  <artifactId>xerces</artifactId>
-	</exclusion>
-      </exclusions>
-    </dependency>
-
-    <dependency><!-- derby db client side -->
-      <groupId>org.apache.derby</groupId>
-      <artifactId>derbyclient</artifactId>
-      <version>${derby.version}</version>
-    </dependency>
-
-    <dependency><!-- jmx management -->
-      <groupId>mx4j</groupId>
-      <artifactId>mx4j</artifactId>
-      <version>${mx4j.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>mx4j</groupId>
-      <artifactId>mx4j-remote</artifactId>
-      <version>${mx4j.version}</version>
-    </dependency>
-
   </dependencies>
-
+  
   <build>
     <plugins>
+    
       <plugin>
-	<artifactId>maven-antrun-plugin</artifactId>
-	<executions>
-	  <execution>
-	    <phase>generate-resources</phase>
-	    <configuration>
-	      <tasks>
-		<mkdir dir="${basedir}/target"/>
-		<echo file="${basedir}/target/VERSION.txt">${project.version}</echo>
-	      </tasks>
-	    </configuration>
-	    <goals>
-	      <goal>run</goal>
-	    </goals>
-	  </execution>
-	</executions>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>generate-resources</phase>
+            <configuration>
+              <tasks>
+                <mkdir dir="${basedir}/target" />
+                <echo file="${basedir}/target/VERSION.txt">${project.version}</echo>
+              </tasks>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
+      
       <plugin>
-	<artifactId>maven-assembly-plugin</artifactId>
-	<configuration>
-	  <finalName>wadi-${project.version}</finalName>
-	</configuration>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>bin</id>
+            <phase>package</phase>
+            <goals>
+              <goal>attached</goal>
+            </goals>
+            <configuration>
+              <descriptors>
+                <descriptor>${pom.basedir}/src/main/assembly/bin.xml</descriptor>
+              </descriptors>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
