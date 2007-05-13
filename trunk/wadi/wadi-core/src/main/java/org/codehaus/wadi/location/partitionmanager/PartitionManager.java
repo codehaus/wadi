@@ -18,6 +18,7 @@ package org.codehaus.wadi.location.partitionmanager;
 
 import org.codehaus.wadi.core.Lifecycle;
 import org.codehaus.wadi.location.balancing.PartitionBalancingInfo;
+import org.codehaus.wadi.servicespace.ServiceName;
 
 /**
  * A PartitionManager is responsible for unambiguously renegotiating Partition ownership every time
@@ -28,6 +29,8 @@ import org.codehaus.wadi.location.balancing.PartitionBalancingInfo;
  *
  */
 public interface PartitionManager extends Lifecycle {
+    ServiceName NAME = new ServiceName("PartitionManager");
+    
 	Partition getPartition(Object key);
 	
     PartitionBalancingInfo getBalancingInfo();

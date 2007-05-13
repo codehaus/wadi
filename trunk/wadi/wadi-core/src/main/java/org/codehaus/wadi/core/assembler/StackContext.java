@@ -201,7 +201,22 @@ public class StackContext {
         registerMovePMToSMEndPoint(contextualiser);
         registerReplicaStorage();
         registerReplicationManager();
+        
+        // Implementation note: must be registered in this exact order.
+        registerPartitionManager();
+        registerStateManager();
         registerClusteredManager(manager);
+        // End of implementation note.
+    }
+
+    protected void registerStateManager() throws ServiceAlreadyRegisteredException {
+        ServiceRegistry serviceRegistry = serviceSpace.getServiceRegistry();
+        serviceRegistry.register(StateManager.NAME, stateManager);
+    }
+
+    protected void registerPartitionManager() throws ServiceAlreadyRegisteredException {
+        ServiceRegistry serviceRegistry = serviceSpace.getServiceRegistry();
+        serviceRegistry.register(PartitionManager.NAME, partitionManager);
     }
 
     protected InvocationContextFactory newInvocationContextFactory() {

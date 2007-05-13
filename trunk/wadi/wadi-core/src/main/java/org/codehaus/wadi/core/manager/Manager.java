@@ -30,7 +30,7 @@ import org.codehaus.wadi.servicespace.ServiceName;
  * @version $Revision$
  */
 public interface Manager extends Lifecycle {
-    public static final ServiceName NAME = new ServiceName("Manager");
+    ServiceName NAME = new ServiceName("Manager");
     
     /**
      * Initialise the Manager with information not readily available at construction time.
