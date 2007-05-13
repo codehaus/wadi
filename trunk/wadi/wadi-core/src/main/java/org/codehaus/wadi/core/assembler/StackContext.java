@@ -223,7 +223,7 @@ public class StackContext {
         return new BasicHttpInvocationContextFactory();
     }
 
-    protected BasicSessionMonitor newSessionMonitor() {
+    protected SessionMonitor newSessionMonitor() {
         return new BasicSessionMonitor();
     }
 
