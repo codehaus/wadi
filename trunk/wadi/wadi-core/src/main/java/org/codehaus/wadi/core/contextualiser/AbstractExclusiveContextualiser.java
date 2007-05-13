@@ -22,6 +22,8 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.core.ConcurrentMotableMap;
 import org.codehaus.wadi.core.eviction.Evicter;
 import org.codehaus.wadi.core.motable.Emoter;
@@ -38,6 +40,8 @@ import org.codehaus.wadi.location.partitionmanager.PartitionMapper;
  * @version $Revision$
  */
 public abstract class AbstractExclusiveContextualiser extends AbstractMotingContextualiser {
+    private static Log log = LogFactory.getLog(AbstractExclusiveContextualiser.class);
+    
 	protected final ConcurrentMotableMap map;
     private final Evicter evicter;
     private final Timer timer;
@@ -103,8 +107,7 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
         }
     }
 
-    public void start() throws Exception {
-        super.start();
+    protected void doStart() throws Exception {
         evictionTask = new TimerTask() {
             public void run() {
                 evicter.evict(map, new BasicEvictionStrategy());
@@ -113,10 +116,9 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
         evicter.schedule(timer, evictionTask);
     }
 
-    public void stop() throws Exception {
+    protected void doStop() throws Exception {
         unload();
         evicter.cancel(evictionTask);
-        super.stop();
     }
 
     public Immoter getDemoter(String name, Motable motable) {
@@ -128,8 +130,7 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
         }
     }
 
-    public void findRelevantSessionNames(PartitionMapper mapper, Map keyToSessionNames) {
-        super.findRelevantSessionNames(mapper, keyToSessionNames);
+    protected void doFindRelevantSessionNames(PartitionMapper mapper, Map keyToSessionNames) {
         for (Iterator i = map.getNames().iterator(); i.hasNext();) {
             String name = (String) i.next();
             int key = mapper.map(name);
@@ -160,14 +161,14 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
                     Utils.mote(emoter, immoter, motable, id);
                     i++;
                 } catch (Exception e) {
-                    _log.warn("unexpected problem while unloading session", e);
+                    log.warn("unexpected problem while unloading session", e);
                 }
                 map.remove(id);
             } finally {
                 map.releaseExclusive(motable);
             }
         }
-        _log.info("Unloaded sessions=[" + i + "]");
+        log.info("Unloaded sessions=[" + i + "]");
     }
 
     protected class BasicEvictionStrategy implements EvictionStrategy {
@@ -183,7 +184,7 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
             try {
                 motable.destroy();
             } catch (Exception e) {
-                _log.warn("Problem while destroying motable", e);
+                log.warn("Problem while destroying motable", e);
             }
         }
         

@@ -24,7 +24,7 @@ import org.codehaus.wadi.location.partitionmanager.PartitionMapper;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public abstract class AbstractChainedContextualiser extends AbstractContextualiser {
+public abstract class AbstractChainedContextualiser implements Contextualiser {
     protected final Contextualiser next;
 
     public AbstractChainedContextualiser(Contextualiser next) {
@@ -35,18 +35,30 @@ public abstract class AbstractChainedContextualiser extends AbstractContextualis
     }
 
     public void start() throws Exception {
-        super.start();
         next.start();
+        
+        doStart();
     }
 
     public void stop() throws Exception {
+        doStop();
+        
         next.stop();
-        super.stop();
     }
 
     public void findRelevantSessionNames(PartitionMapper mapper, Map keyToSessionNames) {
-        super.findRelevantSessionNames(mapper, keyToSessionNames);
         next.findRelevantSessionNames(mapper, keyToSessionNames);
+        
+        doFindRelevantSessionNames(mapper, keyToSessionNames);
+    }
+
+    protected void doStart() throws Exception {
+    }
+    
+    protected void doStop() throws Exception {
+    }
+    
+    protected void doFindRelevantSessionNames(PartitionMapper mapper, Map keyToSessionNames) {
     }
     
 }

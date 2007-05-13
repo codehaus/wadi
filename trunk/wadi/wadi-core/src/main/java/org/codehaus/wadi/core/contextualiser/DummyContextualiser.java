@@ -16,11 +16,14 @@
  */
 package org.codehaus.wadi.core.contextualiser;
 
+import java.util.Map;
+
 import org.codehaus.wadi.core.eviction.DummyEvicter;
 import org.codehaus.wadi.core.eviction.Evicter;
 import org.codehaus.wadi.core.motable.Immoter;
 import org.codehaus.wadi.core.motable.Motable;
 import org.codehaus.wadi.core.motable.SimpleMotable;
+import org.codehaus.wadi.location.partitionmanager.PartitionMapper;
 
 /**
  * A Contextualiser that does no contextualising
@@ -28,7 +31,7 @@ import org.codehaus.wadi.core.motable.SimpleMotable;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class DummyContextualiser extends AbstractContextualiser {
+public class DummyContextualiser implements Contextualiser {
     protected final Evicter _evicter = new DummyEvicter();
     protected final Immoter _immoter = new DummyImmoter();
 
@@ -39,6 +42,26 @@ public class DummyContextualiser extends AbstractContextualiser {
 
     public Evicter getEvicter() {
         return _evicter;
+    }
+    
+    public void findRelevantSessionNames(PartitionMapper mapper, Map keyToSessionNames) {
+    }
+
+    public Immoter getDemoter(String name, Motable motable) {
+        return _immoter;
+    }
+
+    public Immoter getSharedDemoter() {
+        return _immoter;
+    }
+
+    public void promoteToExclusive(Immoter immoter) {
+    }
+
+    public void start() throws Exception {
+    }
+
+    public void stop() throws Exception {
     }
 
     public static class DummyImmoter implements Immoter {
@@ -54,17 +77,6 @@ public class DummyContextualiser extends AbstractContextualiser {
                 throws InvocationException {
             return false;
         }
-    }
-
-    public Immoter getDemoter(String name, Motable motable) {
-        return _immoter;
-    }
-
-    public Immoter getSharedDemoter() {
-        return _immoter;
-    }
-
-    public void promoteToExclusive(Immoter immoter) {
     }
 
 }
