@@ -25,10 +25,10 @@ import org.codehaus.wadi.servicespace.InvocationResultCombiner;
  * 
  * @version $Revision: 1538 $
  */
-public class ReturnFirstSuccessThenFailure implements InvocationResultCombiner {
-    public static final InvocationResultCombiner COMBINER = new ReturnFirstSuccessThenFailure();
+public class FirstSuccessThenFailureCombiner implements InvocationResultCombiner {
+    public static final InvocationResultCombiner COMBINER = new FirstSuccessThenFailureCombiner();
 
-    protected ReturnFirstSuccessThenFailure() {
+    protected FirstSuccessThenFailureCombiner() {
     }
     
     public InvocationResult combine(Collection invocationResults) {
@@ -40,12 +40,19 @@ public class ReturnFirstSuccessThenFailure implements InvocationResultCombiner {
         for (Iterator iter = invocationResults.iterator(); iter.hasNext();) {
             InvocationResult result = (InvocationResult) iter.next();
             if (result.isSuccess()) {
+                if (shouldReturn(result)) {
+                    return result;
+                }
                 return result;
             } else {
                 firstFailure = result;
             }
         }
         return firstFailure;
+    }
+    
+    protected boolean shouldReturn(InvocationResult result) {
+        return true;
     }
     
 }

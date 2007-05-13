@@ -19,7 +19,7 @@ import java.io.Serializable;
 
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.servicespace.replyaccessor.TwoWay;
-import org.codehaus.wadi.servicespace.resultcombiner.ReturnFirstSuccessThenFailure;
+import org.codehaus.wadi.servicespace.resultcombiner.FirstSuccessThenFailureCombiner;
 
 
 /**
@@ -35,7 +35,7 @@ public class InvocationMetaData implements Serializable {
     private boolean ignoreMessageExchangeExceptionOnSend;
     private boolean clusterAggregation;
     private ReplyRequiredAssessor replyAssessor = TwoWay.ASSESSOR;
-    private transient InvocationResultCombiner invocationResultCombiner = ReturnFirstSuccessThenFailure.COMBINER;
+    private transient InvocationResultCombiner invocationResultCombiner = FirstSuccessThenFailureCombiner.COMBINER;
 
 
     public InvocationMetaData() {
