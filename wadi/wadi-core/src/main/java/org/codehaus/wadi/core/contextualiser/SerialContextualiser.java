@@ -16,6 +16,8 @@
  */
 package org.codehaus.wadi.core.contextualiser;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.core.ConcurrentMotableMap;
 import org.codehaus.wadi.core.motable.Immoter;
 import org.codehaus.wadi.core.motable.Motable;
@@ -31,6 +33,8 @@ import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
  * @version $Revision$
  */
 public class SerialContextualiser extends AbstractDelegatingContextualiser {
+    private static final Log log = LogFactory.getLog(SerialContextualiser.class);
+    
 	private final Collapser collapser;
     private final ConcurrentMotableMap map;
 
@@ -55,7 +59,7 @@ public class SerialContextualiser extends AbstractDelegatingContextualiser {
             try {
                 Utils.acquireUninterrupted("Invocation(SerialContextualiser)", key, invocationLock);
             } catch (TimeoutException e) {
-                _log.error("could not acquire session within timeframe: " + key);
+                log.error("could not acquire session within timeframe: " + key);
                 return false;
             }
             
@@ -64,8 +68,8 @@ public class SerialContextualiser extends AbstractDelegatingContextualiser {
             // before we proceed, confirm that this has not happened.
             Motable context = map.acquire(key);
             if (null != context) {
-                if (_log.isTraceEnabled()) {
-                    _log.trace("session has reappeared in memory whilst we were waiting to immote it...: " + key
+                if (log.isTraceEnabled()) {
+                    log.trace("session has reappeared in memory whilst we were waiting to immote it...: " + key
                             + " [" + Thread.currentThread().getName() + "]");
                 }
                 // overlap two locking systems until we have secured the

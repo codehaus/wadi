@@ -15,6 +15,8 @@
  */
 package org.codehaus.wadi.replication.contextualiser;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.core.contextualiser.AbstractSharedContextualiser;
 import org.codehaus.wadi.core.contextualiser.Contextualiser;
 import org.codehaus.wadi.core.motable.Emoter;
@@ -28,6 +30,8 @@ import org.codehaus.wadi.replication.manager.ReplicationManager;
  * @version $Revision: 1603 $
  */
 public class ReplicaAwareContextualiser extends AbstractSharedContextualiser {
+    private static final Log log = LogFactory.getLog(ReplicaAwareContextualiser.class);
+    
     private final ReplicationManager replicationManager;
     private final StateManager stateManager;
     
@@ -75,7 +79,7 @@ public class ReplicaAwareContextualiser extends AbstractSharedContextualiser {
                         emotable.getName(),
                         emotable.getBodyAsByteArray());
             } catch (Exception e) {
-                _log.warn("Problem emoting [" + emotable + "]", e);
+                log.warn("Problem emoting [" + emotable + "]", e);
                 return false;
             }
 
