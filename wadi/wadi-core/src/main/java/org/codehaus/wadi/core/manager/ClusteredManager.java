@@ -67,17 +67,9 @@ public class ClusteredManager extends DistributableManager {
         this.proxy = proxy;
     }
 
-    public void start() throws Exception {
-        partitionManager.start();
-        stateManager.start();
-        super.start();
-    }
-
     public void stop() throws Exception {
         partitionManager.evacuate();
         super.stop();
-        stateManager.stop();
-        partitionManager.stop();
     }
 
     protected void onSessionDestruction(Session session) {

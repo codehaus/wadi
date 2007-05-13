@@ -19,12 +19,15 @@ package org.codehaus.wadi.location.statemanager;
 
 import org.codehaus.wadi.core.Lifecycle;
 import org.codehaus.wadi.core.motable.Motable;
+import org.codehaus.wadi.servicespace.ServiceName;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision: 2276 $
  */
 public interface StateManager extends Lifecycle {
+    ServiceName NAME = new ServiceName("StateManager");
+    
     boolean offerEmigrant(Motable emotable);
 
     boolean insert(String name);
