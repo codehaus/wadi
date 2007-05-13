@@ -57,7 +57,7 @@ public class ExclusiveStoreContextualiser extends AbstractExclusiveContextualise
         return emoter;
     }
 
-    public void start() throws Exception {
+    protected void doStart() throws Exception {
         if (clean) {
             store.clean();
         } else {
@@ -68,7 +68,6 @@ public class ExclusiveStoreContextualiser extends AbstractExclusiveContextualise
             };
             store.load(putter);
         }
-        super.start();
     }
     
     /**
