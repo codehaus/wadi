@@ -62,10 +62,6 @@ public class SharedStoreContextualiser extends AbstractSharedContextualiser {
         emoter = new AbstractChainedEmoter();
     }
 
-    public void start() throws Exception {
-        super.start();
-    }
-
     public Immoter getImmoter() {
         return immoter;
     }
