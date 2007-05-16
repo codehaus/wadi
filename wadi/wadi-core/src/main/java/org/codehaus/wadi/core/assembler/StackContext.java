@@ -78,6 +78,7 @@ import org.codehaus.wadi.servicespace.ServiceRegistry;
 import org.codehaus.wadi.servicespace.ServiceSpace;
 import org.codehaus.wadi.servicespace.ServiceSpaceName;
 import org.codehaus.wadi.servicespace.SingletonServiceHolder;
+import org.codehaus.wadi.servicespace.admin.commands.ContextualiserStackExplorer;
 import org.codehaus.wadi.servicespace.basic.BasicServiceSpace;
 import org.codehaus.wadi.web.impl.BasicHttpInvocationContextFactory;
 import org.codehaus.wadi.web.impl.JkRouter;
@@ -174,15 +175,27 @@ public class StackContext {
         router = newRouter();
         sessionFactory = newSessionFactory();
 
+        ContextualiserStackExplorer stackExplorer = new ContextualiserStackExplorer();
+        
         Contextualiser contextualiser = new DummyContextualiser();
+        stackExplorer.pushContextualiser(contextualiser);
+        
         contextualiser = newSharedStoreContextualiser(contextualiser);
+        stackExplorer.pushContextualiser(contextualiser);
+
         contextualiser = newReplicaAwareContextualiser(contextualiser);
+        stackExplorer.pushContextualiser(contextualiser);
+
         contextualiser = newClusteredContextualiser(contextualiser);
+        stackExplorer.pushContextualiser(contextualiser);
 
         memoryMap = new OswegoConcurrentMotableMap();
         contextualiser = newCollapserContextualiser(contextualiser, memoryMap);
+        stackExplorer.pushContextualiser(contextualiser);
+
         contextualiser = newMemoryContextualiser(contextualiser, memoryMap);
-        
+        stackExplorer.pushContextualiser(contextualiser);
+
         manager = new ClusteredManager(stateManager,
                         partitionManager,
                         sessionFactory, 
@@ -201,12 +214,18 @@ public class StackContext {
         registerMovePMToSMEndPoint(contextualiser);
         registerReplicaStorage();
         registerReplicationManager();
+        registerStackExplorer(stackExplorer);
         
         // Implementation note: must be registered in this exact order.
         registerPartitionManager();
         registerStateManager();
         registerClusteredManager(manager);
         // End of implementation note.
+    }
+
+    protected void registerStackExplorer(ContextualiserStackExplorer stackExplorer) throws ServiceAlreadyRegisteredException {
+        ServiceRegistry serviceRegistry = serviceSpace.getServiceRegistry();
+        serviceRegistry.register(ContextualiserStackExplorer.NAME, stackExplorer);
     }
 
     protected void registerStateManager() throws ServiceAlreadyRegisteredException {

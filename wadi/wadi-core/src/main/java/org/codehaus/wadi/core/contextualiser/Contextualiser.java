@@ -17,6 +17,7 @@
 package org.codehaus.wadi.core.contextualiser;
 
 import java.util.Map;
+import java.util.Set;
 
 import org.codehaus.wadi.core.Lifecycle;
 import org.codehaus.wadi.core.motable.Immoter;
@@ -86,4 +87,6 @@ public interface Contextualiser extends Lifecycle {
 	void promoteToExclusive(Immoter immoter);
     
 	void findRelevantSessionNames(PartitionMapper mapper, Map keyToSessionNames);
+    
+    Set getSessionNames();
 }

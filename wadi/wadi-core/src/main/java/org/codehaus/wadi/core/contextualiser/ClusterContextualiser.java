@@ -16,6 +16,9 @@
  */
 package org.codehaus.wadi.core.contextualiser;
 
+import java.util.Collections;
+import java.util.Set;
+
 import org.codehaus.wadi.core.motable.Emoter;
 import org.codehaus.wadi.core.motable.Immoter;
 import org.codehaus.wadi.core.motable.Motable;
@@ -90,7 +93,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser {
         }
     }
 
-    public boolean handle(Invocation invocation, String id, Immoter immoter, boolean exclusiveOnly)
+    protected boolean handle(Invocation invocation, String id, Immoter immoter, boolean exclusiveOnly)
             throws InvocationException {
         return relocater.relocate(invocation, id, immoter, shuttingDown.get());
     }

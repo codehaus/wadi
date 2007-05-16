@@ -16,6 +16,9 @@
  */
 package org.codehaus.wadi.core.contextualiser;
 
+import java.util.Collections;
+import java.util.Set;
+
 import org.codehaus.wadi.core.motable.Emoter;
 import org.codehaus.wadi.core.motable.Immoter;
 import org.codehaus.wadi.core.motable.Motable;
@@ -52,6 +55,10 @@ public abstract class AbstractSharedContextualiser extends AbstractMotingContext
         return next.getDemoter(name, motable);
     }
 
+    public Set getSessionNames() {
+        return Collections.EMPTY_SET;
+    }
+    
     protected void load(Emoter emoter, Immoter immoter) {
     }
 
