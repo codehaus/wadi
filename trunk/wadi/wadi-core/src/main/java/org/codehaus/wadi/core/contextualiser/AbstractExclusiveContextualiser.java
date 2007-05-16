@@ -19,6 +19,7 @@ package org.codehaus.wadi.core.contextualiser;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -66,6 +67,10 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
     
     public Immoter getSharedDemoter() {
         return next.getSharedDemoter();
+    }
+    
+    public Set getSessionNames() {
+        return map.getNames();
     }
     
     protected Motable get(String id, boolean exclusiveOnly) {

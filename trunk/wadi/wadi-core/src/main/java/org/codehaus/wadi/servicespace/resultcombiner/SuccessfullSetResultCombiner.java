@@ -40,7 +40,9 @@ public class SuccessfullSetResultCombiner implements InvocationResultCombiner {
             InvocationResult invocationResult = (InvocationResult) iter.next();
             if (invocationResult.isSuccess()) {
                 Set tmpResults = (Set) invocationResult.getResult();
-                results.addAll(tmpResults);
+                if (null != tmpResults) {
+                    results.addAll(tmpResults);
+                }
             }
         }
         

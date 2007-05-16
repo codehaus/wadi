@@ -16,7 +16,9 @@
  */
 package org.codehaus.wadi.core.contextualiser;
 
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 
 import org.codehaus.wadi.core.eviction.DummyEvicter;
 import org.codehaus.wadi.core.eviction.Evicter;
@@ -42,6 +44,10 @@ public class DummyContextualiser implements Contextualiser {
 
     public Evicter getEvicter() {
         return _evicter;
+    }
+    
+    public Set getSessionNames() {
+        return Collections.EMPTY_SET;
     }
     
     public void findRelevantSessionNames(PartitionMapper mapper, Map keyToSessionNames) {

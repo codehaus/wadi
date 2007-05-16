@@ -43,7 +43,6 @@ public class FirstSuccessThenFailureCombiner implements InvocationResultCombiner
                 if (shouldReturn(result)) {
                     return result;
                 }
-                return result;
             } else {
                 firstFailure = result;
             }
