@@ -27,7 +27,7 @@ public class TestTribesEvacuation extends AbstractTestEvacuation {
     String clusterName = "dummy" + System.currentTimeMillis();
 
     protected Dispatcher newDispatcher(String name) throws Exception {
-        return new TribesDispatcher(clusterName, "red", new MockEndPoint("red"), "");
+        return new TribesDispatcher(clusterName, "red", new MockEndPoint("red"));
     }
     
     static class MockEndPoint implements EndPoint, Serializable {

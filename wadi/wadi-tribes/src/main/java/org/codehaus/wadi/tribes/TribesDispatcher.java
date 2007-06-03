@@ -21,18 +21,11 @@ public class TribesDispatcher extends AbstractDispatcher implements ChannelListe
     protected final String localPeerName;
     protected final Collection staticMembers;
     
-    public TribesDispatcher(String clusterName,
-            String localPeerName,
-            EndPoint endPoint,
-            String config) {
-        this(clusterName, localPeerName, endPoint, config, Collections.EMPTY_LIST);
+    public TribesDispatcher(String clusterName, String localPeerName, EndPoint endPoint) {
+        this(clusterName, localPeerName, endPoint, Collections.EMPTY_LIST);
     }
 
-    public TribesDispatcher(String clusterName,
-            String localPeerName,
-            EndPoint endPoint,
-            String config,
-            Collection staticMembers) {
+    public TribesDispatcher(String clusterName, String localPeerName, EndPoint endPoint, Collection staticMembers) {
         if (null == staticMembers) {
             throw new IllegalArgumentException("staticMembers is required");
         }
