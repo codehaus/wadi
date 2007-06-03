@@ -6,7 +6,7 @@
   <body>
     <section name="Getting Started: Start">
       <p>
-	You can put together a heterogeneous cluster of <a href="./tomcat.html">Tomcat</a>, <a href="./jetty.html">Jetty</a>, <a href="./geronimo.html">Geronimo</a> and <a href="./jboss.html">JBoss</a> instances.
+	You can put together a heterogeneous cluster of <a href="./tomcat.html">Tomcat</a>, <a href="./jetty.html">Jetty</a> and <a href="./jboss.html">JBoss</a> instances.
       </p>
       <p>
 	If you are using a clustered configuration

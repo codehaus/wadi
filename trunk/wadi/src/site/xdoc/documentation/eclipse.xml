@@ -8,8 +8,7 @@
             <p>
                 Since WADI uses <a href="http://maven.apache.org">Maven 2</a> its simple to get started.
                 <ol>
-                    <li><a href="./get_code.html">Get</a> the code.</li>
-                    <li>from the command line cd to the wadi directory and use 'cvs up -Pd' (this will cause a lot of old empty directories to be deleted)</li>
+                    <li><a href="./get_code.html">Get the code.</a></li>
                     <li>run mvn install</li>
                     <li>run mvn eclipse:eclipse</li>
                     <li>fire up Eclipse</li>
@@ -27,7 +26,7 @@
                         <ol>
                             <li>Use right click -> Import... ->Existing Project into Workspace</li>
                             <li>Hit the Next button</li>
-                            <li>Choose the location of the module (i.e. $WADI/modules/core) the modules are eclipse projects, the root is not a project.</li>
+                            <li>Choose the location of the module (i.e. $WADI) the modules are eclipse projects, the root is not a project.</li>
                             <li>Hit the Finish button</li>
                         </ol>
                     </li>
