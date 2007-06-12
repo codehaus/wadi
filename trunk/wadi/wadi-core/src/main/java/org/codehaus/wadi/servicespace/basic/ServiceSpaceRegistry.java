@@ -19,6 +19,7 @@ import java.util.Set;
 
 import org.codehaus.wadi.servicespace.ServiceSpace;
 import org.codehaus.wadi.servicespace.ServiceSpaceAlreadyRegisteredException;
+import org.codehaus.wadi.servicespace.ServiceSpaceName;
 import org.codehaus.wadi.servicespace.ServiceSpaceNotFoundException;
 
 
@@ -31,6 +32,8 @@ public interface ServiceSpaceRegistry {
     void register(ServiceSpace serviceSpace) throws ServiceSpaceAlreadyRegisteredException;
     
     void unregister(ServiceSpace serviceSpace) throws ServiceSpaceNotFoundException;
-    
+
+    ServiceSpace getServiceSpace(ServiceSpaceName serviceSpaceName) throws ServiceSpaceNotFoundException;
+
     Set getServiceSpaces();
 }

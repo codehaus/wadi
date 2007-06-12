@@ -15,54 +15,38 @@
  */
 package org.codehaus.wadi.servicespace.admin.commands;
 
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import org.codehaus.wadi.core.contextualiser.Contextualiser;
 import org.codehaus.wadi.group.LocalPeer;
-import org.codehaus.wadi.servicespace.InvocationResultCombiner;
 import org.codehaus.wadi.servicespace.ServiceSpace;
 import org.codehaus.wadi.servicespace.ServiceSpaceName;
-import org.codehaus.wadi.servicespace.resultcombiner.SuccessfullSetResultCombiner;
 
 /**
  * 
  * @version $Revision: 1538 $
  */
-public class GetSessionInfos extends AbstractServiceCommand {
+public class GetContextualiserInfoStack extends AbstractServiceCommand {
 
-    public GetSessionInfos(ServiceSpaceName name) {
+    public GetContextualiserInfoStack(ServiceSpaceName name) {
         super(name, ContextualiserStackExplorer.NAME);
     }
 
-    public InvocationResultCombiner getInvocationResultCombiner() {
-        return SuccessfullSetResultCombiner.COMBINER;
-    }
-    
     protected Object execute(LocalPeer localPeer, ServiceSpace serviceSpace, Object service) {
-        Set sessionInfos = new HashSet();
+        List contextualiserInfos = new ArrayList();
         
         ContextualiserStackExplorer stackExplorer = (ContextualiserStackExplorer) service;
         List contextualisers = stackExplorer.getContextualisers();
         for (int i = 0; i < contextualisers.size(); i++) {
             Contextualiser contextualiser = (Contextualiser) contextualisers.get(i);
-            addSessionInfos(localPeer, contextualiser, i, sessionInfos);
+            String contextualiserName = contextualiser.getClass().getName();
+            contextualiserName = contextualiserName.substring(contextualiserName.lastIndexOf(".") + 1);
+            
+            contextualiserInfos.add(new ContextualiserInfo(contextualiserName, i));
         }
         
-        return sessionInfos;
+        return contextualiserInfos;
     }
     
-    protected void addSessionInfos(LocalPeer localPeer, Contextualiser contextualiser, int index, Set sessionInfos) {
-        String contextualiserName = contextualiser.getClass().getName();
-        contextualiserName = contextualiserName.substring(contextualiserName.lastIndexOf(".") + 1);
-        
-        Set sessionNames = contextualiser.getSessionNames();
-        for (Iterator iter = sessionNames.iterator(); iter.hasNext();) {
-            String name = (String) iter.next();
-            sessionInfos.add(new SessionInfo(localPeer, name, contextualiserName, index));
-        }
-    }
-
 }

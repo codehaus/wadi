@@ -57,6 +57,17 @@ public class BasicServiceSpaceRegistry implements ServiceSpaceRegistry {
         }
     }
 
+    public ServiceSpace getServiceSpace(ServiceSpaceName serviceSpaceName) throws ServiceSpaceNotFoundException {
+        ServiceSpace serviceSpace;
+        synchronized (nameToServiceSpace) {
+            serviceSpace = (ServiceSpace) nameToServiceSpace.get(serviceSpaceName);
+            if (null == serviceSpace) {
+                throw new ServiceSpaceNotFoundException(serviceSpaceName);
+            }
+        }
+        return serviceSpace;
+    }
+    
     public Set getServiceSpaces() {
         synchronized (nameToServiceSpace) {
             return new HashSet(nameToServiceSpace.values());
