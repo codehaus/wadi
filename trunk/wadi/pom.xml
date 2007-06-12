@@ -587,4 +587,21 @@
     </plugins>
   </reporting>
 
+  <profiles>
+    <profile>
+      <id>grails-environment</id>
+      <modules>
+        <module>wadi-group</module>
+        <module>wadi-core</module>
+        <module>wadi-activecluster</module>
+        <module>wadi-jgroups</module>
+        <module>wadi-tribes</module>
+        <module>wadi-tomcat55</module>
+        <module>wadi-webapp</module>
+        <module>wadi-console</module>
+        <module>wadi-assembly</module>
+      </modules>
+    </profile>
+  </profiles>
+
 </project>
