@@ -48,12 +48,14 @@ public class BasicEvenBalancerTest extends TestCase {
         PartitionBalancingInfo resultingBalancingInfo = balance(balancer);
 
         assertEquals(12, resultingBalancingInfo.getPartitionsOwnedBy(PEER1).length);
+        assertVersion(1, resultingBalancingInfo);
         
         peerToBalancingInfo = new HashMap();
         peerToBalancingInfo.put(PEER1, newBasicState(new PartitionBalancingInfo(PEER1, resultingBalancingInfo)));
         peerToBalancingInfo.put(PEER2, newBasicState(new UnknownPartitionBalancingInfo(PEER2, NB_PARTITIONS)));
         balancer = new BasicEvenBalancer(NB_PARTITIONS, peerToBalancingInfo);
         resultingBalancingInfo = balance(balancer);
+        assertVersion(2, resultingBalancingInfo);
         
         assertEquals(6, resultingBalancingInfo.getPartitionsOwnedBy(PEER1).length);
         assertEquals(6, resultingBalancingInfo.getPartitionsOwnedBy(PEER2).length);
@@ -64,6 +66,7 @@ public class BasicEvenBalancerTest extends TestCase {
         peerToBalancingInfo.put(PEER3, newBasicState(new UnknownPartitionBalancingInfo(PEER3, NB_PARTITIONS)));
         balancer = new BasicEvenBalancer(NB_PARTITIONS, peerToBalancingInfo);
         resultingBalancingInfo = balance(balancer);
+        assertVersion(3, resultingBalancingInfo);
         
         assertEquals(4, resultingBalancingInfo.getPartitionsOwnedBy(PEER1).length);
         assertEquals(4, resultingBalancingInfo.getPartitionsOwnedBy(PEER2).length);
@@ -76,7 +79,8 @@ public class BasicEvenBalancerTest extends TestCase {
         peerToBalancingInfo.put(PEER4, newBasicState(new UnknownPartitionBalancingInfo(PEER4, NB_PARTITIONS)));
         balancer = new BasicEvenBalancer(NB_PARTITIONS, peerToBalancingInfo);
         resultingBalancingInfo = balance(balancer);
-        
+        assertVersion(4, resultingBalancingInfo);
+
         assertEquals(3, resultingBalancingInfo.getPartitionsOwnedBy(PEER1).length);
         assertEquals(3, resultingBalancingInfo.getPartitionsOwnedBy(PEER2).length);
         assertEquals(3, resultingBalancingInfo.getPartitionsOwnedBy(PEER3).length);
@@ -91,6 +95,7 @@ public class BasicEvenBalancerTest extends TestCase {
         peerToBalancingInfo.put(PEER4, newBasicState(new UnknownPartitionBalancingInfo(PEER4, NB_PARTITIONS)));
         BasicEvenBalancer balancer = new BasicEvenBalancer(NB_PARTITIONS, peerToBalancingInfo);
         PartitionBalancingInfo resultingBalancingInfo = balance(balancer);
+        assertVersion(1, resultingBalancingInfo);
         
         peerToBalancingInfo = new HashMap();
         peerToBalancingInfo.put(PEER1, newBasicState(new PartitionBalancingInfo(PEER1, resultingBalancingInfo)));
@@ -98,6 +103,7 @@ public class BasicEvenBalancerTest extends TestCase {
         peerToBalancingInfo.put(PEER3, newBasicState(new PartitionBalancingInfo(PEER3, resultingBalancingInfo)));
         balancer = new BasicEvenBalancer(NB_PARTITIONS, peerToBalancingInfo);
         resultingBalancingInfo = balance(balancer);
+        assertVersion(2, resultingBalancingInfo);
         
         assertEquals(4, resultingBalancingInfo.getPartitionsOwnedBy(PEER1).length);
         assertEquals(4, resultingBalancingInfo.getPartitionsOwnedBy(PEER2).length);
@@ -108,6 +114,7 @@ public class BasicEvenBalancerTest extends TestCase {
         peerToBalancingInfo.put(PEER2, newBasicState(new PartitionBalancingInfo(PEER2, resultingBalancingInfo)));
         balancer = new BasicEvenBalancer(NB_PARTITIONS, peerToBalancingInfo);
         resultingBalancingInfo = balance(balancer);
+        assertVersion(3, resultingBalancingInfo);
         
         assertEquals(6, resultingBalancingInfo.getPartitionsOwnedBy(PEER1).length);
         assertEquals(6, resultingBalancingInfo.getPartitionsOwnedBy(PEER2).length);
@@ -116,6 +123,7 @@ public class BasicEvenBalancerTest extends TestCase {
         peerToBalancingInfo.put(PEER1, newBasicState(new PartitionBalancingInfo(PEER1, resultingBalancingInfo)));
         balancer = new BasicEvenBalancer(NB_PARTITIONS, peerToBalancingInfo);
         resultingBalancingInfo = balance(balancer);
+        assertVersion(4, resultingBalancingInfo);
 
         assertEquals(12, resultingBalancingInfo.getPartitionsOwnedBy(PEER1).length);
     }
@@ -174,5 +182,13 @@ public class BasicEvenBalancerTest extends TestCase {
         }
         return new PartitionBalancingInfo(partitionInfos);
     }
-    
+
+    private void assertVersion(int version, PartitionBalancingInfo resultingBalancingInfo) {
+        PartitionInfo[] partitionInfos = resultingBalancingInfo.getPartitionInfos();
+        for (int i = 0; i < partitionInfos.length; i++) {
+            PartitionInfo partitionInfo = partitionInfos[i];
+            assertEquals(version, partitionInfo.getVersion());
+        }
+    }
+
 }
