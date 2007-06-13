@@ -71,6 +71,7 @@ public class PartitionInfoUpdateBuilder {
             if (partitionInfoUpdate.getPartitionInfo().isOwned()) {
                 throw new IllegalStateException("partition [" + partitionInfoUpdate + "] cannot be redefined");
             } else {
+                localPartitionInfo = newPartitionInfo(localPartitionInfo);
                 partitionUpdates[index] = new PartitionInfoUpdate(lostPartitions.get(index), localPartitionInfo);
             }
         }
@@ -93,7 +94,9 @@ public class PartitionInfoUpdateBuilder {
                 if (partitionInfoUpdate.getPartitionInfo().isOwned()) {
                     throw new IllegalStateException("partition [" + partitionInfoUpdate + "] cannot be redefined");
                 } else {
-                    partitionUpdates[index] = new PartitionInfoUpdate(lostPartitions.get(index), localPartitionInfo);
+                    localPartitionInfo = newPartitionInfo(localPartitionInfo);
+                    partitionUpdates[index] = new PartitionInfoUpdate(lostPartitions.get(index),
+                        localPartitionInfo);
                 }
             }
         }
@@ -165,6 +168,10 @@ public class PartitionInfoUpdateBuilder {
             throw new IllegalArgumentException("lostPartitions is required");
         }
         this.lostPartitions = lostPartitions;
+    }
+    
+    protected PartitionInfo newPartitionInfo(PartitionInfo localPartitionInfo) {
+        return new PartitionInfo(version, localPartitionInfo.getIndex(), localPartitionInfo.getOwner());
     }
     
     private boolean areAllPartitionInfoOwned() {
