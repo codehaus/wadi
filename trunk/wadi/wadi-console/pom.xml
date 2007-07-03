@@ -76,6 +76,9 @@
                 </exec>
                 <mkdir dir="${basedir}/target/${project.artifactId}-${project.version}"/>
                 <unjar src="${basedir}/${project.artifactId}-${project.version}.war" dest="${basedir}/target/${project.artifactId}-${project.version}"/>
+                
+                <mkdir dir="${basedir}/target/clover/${project.artifactId}-${project.version}-clover"/>
+                <unjar src="${basedir}/${project.artifactId}-${project.version}.war" dest="${basedir}/target/clover/${project.artifactId}-${project.version}-clover"/>
               </tasks>
             </configuration>
     	  </execution>
