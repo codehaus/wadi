@@ -58,12 +58,14 @@
     </menu>
 
     <menu name="Modules">
-      <item name="wadi-group" href="wadi-group/index.html"/>
-      <item name="wadi-core" href="wadi-core/index.html"/>
       <item name="wadi-activecluster" href="wadi-activecluster/index.html"/>
+      <item name="wadi-aop" href="wadi-aop/index.html"/>
+      <item name="wadi-console" href="wadi-console/index.html"/>
+      <item name="wadi-core" href="wadi-core/index.html"/>
+      <item name="wadi-group" href="wadi-group/index.html"/>
       <item name="wadi-jgroups" href="wadi-jgroups/index.html"/>
-      <item name="wadi-tribes" href="wadi-tribes/index.html"/>
       <item name="wadi-tomcat55" href="wadi-tomcat55/index.html"/>
+      <item name="wadi-tribes" href="wadi-tribes/index.html"/>
       <item name="wadi-webapp" href="wadi-webapp/index.html"/>
     </menu>
 
