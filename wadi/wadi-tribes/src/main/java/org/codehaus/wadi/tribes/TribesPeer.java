@@ -1,17 +1,16 @@
 package org.codehaus.wadi.tribes;
 
 
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 
 import org.apache.catalina.tribes.Member;
 import org.apache.catalina.tribes.UniqueId;
 import org.apache.catalina.tribes.membership.MemberImpl;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.PeerInfo;
@@ -28,14 +27,35 @@ import org.codehaus.wadi.group.PeerInfo;
  * @author not attributable
  * @version 1.0
  */
-public class TribesPeer implements Member, LocalPeer, Address, Serializable {
+public class TribesPeer implements Member, LocalPeer, Address {
+    
+    public static byte[] writePayload(String peerName, PeerInfo peerInfo) {
+        TribesPeerInfo tribesPeerInfo = new TribesPeerInfo(peerName, peerInfo);
+        try {
+            ByteArrayOutputStream memOut = new ByteArrayOutputStream();
+            ObjectOutputStream out = new ObjectOutputStream(memOut);
+            out.writeObject(tribesPeerInfo);
+            return memOut.toByteArray();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    private static TribesPeerInfo getTribesPeerInfo(byte[] payload) {
+        ByteArrayInputStream memIn = new ByteArrayInputStream(payload);
+        try {
+            ObjectInputStream in = new ObjectInputStream(memIn);
+            return (TribesPeerInfo) in.readObject();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
     
     protected transient MemberImpl member;
-    protected transient final Log log = LogFactory.getLog(TribesPeer.class);
     protected transient boolean stateModified = true;
-    private String name;
+    private final String name;
     private final PeerInfo peerInfo;
-    protected UniqueId uniqueId = null;
+    private final UniqueId uniqueId;
     
     public TribesPeer(MemberImpl mbr) {
         if (null == mbr) {
@@ -44,7 +64,10 @@ public class TribesPeer implements Member, LocalPeer, Address, Serializable {
         this.member = mbr;
         this.uniqueId = new UniqueId(mbr.getUniqueId());
         
-        peerInfo = new PeerInfo(null); // FIXME - how can we get hold of EndPoint...
+        TribesPeerInfo tribesPeerInfo = getTribesPeerInfo(mbr.getPayload());
+        
+        name = tribesPeerInfo.peerName;
+        peerInfo = tribesPeerInfo.peerInfo;
     }
 
     /**
@@ -173,25 +196,23 @@ public class TribesPeer implements Member, LocalPeer, Address, Serializable {
         return peer;
     }
     
-    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-        byte[] uid = new byte[in.readInt()];
-        in.read(uid);
-        uniqueId = new UniqueId(uid);
-        name = in.readUTF();
-    }
-    
-    public void writeExternal(ObjectOutput out) throws IOException {
-        out.writeInt(uniqueId.getBytes().length);
-        out.write(uniqueId.getBytes(),0,uniqueId.getBytes().length);
-        out.writeUTF(name);
-    }
-    
     public String toString() {
         return "TribesPeer[id:"+uniqueId+"; member:"+member+"]";
     }
 
-    public void setName(String name) {
-        this.name = name;
+    private static class TribesPeerInfo implements Serializable {
+        private final String peerName;
+        private final PeerInfo peerInfo;
+        
+        protected TribesPeerInfo() {
+            this.peerName = null;
+            this.peerInfo = null;
+        }
+        
+        protected TribesPeerInfo(String peerName, PeerInfo peerInfo) {
+            this.peerName = peerName;
+            this.peerInfo = peerInfo;
+        }
     }
-
+    
 }

@@ -18,7 +18,6 @@ import org.codehaus.wadi.group.impl.AbstractDispatcher;
 
 public class TribesDispatcher extends AbstractDispatcher implements ChannelListener {
     protected TribesCluster cluster;
-    protected final String localPeerName;
     protected final Collection staticMembers;
     
     public TribesDispatcher(String clusterName, String localPeerName, EndPoint endPoint) {
@@ -31,11 +30,10 @@ public class TribesDispatcher extends AbstractDispatcher implements ChannelListe
         }
         //todo, create some sort of config file
         byte[] domain = getBytes(clusterName);
-        this.localPeerName = localPeerName;
         this.staticMembers = staticMembers;
         
         PeerInfo localPeerInfo = new PeerInfo(endPoint);
-        cluster = new TribesCluster(domain, this, localPeerInfo);
+        cluster = new TribesCluster(domain, this, localPeerName, localPeerInfo);
     }
 
     public Collection getStaticMembers() {
@@ -108,7 +106,6 @@ public class TribesDispatcher extends AbstractDispatcher implements ChannelListe
     public void start() throws MessageExchangeException {
         try {
             cluster.init();
-            ((TribesPeer)cluster.getLocalPeer()).setName(localPeerName);
             cluster.channel.addChannelListener(this);
             cluster.start();
         } catch ( Exception x ) {
