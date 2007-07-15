@@ -16,9 +16,6 @@
  */
 package org.codehaus.wadi.core.contextualiser;
 
-import java.util.Collections;
-import java.util.Set;
-
 import org.codehaus.wadi.core.motable.Emoter;
 import org.codehaus.wadi.core.motable.Immoter;
 import org.codehaus.wadi.core.motable.Motable;

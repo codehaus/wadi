@@ -44,7 +44,6 @@ public class StandardManager implements Lifecycle, Manager {
     private final Contextualiser contextualiser;
     private final ConcurrentMotableMap motableMap;
     private final Router router;
-    private final boolean errorIfSessionNotAcquired;
     private final SynchronizedBoolean acceptingSessions = new SynchronizedBoolean(true);
     private final SessionMonitor sessionMonitor;
     private final InvocationContextFactory invocationContextFactory;
@@ -57,8 +56,7 @@ public class StandardManager implements Lifecycle, Manager {
             ConcurrentMotableMap motableMap,
             Router router,
             SessionMonitor sessionMonitor,
-            InvocationContextFactory invocationContextFactory,
-            boolean errorIfSessionNotAcquired) {
+            InvocationContextFactory invocationContextFactory) {
         if (null == sessionFactory) {
             throw new IllegalArgumentException("sessionFactory is required");
         } else if (null == sessionIdFactory) {
@@ -81,7 +79,6 @@ public class StandardManager implements Lifecycle, Manager {
         this.router = router;
         this.sessionMonitor = sessionMonitor;
         this.invocationContextFactory = invocationContextFactory;
-        this.errorIfSessionNotAcquired = errorIfSessionNotAcquired;
         
         sessionFactory.setManager(this);
     }
@@ -158,7 +155,7 @@ public class StandardManager implements Lifecycle, Manager {
         boolean contextualised = contextualiser.contextualise(invocation, name, null, false);
         if (!contextualised) {
             log.error("Could not acquire session [" + name + "]");
-            if (errorIfSessionNotAcquired) {
+            if (invocation.isErrorIfSessionNotAcquired()) {
                 invocation.sendError(503, "Session [" + name + "] is not known");
             } else {
                 contextualised = processStateless(invocation);

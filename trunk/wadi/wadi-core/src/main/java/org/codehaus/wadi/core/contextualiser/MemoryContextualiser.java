@@ -118,8 +118,11 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
         }
         
         public boolean emote(Motable emotable, Motable immotable) {
-            sessionMonitor.notifyOutboundSessionMigration((Session) emotable);
-            return super.emote(emotable, immotable);
+            boolean success = super.emote(emotable, immotable);
+            if (success) {
+                sessionMonitor.notifyOutboundSessionMigration((Session) emotable);
+            }
+            return success;
         }
         
     }

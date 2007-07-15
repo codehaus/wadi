@@ -58,7 +58,6 @@ public class LocalPartition implements Partition, Serializable {
     private transient final WaitableInt nbClients;
     private final int key;
     private final Map nameToLocation;
-    private final long relocationTimeout;
     
     protected LocalPartition() {
         dispatcher = null;
@@ -66,21 +65,17 @@ public class LocalPartition implements Partition, Serializable {
         peer = null;
         log = null;
         nameToLocation = null;
-        relocationTimeout = -1;
         nbClients = null;
     }
     
-    public LocalPartition(Dispatcher dispatcher, int key, long relocationTimeout) {
+    public LocalPartition(Dispatcher dispatcher, int key) {
         if (0 > key) {
             throw new IllegalArgumentException("key must be greater than 0");
         } else  if (null == dispatcher) {
             throw new IllegalArgumentException("peer is required");
-        } else if (1 > relocationTimeout) {
-            throw new IllegalArgumentException("relocationTimeout must be positive");
         }
         this.key = key;
         this.dispatcher = dispatcher;
-        this.relocationTimeout = relocationTimeout;
         
         nbClients = new WaitableInt(0);
         peer = dispatcher.getCluster().getLocalPeer();
@@ -98,7 +93,6 @@ public class LocalPartition implements Partition, Serializable {
         
         nbClients = new WaitableInt(0);
         key = prototype.key;
-        relocationTimeout = prototype.relocationTimeout;
         peer = dispatcher.getCluster().getLocalPeer();
         log = LogFactory.getLog(getClass().getName() + "#" + key + "@" + peer.getName());
         nameToLocation = prototype.nameToLocation;
@@ -141,8 +135,7 @@ public class LocalPartition implements Partition, Serializable {
         try {
             LocalPartitionMoveIMToPMAction action = new LocalPartitionMoveIMToPMAction(dispatcher,
                     nameToLocation,
-                    log,
-                    relocationTimeout);
+                    log);
             action.onMessage(message, request);
         } finally {
             nbClients.decrement();

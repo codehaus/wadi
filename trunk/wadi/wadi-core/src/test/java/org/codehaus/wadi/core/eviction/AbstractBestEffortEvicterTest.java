@@ -33,7 +33,7 @@ public class AbstractBestEffortEvicterTest extends RMockTestCase {
         String id = "id";
         modify().returnValue(Collections.singleton(id));
 
-        idToEvictable.acquireExclusive(id);
+        idToEvictable.acquireExclusive(id, 500);
         modify().returnValue(motable);
 
         motable.getTimeToLive(10);
@@ -61,7 +61,7 @@ public class AbstractBestEffortEvicterTest extends RMockTestCase {
         String id = "id";
         modify().returnValue(Collections.singleton(id));
 
-        idToEvictable.acquireExclusive(id);
+        idToEvictable.acquireExclusive(id, 500);
         modify().returnValue(motable);
 
         motable.getTimeToLive(10);
@@ -89,7 +89,7 @@ public class AbstractBestEffortEvicterTest extends RMockTestCase {
         String id = "id";
         modify().returnValue(Collections.singleton(id));
 
-        idToEvictable.acquireExclusive(id);
+        idToEvictable.acquireExclusive(id, 500);
         modify().returnValue(motable);
 
         motable.getTimeToLive(10);

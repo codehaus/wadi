@@ -81,7 +81,7 @@ public class SharedStoreIntegrationTest extends TestCase {
         
         // Ensures that the session is successfully migrated; its name is registered by a partition.
         Manager managerGreen = stackContextGreen.getManager();
-        managerGreen.contextualise(new ThrowExceptionIfNoSessionInvocation(name));
+        managerGreen.contextualise(new ThrowExceptionIfNoSessionInvocation(name, 500));
     }
 
     private StackContext newStackContext(String dispatcherName, VMBroker cluster, final Store store) throws Exception {

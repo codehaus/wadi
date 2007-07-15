@@ -33,16 +33,14 @@ public class DistributableManager extends StandardManager {
             ConcurrentMotableMap map,
             Router router,
             SessionMonitor sessionMonitor,
-            InvocationContextFactory invocationContextFactory,
-            boolean errorIfSessionNotAcquired) {
+            InvocationContextFactory invocationContextFactory) {
         super(sessionFactory,
                 sessionIdFactory,
                 contextualiser,
                 map,
                 router,
                 sessionMonitor,
-                invocationContextFactory,
-                errorIfSessionNotAcquired);
+                invocationContextFactory);
     }
 
 }

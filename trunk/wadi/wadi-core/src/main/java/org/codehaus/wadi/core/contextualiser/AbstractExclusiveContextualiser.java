@@ -77,9 +77,9 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
         throw new UnsupportedOperationException();
     }
     
-    public Motable acquire(String id, boolean exclusiveOnly) {
+    protected Motable acquire(String id, boolean exclusiveOnly, long exclusiveSessionLockWaitTime) {
         if (exclusiveOnly) {
-            return map.acquireExclusive(id);
+            return map.acquireExclusive(id, exclusiveSessionLockWaitTime);
         } else {
             return map.acquire(id);
         }
@@ -97,7 +97,7 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
             String id,
             Immoter immoter,
             boolean exclusiveOnly) throws InvocationException {
-        Motable emotable = acquire(id, exclusiveOnly);
+        Motable emotable = acquire(id, exclusiveOnly, invocation.getExclusiveSessionLockWaitTime());
         if (emotable == null) {
             return false;
         }
@@ -156,7 +156,7 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
         int i = 0;
         for (Iterator iter = map.getNames().iterator(); iter.hasNext();) {
             String id = (String) iter.next();
-            Motable motable = map.acquireExclusive(id);
+            Motable motable = map.acquireExclusive(id, Long.MAX_VALUE);
             if (null == motable) {
                 continue;
             }

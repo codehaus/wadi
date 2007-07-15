@@ -7,11 +7,15 @@ import org.codehaus.wadi.core.motable.SimpleMotable;
 
 public class OswegoConcurrentMotableMapTest extends TestCase {
 
+    private OswegoConcurrentMotableMap map;
     private volatile boolean expectNull;
     private volatile boolean failure;
     
+    protected void setUp() throws Exception {
+        map = new OswegoConcurrentMotableMap();
+    }
+    
     public void testRemoveBetweenAcquireExclusiveAndMultipleAcquire() throws Exception {
-        final OswegoConcurrentMotableMap map = new OswegoConcurrentMotableMap();
         final String id = "name";
         map.put(id, new SimpleMotable());
         
@@ -36,7 +40,7 @@ public class OswegoConcurrentMotableMapTest extends TestCase {
         
         Thread.sleep(200);
         
-        Motable motable = map.acquireExclusive(id);
+        Motable motable = map.acquireExclusive(id, 500);
         map.remove(id);
         expectNull = true;
         map.releaseExclusive(motable);
@@ -47,6 +51,17 @@ public class OswegoConcurrentMotableMapTest extends TestCase {
         }
         
         assertFalse(failure);
+    }
+    
+    public void testMotableIsBusyThrowException() throws Exception {
+        String id = "name";
+        map.put(id, new SimpleMotable());
+
+        map.acquireExclusive(id, 1);
+        try {
+            map.acquireExclusive(id, 1);
+        } catch (MotableBusyException e) {
+        }
     }
     
 }

@@ -109,8 +109,8 @@ public class BasicPartitionRepopulateTaskTest extends RMockTestCase {
 
         BasicPartitionRepopulateTask repopulateTask = new BasicPartitionRepopulateTask(dispatcher, 200);
 
-        LocalPartition partition1 = new LocalPartition(dispatcher, 1, 100);
-        LocalPartition partition3 = new LocalPartition(dispatcher, 3, 100);
+        LocalPartition partition1 = new LocalPartition(dispatcher, 1);
+        LocalPartition partition3 = new LocalPartition(dispatcher, 3);
         LocalPartition[] localPartitions = new LocalPartition[] {partition1, partition3};
         repopulateTask.repopulate(localPartitions);
         
@@ -133,8 +133,8 @@ public class BasicPartitionRepopulateTaskTest extends RMockTestCase {
 
         BasicPartitionRepopulateTask repopulateTask = new BasicPartitionRepopulateTask(dispatcher, 100);
 
-        LocalPartition partition1 = new LocalPartition(dispatcher, 1, 100);
-        LocalPartition partition3 = new LocalPartition(dispatcher, 3, 100);
+        LocalPartition partition1 = new LocalPartition(dispatcher, 1);
+        LocalPartition partition3 = new LocalPartition(dispatcher, 3);
         LocalPartition[] localPartitions = new LocalPartition[] {partition1, partition3};
         repopulateTask.repopulate(localPartitions);
         

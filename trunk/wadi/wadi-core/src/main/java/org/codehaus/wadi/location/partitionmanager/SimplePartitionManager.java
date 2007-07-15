@@ -296,7 +296,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionManage
         LocalPartition[] toBePopulated = new LocalPartition[updates.length];
         for (int i = 0; i < updates.length; i++) {
             int index = updates[i].getPartitionInfo().getIndex();
-            toBePopulated[i] = new LocalPartition(dispatcher, index, timing.getSessionRelocationWaitTime());
+            toBePopulated[i] = new LocalPartition(dispatcher, index);
         }
         
         BasicPartitionRepopulateTask repopulateTask =
@@ -389,7 +389,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionManage
             if (facade.isLocal()) {
                 facade.setPartitionInfo(partitionInfos[i]);
             } else {
-                LocalPartition local = new LocalPartition(dispatcher, i, timing.getSessionRelocationWaitTime());
+                LocalPartition local = new LocalPartition(dispatcher, i);
                 facade.setContent(partitionInfos[i], local);
             }
         }

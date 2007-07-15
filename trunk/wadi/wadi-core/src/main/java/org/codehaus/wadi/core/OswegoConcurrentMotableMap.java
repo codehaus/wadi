@@ -43,14 +43,19 @@ public class OswegoConcurrentMotableMap implements ConcurrentMotableMap {
         return motable;
     }
     
-    public Motable acquireExclusive(String id) {
+    public Motable acquireExclusive(String id, long exclusiveSessionLockWaitTime) {
         Motable motable = (Motable) delegate.get(id);
         if (null != motable) {
+            boolean success;
             try {
-                getExclusiveLock(motable).acquire();
+                success = getExclusiveLock(motable).attempt(exclusiveSessionLockWaitTime);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 return null;
+            }
+            if (!success) {
+                throw new MotableBusyException("Cannot obtain exclusive lock for Motable [" + id + "] after [" + 
+                    exclusiveSessionLockWaitTime + "]ms.");
             }
             motable = (Motable) delegate.get(id);
         }

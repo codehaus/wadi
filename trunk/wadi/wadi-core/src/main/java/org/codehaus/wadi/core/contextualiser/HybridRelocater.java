@@ -20,6 +20,7 @@ import java.io.Serializable;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.core.MotableBusyException;
 import org.codehaus.wadi.core.WADIRuntimeException;
 import org.codehaus.wadi.core.motable.AbstractChainedEmoter;
 import org.codehaus.wadi.core.motable.Emoter;
@@ -55,20 +56,14 @@ public class HybridRelocater implements Relocater {
 	private final Dispatcher dispatcher;
     private final LocalPeer localPeer;
 	private final PartitionManager partitionManager;
-    private final long resTimeout;
 
-    public HybridRelocater(ServiceSpace serviceSpace,
-            PartitionManager partitionManager,
-            long resTimeout) {
+    public HybridRelocater(ServiceSpace serviceSpace, PartitionManager partitionManager) {
         if (null == serviceSpace) {
             throw new IllegalArgumentException("serviceSpace is required");
         } else if (null == partitionManager) {
             throw new IllegalArgumentException("partitionManager is required");
-        } else if (1 > resTimeout) { 
-            throw new IllegalArgumentException("resTimeout must be > 0");
         }
         this.partitionManager = partitionManager;
-        this.resTimeout = resTimeout;
 
         dispatcher = serviceSpace.getDispatcher();
         localPeer = dispatcher.getCluster().getLocalPeer();
@@ -77,6 +72,8 @@ public class HybridRelocater implements Relocater {
     public boolean relocate(Invocation invocation, String name, Immoter immoter, boolean shuttingDown) throws InvocationException {
         try {
             return doRelocate(invocation, name, immoter, shuttingDown);
+        } catch (MotableBusyException e) {
+            throw e;
         } catch (Exception e) {
             log.error("unexpected error", e);
             return false;
@@ -84,10 +81,15 @@ public class HybridRelocater implements Relocater {
     }
     
     protected boolean doRelocate(Invocation invocation, String name, Immoter immoter, boolean shuttingDown) throws Exception {
-        MoveIMToPM request = new MoveIMToPM(localPeer, name, !shuttingDown, invocation.isRelocatable());
+        long exclusiveSessionLockWaitTime = invocation.getExclusiveSessionLockWaitTime();
+        MoveIMToPM request = new MoveIMToPM(localPeer, 
+            name,
+            !shuttingDown, 
+            invocation.isRelocatable(),
+            exclusiveSessionLockWaitTime);
         Envelope message;
         try {
-            message = partitionManager.getPartition(name).exchange(request, resTimeout);
+            message = partitionManager.getPartition(name).exchange(request, exclusiveSessionLockWaitTime + 10000);
         } catch (MessageExchangeException e) {
             return false;
         }
@@ -126,13 +128,10 @@ public class HybridRelocater implements Relocater {
 
     protected boolean handleSessionRelocation(Invocation invocation, String name, Immoter immoter, Envelope message, MoveSMToIM req) throws InvocationException {
         Motable emotable = req.getMotable();
-        if (emotable == null) {
-            log.warn("failed relocation - 0 bytes arrived: " + name);
-            try {
-                MoveIMToSM response = new MoveIMToSM(false);
-                dispatcher.reply(message, response);
-            } catch (Exception e) {
-                log.warn(e);
+        if (null == emotable) {
+            log.warn("Failed relocation for [" + name + "]");
+            if (req.isSessionBuzy()) {
+                throw new MotableBusyException("Motable [" + name + "] buzy. Session relocation has been aborted.");
             }
             return false;
         } else {

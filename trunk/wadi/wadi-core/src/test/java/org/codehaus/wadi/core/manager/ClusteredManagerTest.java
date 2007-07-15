@@ -65,7 +65,6 @@ public class ClusteredManagerTest extends RMockTestCase {
                 router,
                 sessionMonitor,
                 invocationContextFactory,
-                false,
                 proxy);
         manager.destroy(session);
     }

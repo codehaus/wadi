@@ -34,22 +34,19 @@ import org.codehaus.wadi.web.HttpInvocationContext;
  * @version $Revision: 1430 $
  */
 public class WebInvocation implements Invocation {
-
-    protected static ThreadLocal _threadLocalInstance=new ThreadLocal() {protected Object initialValue() {return new WebInvocation();}};
-
-    public static WebInvocation getThreadLocalInstance() {
-        return (WebInvocation)_threadLocalInstance.get();
-    }
-
-    public static final WebInvocation RELOCATED_INVOCATION = new WebInvocation();
-
     private HttpServletRequest hreq;
     private HttpServletResponse hres;
     private FilterChain chain;
     private boolean proxiedInvocation = true;
     private InvocationProxy proxy;
     private Session session;
+    private boolean errorIfSessionNotAcquired;
+    private long exclusiveSessionLockWaitTime;
 
+    public WebInvocation(long exclusiveSessionLockWaitTime) {
+        this.exclusiveSessionLockWaitTime = exclusiveSessionLockWaitTime;
+    }
+    
     /**
      * Initialise this WebInvocation for action after being taken from a Pool
      *
@@ -143,5 +140,18 @@ public class WebInvocation implements Invocation {
     public void setSession(Session session) {
         this.session = session;
     }
+
+    public boolean isErrorIfSessionNotAcquired() {
+        return errorIfSessionNotAcquired;
+    }
+
+    public void setErrorIfSessionNotAcquired(boolean errorIfSessionNotAcquired) {
+        this.errorIfSessionNotAcquired = errorIfSessionNotAcquired;
+    }
+    
+    public long getExclusiveSessionLockWaitTime() {
+        return exclusiveSessionLockWaitTime;
+    }
+
     
 }

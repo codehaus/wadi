@@ -63,7 +63,7 @@ public interface Invocation {
      * @param message an error message
      * @throws InvocationException
      */
-    void sendError(int code, String message) throws InvocationException; // a little web specific ?
+    void sendError(int code, String message) throws InvocationException;
     
     /**
      * Does this Invocation know how to 'relocate' itself to another EndPoint ?
@@ -93,4 +93,10 @@ public interface Invocation {
 	boolean isProxiedInvocation();
     
     void setInvocationProxy(InvocationProxy proxy);
+    
+    void setErrorIfSessionNotAcquired(boolean errorIfSessionNotAcquired);
+    
+    boolean isErrorIfSessionNotAcquired();
+
+    long getExclusiveSessionLockWaitTime();
 }

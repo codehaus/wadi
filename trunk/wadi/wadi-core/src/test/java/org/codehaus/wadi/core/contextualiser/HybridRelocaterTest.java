@@ -17,6 +17,7 @@ package org.codehaus.wadi.core.contextualiser;
 
 import java.io.IOException;
 
+import org.codehaus.wadi.core.MotableBusyException;
 import org.codehaus.wadi.core.motable.Immoter;
 import org.codehaus.wadi.core.motable.Motable;
 import org.codehaus.wadi.core.session.Session;
@@ -45,10 +46,12 @@ public class HybridRelocaterTest extends RMockTestCase {
     private ServiceSpace serviceSpace;
     private PartitionManager manager;
     private Invocation invocation;
+    private long exclusiveSessionLockWaitTime;
     private Immoter immoter;
     private Dispatcher dispatcher;
     private Cluster cluster;
     private LocalPeer localPeer;
+    private String key;
 
     protected void setUp() throws Exception {
         serviceSpace = (ServiceSpace) mock(ServiceSpace.class);
@@ -60,20 +63,25 @@ public class HybridRelocaterTest extends RMockTestCase {
         modify().multiplicity(expect.atLeast(0));
         
         manager = (PartitionManager) mock(PartitionManager.class);
+        
         invocation = (Invocation) mock(Invocation.class);
+        invocation.getExclusiveSessionLockWaitTime();
+        exclusiveSessionLockWaitTime = 1000;
+        modify().returnValue(exclusiveSessionLockWaitTime);
+        
         immoter = (Immoter) mock(Immoter.class);
+        
+        key = "key";
     }
     
-    public void testSuccessfulelocation() throws Exception {
-        final String key = "key";
-        int timeout = 100;
+    public void testSuccessfulRelocation() throws Exception {
         boolean shuttingDown = false;
         boolean relocatable = true;
         
         Motable relocatedMotable = (Motable) mock(Motable.class);
         
         Partition partition = manager.getPartition(key);
-        recordPartitionExchange(key, timeout, shuttingDown, relocatable, partition);
+        recordPartitionExchange(shuttingDown, relocatable, partition);
         Envelope envelope = (Envelope) mock(Envelope.class);
         modify().returnValue(envelope);
         envelope.getPayload();
@@ -94,9 +102,47 @@ public class HybridRelocaterTest extends RMockTestCase {
         modify().returnValue(true);
         startVerification();
         
-        HybridRelocater relocater = new HybridRelocater(serviceSpace, manager, timeout);
+        HybridRelocater relocater = new HybridRelocater(serviceSpace, manager);
         boolean relocated = relocater.relocate(invocation, key, immoter, shuttingDown);
         assertTrue(relocated);
+    }
+
+    public void testRelocatedSessionIsNull() throws Exception {
+        boolean shuttingDown = false;
+        boolean relocatable = true;
+        
+        Partition partition = manager.getPartition(key);
+        recordPartitionExchange(shuttingDown, relocatable, partition);
+        Envelope envelope = (Envelope) mock(Envelope.class);
+        modify().returnValue(envelope);
+        envelope.getPayload();
+        modify().returnValue(new MoveSMToIM(null));
+        startVerification();
+        
+        HybridRelocater relocater = new HybridRelocater(serviceSpace, manager);
+        boolean relocated = relocater.relocate(invocation, key, immoter, shuttingDown);
+        assertFalse(relocated);
+    }
+    
+    public void testThrowExceptionIsMotableToBeRelocatedIsBusy() throws Exception {
+        boolean shuttingDown = false;
+        boolean relocatable = true;
+        
+        Partition partition = manager.getPartition(key);
+        recordPartitionExchange(shuttingDown, relocatable, partition);
+        Envelope envelope = (Envelope) mock(Envelope.class);
+        modify().returnValue(envelope);
+        envelope.getPayload();
+        modify().returnValue(new MoveSMToIM(true));
+
+        startVerification();
+        
+        HybridRelocater relocater = new HybridRelocater(serviceSpace, manager);
+        try {
+            relocater.relocate(invocation, key, immoter, shuttingDown);
+            fail();
+        } catch (MotableBusyException e) {
+        }
     }
 
     private void recordRehydration(String key, Motable relocatedMotable, Session relocatedSession) throws Exception {
@@ -116,26 +162,6 @@ public class HybridRelocaterTest extends RMockTestCase {
         modify().returnValue(body);
         relocatedSession.rehydrate(creationTime, lastAccessedTime, maxInactiveInterval, key, body);
     }
-    
-    public void testRelocatedSessionIsNull() throws Exception {
-        final String key = "key";
-        int timeout = 100;
-        boolean shuttingDown = false;
-        boolean relocatable = true;
-        Partition partition = manager.getPartition(key);
-        recordPartitionExchange(key, timeout, shuttingDown, relocatable, partition);
-        Envelope envelope = (Envelope) mock(Envelope.class);
-        modify().returnValue(envelope);
-        envelope.getPayload();
-        modify().returnValue(new MoveSMToIM(null));
-
-        recordReplyToSM(envelope, false);
-        startVerification();
-        
-        HybridRelocater relocater = new HybridRelocater(serviceSpace, manager, timeout);
-        boolean relocated = relocater.relocate(invocation, key, immoter, shuttingDown);
-        assertFalse(relocated);
-    }
 
     private void recordReplyToSM(Envelope envelope, final boolean success) throws MessageExchangeException {
         dispatcher.reply(envelope, null);
@@ -152,16 +178,13 @@ public class HybridRelocaterTest extends RMockTestCase {
         });
     }
 
-    private void recordPartitionExchange(final String key,
-            int timeout,
-            boolean shuttingDown,
+    private void recordPartitionExchange(boolean shuttingDown,
             boolean relocatable,
             Partition partition) throws MessageExchangeException {
         invocation.isRelocatable();
         modify().returnValue(relocatable);
         
-        new MoveIMToPM(localPeer, key, !shuttingDown, relocatable);
-        partition.exchange(null, timeout);
+        partition.exchange(null, exclusiveSessionLockWaitTime + 10000);
         modify().args(new AbstractExpression() {
 
             public void describeWith(ExpressionDescriber arg0) throws IOException {

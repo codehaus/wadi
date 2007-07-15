@@ -26,9 +26,15 @@ public class BasicInvocation implements Invocation {
 
     private final String sessionKey;
     private Session session;
+    private boolean errorIfSessionNotAcquired;
+    private boolean errored;
+    private int errorCode;
+    private String errorMessage;
+    private long exclusiveSessionLockWaitTime;
     
-    public BasicInvocation(String sessionKey) {
+    public BasicInvocation(String sessionKey, long exclusiveSessionLockWaitTime) {
         this.sessionKey = sessionKey;
+        this.exclusiveSessionLockWaitTime = exclusiveSessionLockWaitTime;
     }
     
     public Session getSession() {
@@ -59,7 +65,9 @@ public class BasicInvocation implements Invocation {
     }
 
     public void sendError(int code, String message) throws InvocationException {
-        throw new UnsupportedOperationException();
+        errored = true;
+        this.errorCode = code;
+        this.errorMessage = message;
     }
 
     public void setInvocationProxy(InvocationProxy proxy) {
@@ -67,6 +75,30 @@ public class BasicInvocation implements Invocation {
 
     public void setSession(Session session) {
         this.session = session;
+    }
+
+    public boolean isErrorIfSessionNotAcquired() {
+        return errorIfSessionNotAcquired;
+    }
+
+    public void setErrorIfSessionNotAcquired(boolean errorIfSessionNotAcquired) {
+        this.errorIfSessionNotAcquired = errorIfSessionNotAcquired;
+    }
+
+    public boolean isErrored() {
+        return errored;
+    }
+    
+    public int getErrorCode() {
+        return errorCode;
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    public long getExclusiveSessionLockWaitTime() {
+        return exclusiveSessionLockWaitTime;
     }
 
 }
