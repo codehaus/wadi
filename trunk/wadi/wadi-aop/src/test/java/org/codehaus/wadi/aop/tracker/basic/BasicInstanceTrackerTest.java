@@ -21,6 +21,7 @@ import java.io.Serializable;
 
 import org.codehaus.wadi.aop.ClusteredStateMarker;
 import org.codehaus.wadi.aop.annotation.ClusteredState;
+import org.codehaus.wadi.aop.annotation.TrackedField;
 import org.codehaus.wadi.aop.aspectj.ClusteredStateAspectUtil;
 import org.codehaus.wadi.aop.tracker.InstanceIdFactory;
 import org.codehaus.wadi.aop.tracker.InstanceRegistry;
@@ -86,15 +87,19 @@ public class BasicInstanceTrackerTest extends RMockTestCase {
 
     @ClusteredState
     private static class A implements Serializable {
+        @TrackedField
         private int field;
         
+        @TrackedField
         private B b;
     }
     
     @ClusteredState
     private static class B implements Serializable {
+        @TrackedField
         private int field;
         
+        @TrackedField
         private A a;
     }
     

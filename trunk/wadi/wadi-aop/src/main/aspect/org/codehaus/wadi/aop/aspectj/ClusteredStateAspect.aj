@@ -26,8 +26,8 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.codehaus.wadi.aop.ClusteredStateMarker;
 import org.codehaus.wadi.aop.annotation.ClusteredState;
 import org.codehaus.wadi.aop.annotation.TrackingLevel;
-import org.codehaus.wadi.aop.annotation.TransientField;
-import org.codehaus.wadi.aop.annotation.TransientMethod;
+import org.codehaus.wadi.aop.annotation.TrackedField;
+import org.codehaus.wadi.aop.annotation.TrackedMethod;
 import org.codehaus.wadi.aop.tracker.InstanceTracker;
 import org.codehaus.wadi.aop.tracker.InstanceTrackerFactory;
 
@@ -42,16 +42,12 @@ public aspect ClusteredStateAspect {
     declare parents:
         (@ClusteredState *) implements ClusteredStateMarker;
 
-    @TransientField
     public static InstanceTrackerFactory trackerFactory;
 
-    @TransientField
     private static long index = 0;
     
-    @TransientField
     private InstanceTracker ClusteredStateMarker.tracker;
 
-    @TransientMethod
     public InstanceTracker ClusteredStateMarker.$wadiGetTracker() {
         return tracker;
     }
@@ -79,11 +75,11 @@ public aspect ClusteredStateAspect {
     // Track field updates
     pointcut setTrackedField(ClusteredState clusteredState, ClusteredStateMarker stateMarker, Object value):
         targetAnnotatedWithClusteredState(clusteredState, stateMarker) &&
-        set(!@TransientField * ClusteredStateMarker+.*) &&
+        set(@TrackedField * ClusteredStateMarker+.*) &&
         args(value) &&
         (
-                if(clusteredState.trackingLevel() == TrackingLevel.FIELD) ||
-                if(clusteredState.trackingLevel() == TrackingLevel.MIXED)
+            if(clusteredState.trackingLevel() == TrackingLevel.FIELD) ||
+            if(clusteredState.trackingLevel() == TrackingLevel.MIXED)
         );
     
     after(ClusteredState clusteredState, ClusteredStateMarker stateMarker, Object value):
@@ -97,10 +93,10 @@ public aspect ClusteredStateAspect {
     // Track method executions
     pointcut executionTrackedMethod(ClusteredState clusteredState, ClusteredStateMarker stateMarker):
         targetAnnotatedWithClusteredState(clusteredState, stateMarker) &&
-        execution(!@TransientMethod * ClusteredStateMarker+.*(..)) &&
+        execution(@TrackedMethod * ClusteredStateMarker+.*(..)) &&
         (
-                if(clusteredState.trackingLevel() == TrackingLevel.METHOD) ||
-                if(clusteredState.trackingLevel() == TrackingLevel.MIXED)
+            if(clusteredState.trackingLevel() == TrackingLevel.METHOD) ||
+            if(clusteredState.trackingLevel() == TrackingLevel.MIXED)
         );
 
     Object around(ClusteredState clusteredState, ClusteredStateMarker stateMarker):

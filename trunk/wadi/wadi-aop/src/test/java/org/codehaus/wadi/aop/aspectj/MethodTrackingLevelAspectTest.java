@@ -20,8 +20,9 @@ import java.lang.reflect.Method;
 
 import org.codehaus.wadi.aop.ClusteredStateMarker;
 import org.codehaus.wadi.aop.annotation.ClusteredState;
+import org.codehaus.wadi.aop.annotation.TrackedField;
 import org.codehaus.wadi.aop.annotation.TrackingLevel;
-import org.codehaus.wadi.aop.annotation.TransientMethod;
+import org.codehaus.wadi.aop.annotation.TrackedMethod;
 import org.codehaus.wadi.aop.tracker.InstanceTracker;
 import org.codehaus.wadi.aop.tracker.InstanceTrackerFactory;
 
@@ -124,24 +125,27 @@ public class MethodTrackingLevelAspectTest extends RMockTestCase {
         private ChildFieldLevelTrackingClass childField = new ChildFieldLevelTrackingClass();
         private int test;
         
+        @TrackedMethod
         protected int test(int test) {
             this.test = test;
             return test * 2;
         }
         
+        @TrackedMethod
         protected void testThrowException() {
             throw new UnsupportedOperationException();
         }
         
-        @TransientMethod
         protected void transientTest(int test) {
             this.test = test;
         }
         
+        @TrackedMethod
         protected void invokeChildMethod(int test) {
             childMethod.test(test);
         }
         
+        @TrackedMethod
         protected void invokeChildField(int test) {
             childField.test = test;
         }
@@ -151,6 +155,7 @@ public class MethodTrackingLevelAspectTest extends RMockTestCase {
     public static class ChildMethodLevelTrackingClass {
         private int test;
         
+        @TrackedMethod
         private void test(int test) {
             this.test = test;
         }
@@ -158,6 +163,7 @@ public class MethodTrackingLevelAspectTest extends RMockTestCase {
     
     @ClusteredState(trackingLevel=TrackingLevel.FIELD)
     public static class ChildFieldLevelTrackingClass {
+        @TrackedField
         private int test;
     }
     
