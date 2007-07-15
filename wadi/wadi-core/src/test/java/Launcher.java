@@ -155,7 +155,7 @@ public class Launcher {
             for (int i = 0; i < 1000; i++) {
                 MockHttpServletRequest request = newRequest();
                 MockHttpServletResponse response = newResponse();
-                WebInvocation invocation = new WebInvocation(500);
+                WebInvocation invocation = new WebInvocation();
                 invocation.init(request, response, filterChain);
                 try {
                     manager.contextualise(invocation);

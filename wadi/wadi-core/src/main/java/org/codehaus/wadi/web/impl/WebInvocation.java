@@ -43,6 +43,10 @@ public class WebInvocation implements Invocation {
     private boolean errorIfSessionNotAcquired;
     private long exclusiveSessionLockWaitTime;
 
+    public WebInvocation() {
+        this(5000);
+    }
+    
     public WebInvocation(long exclusiveSessionLockWaitTime) {
         this.exclusiveSessionLockWaitTime = exclusiveSessionLockWaitTime;
     }
