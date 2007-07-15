@@ -26,7 +26,7 @@ import java.lang.annotation.Target;
  * @version $Revision: 1538 $
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.FIELD)
+@Target(ElementType.METHOD)
 @Documented
-public @interface TransientField {
+public @interface TrackedMethod {
 }
