@@ -15,8 +15,6 @@
  */
 package org.codehaus.wadi.location.endpoint;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.core.contextualiser.Invocation;
 import org.codehaus.wadi.core.contextualiser.InvocationException;
 import org.codehaus.wadi.core.motable.AbstractMotable;
@@ -25,13 +23,10 @@ import org.codehaus.wadi.core.motable.Motable;
 import org.codehaus.wadi.core.motable.SimpleMotable;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Envelope;
-import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.impl.EnvelopeHelper;
-import org.codehaus.wadi.location.session.MoveIMToSM;
 import org.codehaus.wadi.location.session.MovePMToSM;
 import org.codehaus.wadi.location.session.MoveSMToIM;
-import org.codehaus.wadi.location.session.MoveSMToPM;
 
 /**
  * We receive a RelocationRequest and pass a RelocationImmoter down the
@@ -42,48 +37,43 @@ import org.codehaus.wadi.location.session.MoveSMToPM;
  * @version $Revision:1815 $
  */
 class RelocationImmoter implements Immoter {
-    private static final Log log = LogFactory.getLog(MovePMToSMEndPoint.class);
-
     private final Dispatcher dispatcher;
     private final long inactiveTime;
-    protected final Envelope message;
     protected final MovePMToSM pmToSm;
-    protected boolean found = false;
+    protected boolean sessionFound;
+    protected boolean successfulRelocation;
 
     public RelocationImmoter(Dispatcher dispatcher,
             Envelope message,
             MovePMToSM request,
             long inactiveTime) {
         this.dispatcher = dispatcher;
-        this.message = message;
         this.pmToSm = request;
         this.inactiveTime = inactiveTime;
     }
 
     public Motable newMotable(Motable emotable) {
-        return new PMToIMEmotable(message);
+        sessionFound = true;
+        return new PMToIMEmotable();
     }
 
     public boolean immote(Motable emotable, Motable immotable) {
-        found = true;
         return true;
     }
     
-    public boolean contextualise(Invocation invocation, String id, Motable immotable)
-            throws InvocationException {
-        return false;
+    public boolean contextualise(Invocation invocation, String id, Motable immotable) throws InvocationException {
+        return true;
     }
 
-    public boolean isFound() {
-        return found;
+    public boolean isSessionFound() {
+        return sessionFound;
+    }
+
+    public boolean isSuccessfulRelocation() {
+        return successfulRelocation;
     }
 
     class PMToIMEmotable extends AbstractMotable {
-        private final Envelope message;
-
-        public PMToIMEmotable(Envelope message) {
-            this.message = message;
-        }
 
         public byte[] getBodyAsByteArray() throws Exception {
             throw new UnsupportedOperationException();
@@ -94,28 +84,19 @@ class RelocationImmoter implements Immoter {
             immotable.init(creationTime, lastAccessedTime, maxInactiveInterval, name);
             immotable.setBodyAsByteArray(bytes);
 
-            LocalPeer smPeer = dispatcher.getCluster().getLocalPeer();
-            Peer imPeer = pmToSm.getIMPeer();
-            
             Envelope reply = dispatcher.createEnvelope();
             reply.setPayload(new MoveSMToIM(immotable));
             EnvelopeHelper.setAsReply(reply);
+            
+            Peer imPeer = pmToSm.getIMPeer();
 
             // send on state from StateMaster to InvocationMaster...
-            if (log.isTraceEnabled()) {
-                log.trace("exchanging MoveSMToIM between [" + smPeer + "]->[" + imPeer + "]");
-            }
-            Envelope message2 = dispatcher.exchangeSend(imPeer.getAddress(), reply, inactiveTime, pmToSm.getIMCorrelationId());
-            // should receive response from IM confirming safe receipt...
-            if (message2 == null) {
-                // TODO throw exception
-                log.error("NO REPLY RECEIVED FOR MESSAGE IN TIMEFRAME - PANIC!");
-            } else {
-                MoveIMToSM response = (MoveIMToSM) message2.getPayload();
-                assert (response != null && response.getSuccess()); 
-                dispatcher.reply(message, new MoveSMToPM(true));
+            Envelope ackFromIM = dispatcher.exchangeSend(imPeer.getAddress(), reply, inactiveTime, pmToSm.getIMCorrelationId());
+            if (null != ackFromIM) {
+                successfulRelocation = true;
             }
         }
 
     }
+
 }

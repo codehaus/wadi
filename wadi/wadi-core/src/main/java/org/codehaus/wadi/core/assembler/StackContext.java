@@ -205,7 +205,6 @@ public class StackContext {
                         router,
                         sessionMonitor,
                         newInvocationContextFactory(),
-                        false,
                         new StandardHttpProxy("jsessionid"));
         manager.init(new DummyManagerConfig());
 
@@ -274,7 +273,9 @@ public class StackContext {
     }
 
     protected void registerMovePMToSMEndPoint(Contextualiser contextualiser) throws ServiceAlreadyRegisteredException {
-        MovePMToSMEndPoint movePMToSMEndPoint = new MovePMToSMEndPoint(serviceSpace, contextualiser, 2000);
+        MovePMToSMEndPoint movePMToSMEndPoint = new MovePMToSMEndPoint(serviceSpace, 
+            contextualiser, 
+            simplePartitionManagerTiming.getSessionRelocationIMToSMAckWaitTime());
 
         ServiceRegistry serviceRegistry = serviceSpace.getServiceRegistry();
         serviceRegistry.register(MovePMToSMEndPoint.NAME, movePMToSMEndPoint);
@@ -367,9 +368,7 @@ public class StackContext {
 
     protected Contextualiser newClusteredContextualiser(Contextualiser contextualiser) {
         return new ClusterContextualiser(contextualiser, 
-                new HybridRelocater(serviceSpace,
-                        partitionManager,
-                        simplePartitionManagerTiming.getSessionRelocationWaitTimeForRelocater()),
+                new HybridRelocater(serviceSpace, partitionManager),
                 partitionManager, 
                 stateManager, 
                 new SynchronizedBoolean(false));

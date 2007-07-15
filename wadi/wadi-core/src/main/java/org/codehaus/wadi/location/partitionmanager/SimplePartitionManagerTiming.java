@@ -25,7 +25,8 @@ public class SimplePartitionManagerTiming {
 	private static final long PARTITION_UPDATE_WAIT_TIME = 5000;
 	private static final long PARTITION_EVACUATION_WAIT_TIME = 5000;
 	private static final long EVACUATION_BACKOFF_TIME = 1000;
-	private static final long SESSION_RELOCATION_WAIT_TIME = 1000;
+	private static final long SESSION_RELOCATION_WAIT_TIME = 30 * 1000;
+	private static final long SESSION_RELOCATION_IM_TO_SM_ACK_WAIT_TIME = 5 * 1000;
 	private static final long REPOPULATION_WAIT_TIME = 3000;
 
     private int waitForBootTime =  WAIT_DEFINED_PARTITION_MANAGER;
@@ -33,8 +34,9 @@ public class SimplePartitionManagerTiming {
     private long waitForEvacuationTime = PARTITION_EVACUATION_WAIT_TIME;
     private long evacuationBackoffTime = EVACUATION_BACKOFF_TIME;
     private long sessionRelocationWaitTime = SESSION_RELOCATION_WAIT_TIME;
+    private long sessionRelocationIMToSMAckWaitTime = SESSION_RELOCATION_IM_TO_SM_ACK_WAIT_TIME;
     private long waitForRepopulationTime = REPOPULATION_WAIT_TIME;
-    
+
     public int getWaitForBootTime() {
         return waitForBootTime;
     }
@@ -83,15 +85,15 @@ public class SimplePartitionManagerTiming {
         return sessionRelocationWaitTime;
     }
 
-    public long getSessionRelocationWaitTimeForRelocater() {
-        return (long) (sessionRelocationWaitTime * 1.5);
-    }
-    
     public void setSessionRelocationWaitTime(long sessionRelocationWaitTime) {
         if (1 > sessionRelocationWaitTime) {
             throw new IllegalArgumentException("sessionRelocationWaitTime must be > 0");
         }
         this.sessionRelocationWaitTime = sessionRelocationWaitTime;
+    }
+    
+    public long getSessionRelocationIMToSMAckWaitTime() {
+        return sessionRelocationIMToSMAckWaitTime;
     }
     
     public long getWaitForRepopulationTime() {
@@ -104,5 +106,5 @@ public class SimplePartitionManagerTiming {
         }
         this.waitForRepopulationTime = waitForRepopulationTime;
     }
-    
+
 }

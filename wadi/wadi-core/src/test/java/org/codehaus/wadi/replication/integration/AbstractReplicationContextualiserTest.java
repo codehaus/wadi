@@ -79,7 +79,7 @@ public abstract class AbstractReplicationContextualiserTest extends TestCase {
     }
 
     private void promoteNode(NodeInfo nodeInfo, String sessionId) throws InvocationException {
-        nodeInfo.manager.contextualise(new ThrowExceptionIfNoSessionInvocation(sessionId));
+        nodeInfo.manager.contextualise(new ThrowExceptionIfNoSessionInvocation(sessionId, 500));
     }
 
     private void waitForStableCluster() throws InterruptedException {

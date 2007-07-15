@@ -15,70 +15,47 @@
  */
 package org.codehaus.wadi.relocation;
 
-import junit.framework.TestCase;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.core.MotableBusyException;
 import org.codehaus.wadi.core.contextualiser.BasicInvocation;
 import org.codehaus.wadi.core.contextualiser.Invocation;
 import org.codehaus.wadi.core.session.Session;
-import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.test.MyStack;
-import org.codehaus.wadi.test.TestUtil;
+import org.codehaus.wadi.test.AbstractTwoNodesTest;
 
 /**
  * 
  * @version $Revision: 1538 $
  */
-public abstract class AbstractTestRelocation extends TestCase {
-    protected Log _log = LogFactory.getLog(getClass());
-    private Dispatcher redD;
-    private Dispatcher greenD;
+public abstract class AbstractTestRelocation extends AbstractTwoNodesTest {
 
-    protected void setUp() throws Exception {
-        redD = newDispatcher("red");
-        redD.start();
-        // Implementation note: we really need to wait some time to have a "stable" Dispatcher. For instance, in the
-        // case of ActiveCluster, 
-        Thread.sleep(1000);
-        
-        greenD = newDispatcher("green");
-        greenD.start();
-        // Implementation note: we really need to wait some time to have a "stable" Dispatcher. For instance, in the
-        // case of ActiveCluster, 
-        Thread.sleep(1000);
-    }
-
-    protected void tearDown() throws Exception {
-        redD.stop();
-        greenD.stop();
-    }
-    
-    protected abstract Dispatcher newDispatcher(String name) throws Exception;
-
-    public void testSessionRelocation() throws Exception {
-        MyStack red = new MyStack(redD);
-        red.start();
-        redD = red.getServiceSpace().getDispatcher();
-
-        MyStack green = new MyStack(greenD);
-        green.start();
-        greenD = green.getServiceSpace().getDispatcher();
-
-        TestUtil.waitForDispatcherSeeOthers(new Dispatcher[] { redD, greenD }, 5000);
-
+    public void testSuccessfulSessionRelocation() throws Exception {
         Session session = red.getManager().create(null);
-        session.onEndProcessing();
-        String name = session.getName();
 
-        assertTrue(name != null);
+        session = executeTestSuccessfulRelocation(session);
+        
+        executeTestThrowExceptionIfSessionIsBuzy(session);
+    }
 
-        Invocation invocation = new BasicInvocation(name);
+    private Session executeTestSuccessfulRelocation(Session session) throws Exception {
+        Invocation invocation = new BasicInvocation(session.getName(), 1000);
+        invocation.setErrorIfSessionNotAcquired(true);
         boolean success = green.getManager().contextualise(invocation);
         assertTrue(success);
 
         success = red.getManager().contextualise(invocation);
         assertTrue(success);
+        return invocation.getSession();
+    }
+
+    private void executeTestThrowExceptionIfSessionIsBuzy(Session session) throws Exception {
+        session.getReadWriteLock().writeLock().acquire();
+        
+        Invocation invocation = new BasicInvocation(session.getName(), 1000);
+        invocation.setErrorIfSessionNotAcquired(true);
+        try {
+            green.getManager().contextualise(invocation);
+            fail();
+        } catch (MotableBusyException e) {
+        }
     }
     
 }

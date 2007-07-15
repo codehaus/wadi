@@ -18,11 +18,13 @@ package org.codehaus.wadi.location.endpoint;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.core.Lifecycle;
+import org.codehaus.wadi.core.MotableBusyException;
+import org.codehaus.wadi.core.contextualiser.BasicInvocation;
 import org.codehaus.wadi.core.contextualiser.Contextualiser;
+import org.codehaus.wadi.core.contextualiser.Invocation;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Envelope;
-import org.codehaus.wadi.group.Peer;
-import org.codehaus.wadi.group.impl.EnvelopeHelper;
+import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.impl.ServiceEndpointBuilder;
 import org.codehaus.wadi.location.session.MovePMToSM;
 import org.codehaus.wadi.location.session.MoveSMToIM;
@@ -42,20 +44,20 @@ public class MovePMToSMEndPoint implements Lifecycle, MovePMToSMEndPointMessageL
     
     private final Dispatcher dispatcher;
     private final Contextualiser contextualiser;
-    private final long inactiveTime;
+    private final long sessionRelocationIMToSMAckWaitTime;
     private final ServiceEndpointBuilder endpointBuilder;
 
 
     public MovePMToSMEndPoint(ServiceSpace serviceSpace,
             Contextualiser contextualiser,
-            long inactiveTime) {
+            long sessionRelocationIMToSMAckWaitTime) {
         if (null == serviceSpace) {
             throw new IllegalArgumentException("serviceSpace is required");
         } else if (null == contextualiser) {
             throw new IllegalArgumentException("contextualiser is required");
         }
         this.contextualiser = contextualiser;
-        this.inactiveTime = inactiveTime;
+        this.sessionRelocationIMToSMAckWaitTime = sessionRelocationIMToSMAckWaitTime;
 
         dispatcher = serviceSpace.getDispatcher();
         endpointBuilder = new ServiceEndpointBuilder();
@@ -70,32 +72,49 @@ public class MovePMToSMEndPoint implements Lifecycle, MovePMToSMEndPointMessageL
     }
 
     public void onMessage(Envelope message, MovePMToSM request) {
+        boolean successfulRelocation = false;
+        boolean sessionBuzy = false;
         Object key = request.getKey();
         try {
-            Peer imPeer = request.getIMPeer();
             RelocationImmoter promoter = new RelocationImmoter(dispatcher,
                     message,
                     request,
-                    inactiveTime);
+                    sessionRelocationIMToSMAckWaitTime);
+            
+            Invocation invocation = new BasicInvocation((String) key, request.getExclusiveSessionLockWaitTime());
             // if we own session, this will send the correct response...
-            contextualiser.contextualise(null, (String) key, promoter, true);
-            if (!promoter.isFound()) {
-                log.warn("state not found - perhaps it has just been destroyed: " + key);
-                Envelope reply = dispatcher.createEnvelope();
-                reply.setPayload(new MoveSMToIM(null));
-                EnvelopeHelper.setAsReply(reply);
-
+            contextualiser.contextualise(invocation, (String) key, promoter, true);
+            successfulRelocation = promoter.isSuccessfulRelocation();
+            if (!successfulRelocation && !promoter.isSessionFound()) {
+                log.warn("Motable [" + key + "] has just been destroyed");
                 // send on null state from StateMaster to InvocationMaster...
-                log.info("sending 0 bytes to : " + imPeer);
-                Envelope ignore = dispatcher.exchangeSend(imPeer.getAddress(), reply, inactiveTime, request
-                        .getIMCorrelationId());
-                log.info("received: " + ignore);
-                // StateMaster replies to PartitionMaster indicating failure...
-                log.info("reporting failure to PM");
-                dispatcher.reply(message, new MoveSMToPM(false));
+                replyToInvocationMaster(request, new MoveSMToIM(false));
             }
+        } catch (MotableBusyException e) {
+            sessionBuzy = true;
+            log.warn("Motable buzy [" + key + "]");
+            // send session buzy event from StateMaster to InvocationMaster...
+            replyToInvocationMaster(request, new MoveSMToIM(true));
         } catch (Exception e) {
             log.warn("problem handling relocation request: " + key, e);
+        } finally {
+            // PartitionMaster ack.
+            try {
+                dispatcher.reply(message, new MoveSMToPM(successfulRelocation, sessionBuzy));
+            } catch (MessageExchangeException e) {
+                log.error("Cannot ack to StateMaster", e);
+            }
+        }
+    }
+
+    protected void replyToInvocationMaster(MovePMToSM request, MoveSMToIM body) {
+        try {
+            dispatcher.reply(dispatcher.getCluster().getLocalPeer().getAddress(),
+                request.getIMPeer().getAddress(),
+                request.getIMCorrelationId(),
+                body);
+        } catch (MessageExchangeException e) {
+            log.error("Cannot reply to InvocationMaster", e);
         }
     }
 

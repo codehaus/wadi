@@ -45,7 +45,6 @@ public class ClusteredManager extends DistributableManager {
             Router router, 
             SessionMonitor sessionMonitor,
             InvocationContextFactory invocationContextFactory,
-            boolean errorIfSessionNotAcquired,
             InvocationProxy proxy) {
         super(sessionFactory,
                 sessionIdFactory, 
@@ -53,8 +52,7 @@ public class ClusteredManager extends DistributableManager {
                 sessionMap, 
                 router, 
                 sessionMonitor,
-                invocationContextFactory,
-                errorIfSessionNotAcquired);
+                invocationContextFactory);
         if (null == stateManager) {
             throw new IllegalArgumentException("stateManager is required");
         } else if (null == partitionManager) {

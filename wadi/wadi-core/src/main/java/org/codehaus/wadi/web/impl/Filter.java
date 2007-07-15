@@ -52,7 +52,7 @@ public class Filter implements javax.servlet.Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain) throws IOException,
             ServletException {
         if (request instanceof HttpServletRequest) {
-            WebInvocation invocation=WebInvocation.getThreadLocalInstance();
+            WebInvocation invocation = new WebInvocation(2000);
             invocation.init((HttpServletRequest)request, (HttpServletResponse)response, filterChain);
             try {
                 _manager.contextualise(invocation);

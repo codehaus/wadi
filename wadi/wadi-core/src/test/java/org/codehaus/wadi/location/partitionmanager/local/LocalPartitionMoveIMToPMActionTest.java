@@ -37,20 +37,29 @@ import com.agical.rmock.core.match.operator.AbstractExpression;
  */
 public class LocalPartitionMoveIMToPMActionTest extends AbstractLocalPartitionActionTest {
 
+    private Peer peer2;
+    private String key;
+    private int timeout;
+    private String correlationId;
+    private LocalPartitionMoveIMToPMAction action;
+
+    protected void setUp() throws Exception {
+        super.setUp();
+        
+        peer2 = (Peer) mock(Peer.class);
+        key = "key";
+        timeout = 10;
+        correlationId = "correlationId";
+        
+        action = new LocalPartitionMoveIMToPMAction(dispatcher, nameToLocation, log);
+        nameToLocation.put(key, new Location(key, peer));
+    }
+    
     public void testSuccessfulSessionRelocation() throws Exception {
-        Peer peer2 = (Peer) mock(Peer.class);
-        String key = "key";
-        int timeout = 10;
-        String correlationId = "correlationId";
-        recordExchangeSendWithSMAndResult(peer2, key, timeout, correlationId, true);
+        recordExchangeSendWithSMAndResult(true, false);
         startVerification();
 
-        LocalPartitionMoveIMToPMAction action = new LocalPartitionMoveIMToPMAction(dispatcher,
-                nameToLocation,
-                log,
-                timeout);
-        nameToLocation.put(key, new Location(key, peer));
-        action.onMessage(envelope, new MoveIMToPM(peer2, key, true, false));
+        action.onMessage(envelope, new MoveIMToPM(peer2, key, true, false, timeout));
         
         assertTrue(nameToLocation.containsKey(key));
         Location location = (Location) nameToLocation.get(key);
@@ -58,40 +67,31 @@ public class LocalPartitionMoveIMToPMActionTest extends AbstractLocalPartitionAc
     }
 
     public void testSessionRelocationFails() throws Exception {
-        Peer peer2 = (Peer) mock(Peer.class);
-        String key = "key";
-        int timeout = 10;
-        String correlationId = "correlationId";
-        recordExchangeSendWithSMAndResult(peer2, key, timeout, correlationId, false);
+        recordExchangeSendWithSMAndResult(false, false);
         recordReplyWithUnknownLocation();
         startVerification();
 
-        LocalPartitionMoveIMToPMAction action = new LocalPartitionMoveIMToPMAction(dispatcher,
-                nameToLocation,
-                log,
-                timeout);
-        nameToLocation.put(key, new Location(key, peer));
-        action.onMessage(envelope, new MoveIMToPM(peer2, key, true, false));
+        action.onMessage(envelope, new MoveIMToPM(peer2, key, true, false, timeout));
         
         assertFalse(nameToLocation.containsKey(key));
     }
 
+    public void testSessionRelocationFailsWithMotableBusyDoesNotUpdateLocation() throws Exception {
+        recordExchangeSendWithSMAndResult(false, true);
+        startVerification();
+
+        action.onMessage(envelope, new MoveIMToPM(peer2, key, true, false, timeout));
+        
+        assertTrue(nameToLocation.containsKey(key));
+    }
+
     public void testSessionRelocationFailsUponExchange() throws Exception {
-        Peer peer2 = (Peer) mock(Peer.class);
-        String key = "key";
-        int timeout = 10;
-        String correlationId = "correlationId";
-        recordExchangeSendWithSM(peer2, key, timeout, correlationId);
+        recordExchangeSendWithSM();
         modify().throwException(new MessageExchangeException("fail"));
         recordReplyWithUnknownLocation();
         startVerification();
         
-        LocalPartitionMoveIMToPMAction action = new LocalPartitionMoveIMToPMAction(dispatcher,
-                nameToLocation,
-                log,
-                timeout);
-        nameToLocation.put(key, new Location(key, peer));
-        action.onMessage(envelope, new MoveIMToPM(peer2, key, true, false));
+        action.onMessage(envelope, new MoveIMToPM(peer2, key, true, false, timeout));
         
         assertFalse(nameToLocation.containsKey(key));
     }
@@ -100,8 +100,7 @@ public class LocalPartitionMoveIMToPMActionTest extends AbstractLocalPartitionAc
         recordReplyWithUnknownLocation();
         startVerification();
         
-        LocalPartitionMoveIMToPMAction action = new LocalPartitionMoveIMToPMAction(dispatcher, nameToLocation, log, 10);
-        action.onMessage(envelope, new MoveIMToPM(peer, "key", true, false));
+        action.onMessage(envelope, new MoveIMToPM(peer, "unknownKey", true, false, timeout));
     }
 
     private void recordReplyWithUnknownLocation() throws Exception {
@@ -118,23 +117,18 @@ public class LocalPartitionMoveIMToPMActionTest extends AbstractLocalPartitionAc
         });
     }
     
-    private void recordExchangeSendWithSMAndResult(final Peer peer2,
-            final String key,
-            int timeout,
-            final String correlationId,
-            boolean success) throws MessageExchangeException {
-        recordExchangeSendWithSM(peer2, key, timeout, correlationId);
+    private void recordExchangeSendWithSMAndResult(boolean success, boolean sessionBuzy) throws MessageExchangeException {
+        recordExchangeSendWithSM();
         modify().returnValue(envelope);
         envelope.getPayload();
-        modify().returnValue(new MoveSMToPM(success));
+        modify().returnValue(new MoveSMToPM(success, sessionBuzy));
     }
 
-    private void recordExchangeSendWithSM(final Peer peer2, final String key, int timeout, final String correlationId)
-            throws MessageExchangeException {
+    private void recordExchangeSendWithSM() throws MessageExchangeException {
         envelope.getSourceCorrelationId();
         modify().returnValue(correlationId);
 
-        dispatcher.exchangeSend(peerAddress, null, timeout);
+        dispatcher.exchangeSend(peerAddress, null, timeout + 5000);
         modify().args(new Expression[] { is.AS_RECORDED, new AbstractExpression() {
 
             public void describeWith(ExpressionDescriber arg0) throws IOException {

@@ -1,5 +1,5 @@
 /**
- * Copyright 2006 The Apache Software Foundation
+ * Copyright 2007 The Apache Software Foundation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -15,30 +15,14 @@
  */
 package org.codehaus.wadi.core;
 
-import java.util.Set;
-
-import org.codehaus.wadi.core.motable.Motable;
-
 /**
  * 
  * @version $Revision: 1538 $
  */
-public interface ConcurrentMotableMap {
-    void put(String name, Motable motable);
+public class MotableBusyException extends WADIRuntimeException {
 
-    void remove(String name);
-
-    Motable acquire(String id);
-
-    Motable acquireExclusive(String id, long exclusiveSessionLockWaitTime) throws MotableBusyException;
-
-    void release(Motable motable);
-
-    void releaseExclusive(Motable motable);
-
-    int size();
-
-    boolean isEmpty();
-
-    Set getNames();
+    public MotableBusyException(String message) {
+        super(message);
+    }
+    
 }

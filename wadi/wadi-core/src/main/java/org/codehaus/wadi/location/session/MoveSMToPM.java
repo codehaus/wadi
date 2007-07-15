@@ -22,18 +22,24 @@ package org.codehaus.wadi.location.session;
  * @version $Revision:1815 $
  */
 public class MoveSMToPM extends AbstractSessionResponseMessage {
-    private final boolean _success;
+    private final boolean success;
+    private final boolean sessionBuzy;
 
-    public MoveSMToPM(boolean success) {
-        _success = success;
+    public MoveSMToPM(boolean success, boolean sessionBuzy) {
+        this.success = success;
+        this.sessionBuzy = sessionBuzy;
     }
 
-    public boolean getSuccess() {
-        return _success;
+    public boolean isSuccess() {
+        return success;
+    }
+
+    public boolean isSessionBuzy() {
+        return sessionBuzy;
     }
 
     public String toString() {
-        return "<MoveSMToPM:" + _success + ">";
+        return "<MoveSMToPM:" + success + ">";
     }
-
+    
 }

@@ -25,35 +25,40 @@ import org.codehaus.wadi.group.Peer;
  * @version $Revision:1815 $
  */
 public class MovePMToSM extends SessionRequestImpl implements Serializable {
+	protected final Peer imPeer;
+    protected final String imCorrelationId;
+    private final long exclusiveSessionLockWaitTime;
 
-	protected final Peer _im;
-    protected final String _imCorrelationId;
-
-    public MovePMToSM(Object key, Peer im, String imCorrelationId) {
+    public MovePMToSM(Object key, Peer im, String imCorrelationId, long exclusiveSessionLockWaitTime) {
         super(key);
         if (null == im) {
             throw new IllegalArgumentException("im is required");
         } else if (null == imCorrelationId) {
             throw new IllegalArgumentException("imCorrelationId is required");
         }
-        _im = im;
-        _imCorrelationId = imCorrelationId;
+        this.imPeer = im;
+        this.imCorrelationId = imCorrelationId;
+        this.exclusiveSessionLockWaitTime = exclusiveSessionLockWaitTime;
     }
 
     public Peer getIMPeer() {
-        return _im;
+        return imPeer;
     }
 
     public String getIMCorrelationId() {
-        return _imCorrelationId;
+        return imCorrelationId;
     }
 
     public SessionResponseMessage newResponseFailure() {
         throw new UnsupportedOperationException();
     }
     
+    public long getExclusiveSessionLockWaitTime() {
+        return exclusiveSessionLockWaitTime;
+    }
+
     public String toString() {
         return "<MovePMToSM:" + _key + ">";
     }
-
+    
 }

@@ -26,18 +26,27 @@ import org.codehaus.wadi.core.motable.Motable;
  */
 public class MoveSMToIM implements Serializable {
 
-	protected Motable _motable;
+	protected boolean sessionBuzy;
+	protected Motable motable;
 
 	public MoveSMToIM(Motable motable) {
-		_motable=motable;
+		this.motable = motable;
 	}
 
+	public MoveSMToIM(boolean sessionBuzy) {
+	    this.sessionBuzy = sessionBuzy;
+	}
+	
 	public Motable getMotable() {
-		return _motable;
+		return motable;
 	}
 
-	public String toString() {
-		return "<MoveSMToIM:"+_motable+">";
-	}
+    public boolean isSessionBuzy() {
+        return sessionBuzy;
+    }
 
+    public String toString() {
+        return "<MoveSMToIM:"+motable+">";
+    }
+    
 }

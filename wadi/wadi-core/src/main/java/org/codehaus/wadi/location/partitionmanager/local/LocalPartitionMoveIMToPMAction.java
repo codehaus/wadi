@@ -38,14 +38,9 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * @version $Revision: 1538 $
  */
 public class LocalPartitionMoveIMToPMAction extends AbstractLocalPartitionAction {
-    private final long relocationTimeout;
 
-    public LocalPartitionMoveIMToPMAction(Dispatcher dispatcher, Map nameToLocation, Log log, long relocationTimeout) {
+    public LocalPartitionMoveIMToPMAction(Dispatcher dispatcher, Map nameToLocation, Log log) {
         super(dispatcher, nameToLocation, log);
-        if (1 > relocationTimeout) {
-            throw new IllegalArgumentException("relocationTimeout must be positive");
-        }
-        this.relocationTimeout = relocationTimeout;
     }
 
     public void onMessage(Envelope message, MoveIMToPM request) {
@@ -59,29 +54,21 @@ public class LocalPartitionMoveIMToPMAction extends AbstractLocalPartitionAction
                 replyWithUnknownLocation(message);
                 return;
             }
-            // we need to make a decision here - based on the info available to us...
-            // are we going to relocate the Session to the Invocation or the Invocation to the Session ?
-            // call out to a pluggable strategy...
-            // we need to know whether the IM's LBPolicy supports 'resticking' - otherwise relocating invocation is 
-            // not such a smart thing to do...
-            // if the InvocationMaster is shuttingDown, we know we should relocate the Invocation - lets go with that 
-            // for now...
-            // if the StateMaster is shuttingDown, we know we should relocate the session - but how would we know ?
-            Peer imPeer = request.getIMPeer();
+            
             Peer pmPeer = dispatcher.getCluster().getLocalPeer();
             String sourceCorrelationId = message.getSourceCorrelationId();
             boolean relocateSession = request.isRelocateSession();
             if (relocateSession) {
-                relocateSession(message, location, imPeer, sourceCorrelationId);
+                relocateSession(message, location, request, sourceCorrelationId);
             } else {
-                relocateInvocation(location, imPeer, pmPeer, sourceCorrelationId);
+                relocateInvocation(location, request, pmPeer, sourceCorrelationId);
             }
         } catch (Exception e) {
             log.error("UNEXPECTED PROBLEM RELOCATING STATE: " + key);
         }
     }
 
-    protected void relocateSession(Envelope message, Location location, Peer imPeer, String imCorrelationId)
+    protected void relocateSession(Envelope message, Location location, MoveIMToPM request, String imCorrelationId)
             throws MessageExchangeException {
         Object key = location.getKey();
         // session does exist - we need to ask SM to move it to IM
@@ -91,7 +78,7 @@ public class LocalPartitionMoveIMToPMAction extends AbstractLocalPartitionAction
             // wait til we have a lock on Location before retrieving the SM
             lock.acquire();
             try {
-                doRelocateSession(message, location, imPeer, imCorrelationId);
+                doRelocateSession(message, location, request, imCorrelationId);
             } finally {
                 lock.release();
             }
@@ -101,23 +88,22 @@ public class LocalPartitionMoveIMToPMAction extends AbstractLocalPartitionAction
         }
     }
 
-    protected void doRelocateSession(Envelope message, Location location, Peer imPeer, String imCorrelationId)
+    protected void doRelocateSession(Envelope message, Location location, MoveIMToPM request, String imCorrelationId)
             throws MessageExchangeException {
+        Peer imPeer = request.getIMPeer();
         Object key = location.getKey();
         Peer smPeer = location.getSMPeer();
         if (smPeer == imPeer) {
-            // session does exist - but is already located at the IM
-            // whilst we were waiting for the partition lock, another thread
-            // must have migrated the session to the IM...
-            // How can this happen - the first Thread should have been
-            // holding the InvocationLock...
             throw new WADIRuntimeException("session [" + key + "] already at [" + imPeer + "]; should not happen");
         }
         
-        MovePMToSM request = new MovePMToSM(key, imPeer, imCorrelationId);
+        long exclusiveSessionLockWaitTime = request.getExclusiveSessionLockWaitTime();
+        MovePMToSM pmToSMRequest = new MovePMToSM(key, imPeer, imCorrelationId, exclusiveSessionLockWaitTime);
         Envelope tmp;
         try {
-            tmp = dispatcher.exchangeSend(smPeer.getAddress(), request, relocationTimeout);
+            tmp = dispatcher.exchangeSend(smPeer.getAddress(), 
+                pmToSMRequest, 
+                exclusiveSessionLockWaitTime + 5000);
         } catch (MessageExchangeException e) {
             log.error("move [" + key + "]@[" + smPeer + "]->[" + imPeer + "] failed", e);
             replyWithUnknownLocation(message);
@@ -128,12 +114,14 @@ public class LocalPartitionMoveIMToPMAction extends AbstractLocalPartitionAction
         }
         
         MoveSMToPM response = (MoveSMToPM) tmp.getPayload();
-        if (response.getSuccess()) {
+        if (response.isSuccess()) {
             // alter location
             location.setPeer(imPeer);
             if (log.isDebugEnabled()) {
                 log.debug("move [" + key + "]@[" + smPeer + "]->[" + imPeer + "]");
             }
+        } else if (response.isSessionBuzy()) {
+            log.warn("Motable buzy. Move [" + key + "]@[" + smPeer + "]->[" + imPeer + "] aborted.");
         } else {
             replyWithUnknownLocation(message);
             synchronized (nameToLocation) {
@@ -143,8 +131,9 @@ public class LocalPartitionMoveIMToPMAction extends AbstractLocalPartitionAction
         }
     }
 
-    protected void relocateInvocation(Location location, Peer imPeer, Peer pmPeer, String imCorrelationId)
+    protected void relocateInvocation(Location location, MoveIMToPM request, Peer pmPeer, String imCorrelationId)
             throws MessageExchangeException {
+        Peer imPeer = request.getIMPeer();
         Object key = location.getKey();
         long leasePeriod = 5000;
         try {

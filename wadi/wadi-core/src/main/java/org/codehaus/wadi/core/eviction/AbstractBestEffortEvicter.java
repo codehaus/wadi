@@ -64,7 +64,7 @@ public abstract class AbstractBestEffortEvicter extends AbstractEvicter {
         long time = System.currentTimeMillis();
         for (Iterator iter = idToEvictable.getNames().iterator(); iter.hasNext();) {
             String id = (String) iter.next();
-            Motable motable = idToEvictable.acquireExclusive(id);
+            Motable motable = idToEvictable.acquireExclusive(id, 1);
             if (null == motable) {
                 continue;
             }

@@ -95,8 +95,7 @@ public class TestHttpSession extends TestCase {
             motableMap,
             router,
             sessionMonitor,
-            new BasicHttpInvocationContextFactory(),
-            true);
+            new BasicHttpInvocationContextFactory());
     protected DummyManagerConfig _standardConfig = new DummyManagerConfig();
     private WADIHttpSessionListener wadiHttpSessionListener;
 
