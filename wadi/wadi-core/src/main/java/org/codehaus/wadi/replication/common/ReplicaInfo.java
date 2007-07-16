@@ -26,10 +26,10 @@ import org.codehaus.wadi.group.Peer;
 public class ReplicaInfo implements Serializable {
     private static final long serialVersionUID = 1554455972740137174L;
 
-    private final Peer primary;
-    private final Peer[] secondaries;
-    private final Object replica;
-    private final int version;
+    private Peer primary;
+    private Peer[] secondaries;
+    private Object replica;
+    private int version;
 
     public ReplicaInfo(Peer primary, Peer[] secondaries, Object replica) {
         if (null == primary) {
@@ -84,6 +84,17 @@ public class ReplicaInfo implements Serializable {
         
         replica = prototype.replica;
         version = prototype.version + 1;
+    }
+
+    public void mergeWith(ReplicaInfo replicaInfo) {
+        primary = replicaInfo.primary;
+        secondaries = replicaInfo.secondaries;
+        version = replicaInfo.version;
+        replica = mergeReplica(replicaInfo.replica);
+    }
+
+    protected Object mergeReplica(Object otherReplica) {
+        return otherReplica;
     }
 
     public Peer getPrimary() {

@@ -16,7 +16,6 @@
 package org.codehaus.wadi.replication.manager;
 
 import org.codehaus.wadi.core.Lifecycle;
-import org.codehaus.wadi.replication.common.ReplicaInfo;
 import org.codehaus.wadi.servicespace.ServiceName;
 
 /**
@@ -35,8 +34,4 @@ public interface ReplicationManager extends Lifecycle {
     Object acquirePrimary(Object key) throws ReplicationKeyNotFoundException, InternalReplicationManagerException;
 
     boolean releasePrimary(Object key);
-
-    ReplicaInfo retrieveReplicaInfo(Object key) throws ReplicationKeyNotFoundException;
-
-    boolean managePrimary(Object key);
 }

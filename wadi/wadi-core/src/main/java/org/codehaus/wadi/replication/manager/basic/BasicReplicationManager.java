@@ -162,23 +162,6 @@ public class BasicReplicationManager implements ReplicationManager {
         return object != null;
     }
     
-    public ReplicaInfo retrieveReplicaInfo(Object key) {
-        ReplicaInfo replicaInfo;
-        synchronized (keyToReplicaInfo) {
-            replicaInfo = (ReplicaInfo) keyToReplicaInfo.get(key);
-        }
-        if (null == replicaInfo) {
-            throw new ReplicationKeyNotFoundException(key);
-        }
-        return replicaInfo;
-    }
-    
-    public boolean managePrimary(Object key) {
-        synchronized (keyToReplicaInfo) {
-            return keyToReplicaInfo.containsKey(key);
-        }
-    }
-
     protected void cascadeCreate(Object key, ReplicaInfo replicaInfo, BackOffCapableTask task) {
         ReplicaStorage storage = newReplicaStorageStub(replicaInfo.getSecondaries());
         try {

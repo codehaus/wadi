@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import org.codehaus.wadi.core.eviction.SimpleEvictableMemento;
 import org.codehaus.wadi.core.manager.Manager;
 import org.codehaus.wadi.core.motable.AbstractMotable;
 
@@ -33,7 +34,6 @@ import org.codehaus.wadi.core.motable.AbstractMotable;
  * @version $Revision: 1886 $
  */
 public class StandardSession extends AbstractMotable implements Session {
-    protected final Attributes attributes;
     protected final Manager manager;
 
     public StandardSession(Attributes attributes, Manager manager) {
@@ -42,22 +42,36 @@ public class StandardSession extends AbstractMotable implements Session {
         } else if (null == manager) {
             throw new IllegalArgumentException("manager is required");
         }
-        this.attributes = attributes;
         this.manager = manager;
+        
+        getStandardSessionMemento().setAttributes(attributes);
     }
 
+    @Override
+    protected SimpleEvictableMemento newMemento() {
+        return new StandardSessionMemento();
+    }
+    
+    protected StandardSessionMemento getStandardSessionMemento() {
+        return (StandardSessionMemento) memento;
+    }
+    
+    protected Attributes getAttributes() {
+        return getStandardSessionMemento().getAttributes();
+    }
+    
     public synchronized void destroy() throws Exception {
         manager.destroy(this);
-        attributes.clear();
+        getAttributes().clear();
         onDestroy();
     }
 
     protected synchronized void destroyForMotion() throws Exception {
-        attributes.clear();
+        getAttributes().clear();
     }
 
     public synchronized void onEndProcessing() {
-        newSession = false;
+        getAbstractMotableMemento().setNewSession(false);
     }
     
     public byte[] getBodyAsByteArray() throws Exception {
@@ -69,17 +83,17 @@ public class StandardSession extends AbstractMotable implements Session {
     }
     
     public synchronized Object addState(Object key, Object value) {
-        Object oldValue = attributes.put(key, value);
+        Object oldValue = getAttributes().put(key, value);
         onAddSate(key, oldValue, value);
         return oldValue;
     }
 
     public synchronized Object getState(Object key) {
-        return attributes.get(key);
+        return getAttributes().get(key);
     }
 
     public synchronized Object removeState(Object key) {
-        Object oldValue = attributes.remove(key);
+        Object oldValue = getAttributes().remove(key);
         onRemoveState(key, oldValue);
         return oldValue;
     }
@@ -119,30 +133,30 @@ public class StandardSession extends AbstractMotable implements Session {
         }
 
         public void clear() {
-            for (Iterator iter = attributes.keySet().iterator(); iter.hasNext();) {
+            for (Iterator iter = getAttributes().keySet().iterator(); iter.hasNext();) {
                 Object key = (Object) iter.next();
                 removeState(key);
             } 
         }
 
         public boolean containsKey(Object key) {
-            return attributes.containsKey(key);
+            return getAttributes().containsKey(key);
         }
 
         public boolean isEmpty() {
-            return attributes.isEmpty();
+            return getAttributes().isEmpty();
         }
 
         public Set keySet() {
-            return attributes.keySet();
+            return getAttributes().keySet();
         }
 
         public int size() {
-            return attributes.size();
+            return getAttributes().size();
         }
 
         public Collection values() {
-            return attributes.values();
+            return getAttributes().values();
         }
 
         public boolean containsValue(Object value) {

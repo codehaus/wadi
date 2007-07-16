@@ -15,7 +15,6 @@
  */
 package org.codehaus.wadi.replication.manager.basic;
 
-import org.codehaus.wadi.replication.common.ReplicaInfo;
 import org.codehaus.wadi.replication.manager.InternalReplicationManagerException;
 import org.codehaus.wadi.replication.manager.ReplicationKeyAlreadyExistsException;
 import org.codehaus.wadi.replication.manager.ReplicationKeyNotFoundException;
@@ -37,16 +36,8 @@ public class NoOpReplicationManager implements ReplicationManager {
     public void destroy(Object key) {
     }
 
-    public boolean managePrimary(Object key) {
-        return false;
-    }
-
     public boolean releasePrimary(Object key) {
         return false;
-    }
-
-    public ReplicaInfo retrieveReplicaInfo(Object key) throws ReplicationKeyNotFoundException {
-        return null;
     }
 
     public void update(Object key, Object tmp) throws ReplicationKeyNotFoundException, InternalReplicationManagerException {

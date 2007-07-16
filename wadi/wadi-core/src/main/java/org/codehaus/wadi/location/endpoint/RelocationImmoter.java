@@ -81,7 +81,10 @@ class RelocationImmoter implements Immoter {
 
         public void setBodyAsByteArray(byte[] bytes) throws Exception {
             Motable immotable = new SimpleMotable();
-            immotable.init(creationTime, lastAccessedTime, maxInactiveInterval, name);
+            immotable.init(memento.getCreationTime(),
+                memento.getLastAccessedTime(),
+                memento.getMaxInactiveInterval(),
+                getAbstractMotableMemento().getName());
             immotable.setBodyAsByteArray(bytes);
 
             Envelope reply = dispatcher.createEnvelope();

@@ -17,7 +17,6 @@ package org.codehaus.wadi.replication.manager.basic;
 
 import org.codehaus.wadi.core.motable.Motable;
 import org.codehaus.wadi.core.motable.SimpleMotable;
-import org.codehaus.wadi.replication.common.ReplicaInfo;
 import org.codehaus.wadi.replication.manager.InternalReplicationManagerException;
 import org.codehaus.wadi.replication.manager.ReplicationKeyNotFoundException;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
@@ -86,14 +85,6 @@ public class MotableReplicationManager implements ReplicationManager {
 
     public boolean releasePrimary(Object key) {
         return replicationManager.releasePrimary(key);
-    }
-
-    public ReplicaInfo retrieveReplicaInfo(Object key) {
-        return replicationManager.retrieveReplicaInfo(key);
-    }
-
-    public boolean managePrimary(Object key) {
-        return replicationManager.managePrimary(key);
     }
 
     public void start() throws Exception {

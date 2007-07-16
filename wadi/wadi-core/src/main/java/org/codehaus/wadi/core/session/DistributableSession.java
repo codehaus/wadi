@@ -17,9 +17,8 @@
 package org.codehaus.wadi.core.session;
 
 import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 
+import org.codehaus.wadi.core.eviction.SimpleEvictableMemento;
 import org.codehaus.wadi.core.manager.Manager;
 import org.codehaus.wadi.core.util.Streamer;
 import org.codehaus.wadi.core.util.Utils;
@@ -44,18 +43,15 @@ public class DistributableSession extends StandardSession {
         this.streamer = streamer;
     }
 
-    public synchronized void readExternal(ObjectInput oi) throws IOException, ClassNotFoundException {
-        super.readExternal(oi);
-        ((DistributableAttributes) attributes).readExternal(oi);
-        onDeserialization();
+    @Override
+    protected SimpleEvictableMemento newMemento() {
+        return new DistributableSessionMemento();
     }
-
-    public synchronized void writeExternal(ObjectOutput oo) throws IOException {
-        super.writeExternal(oo);
-        ((DistributableAttributes) attributes).writeExternal(oo);
-        onSerialization();
+    
+    public DistributableSessionMemento getDistributableSessionMemento() {
+        return (DistributableSessionMemento) memento;
     }
-
+    
     public synchronized byte[] getBodyAsByteArray() throws Exception {
         return Utils.getContent(this, streamer);
     }
@@ -64,9 +60,4 @@ public class DistributableSession extends StandardSession {
         Utils.setContent(this, bytes, streamer);
     }
 
-    protected void onDeserialization() {
-    }
-    
-    protected void onSerialization() {
-    }
 }

@@ -29,26 +29,32 @@ import java.io.ObjectOutput;
  * @version $Revision: 2244 $
  */
 public abstract class SimpleEvictable implements Evictable, Externalizable {
-    protected long creationTime;
-    protected long lastAccessedTime;
-    protected int maxInactiveInterval;
+    protected final SimpleEvictableMemento memento;
 
+    public SimpleEvictable() {
+        memento = newMemento();
+    }
+
+    protected SimpleEvictableMemento newMemento() {
+        return new SimpleEvictableMemento();
+    }
+    
     public synchronized void init(long creationTime, long lastAccessedTime, int maxInactiveInterval) {
-        this.creationTime = creationTime;
-        this.lastAccessedTime = lastAccessedTime;
-        this.maxInactiveInterval = maxInactiveInterval;
+        memento.setCreationTime(creationTime);
+        memento.setLastAccessedTime(lastAccessedTime);
+        memento.setMaxInactiveInterval(maxInactiveInterval);
     }
 
     public synchronized void destroy() throws Exception {
-        creationTime = 0;
-        lastAccessedTime = 0;
-        maxInactiveInterval = 0;
+        memento.setCreationTime(0);
+        memento.setLastAccessedTime(0);
+        memento.setMaxInactiveInterval(0);
     }
 
     public synchronized void copy(Evictable evictable) throws Exception {
-        creationTime = evictable.getCreationTime();
-        lastAccessedTime = evictable.getLastAccessedTime();
-        maxInactiveInterval = evictable.getMaxInactiveInterval();
+        memento.setCreationTime(evictable.getCreationTime());
+        memento.setLastAccessedTime(evictable.getLastAccessedTime());
+        memento.setMaxInactiveInterval(evictable.getMaxInactiveInterval());
     }
 
     public synchronized void mote(Evictable recipient) throws Exception {
@@ -57,43 +63,47 @@ public abstract class SimpleEvictable implements Evictable, Externalizable {
     }
 
     public synchronized long getCreationTime() {
-        return creationTime;
+        return memento.getCreationTime();
     }
 
     public synchronized long getLastAccessedTime() {
-        return lastAccessedTime;
+        return memento.getLastAccessedTime();
     }
 
     public synchronized void setLastAccessedTime(long lastAccessedTime) {
-        this.lastAccessedTime = lastAccessedTime;
+        memento.setLastAccessedTime(lastAccessedTime);
     }
 
     public synchronized int getMaxInactiveInterval() {
-        return maxInactiveInterval;
+        return memento.getMaxInactiveInterval();
     }
 
     public synchronized void setMaxInactiveInterval(int maxInactiveInterval) {
-        this.maxInactiveInterval = maxInactiveInterval;
+        memento.setMaxInactiveInterval(maxInactiveInterval);
     }
 
     public synchronized long getTimeToLive(long time) {
-        return maxInactiveInterval < 0 ? Long.MAX_VALUE : (maxInactiveInterval * 1000) - (time - lastAccessedTime);
+        return memento.getTimeToLive(time);
     }
 
     public synchronized boolean getTimedOut(long time) {
-        return getTimeToLive(time) <= 0;
+        return memento.getTimedOut(time);
     }
     
     public synchronized void readExternal(ObjectInput oi) throws IOException, ClassNotFoundException {
-        creationTime = oi.readLong();
-        lastAccessedTime = oi.readLong();
-        maxInactiveInterval = oi.readInt();
+        memento.readExternal(oi);
+        onDeserialization();
     }
 
     public synchronized void writeExternal(ObjectOutput oo) throws IOException {
-        oo.writeLong(creationTime);
-        oo.writeLong(lastAccessedTime);
-        oo.writeInt(maxInactiveInterval);
+        onSerialization();
+        memento.writeExternal(oo);
+    }
+
+    protected void onDeserialization() {
+    }
+    
+    protected void onSerialization() {
     }
 
 }

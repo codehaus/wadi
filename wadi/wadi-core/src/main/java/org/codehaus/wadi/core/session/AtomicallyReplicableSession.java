@@ -62,9 +62,9 @@ public class AtomicallyReplicableSession extends AbstractReplicableSession {
     }
 
     public synchronized void onEndProcessing() {
-        if (newSession) {
+        if (getAbstractMotableMemento().isNewSession()) {
             replicater.create(this);
-            newSession = false;
+            getAbstractMotableMemento().setNewSession(false);
             dirty = false;
         } else if (dirty) {
             replicater.update(this);
@@ -79,7 +79,7 @@ public class AtomicallyReplicableSession extends AbstractReplicableSession {
      * session to update this.
      */
     public synchronized void setMaxInactiveInterval(int maxInactiveInterval) {
-        if (this.maxInactiveInterval != maxInactiveInterval) {
+        if (memento.getMaxInactiveInterval() != maxInactiveInterval) {
             super.setMaxInactiveInterval(maxInactiveInterval);
             dirty = true;
         }
