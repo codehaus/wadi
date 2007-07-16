@@ -16,9 +16,6 @@
 package org.codehaus.wadi.replication.manager.basic;
 
 import org.codehaus.wadi.core.motable.Motable;
-import org.codehaus.wadi.group.Peer;
-import org.codehaus.wadi.group.vm.VMPeer;
-import org.codehaus.wadi.replication.common.ReplicaInfo;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
 
 import com.agical.rmock.extension.junit.RMockTestCase;
@@ -83,28 +80,6 @@ public class MotableReplicationManagerTest extends RMockTestCase {
 
         MotableReplicationManager manager = new MotableReplicationManager(repManager);
         manager.releasePrimary(key);
-    }
-
-    public void testRetrieveReplicaInfo() throws Exception {
-        ReplicaInfo replicaInfo = new ReplicaInfo(new VMPeer("peer1", null), new Peer[0], new Object());
-        
-        repManager.retrieveReplicaInfo(key);
-        modify().returnValue(replicaInfo);
-        startVerification();
-        
-        MotableReplicationManager manager = new MotableReplicationManager(repManager);
-        ReplicaInfo actualReplicaInfo = manager.retrieveReplicaInfo(key);
-        assertSame(replicaInfo, actualReplicaInfo);
-    }
-
-    public void testManagePrimary() {
-        repManager.managePrimary(key);
-        modify().returnValue(true);
-        startVerification();
-
-        MotableReplicationManager manager = new MotableReplicationManager(repManager);
-        boolean manage = manager.managePrimary(key);
-        assertTrue(manage);
     }
 
 }

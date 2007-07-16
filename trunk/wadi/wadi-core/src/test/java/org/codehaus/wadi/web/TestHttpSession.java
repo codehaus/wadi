@@ -51,6 +51,7 @@ import org.codehaus.wadi.core.manager.SessionMonitor;
 import org.codehaus.wadi.core.manager.StandardManager;
 import org.codehaus.wadi.core.manager.TomcatSessionIdFactory;
 import org.codehaus.wadi.core.session.AttributesFactory;
+import org.codehaus.wadi.core.session.DistributableAttributesFactory;
 import org.codehaus.wadi.core.session.StandardAttributesFactory;
 import org.codehaus.wadi.core.session.StandardValueFactory;
 import org.codehaus.wadi.core.session.ValueFactory;
@@ -82,7 +83,7 @@ public class TestHttpSession extends TestCase {
     protected WebSessionWrapperFactory webSessionWrapperFactory = new StandardSessionWrapperFactory();
     protected SessionIdFactory sessionIdFactory = new TomcatSessionIdFactory();
     protected ValueFactory valueFactory = new StandardValueFactory();
-    protected AttributesFactory attributesFactory = new StandardAttributesFactory(valueFactory);
+    protected AttributesFactory attributesFactory = new DistributableAttributesFactory(valueFactory);
     protected WebSessionFactory webSessionFactory = new BasicWebSessionFactory(attributesFactory,
             new SimpleStreamer(),
             new DummyReplicaterFactory(),

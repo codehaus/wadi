@@ -223,7 +223,7 @@ public class TomcatSession extends BasicWebSession implements Session {
   // Tomcat 5.5.10 and later
   
   public String getIdInternal() {
-	  return name;
+	  return getAbstractMotableMemento().getName();
   }
 
 }

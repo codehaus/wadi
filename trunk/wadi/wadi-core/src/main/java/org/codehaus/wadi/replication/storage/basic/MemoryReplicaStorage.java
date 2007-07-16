@@ -68,7 +68,7 @@ public class MemoryReplicaStorage implements ReplicaStorage {
             if (currentReplicaInfo.getVersion() > replicaInfo.getVersion()) {
                 return;
             }
-            keyToReplica.put(key, replicaInfo);
+            currentReplicaInfo.mergeWith(replicaInfo);
         }
     }
 

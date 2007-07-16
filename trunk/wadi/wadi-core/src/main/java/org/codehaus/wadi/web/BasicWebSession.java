@@ -82,26 +82,26 @@ public class BasicWebSession extends AtomicallyReplicableSession implements WADI
     }
 
     public String getId() {
-        return router.augment(name);
+        return router.augment(getAbstractMotableMemento().getName());
     }
     
     public synchronized Object getAttribute(String name) {
         if (null == name) {
             throw new IllegalArgumentException("HttpSession attribute names must be non-null (see SRV.15.1.7.1)");
         }
-        return attributes.get(name);
+        return getAttributes().get(name);
     }
 
     public synchronized Set getAttributeNameSet() {
-        return attributes.keySet();
+        return getAttributes().keySet();
     }
 
     public synchronized Enumeration getAttributeNameEnumeration() {
-        return attributes.size() == 0 ? EMPTY_ENUMERATION : Collections.enumeration(attributes.keySet());
+        return getAttributes().size() == 0 ? EMPTY_ENUMERATION : Collections.enumeration(getAttributes().keySet());
     }
 
     public synchronized String[] getAttributeNameStringArray() {
-        return attributes.size() == 0 ? EMPTY_STRING_ARRAY : (String[]) attributes.keySet().toArray(new String[0]);
+        return getAttributes().size() == 0 ? EMPTY_STRING_ARRAY : (String[]) getAttributes().keySet().toArray(new String[0]);
     }
 
     public synchronized Object setAttribute(String name, Object newValue) {
@@ -119,7 +119,7 @@ public class BasicWebSession extends AtomicallyReplicableSession implements WADI
     }
 
     protected void onDeserialization() {
-        for (Iterator iter = attributes.values().iterator(); iter.hasNext();) {
+        for (Iterator iter = getAttributes().values().iterator(); iter.hasNext();) {
             Object value = iter.next();
             if (value instanceof HttpSessionActivationListener) {
                 HttpSessionActivationListener listener = (HttpSessionActivationListener) value;
@@ -129,7 +129,7 @@ public class BasicWebSession extends AtomicallyReplicableSession implements WADI
     }
     
     protected void onSerialization() {
-        for (Iterator iter = attributes.values().iterator(); iter.hasNext();) {
+        for (Iterator iter = getAttributes().values().iterator(); iter.hasNext();) {
             Object value = iter.next();
             if (value instanceof HttpSessionActivationListener) {
                 HttpSessionActivationListener listener = (HttpSessionActivationListener) value;
