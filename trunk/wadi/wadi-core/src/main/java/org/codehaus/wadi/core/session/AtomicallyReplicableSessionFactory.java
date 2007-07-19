@@ -17,8 +17,7 @@
 package org.codehaus.wadi.core.session;
 
 import org.codehaus.wadi.core.util.Streamer;
-import org.codehaus.wadi.replication.Replicater;
-import org.codehaus.wadi.replication.ReplicaterFactory;
+import org.codehaus.wadi.replication.manager.ReplicationManager;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -26,20 +25,20 @@ import org.codehaus.wadi.replication.ReplicaterFactory;
  */
 public class AtomicallyReplicableSessionFactory extends DistributableSessionFactory {
 
-    protected final Replicater replicater;
+    protected final ReplicationManager replicationManager;
     
     public AtomicallyReplicableSessionFactory(AttributesFactory attributesFactory,
             Streamer streamer,
-            ReplicaterFactory replicaterFactory) {
+            ReplicationManager replicationManager) {
         super(attributesFactory, streamer);
-        if (null == replicaterFactory) {
-            throw new IllegalArgumentException("replicaterFactory is required");
+        if (null == replicationManager) {
+            throw new IllegalArgumentException("replicationManager is required");
         }
-        this.replicater = replicaterFactory.create();
+        this.replicationManager = replicationManager;
     }
 
     public Session create() {
-        return new AtomicallyReplicableSession(newAttributes(), getManager(), streamer, replicater);
+        return new AtomicallyReplicableSession(newAttributes(), getManager(), streamer, replicationManager);
     }
     
 }

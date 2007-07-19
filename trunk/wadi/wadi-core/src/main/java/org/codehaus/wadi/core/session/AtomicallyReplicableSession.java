@@ -20,7 +20,7 @@ package org.codehaus.wadi.core.session;
 import org.codehaus.wadi.core.manager.Manager;
 import org.codehaus.wadi.core.motable.RehydrationException;
 import org.codehaus.wadi.core.util.Streamer;
-import org.codehaus.wadi.replication.Replicater;
+import org.codehaus.wadi.replication.manager.ReplicationManager;
 
 
 /**
@@ -51,23 +51,23 @@ public class AtomicallyReplicableSession extends AbstractReplicableSession {
     public AtomicallyReplicableSession(Attributes attributes,
             Manager manager,
             Streamer streamer,
-            Replicater replicater) {
-        super(attributes, manager, streamer, replicater);
+            ReplicationManager replicationManager) {
+        super(attributes, manager, streamer, replicationManager);
     }
 
     public synchronized void rehydrate(long creationTime, long lastAccessedTime, int maxInactiveInterval, String name, byte[] body)
             throws RehydrationException {
         super.rehydrate(creationTime, lastAccessedTime, maxInactiveInterval, name, body);
-        replicater.acquireFromOtherReplicater(this);
+        replicationManager.acquirePrimary(getName());
     }
 
     public synchronized void onEndProcessing() {
         if (getAbstractMotableMemento().isNewSession()) {
-            replicater.create(this);
+            replicationManager.create(getName(), this);
             getAbstractMotableMemento().setNewSession(false);
             dirty = false;
         } else if (dirty) {
-            replicater.update(this);
+            replicationManager.update(getName(), this);
             dirty = false;
         }
     }

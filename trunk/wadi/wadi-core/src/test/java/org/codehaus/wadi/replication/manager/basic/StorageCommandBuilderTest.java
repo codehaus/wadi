@@ -27,12 +27,14 @@ import com.agical.rmock.extension.junit.RMockTestCase;
 
 public class StorageCommandBuilderTest extends RMockTestCase {
 
+    private ObjectStateHandler stateHandler;
     private Peer peer1;
     private Peer peer2;
     private Peer peer3;
     private Peer peer4;
 
     protected void setUp() throws Exception {
+        stateHandler = (ObjectStateHandler) mock(ObjectStateHandler.class);
         peer1 = new VMPeer("peer1", null);
         peer2 = new VMPeer("peer2", null);
         peer3 = new VMPeer("peer3", null);
@@ -44,7 +46,7 @@ public class StorageCommandBuilderTest extends RMockTestCase {
         
         String expectedKey = "key";
         Object payload = new Object();
-        ReplicaInfo expectedReplicaInfo = new ReplicaInfo(peer1, new Peer[] {peer2, peer3}, payload);
+        ReplicaInfo replicaInfo = new ReplicaInfo(peer1, new Peer[] {peer2, peer3}, payload);
 
         ReplicaStorageMixInServiceProxy storage = (ReplicaStorageMixInServiceProxy) mock(ReplicaStorageMixInServiceProxy.class);
 
@@ -55,7 +57,11 @@ public class StorageCommandBuilderTest extends RMockTestCase {
         storage.getInvocationMetaData();
         modify().returnValue(invMetaData);
         invMetaData.setTargets(new Peer[] {peer2});
-        storage.mergeCreate(expectedKey, expectedReplicaInfo);
+        
+        stateHandler.extractFullState(expectedKey, payload);
+        modify().returnValue(new byte[0]);
+        
+        storage.mergeCreate(expectedKey, null);
         modify().args(is.AS_RECORDED, is.NOT_NULL);
 
         serviceProxy.getProxy();
@@ -63,7 +69,11 @@ public class StorageCommandBuilderTest extends RMockTestCase {
         storage.getInvocationMetaData();
         modify().returnValue(invMetaData);
         invMetaData.setTargets(new Peer[] {peer3});
-        storage.mergeUpdate(expectedKey, new ReplicaInfo(peer1, expectedReplicaInfo.getSecondaries(), payload));
+        
+        stateHandler.extractUpdatedState(expectedKey, payload);
+        modify().returnValue(new byte[0]);
+
+        storage.mergeUpdate(expectedKey, null);
         modify().args(is.AS_RECORDED, is.NOT_NULL);
 
         serviceProxy.getProxy();
@@ -76,8 +86,10 @@ public class StorageCommandBuilderTest extends RMockTestCase {
 
         startVerification();
         
-        StorageCommandBuilder builder = new StorageCommandBuilder(expectedKey, expectedReplicaInfo, 
-                new Peer[] {peer3, peer4});
+        StorageCommandBuilder builder = new StorageCommandBuilder(expectedKey,
+            replicaInfo,
+            new Peer[] { peer3, peer4 },
+            stateHandler);
         
         StorageCommand[] commands = builder.build();
         assertEquals(3, commands.length);

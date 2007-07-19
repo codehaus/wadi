@@ -32,7 +32,7 @@ import org.codehaus.wadi.core.manager.Router;
 import org.codehaus.wadi.core.session.AtomicallyReplicableSession;
 import org.codehaus.wadi.core.session.Attributes;
 import org.codehaus.wadi.core.util.Streamer;
-import org.codehaus.wadi.replication.Replicater;
+import org.codehaus.wadi.replication.manager.ReplicationManager;
 
 /**
  * 
@@ -53,8 +53,8 @@ public class BasicWebSession extends AtomicallyReplicableSession implements WADI
             Router router,
             Manager manager,
             Streamer streamer,
-            Replicater replicater) {
-        super(attributes, manager, streamer, replicater);
+            ReplicationManager replicationManager) {
+        super(attributes, manager, streamer, replicationManager);
         if (null == wrapperFactory) {
             throw new IllegalArgumentException("wrapperFactory is required.");
         } else if (null == router) {

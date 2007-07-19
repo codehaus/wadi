@@ -34,7 +34,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.core.manager.Router;
 import org.codehaus.wadi.core.session.Attributes;
 import org.codehaus.wadi.core.util.Streamer;
-import org.codehaus.wadi.replication.Replicater;
+import org.codehaus.wadi.replication.manager.ReplicationManager;
 import org.codehaus.wadi.web.BasicWebSession;
 import org.codehaus.wadi.web.WebSessionConfig;
 import org.codehaus.wadi.web.WebSessionWrapperFactory;
@@ -60,8 +60,8 @@ public class TomcatSession extends BasicWebSession implements Session {
           Router router,
           org.codehaus.wadi.core.manager.Manager manager,
           Streamer streamer,
-          Replicater replicater) {
-      super(config, attributes, wrapperFactory, router, manager, streamer, replicater);
+          ReplicationManager replicationManager) {
+      super(config, attributes, wrapperFactory, router, manager, streamer, replicationManager);
   }
 
   public void destroy() {

@@ -17,7 +17,7 @@ package org.codehaus.wadi.core.session;
 
 import org.codehaus.wadi.core.manager.Manager;
 import org.codehaus.wadi.core.util.Streamer;
-import org.codehaus.wadi.replication.Replicater;
+import org.codehaus.wadi.replication.manager.ReplicationManager;
 
 import com.agical.rmock.extension.junit.RMockTestCase;
 
@@ -29,28 +29,31 @@ public class AtomicallyReplicableSessionTest extends RMockTestCase {
 
     private DistributableAttributes attributes;
     private Manager manager;
-    private Replicater replicater;
+    private ReplicationManager replicationManager;
     private Streamer streamer;
     private AtomicallyReplicableSession session;
+    private String sessionName;
 
     protected void setUp() throws Exception {
         attributes = new DistributableAttributes(new DistributableValueFactory(new BasicValueHelperRegistry()));
         manager = (Manager) mock(Manager.class);
-        replicater = (Replicater) mock(Replicater.class);
+        replicationManager = (ReplicationManager) mock(ReplicationManager.class);
         streamer = (Streamer) mock(Streamer.class);
-        session = new AtomicallyReplicableSession(attributes, manager, streamer, replicater);
+        session = new AtomicallyReplicableSession(attributes, manager, streamer, replicationManager);
+        sessionName = "name";
+        session.init(1, 1, 1, sessionName);
     }
     
     public void testCreateReplicaIfNew() throws Exception {
-        replicater.create(session);
+        replicationManager.create(sessionName, session);
         startVerification();
         
         session.onEndProcessing();
     }
 
     public void testUpdateReplicaIfDirty() throws Exception {
-        replicater.create(session);
-        replicater.update(session);
+        replicationManager.create(sessionName, session);
+        replicationManager.update(sessionName, session);
         startVerification();
         
         session.onEndProcessing();
@@ -59,8 +62,8 @@ public class AtomicallyReplicableSessionTest extends RMockTestCase {
     }
 
     public void testAddStateSetDirty() throws Exception {
-        replicater.create(session);
-        replicater.update(session);
+        replicationManager.create(sessionName, session);
+        replicationManager.update(sessionName, session);
         startVerification();
         
         session.onEndProcessing();
@@ -69,8 +72,8 @@ public class AtomicallyReplicableSessionTest extends RMockTestCase {
     }
     
     public void testRemoveStateSetDirty() throws Exception {
-        replicater.create(session);
-        replicater.update(session);
+        replicationManager.create(sessionName, session);
+        replicationManager.update(sessionName, session);
         startVerification();
         
         session.onEndProcessing();
@@ -79,9 +82,9 @@ public class AtomicallyReplicableSessionTest extends RMockTestCase {
     }
     
     public void testGetStateSetDirty() throws Exception {
-        replicater.create(session);
-        replicater.update(session);
-        replicater.update(session);
+        replicationManager.create(sessionName, session);
+        replicationManager.update(sessionName, session);
+        replicationManager.update(sessionName, session);
         startVerification();
 
         session.onEndProcessing();

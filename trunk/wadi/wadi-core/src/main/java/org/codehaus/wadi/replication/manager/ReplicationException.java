@@ -21,15 +21,16 @@ package org.codehaus.wadi.replication.manager;
  */
 public class ReplicationException extends RuntimeException {
 
-    public ReplicationException() {
-    }
-
-    public ReplicationException(String msg) {
-        super(msg);
+    public ReplicationException(String message) {
+        super(message);
     }
 
     public ReplicationException(Throwable cause) {
         super(cause);
+    }
+    
+    public ReplicationException(String message, Throwable cause) {
+        super(message, cause);
     }
 
 }

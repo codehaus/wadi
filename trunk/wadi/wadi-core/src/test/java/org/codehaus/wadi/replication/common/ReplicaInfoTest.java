@@ -25,36 +25,30 @@ public class ReplicaInfoTest extends TestCase {
     private static final Peer peer2 = new VMPeer("PEER2", null);
     private static final Peer peer3 = new VMPeer("PEER3", null);
     
-    public void testCreateWithPrototpye() {
+    public void testUpdateSecondaries() throws Exception {
         Object replica = new Object();
-        ReplicaInfo info = new ReplicaInfo(peer1, new Peer[] {peer2}, replica);
-        info = new ReplicaInfo(info, new Peer[] {peer3});
-        assertSame(peer1, info.getPrimary());
-        assertEquals(1, info.getSecondaries().length);
-        assertSame(peer3, info.getSecondaries()[0]);
-        assertSame(replica, info.getReplica());
+        Peer[] secondaries = new Peer[] {peer2};
+        ReplicaInfo info = new ReplicaInfo(peer1, secondaries, replica);
+        assertEquals(0, info.getVersion());
+        
+        secondaries = new Peer[] {peer3};
+        info.updateSecondaries(secondaries);
         assertEquals(1, info.getVersion());
     }
-
-    public void testCreateWithReplica() {
-        ReplicaInfo info = new ReplicaInfo(peer1, new Peer[] {peer2}, new Object());
-        Object replica = new Object();
-        info = new ReplicaInfo(info, replica);
-        assertSame(peer1, info.getPrimary());
-        assertEquals(1, info.getSecondaries().length);
-        assertSame(peer2, info.getSecondaries()[0]);
-        assertSame(replica, info.getReplica());
-        assertEquals(1, info.getVersion());
-    }
-
-    public void testCreateWithPrimaryAndSecondaries() {
-        Object replica = new Object();
-        ReplicaInfo info = new ReplicaInfo(peer1, new Peer[] {peer2}, replica);
-        info = new ReplicaInfo(info, peer2, new Peer[] {peer3});
-        assertSame(peer2, info.getPrimary());
-        assertEquals(1, info.getSecondaries().length);
-        assertSame(peer3, info.getSecondaries()[0]);
-        assertSame(replica, info.getReplica());
+    
+    public void testCreateWithPrototype() {
+        Object payload = new Object();
+        Peer primary = peer1;
+        Peer[] secondaries = new Peer[] {peer2};
+        ReplicaInfo info = new ReplicaInfo(primary, secondaries, payload);
+        assertEquals(0, info.getVersion());
+        
+        primary = peer2;
+        secondaries = new Peer[] {peer3};
+        info = new ReplicaInfo(info, primary, secondaries);
+        assertSame(primary, info.getPrimary());
+        assertSame(secondaries, info.getSecondaries());
+        assertSame(payload, info.getPayload());
         assertEquals(1, info.getVersion());
     }
 

@@ -13,8 +13,9 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.replication.storage.basic;
+package org.codehaus.wadi.replication.storage.memory;
 
+import org.codehaus.wadi.replication.manager.basic.ObjectStateHandler;
 import org.codehaus.wadi.replication.storage.ReplicaStorage;
 import org.codehaus.wadi.replication.storage.ReplicaStorageFactory;
 import org.codehaus.wadi.servicespace.ServiceSpace;
@@ -24,10 +25,19 @@ import org.codehaus.wadi.servicespace.ServiceSpace;
  * 
  * @version $Revision$
  */
-public class BasicReplicaStorageFactory implements ReplicaStorageFactory {
+public class MemoryReplicaStorageFactory implements ReplicaStorageFactory {
+    
+    private final ObjectStateHandler objectStateManager;
+
+    public MemoryReplicaStorageFactory(ObjectStateHandler objectStateManager) {
+        if (null == objectStateManager) {
+            throw new IllegalArgumentException("objectStateManager is required");
+        }
+        this.objectStateManager = objectStateManager;
+    }
     
     public ReplicaStorage factory(ServiceSpace serviceSpace) {
-        return new MemoryReplicaStorage();
+        return new MemoryReplicaStorage(objectStateManager);
     }
     
 }

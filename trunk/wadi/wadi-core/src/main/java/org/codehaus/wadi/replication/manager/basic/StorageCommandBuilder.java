@@ -27,18 +27,25 @@ class StorageCommandBuilder {
     private final Object key;
     private final ReplicaInfo replicaInfo;
     private final Peer[] oldSecondaries;
+    private final ObjectStateHandler stateHandler;
     
-    public StorageCommandBuilder(Object key, ReplicaInfo replicaInfo, Peer[] oldSecondaries) {
+    public StorageCommandBuilder(Object key,
+            ReplicaInfo replicaInfo,
+            Peer[] oldSecondaries,
+            ObjectStateHandler stateHandler) {
         if (null == key) {
             throw new IllegalArgumentException("key is required");
         } else if (null == replicaInfo) {
             throw new IllegalArgumentException("replicaInfo is required");
         } else if (null == oldSecondaries) {
             throw new IllegalArgumentException("oldSecondaries is required");
+        } else if (null == stateHandler) {
+            throw new IllegalArgumentException("stateHandler is required");
         }
         this.key = key;
         this.replicaInfo = replicaInfo;
         this.oldSecondaries = oldSecondaries;
+        this.stateHandler = stateHandler;
     }
 
     public StorageCommand[] build() {
@@ -65,12 +72,12 @@ class StorageCommandBuilder {
 
         if (0 != createSecondariesSet.size()) {
             Peer targets[] = (Peer[]) createSecondariesSet.toArray(new Peer[0]);
-            commands.add(new CreateStorageCommand(targets, key, replicaInfo));
+            commands.add(new CreateStorageCommand(targets, key, replicaInfo, stateHandler));
         }
 
         if (0 != updateSecondariesSet.size()) {
             Peer targets[] = (Peer[]) updateSecondariesSet.toArray(new Peer[0]);
-            commands.add(new UpdateStorageCommand(targets, key, replicaInfo));
+            commands.add(new UpdateStorageCommand(targets, key, replicaInfo, stateHandler));
         }
 
         if (0 != destroySecondariesSet.size()) {

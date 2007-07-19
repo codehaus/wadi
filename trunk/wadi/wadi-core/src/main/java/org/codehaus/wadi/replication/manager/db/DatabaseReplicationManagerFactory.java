@@ -14,9 +14,13 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.replication;
+package org.codehaus.wadi.replication.manager.db;
 
 import org.codehaus.wadi.core.store.DatabaseStore;
+import org.codehaus.wadi.replication.manager.ReplicationManager;
+import org.codehaus.wadi.replication.manager.ReplicationManagerFactory;
+import org.codehaus.wadi.replication.strategy.BackingStrategyFactory;
+import org.codehaus.wadi.servicespace.ServiceSpace;
 
 /**
  * A DatabaseReplicater holds no per Session state, so all Sessions may use the same Replicater
@@ -24,11 +28,17 @@ import org.codehaus.wadi.core.store.DatabaseStore;
  */
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
+ * @version $Revision: 2293 $
  */
-public class DatabaseReplicaterFactory extends StatelessReplicaterFactory {
+public class DatabaseReplicationManagerFactory implements ReplicationManagerFactory {
 
-	public DatabaseReplicaterFactory(DatabaseStore store) {
-		super(new DatabaseReplicater(store));
+	private final DatabaseStore store;
+
+    public DatabaseReplicationManagerFactory(DatabaseStore store) {
+        this.store = store;
 	}
+
+    public ReplicationManager factory(ServiceSpace serviceSpace, BackingStrategyFactory backingStrategyFactory) {
+        return new DatabaseReplicationManager(store);
+    }
 }

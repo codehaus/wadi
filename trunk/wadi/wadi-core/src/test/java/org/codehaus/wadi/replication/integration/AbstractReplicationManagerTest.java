@@ -16,23 +16,36 @@
 package org.codehaus.wadi.replication.integration;
 
 import java.net.URI;
+import java.util.Iterator;
 
-import junit.framework.TestCase;
-
+import org.codehaus.wadi.core.manager.Manager;
+import org.codehaus.wadi.core.session.BasicValueHelperRegistry;
+import org.codehaus.wadi.core.session.DistributableAttributesFactory;
+import org.codehaus.wadi.core.session.DistributableSessionFactory;
+import org.codehaus.wadi.core.session.DistributableValueFactory;
+import org.codehaus.wadi.core.session.Session;
+import org.codehaus.wadi.core.session.SessionFactory;
+import org.codehaus.wadi.core.util.SimpleStreamer;
+import org.codehaus.wadi.core.util.Streamer;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.replication.common.ReplicaInfo;
+import org.codehaus.wadi.replication.common.ReplicaStorageInfo;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
 import org.codehaus.wadi.replication.manager.basic.BasicReplicationManagerFactory;
+import org.codehaus.wadi.replication.manager.basic.ObjectStateHandler;
+import org.codehaus.wadi.replication.manager.basic.SessionStateHandler;
 import org.codehaus.wadi.replication.storage.ReplicaStorage;
 import org.codehaus.wadi.replication.storage.ReplicaStorageFactory;
-import org.codehaus.wadi.replication.storage.basic.BasicReplicaStorageFactory;
+import org.codehaus.wadi.replication.storage.memory.MemoryReplicaStorageFactory;
 import org.codehaus.wadi.replication.strategy.RoundRobinBackingStrategyFactory;
 import org.codehaus.wadi.servicespace.ServiceRegistry;
 import org.codehaus.wadi.servicespace.ServiceSpaceName;
 import org.codehaus.wadi.servicespace.basic.BasicServiceSpace;
 
-public abstract class AbstractReplicationManagerTest extends TestCase {
+import com.agical.rmock.extension.junit.RMockTestCase;
+
+public abstract class AbstractReplicationManagerTest extends RMockTestCase {
     private static final String CLUSTER_NAME = "CLUSTER";
     private static final long TEMPO = 1000;
 
@@ -53,37 +66,42 @@ public abstract class AbstractReplicationManagerTest extends TestCase {
     private Dispatcher dispatcher3;
     private ReplicaStorage replicaStorage3;
 
+    private SessionFactory sessionFactory;
+    
     public void testSmoke() throws Exception {
         serviceSpace1.start();
+        Thread.sleep(1000);
         serviceSpace2.start();
 
         String key = "key1";
-        String value = "value1";
-        manager1.create(key, value);
+        Session session = sessionFactory.create();
+        session.init(1, 2, 3, key);
+        session.addState("key", "value");
+        manager1.create(key, session);
         Thread.sleep(TEMPO);
         assertNotDefinedByStorage(key, replicaStorage1);
-        assertDefinedByStorage(key, 0, replicaStorage2, new ReplicaInfo(peer1, new Peer[] {peer2}, new Object()));
+        assertDefinedByStorage(key, 0, replicaStorage2, new ReplicaInfo(peer1, new Peer[] {peer2}, session));
 
         serviceSpace3.start();
         Thread.sleep(TEMPO);
         assertNotDefinedByStorage(key, replicaStorage1);
-        assertDefinedByStorage(key, 1, replicaStorage2, new ReplicaInfo(peer1, new Peer[] {peer2, peer3}, new Object()));
-        assertDefinedByStorage(key, 1, replicaStorage3, new ReplicaInfo(peer1, new Peer[] {peer2, peer3}, new Object()));
+        assertDefinedByStorage(key, 1, replicaStorage2, new ReplicaInfo(peer1, new Peer[] {peer2, peer3}, session));
+        assertDefinedByStorage(key, 1, replicaStorage3, new ReplicaInfo(peer1, new Peer[] {peer2, peer3}, session));
 
         manager2.acquirePrimary(key);
-        assertDefinedByStorage(key, 2, replicaStorage1, new ReplicaInfo(peer2, new Peer[] {peer1, peer3}, new Object()));
+        assertDefinedByStorage(key, 2, replicaStorage1, new ReplicaInfo(peer2, new Peer[] {peer1, peer3}, session));
         assertNotDefinedByStorage(key, replicaStorage2);
-        assertDefinedByStorage(key, 2, replicaStorage3, new ReplicaInfo(peer2, new Peer[] {peer1, peer3}, new Object()));
+        assertDefinedByStorage(key, 2, replicaStorage3, new ReplicaInfo(peer2, new Peer[] {peer1, peer3}, session));
 
         manager1.acquirePrimary(key);
         assertNotDefinedByStorage(key, replicaStorage1);
-        assertDefinedByStorage(key, 3, replicaStorage2, new ReplicaInfo(peer1, new Peer[] {peer2, peer3}, new Object()));
-        assertDefinedByStorage(key, 3, replicaStorage3, new ReplicaInfo(peer1, new Peer[] {peer2, peer3}, new Object()));
+        assertDefinedByStorage(key, 3, replicaStorage2, new ReplicaInfo(peer1, new Peer[] {peer2, peer3}, session));
+        assertDefinedByStorage(key, 3, replicaStorage3, new ReplicaInfo(peer1, new Peer[] {peer2, peer3}, session));
 
         serviceSpace3.stop();
         Thread.sleep(TEMPO);
         assertNotDefinedByStorage(key, replicaStorage1);
-        assertDefinedByStorage(key, 4, replicaStorage2, new ReplicaInfo(peer1, new Peer[] {peer2}, new Object()));
+        assertDefinedByStorage(key, 4, replicaStorage2, new ReplicaInfo(peer1, new Peer[] {peer2}, session));
         assertNotDefinedByStorage(key, replicaStorage3);
 
         serviceSpace2.stop();
@@ -95,13 +113,13 @@ public abstract class AbstractReplicationManagerTest extends TestCase {
         Thread.sleep(TEMPO);
         assertNotDefinedByStorage(key, replicaStorage1);
         assertNotDefinedByStorage(key, replicaStorage2);
-        assertDefinedByStorage(key, 5, replicaStorage3, new ReplicaInfo(peer1, new Peer[] {peer3}, new Object()));
+        assertDefinedByStorage(key, 5, replicaStorage3, new ReplicaInfo(peer1, new Peer[] {peer3}, session));
 
         serviceSpace2.start();
         Thread.sleep(TEMPO);
         assertNotDefinedByStorage(key, replicaStorage1);
-        assertDefinedByStorage(key, 6, replicaStorage2, new ReplicaInfo(peer1, new Peer[] {peer3, peer2}, new Object()));
-        assertDefinedByStorage(key, 6, replicaStorage3, new ReplicaInfo(peer1, new Peer[] {peer3, peer2}, new Object()));
+        assertDefinedByStorage(key, 6, replicaStorage2, new ReplicaInfo(peer1, new Peer[] {peer3, peer2}, session));
+        assertDefinedByStorage(key, 6, replicaStorage3, new ReplicaInfo(peer1, new Peer[] {peer3, peer2}, session));
     }
 
     private void assertNotDefinedByStorage(String key, ReplicaStorage storage) {
@@ -111,10 +129,10 @@ public abstract class AbstractReplicationManagerTest extends TestCase {
     private void assertDefinedByStorage(String key, int version, ReplicaStorage storage, ReplicaInfo expected) {
         assertTrue(storage.storeReplicaInfo(key));
 
-        ReplicaInfo replicaInfo = storage.retrieveReplicaInfo(key);
+        ReplicaStorageInfo storageInfo = storage.retrieveReplicaStorageInfo(key);
+        ReplicaInfo replicaInfo = storageInfo.getReplicaInfo();
 
-        assertEquals(version, replicaInfo.getVersion());
-        
+        assertEquals(version, storageInfo.getVersion());
         assertEquals(expected.getPrimary(), replicaInfo.getPrimary());
 
         Peer[] actualSecondaries = replicaInfo.getSecondaries();
@@ -123,11 +141,28 @@ public abstract class AbstractReplicationManagerTest extends TestCase {
         for (int i = 0; i < expectedSecondaries.length; i++) {
             assertEquals(expectedSecondaries[i], actualSecondaries[i]);
         }
+        
+        Session expectedSession = (Session) expected.getPayload();
+        Session actualSession = (Session) replicaInfo.getPayload();
+        for (Iterator iterator = expectedSession.getState().keySet().iterator(); iterator.hasNext();) {
+            Object stateKey = iterator.next();
+            assertEquals(expectedSession.getState(stateKey), actualSession.getState(stateKey));
+        }
     }
 
     protected void setUp() throws Exception {
-        BasicReplicationManagerFactory managerFactory = new BasicReplicationManagerFactory();
-        ReplicaStorageFactory storageFactory = new BasicReplicaStorageFactory();
+        Streamer streamer = new SimpleStreamer();
+        sessionFactory = new DistributableSessionFactory(
+            new DistributableAttributesFactory(new DistributableValueFactory(new BasicValueHelperRegistry())),
+            streamer);
+        Manager manager = (Manager) mock(Manager.class);
+        sessionFactory.setManager(manager);
+        
+        ObjectStateHandler objectStateManager = new SessionStateHandler(streamer);
+        objectStateManager.setObjectFactory(sessionFactory);
+        
+        BasicReplicationManagerFactory managerFactory = new BasicReplicationManagerFactory(objectStateManager);
+        ReplicaStorageFactory storageFactory = new MemoryReplicaStorageFactory(objectStateManager);
         RoundRobinBackingStrategyFactory backingStrategy = new RoundRobinBackingStrategyFactory(2);
 
         serviceSpace1 = buildServiceSpace("peer1");

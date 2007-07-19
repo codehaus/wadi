@@ -20,7 +20,7 @@ import org.codehaus.wadi.core.manager.Router;
 import org.codehaus.wadi.core.session.AttributesFactory;
 import org.codehaus.wadi.core.session.Session;
 import org.codehaus.wadi.core.util.Streamer;
-import org.codehaus.wadi.replication.ReplicaterFactory;
+import org.codehaus.wadi.replication.manager.ReplicationManager;
 import org.codehaus.wadi.web.BasicWebSessionFactory;
 import org.codehaus.wadi.web.WebSessionWrapperFactory;
 
@@ -32,10 +32,10 @@ public class TomcatSessionFactory extends BasicWebSessionFactory {
 
     public TomcatSessionFactory(AttributesFactory attributesFactory,
             Streamer streamer,
-            ReplicaterFactory replicaterFactory,
+            ReplicationManager replicationManager,
             Router router,
             WebSessionWrapperFactory wrapperFactory) {
-        super(attributesFactory, streamer, replicaterFactory, router, wrapperFactory);
+        super(attributesFactory, streamer, replicationManager, router, wrapperFactory);
     }
 
     public Session create() {
@@ -45,7 +45,7 @@ public class TomcatSessionFactory extends BasicWebSessionFactory {
                 router,
                 getManager(),
                 streamer,
-                replicater);
+                replicationManager);
     }
 
 }
