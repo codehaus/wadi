@@ -143,4 +143,9 @@ public class TribesEnvelope implements Envelope, Serializable {
         properties.put(key, value);
     }
     
+    @Override
+    public String toString() {
+        return "Message: to [" + address + "]; replyTo [" + replyto + "]; payload [" + payload + "]";
+    }
+    
 }
