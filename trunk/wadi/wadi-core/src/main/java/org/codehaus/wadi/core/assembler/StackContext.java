@@ -46,6 +46,7 @@ import org.codehaus.wadi.core.session.ValueFactory;
 import org.codehaus.wadi.core.session.ValueHelperRegistry;
 import org.codehaus.wadi.core.store.Store;
 import org.codehaus.wadi.core.util.SimpleStreamer;
+import org.codehaus.wadi.core.util.Streamer;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.location.balancing.BasicPartitionBalancer;
 import org.codehaus.wadi.location.balancing.BasicPartitionBalancerSingletonService;
@@ -63,14 +64,14 @@ import org.codehaus.wadi.location.partitionmanager.SimplePartitionMapper;
 import org.codehaus.wadi.location.statemanager.SimpleStateManager;
 import org.codehaus.wadi.location.statemanager.StateManager;
 import org.codehaus.wadi.replication.contextualiser.ReplicaAwareContextualiser;
-import org.codehaus.wadi.replication.manager.ReplicaterAdapterFactory;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
 import org.codehaus.wadi.replication.manager.ReplicationManagerFactory;
 import org.codehaus.wadi.replication.manager.basic.BasicReplicationManagerFactory;
-import org.codehaus.wadi.replication.manager.basic.MotableReplicationManager;
+import org.codehaus.wadi.replication.manager.basic.ObjectStateHandler;
+import org.codehaus.wadi.replication.manager.basic.SessionStateHandler;
 import org.codehaus.wadi.replication.storage.ReplicaStorage;
 import org.codehaus.wadi.replication.storage.ReplicaStorageFactory;
-import org.codehaus.wadi.replication.storage.basic.BasicReplicaStorageFactory;
+import org.codehaus.wadi.replication.storage.memory.MemoryReplicaStorageFactory;
 import org.codehaus.wadi.replication.strategy.BackingStrategyFactory;
 import org.codehaus.wadi.replication.strategy.RoundRobinBackingStrategyFactory;
 import org.codehaus.wadi.servicespace.ServiceAlreadyRegisteredException;
@@ -96,8 +97,6 @@ public class StackContext {
     private final int sessionTimeout;
     private final int sweepInterval;
     private final int numPartitions;
-    private final ReplicationManagerFactory repManagerFactory;
-    private final ReplicaStorageFactory repStorageFactory;
     private final BackingStrategyFactory backingStrategyFactory;
     
     protected ServiceSpace serviceSpace;
@@ -112,6 +111,8 @@ public class StackContext {
     protected Router router;
     private SimplePartitionManagerTiming simplePartitionManagerTiming;
     private SessionMonitor sessionMonitor;
+    private ReplicationManagerFactory repManagerFactory;
+    private ReplicaStorageFactory repStorageFactory;
 
     public StackContext(ServiceSpaceName serviceSpaceName, Dispatcher underlyingDispatcher) {
         this(serviceSpaceName, underlyingDispatcher, 30 * 60);
@@ -123,8 +124,6 @@ public class StackContext {
                 sessionTimeout,
                 24,
                 1000 * 60 * 60 * 24,
-                new BasicReplicationManagerFactory(),
-                new BasicReplicaStorageFactory(),
                 new RoundRobinBackingStrategyFactory(1));
     }
     
@@ -133,8 +132,6 @@ public class StackContext {
             int sessionTimeout,
             int numPartitions,
             int sweepInterval,
-            ReplicationManagerFactory repManagerFactory,
-            ReplicaStorageFactory repStorageFactory,
             BackingStrategyFactory backingStrategyFactory) {
         if (null == serviceSpaceName) {
             throw new IllegalArgumentException("serviceSpaceName is required");
@@ -146,10 +143,6 @@ public class StackContext {
             throw new IllegalArgumentException("numPartitions must be > 0");            
         } else if (1 > sweepInterval) {
             throw new IllegalArgumentException("sweepInterval must be > 0");            
-        } else if (null == repManagerFactory) {
-            throw new IllegalArgumentException("repManagerFactory is required");
-        } else if (null == repStorageFactory) {
-            throw new IllegalArgumentException("repStorageFactory is required");
         } else if (null == backingStrategyFactory) {
             throw new IllegalArgumentException("backingStrategyFactory is required");
         }
@@ -158,8 +151,6 @@ public class StackContext {
         this.sessionTimeout = sessionTimeout;
         this.numPartitions = numPartitions;
         this.sweepInterval = sweepInterval;
-        this.repManagerFactory = repManagerFactory;
-        this.repStorageFactory = repStorageFactory;
         this.backingStrategyFactory = backingStrategyFactory;
     }
 
@@ -171,10 +162,19 @@ public class StackContext {
         partitionMapper = newPartitionMapper();
         partitionManager = newPartitionManager();
         stateManager = newStateManager();
-        replicationManager = newReplicationManager();
         router = newRouter();
-        sessionFactory = newSessionFactory();
-
+        
+        Streamer streamer = newStreamer();
+        
+        ObjectStateHandler objectStateManager = newObjectStateHandler(streamer);
+        repManagerFactory = newReplicationManagerFactory(objectStateManager);
+        replicationManager = newReplicationManager();
+        
+        repStorageFactory = newReplicaStorageFactory(objectStateManager);
+        
+        sessionFactory = newSessionFactory(streamer);
+        objectStateManager.setObjectFactory(sessionFactory);
+        
         ContextualiserStackExplorer stackExplorer = new ContextualiserStackExplorer();
         
         Contextualiser contextualiser = new DummyContextualiser();
@@ -220,6 +220,18 @@ public class StackContext {
         registerStateManager();
         registerClusteredManager(manager);
         // End of implementation note.
+    }
+
+    private ObjectStateHandler newObjectStateHandler(Streamer streamer) {
+        return new SessionStateHandler(streamer);
+    }
+
+    protected ReplicaStorageFactory newReplicaStorageFactory(ObjectStateHandler objectStateManager) {
+        return new MemoryReplicaStorageFactory(objectStateManager);
+    }
+
+    protected ReplicationManagerFactory newReplicationManagerFactory(ObjectStateHandler objectStateManager) {
+        return new BasicReplicationManagerFactory(objectStateManager);
     }
 
     protected void registerStackExplorer(ContextualiserStackExplorer stackExplorer) throws ServiceAlreadyRegisteredException {
@@ -295,14 +307,13 @@ public class StackContext {
         return new JkRouter(nodeName);
     }
 
-    protected SessionFactory newSessionFactory() {
+    protected SessionFactory newSessionFactory(Streamer streamer) {
         ValueHelperRegistry valueHelperRegistry = newValueHelperRegistry();
         ValueFactory valueFactory = newValueFactory(valueHelperRegistry);
-        SimpleStreamer streamer = newStreamer();
         return new AtomicallyReplicableSessionFactory(
                 new DistributableAttributesFactory(valueFactory),
                 streamer,
-                new ReplicaterAdapterFactory(replicationManager));
+                replicationManager);
     }
 
     protected SimpleStreamer newStreamer() {
@@ -388,8 +399,7 @@ public class StackContext {
     }
 
     protected Contextualiser newReplicaAwareContextualiser(Contextualiser next) {
-        ReplicationManager sessionRepManager = new MotableReplicationManager(replicationManager);
-        return new ReplicaAwareContextualiser(next, sessionRepManager, stateManager);
+        return new ReplicaAwareContextualiser(next, replicationManager, stateManager);
     }
 
     public PartitionManager getPartitionManager() {
