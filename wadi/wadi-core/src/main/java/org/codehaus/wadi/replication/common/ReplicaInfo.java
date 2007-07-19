@@ -28,47 +28,22 @@ public class ReplicaInfo implements Serializable {
 
     private Peer primary;
     private Peer[] secondaries;
-    private Object replica;
+    private transient Object payload;
     private int version;
 
-    public ReplicaInfo(Peer primary, Peer[] secondaries, Object replica) {
+    public ReplicaInfo(Peer primary, Peer[] secondaries, Object payload) {
         if (null == primary) {
             throw new IllegalArgumentException("primary is required");
         } else if (null == secondaries) {
             throw new IllegalArgumentException("secondaries is required");
-        } else if (null == replica) {
-            throw new IllegalArgumentException("replica is required");
+        } else if (null == payload) {
+            throw new IllegalArgumentException("payload is required");
         }
         this.primary = primary;
         this.secondaries = secondaries;
-        this.replica = replica;
+        this.payload = payload;
         
         version = 0;
-    }
-
-    public ReplicaInfo(ReplicaInfo prototype, Peer[] secondaries) {
-        if (null == prototype) {
-            throw new IllegalArgumentException("prototype is required");
-        } else if (null == secondaries) {
-            throw new IllegalArgumentException("secondaries is required");
-        }
-        this.secondaries = secondaries;
-        primary = prototype.primary;
-        replica = prototype.replica;
-        version = prototype.version + 1;
-    }
-
-    public ReplicaInfo(ReplicaInfo prototype, Object replica) {
-        if (null == prototype) {
-            throw new IllegalArgumentException("prototype is required");
-        } else if (null == replica) {
-            throw new IllegalArgumentException("replica is required");
-        }
-        this.replica = replica;
-        
-        primary = prototype.primary;
-        secondaries = prototype.secondaries;
-        version = prototype.version + 1;
     }
 
     public ReplicaInfo(ReplicaInfo prototype, Peer primary, Peer[] secondaries) {
@@ -82,19 +57,8 @@ public class ReplicaInfo implements Serializable {
         this.primary = primary;
         this.secondaries = secondaries;
         
-        replica = prototype.replica;
+        payload = prototype.payload;
         version = prototype.version + 1;
-    }
-
-    public void mergeWith(ReplicaInfo replicaInfo) {
-        primary = replicaInfo.primary;
-        secondaries = replicaInfo.secondaries;
-        version = replicaInfo.version;
-        replica = mergeReplica(replicaInfo.replica);
-    }
-
-    protected Object mergeReplica(Object otherReplica) {
-        return otherReplica;
     }
 
     public Peer getPrimary() {
@@ -105,14 +69,27 @@ public class ReplicaInfo implements Serializable {
         return secondaries;
     }
     
-    public Object getReplica() {
-        return replica;
+    public Object getPayload() {
+        return payload;
+    }
+
+    public void setPayload(Object payload) {
+        this.payload = payload;
     }
 
     public int getVersion() {
         return version;
     }
-
+    
+    public void updateSecondaries(Peer[] secondaries) {
+        this.secondaries = secondaries;
+        version++;
+    }
+    
+    public void increaseVersion() {
+        version++;
+    }
+    
     public String toString() {
         StringBuffer buffer = new StringBuffer();
         buffer.append("ReplicaInfo: primary [");
@@ -121,7 +98,7 @@ public class ReplicaInfo implements Serializable {
         for (int i = 0; i < secondaries.length; i++) {
             buffer.append("[" + i + "] " + secondaries[i]);
         }
-        buffer.append("; replica [" + replica + "]; version [" + version + "]");
+        buffer.append("; version [" + version + "]");
         return buffer.toString();
     }
 

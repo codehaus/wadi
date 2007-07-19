@@ -23,6 +23,7 @@ public class ReplicationKeyAlreadyExistsException extends ReplicationException {
     private final Object key;
 
     public ReplicationKeyAlreadyExistsException(Object key) {
+        super("Key [" + key + "] already exists");
         if (null == key) {
             throw new IllegalArgumentException("key is required");
         }

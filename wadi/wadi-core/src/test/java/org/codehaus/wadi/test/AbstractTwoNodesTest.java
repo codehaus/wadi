@@ -39,15 +39,9 @@ public abstract class AbstractTwoNodesTest extends TestCase {
     protected void setUp() throws Exception {
         redD = newDispatcher("red");
         redD.start();
-        // Implementation note: we really need to wait some time to have a "stable" Dispatcher. For instance, in the
-        // case of ActiveCluster, 
-        Thread.sleep(1000);
 
         greenD = newDispatcher("green");
         greenD.start();
-        // Implementation note: we really need to wait some time to have a "stable" Dispatcher. For instance, in the
-        // case of ActiveCluster, 
-        Thread.sleep(1000);
         
         red = new MyStack(redD);
         red.start();

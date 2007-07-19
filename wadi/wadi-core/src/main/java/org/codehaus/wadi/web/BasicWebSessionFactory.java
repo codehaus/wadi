@@ -20,7 +20,7 @@ import org.codehaus.wadi.core.session.AtomicallyReplicableSessionFactory;
 import org.codehaus.wadi.core.session.AttributesFactory;
 import org.codehaus.wadi.core.session.Session;
 import org.codehaus.wadi.core.util.Streamer;
-import org.codehaus.wadi.replication.ReplicaterFactory;
+import org.codehaus.wadi.replication.manager.ReplicationManager;
 
 /**
  * 
@@ -34,10 +34,10 @@ public class BasicWebSessionFactory extends AtomicallyReplicableSessionFactory i
 
     public BasicWebSessionFactory(AttributesFactory attributesFactory,
             Streamer streamer,
-            ReplicaterFactory replicaterFactory,
+            ReplicationManager replicationManager,
             Router router,
             WebSessionWrapperFactory wrapperFactory) {
-        super(attributesFactory, streamer, replicaterFactory);
+        super(attributesFactory, streamer, replicationManager);
         if (null == router) {
             throw new IllegalArgumentException("router is required");
         } else if (null == wrapperFactory) {
@@ -60,6 +60,6 @@ public class BasicWebSessionFactory extends AtomicallyReplicableSessionFactory i
                 router,
                 getManager(),
                 streamer,
-                replicater);
+                replicationManager);
     }
 }

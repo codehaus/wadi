@@ -15,62 +15,82 @@
  */
 package org.codehaus.wadi.replication.storage.basic;
 
-import junit.framework.TestCase;
-
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.vm.VMPeer;
 import org.codehaus.wadi.replication.common.ReplicaInfo;
+import org.codehaus.wadi.replication.common.ReplicaStorageInfo;
+import org.codehaus.wadi.replication.manager.basic.ObjectStateHandler;
+import org.codehaus.wadi.replication.storage.memory.MemoryReplicaStorage;
+
+import com.agical.rmock.extension.junit.RMockTestCase;
 
 /**
  * 
  * @version $Revision$
  */
-public class MemoryReplicaStorageTest extends TestCase {
+public class MemoryReplicaStorageTest extends RMockTestCase {
     private MemoryReplicaStorage storage;
+    private ObjectStateHandler objectStateManager;
     private Peer node1;
     private Peer node2;
+    private Object payload;
+    private Object key;
+    private ReplicaInfo replicaInfo;
+    private byte[] serializedState;
 
     protected void setUp() throws Exception {
-        storage = new MemoryReplicaStorage();
+        objectStateManager = (ObjectStateHandler) mock(ObjectStateHandler.class);
+        storage = new MemoryReplicaStorage(objectStateManager);
         node1 = new VMPeer("node1", null);
         node2 = new VMPeer("node2", null);
+        
+        payload = new Object();
+        key = new Object();
+        replicaInfo = new ReplicaInfo(node1, new Peer[] {node2}, new Object());
+        serializedState = new byte[0];
     }
     
     public void testMergeCreate() {
-        Object key = new Object();
-        Object replica = new Object();
-        ReplicaInfo replicaInfo = new ReplicaInfo(node1, new Peer[] {node2}, replica);
-        storage.mergeCreate(key, replicaInfo);
+        objectStateManager.restoreFromFullState(key, serializedState);
+        modify().returnValue(payload);
         
+        startVerification();
+        
+        storage.mergeCreate(key, new ReplicaStorageInfo(replicaInfo, serializedState));
         assertTrue(storage.storeReplicaInfo(key));
-        ReplicaInfo actualReplicaInfo = storage.retrieveReplicaInfo(key);
-        assertNotNull(actualReplicaInfo);
-        assertReplicaInfo(replicaInfo, actualReplicaInfo);
+        ReplicaStorageInfo storageInfo = storage.retrieveReplicaStorageInfo(key);
+        assertNotNull(storageInfo);
+        assertReplicaInfo(new ReplicaInfo(node1, new Peer[] {node2}, payload), storageInfo.getReplicaInfo());
     }
 
     public void testMergeUpdate() {
-        Object key = new Object();
-        Object replica = new Object();
-        ReplicaInfo replicaInfo = new ReplicaInfo(node1, new Peer[] {node2}, replica);
-        storage.mergeCreate(key, replicaInfo);
-
-        replica = new Object();
-        replicaInfo = new ReplicaInfo(node1, new Peer[] {node2}, replica);
-        storage.mergeUpdate(key, new ReplicaInfo(node1, new Peer[] {node2}, replica));
+        objectStateManager.restoreFromFullState(key, serializedState);
+        modify().returnValue(new Object());
+        
+        byte[] updateSerializedState = new byte[1];
+        objectStateManager.restoreFromUpdatedState(key, updateSerializedState);
+        modify().returnValue(payload);
+        
+        startVerification();
+        
+        storage.mergeCreate(key, new ReplicaStorageInfo(replicaInfo, serializedState));
+        storage.mergeUpdate(key, new ReplicaStorageInfo(replicaInfo, updateSerializedState));
         
         assertTrue(storage.storeReplicaInfo(key));
-        ReplicaInfo actualReplicaInfo = storage.retrieveReplicaInfo(key);
-        assertNotNull(actualReplicaInfo);
-        assertReplicaInfo(new ReplicaInfo(node1, new Peer[] {node2}, replica), actualReplicaInfo);
+        ReplicaStorageInfo storageInfo = storage.retrieveReplicaStorageInfo(key);
+        assertNotNull(storageInfo);
+        assertReplicaInfo(new ReplicaInfo(node1, new Peer[] {node2}, payload), storageInfo.getReplicaInfo());
     }
 
     public void testMergeDestroy() {
-        Object key = new Object();
-        Object replica = new Object();
-        ReplicaInfo replicaInfo = new ReplicaInfo(node1, new Peer[] {node2}, replica);
-        storage.mergeCreate(key, replicaInfo);
+        objectStateManager.restoreFromFullState(key, serializedState);
+        modify().returnValue(payload);
 
+        startVerification();
+        
+        storage.mergeCreate(key, new ReplicaStorageInfo(replicaInfo, serializedState));
         storage.mergeDestroy(key);
+        
         assertFalse(storage.storeReplicaInfo(key));
     }
 
@@ -92,7 +112,7 @@ public class MemoryReplicaStorageTest extends TestCase {
             }
         }
         
-        assertSame(expected.getReplica(), actual.getReplica());
+        assertSame(expected.getPayload(), actual.getPayload());
     }
     
 }

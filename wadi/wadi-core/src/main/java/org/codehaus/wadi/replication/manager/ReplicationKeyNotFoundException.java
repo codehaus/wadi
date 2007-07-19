@@ -25,6 +25,7 @@ public class ReplicationKeyNotFoundException extends ReplicationException {
     private final Object key;
 
     public ReplicationKeyNotFoundException(Object key) {
+        super("Key [" + key + "] does not exist");
         if (null == key) {
             throw new IllegalArgumentException("key is required");
         }

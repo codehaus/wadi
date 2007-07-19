@@ -27,9 +27,18 @@ import org.codehaus.wadi.servicespace.ServiceSpace;
  */
 public class BasicReplicationManagerFactory implements ReplicationManagerFactory {
 
+    private final ObjectStateHandler stateHandler;
+    
+    public BasicReplicationManagerFactory(ObjectStateHandler stateHandler) {
+        if (null == stateHandler) {
+            throw new IllegalArgumentException("stateHandler is required");
+        }
+        this.stateHandler = stateHandler;
+    }
+
     public ReplicationManager factory(ServiceSpace serviceSpace, BackingStrategyFactory backingStrategyFactory) {
         BackingStrategy backingStrategy = backingStrategyFactory.factory();
-        return new BasicReplicationManager(serviceSpace, backingStrategy);
+        return new BasicReplicationManager(serviceSpace, stateHandler, backingStrategy);
     }
 
 }

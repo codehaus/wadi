@@ -25,7 +25,9 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.replication.common.ReplicaInfo;
+import org.codehaus.wadi.replication.common.ReplicaStorageInfo;
 import org.codehaus.wadi.replication.manager.InternalReplicationManagerException;
+import org.codehaus.wadi.replication.manager.ReplicationException;
 import org.codehaus.wadi.replication.manager.ReplicationKeyAlreadyExistsException;
 import org.codehaus.wadi.replication.manager.ReplicationKeyNotFoundException;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
@@ -49,21 +51,27 @@ public class BasicReplicationManager implements ReplicationManager {
     private static final Log log = LogFactory.getLog(BasicReplicationManager.class);
     
     private final ServiceSpace serviceSpace;
+    private final ObjectStateHandler stateHandler;
+    private final BackingStrategy backingStrategy;
     private final LocalPeer localPeer;
     private final Map keyToReplicaInfo;
-    private final BackingStrategy backingStrategy;
     private final ServiceMonitor storageMonitor;
     private final ReplicationManager replicationManagerProxy;
     private final ReplicaStorage replicaStorageProxy;
     private final ServiceProxyFactory replicaStorageServiceProxy;
-    
-    public BasicReplicationManager(ServiceSpace serviceSpace, BackingStrategy backingStrategy) {
+
+    public BasicReplicationManager(ServiceSpace serviceSpace,
+            ObjectStateHandler stateHandler,
+            BackingStrategy backingStrategy) {
         if (null == serviceSpace) {
             throw new IllegalArgumentException("serviceSpace is required");
+        } else if (null == stateHandler) {
+            throw new IllegalArgumentException("stateHandler is required");
         } else if (null == backingStrategy) {
             throw new IllegalArgumentException("backingStrategy is required");
         }
         this.serviceSpace = serviceSpace;
+        this.stateHandler = stateHandler;
         this.backingStrategy = backingStrategy;
         
         localPeer = serviceSpace.getLocalPeer();
@@ -87,7 +95,6 @@ public class BasicReplicationManager implements ReplicationManager {
 
     public void stop() throws Exception {
         synchronized (keyToReplicaInfo) {
-            // TODO - clear the storages
             keyToReplicaInfo.clear();
         }
         stopStorageMonitoring();
@@ -100,7 +107,8 @@ public class BasicReplicationManager implements ReplicationManager {
             }
         }
 
-        CreateReplicaTask backOffCapableTask = new CreateReplicaTask(tmp, key);
+        byte[] fullState = stateHandler.extractFullState(key, tmp);
+        CreateReplicaTask backOffCapableTask = new CreateReplicaTask(key, tmp, fullState);
         backOffCapableTask.attempt();
     }
 
@@ -108,15 +116,18 @@ public class BasicReplicationManager implements ReplicationManager {
         ReplicaInfo replicaInfo;
         synchronized (keyToReplicaInfo) {
             replicaInfo = (ReplicaInfo) keyToReplicaInfo.get(key);
-            if (null == replicaInfo) {
-                throw new ReplicationKeyNotFoundException(key);
-            }
-            replicaInfo = new ReplicaInfo(replicaInfo, tmp);
-            keyToReplicaInfo.put(key, replicaInfo);
         }
-
+        if (null == replicaInfo) {
+            throw new ReplicationKeyNotFoundException(key);
+        } else if (replicaInfo.getPayload() != tmp) {
+            throw new ReplicationException("instance has not been created");
+        }
+        
+        byte[] updatedState = stateHandler.extractUpdatedState(key, tmp);
+        replicaInfo.increaseVersion();
+        
         if (replicaInfo.getSecondaries().length != 0) {
-            cascadeUpdate(key, replicaInfo);
+            cascadeUpdate(key, replicaInfo, updatedState);
         }
     }
 
@@ -136,10 +147,10 @@ public class BasicReplicationManager implements ReplicationManager {
     }
 
     public Object acquirePrimary(Object key) {
-        ReplicaInfo replicaInfo;
+        ReplicaStorageInfo storageInfo;
         try {
             replicationManagerProxy.releasePrimary(key);
-            replicaInfo = replicaStorageProxy.retrieveReplicaInfo(key);
+            storageInfo = replicaStorageProxy.retrieveReplicaStorageInfo(key);
         } catch (ServiceInvocationException e) {
             if (e.isMessageExchangeException()) {
                 return null;
@@ -147,8 +158,13 @@ public class BasicReplicationManager implements ReplicationManager {
                 throw new ReplicationKeyNotFoundException(key, e);
             }
         }
+
+        Object target = stateHandler.restoreFromFullState(key, storageInfo.getSerializedPayload());
+        ReplicaInfo replicaInfo = storageInfo.getReplicaInfo();
+        replicaInfo.setPayload(target);
+        
         replicaInfo = reOrganizeSecondaries(key, replicaInfo);
-        return replicaInfo.getReplica();
+        return replicaInfo.getPayload();
     }
 
     public boolean releasePrimary(Object key) {
@@ -162,10 +178,10 @@ public class BasicReplicationManager implements ReplicationManager {
         return object != null;
     }
     
-    protected void cascadeCreate(Object key, ReplicaInfo replicaInfo, BackOffCapableTask task) {
+    protected void cascadeCreate(Object key, ReplicaInfo replicaInfo, byte[] updatedState, BackOffCapableTask task) {
         ReplicaStorage storage = newReplicaStorageStub(replicaInfo.getSecondaries());
         try {
-            storage.mergeCreate(key, replicaInfo);
+            storage.mergeCreate(key, new ReplicaStorageInfo(replicaInfo, updatedState));
             task.complete();
         } catch (ServiceInvocationException e) {
             if (e.isMessageExchangeException()) {
@@ -176,10 +192,10 @@ public class BasicReplicationManager implements ReplicationManager {
         }
     }
     
-    protected void cascadeUpdate(Object key, ReplicaInfo replicaInfo) {
+    protected void cascadeUpdate(Object key, ReplicaInfo replicaInfo, byte[] updatedState) {
         ReplicaStorage storage = newReplicaStorageStub(replicaInfo.getSecondaries());
         try {
-            storage.mergeUpdate(key, replicaInfo);
+            storage.mergeUpdate(key, new ReplicaStorageInfo(replicaInfo, updatedState));
         } catch (ServiceInvocationException e) {
             if (e.isMessageExchangeException()) {
                 log.warn("Update has not been properly cascaded due to a communication failure. If a targeted node " +
@@ -230,7 +246,7 @@ public class BasicReplicationManager implements ReplicationManager {
     }
     
     protected void updateReplicaStorages(Object key, ReplicaInfo replicaInfo, Peer[] oldSecondaries) {
-        StorageCommandBuilder commandBuilder = new StorageCommandBuilder(key, replicaInfo, oldSecondaries);
+        StorageCommandBuilder commandBuilder = new StorageCommandBuilder(key, replicaInfo, oldSecondaries, stateHandler);
         StorageCommand[] commands = commandBuilder.build();
         for (int i = 0; i < commands.length; i++) {
             StorageCommand command = commands[i];
@@ -273,7 +289,7 @@ public class BasicReplicationManager implements ReplicationManager {
             }
         }
     }
-    
+
     protected interface BackOffCapableTask {
         void attempt();
         
@@ -288,12 +304,14 @@ public class BasicReplicationManager implements ReplicationManager {
 
         protected final Object key;
         private final Object tmp;
+        private final byte[] updatedState;
         private volatile int currentAttempt;
         private volatile ReplicaInfo replicaInfo;
 
-        private CreateReplicaTask(Object tmp, Object key) {
+        private CreateReplicaTask(Object key, Object tmp, byte[] updatedState) {
             this.key = key;
             this.tmp = tmp;
+            this.updatedState = updatedState;
         }
 
         public void backoff() {
@@ -319,10 +337,10 @@ public class BasicReplicationManager implements ReplicationManager {
             if (null == replicaInfo) {
                 replicaInfo = new ReplicaInfo(localPeer, secondaries, tmp);
             } else {
-                replicaInfo = new ReplicaInfo(replicaInfo, secondaries);
+                replicaInfo.updateSecondaries(secondaries);
             }
             if (secondaries.length != 0) {
-                cascadeCreate(key, replicaInfo, this);
+                cascadeCreate(key, replicaInfo, updatedState, this);
             } else {
                 complete();
             }

@@ -54,6 +54,7 @@ public class BasicReplicationManagerTest extends RMockTestCase {
     private ServiceProxyFactory replicaStorageServiceProxyFactory;
     private ReplicaStorageMixInServiceProxy replicaStorageProxy;
     private ReplicationManager replicationManagerProxy;
+    private ObjectStateHandler stateHandler;
 
     protected void setUp() throws Exception {
         localPeer = new VMLocalPeer("peer1");
@@ -81,6 +82,7 @@ public class BasicReplicationManagerTest extends RMockTestCase {
         });
         
         backingStrategy = (BackingStrategy) mock(BackingStrategy.class);
+        stateHandler = (ObjectStateHandler) mock(ObjectStateHandler.class);
     }
 
     public void testStart() throws Exception {
@@ -95,7 +97,9 @@ public class BasicReplicationManagerTest extends RMockTestCase {
         endSection();
         startVerification();
         
-        BasicReplicationManager manager = new BasicReplicationManager(serviceSpace, backingStrategy);
+        BasicReplicationManager manager = new BasicReplicationManager(serviceSpace,
+            stateHandler,
+            backingStrategy);
         manager.start();
     }
     
@@ -108,7 +112,7 @@ public class BasicReplicationManagerTest extends RMockTestCase {
         endSection();
         startVerification();
         
-        new BasicReplicationManager(serviceSpace, backingStrategy);
+        new BasicReplicationManager(serviceSpace, stateHandler, backingStrategy);
         
         receiveEvent(peer3, LifecycleState.AVAILABLE);
         receiveEvent(peer4, LifecycleState.STARTED);

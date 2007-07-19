@@ -15,44 +15,50 @@
  *  limitations under the License.
  */
 
-package org.codehaus.wadi.replication;
+package org.codehaus.wadi.replication.manager.db;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.core.motable.Motable;
 import org.codehaus.wadi.core.store.DatabaseStore;
+import org.codehaus.wadi.replication.manager.InternalReplicationManagerException;
+import org.codehaus.wadi.replication.manager.ReplicationKeyAlreadyExistsException;
+import org.codehaus.wadi.replication.manager.ReplicationKeyNotFoundException;
+import org.codehaus.wadi.replication.manager.ReplicationManager;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
- * @version $Revision$
+ * @version $Revision: 2293 $
  */
-public class DatabaseReplicater implements Replicater {
-	private static final Log _log = LogFactory.getLog(DatabaseReplicater.class);
+public class DatabaseReplicationManager implements ReplicationManager {
+	private static final Log _log = LogFactory.getLog(DatabaseReplicationManager.class);
     
 	protected final DatabaseStore store;
 
-	public DatabaseReplicater(DatabaseStore store) {
+	public DatabaseReplicationManager(DatabaseStore store) {
         if (null == store) {
             throw new IllegalArgumentException("store is required");
         }
         this.store = store;
     }
 
-    public void create(Object tmp) {
+	public void create(Object key, Object tmp) 
+            throws ReplicationKeyAlreadyExistsException, InternalReplicationManagerException {
         Motable motable = (Motable) tmp;
         try {
             store.insert(motable);
         } catch (Exception e) {
-            throw new ReplicaterException("problem creating replicant", e);
+            throw new InternalReplicationManagerException("problem creating replicant", e);
         }
     }
 
-    public void update(Object tmp) {
+	public void update(Object key, Object tmp)
+	        throws ReplicationKeyNotFoundException, InternalReplicationManagerException {
         Motable motable = (Motable) tmp;
         try {
             store.update(motable);
         } catch (Exception e) {
-            throw new ReplicaterException("problem updating replicant", e);
+            throw new InternalReplicationManagerException("problem updating replicant", e);
         }
     }
 
@@ -65,7 +71,20 @@ public class DatabaseReplicater implements Replicater {
         }
     }
 
-    public void acquireFromOtherReplicater(Object tmp) {
+    public Object acquirePrimary(Object key) 
+            throws ReplicationKeyNotFoundException, InternalReplicationManagerException {
+        throw new ReplicationKeyNotFoundException(key);
     }
+
+    public boolean releasePrimary(Object key) {
+        return false;
+    }
+
+    public void start() throws Exception {
+    }
+
+    public void stop() throws Exception {
+    }
+    
 }
 

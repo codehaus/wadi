@@ -28,5 +28,9 @@ public class InternalReplicationManagerException extends ReplicationException {
     public InternalReplicationManagerException(Throwable cause) {
         super(cause);
     }
+    
+    public InternalReplicationManagerException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
 }

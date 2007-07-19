@@ -18,7 +18,7 @@ package org.codehaus.wadi.core.session;
 
 import org.codehaus.wadi.core.manager.Manager;
 import org.codehaus.wadi.core.util.Streamer;
-import org.codehaus.wadi.replication.Replicater;
+import org.codehaus.wadi.replication.manager.ReplicationManager;
 
 /**
  * A DistributableSession enhanced with functionality associated with replication - the frequent 'backing-up' of 
@@ -28,18 +28,21 @@ import org.codehaus.wadi.replication.Replicater;
  * @version $Revision: 1725 $
  */
 public abstract class AbstractReplicableSession extends DistributableSession {
-    protected final transient Replicater replicater;
+    protected final transient ReplicationManager replicationManager;
 
-	public AbstractReplicableSession(Attributes attributes, Manager manager, Streamer streamer, Replicater replicater) {
+	public AbstractReplicableSession(Attributes attributes,
+            Manager manager,
+            Streamer streamer,
+            ReplicationManager replicationManager) {
         super(attributes, manager, streamer);
-        if (null == replicater) {
-            throw new IllegalArgumentException("replicater is required");
+        if (null == replicationManager) {
+            throw new IllegalArgumentException("replicationManager is required");
         }
-        this.replicater = replicater;
+        this.replicationManager = replicationManager;
     }
 
     public synchronized void destroy() throws Exception {
-        replicater.destroy(this);
+        replicationManager.destroy(getName());
         super.destroy();
     }
 
