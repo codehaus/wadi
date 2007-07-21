@@ -1,0 +1,8 @@
+
+<Context cookies="true" crossContext="true">
+
+  <Manager className="org.codehaus.wadi.tomcat55.TomcatManager"/>
+
+  <InstanceListener>org.jboss.web.tomcat.security.RunAsListener</InstanceListener>
+
+</Context>

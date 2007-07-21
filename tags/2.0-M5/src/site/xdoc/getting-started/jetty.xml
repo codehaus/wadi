@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<document>
+  <properties>
+    <title>Getting Started - Jetty</title>
+  </properties>
+  <body>
+    <section name="Getting Started - Jetty">
+
+      <p>
+	Either:
+	<ol>
+	  <li>download a copy of <a href="http://sourceforge.net/project/showfiles.php?group_id=7322">Jetty 5+</a> - unpack it somewhere</li>
+	  <li>set JETTY5_HOME to this directory and export it</li>
+	</ol>
+	Or:
+	<ol>
+	  <li>download a copy of <a href="http://sourceforge.net/project/showfiles.php?group_id=7322">Jetty 6+</a> - unpack it somewhere</li>
+	  <li>set JETTY6_HOME to this directory and export it</li>
+	</ol>
+      </p>
+
+      <p>
+	TODO - What about running Jetty with a JMX Agent ?
+      </p>
+
+
+      <p>
+	There are two ways to start a Jetty node :
+	<ul>
+	  Either:
+	  <li>
+	    "cd $WADI_HOME/bin; ./node.sh &lt;container&gt; &lt;id&gt;"
+	    <ul>
+	      e.g.
+	      <li>
+		"cd $WADI_HOME/bin; ./node.sh jetty5 red"
+	      </li>
+	      <li>
+		"cd $WADI_HOME/bin; ./node.sh jetty6 green"
+	      </li>
+	    </ul>
+	  </li>
+	  Or:
+	  <li>
+	    Copy the WADI jars into your Jetty tree, configure your Jetty with values from the relevant wadi configuration and start Jetty
+	    in the usual way - TO BE DOCUMENTED.
+	  </li>
+	</ul>
+      </p>
+
+    </section>
+  </body>
+</document>
