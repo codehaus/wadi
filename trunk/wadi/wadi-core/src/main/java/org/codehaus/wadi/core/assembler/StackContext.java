@@ -92,6 +92,7 @@ import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
  * @version $Revision: 1538 $
  */
 public class StackContext {
+    private final ClassLoader cl;
     private final ServiceSpaceName serviceSpaceName;
     private final Dispatcher underlyingDispatcher;
     private final int sessionTimeout;
@@ -119,7 +120,8 @@ public class StackContext {
     }
 
     public StackContext(ServiceSpaceName serviceSpaceName, Dispatcher underlyingDispatcher, int sessionTimeout) {
-        this(serviceSpaceName,
+        this(Thread.currentThread().getContextClassLoader(),
+                serviceSpaceName,
                 underlyingDispatcher,
                 sessionTimeout,
                 24,
@@ -127,13 +129,16 @@ public class StackContext {
                 new RoundRobinBackingStrategyFactory(1));
     }
     
-    public StackContext(ServiceSpaceName serviceSpaceName,
+    public StackContext(ClassLoader cl,
+            ServiceSpaceName serviceSpaceName,
             Dispatcher underlyingDispatcher,
             int sessionTimeout,
             int numPartitions,
             int sweepInterval,
             BackingStrategyFactory backingStrategyFactory) {
-        if (null == serviceSpaceName) {
+        if (null == cl) {
+            throw new IllegalArgumentException("cl is required");
+        } else if (null == serviceSpaceName) {
             throw new IllegalArgumentException("serviceSpaceName is required");
         } else if (null == underlyingDispatcher) {
             throw new IllegalArgumentException("underlyingDispatcher is required");            
@@ -146,6 +151,7 @@ public class StackContext {
         } else if (null == backingStrategyFactory) {
             throw new IllegalArgumentException("backingStrategyFactory is required");
         }
+        this.cl = cl;
         this.serviceSpaceName = serviceSpaceName;
         this.underlyingDispatcher = underlyingDispatcher;
         this.sessionTimeout = sessionTimeout;
@@ -317,7 +323,7 @@ public class StackContext {
     }
 
     protected SimpleStreamer newStreamer() {
-        return new SimpleStreamer();
+        return new SimpleStreamer(cl);
     }
 
     protected DistributableValueFactory newValueFactory(ValueHelperRegistry valueHelperRegistry) {
