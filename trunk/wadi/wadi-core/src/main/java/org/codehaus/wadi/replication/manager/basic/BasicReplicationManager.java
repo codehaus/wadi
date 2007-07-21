@@ -27,7 +27,6 @@ import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.replication.common.ReplicaInfo;
 import org.codehaus.wadi.replication.common.ReplicaStorageInfo;
 import org.codehaus.wadi.replication.manager.InternalReplicationManagerException;
-import org.codehaus.wadi.replication.manager.ReplicationException;
 import org.codehaus.wadi.replication.manager.ReplicationKeyAlreadyExistsException;
 import org.codehaus.wadi.replication.manager.ReplicationKeyNotFoundException;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
@@ -119,8 +118,6 @@ public class BasicReplicationManager implements ReplicationManager {
         }
         if (null == replicaInfo) {
             throw new ReplicationKeyNotFoundException(key);
-        } else if (replicaInfo.getPayload() != tmp) {
-            throw new ReplicationException("instance has not been created");
         }
         
         byte[] updatedState = stateHandler.extractUpdatedState(key, tmp);
