@@ -1,8 +1,0 @@
-To build a binary distribution, run:
-
-mvn assembly:assembly -Ddescriptor=src/main/assembly/bin.xml
-
-to build a source distribution, run:
-
-mvn assembly:assembly -Ddescriptor=src/main/assembly/src.xml
-
