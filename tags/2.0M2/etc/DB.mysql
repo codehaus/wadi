@@ -1,4 +1,0 @@
-CREATE DATABASE WADI;
-CREATE TABLE SESSION_STORE(Name varchar(50), CreationTime long, LastAccessedTime long, MaxInactiveInterval int, Body varbinary(716800)) TYPE=INNODB;
-ALTER TABLE SESSION_STORE ADD INDEX (Name);
-
