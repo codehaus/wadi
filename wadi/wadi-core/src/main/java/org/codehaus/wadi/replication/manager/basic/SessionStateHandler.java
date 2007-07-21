@@ -70,7 +70,7 @@ public class SessionStateHandler implements ObjectStateHandler {
     public Object restoreFromFullState(Object key, byte[] state) {
         Externalizable externalizable = newExternalizable(key);
         try {
-            Utils.setContent(externalizable, state, new SimpleStreamer());
+            Utils.setContent(externalizable, state, streamer);
         } catch (Exception e) {
             throw new WADIRuntimeException(e);
         }
@@ -80,7 +80,7 @@ public class SessionStateHandler implements ObjectStateHandler {
     public Object restoreFromUpdatedState(Object key, byte[] state) {
         Externalizable externalizable = newExternalizable(key);
         try {
-            Utils.setContent(externalizable, state, new SimpleStreamer());
+            Utils.setContent(externalizable, state, streamer);
         } catch (Exception e) {
             throw new WADIRuntimeException(e);
         }
