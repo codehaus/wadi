@@ -13,20 +13,19 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.aop.annotation;
+package org.codehaus.wadi.aop.tracker.basic;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.codehaus.wadi.aop.tracker.InstanceIdFactory;
 
 /**
  * 
  * @version $Revision: 1538 $
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.FIELD)
-@Documented
-public @interface TrackedField {
+public class BasicInstanceIdFactory implements InstanceIdFactory {
+    private static long id = 0;
+    
+    public synchronized String newId() {
+        return id++ + "";
+    }
+    
 }

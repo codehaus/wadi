@@ -15,6 +15,8 @@
  */
 package org.codehaus.wadi.aop;
 
+import java.util.Map;
+
 import org.codehaus.wadi.aop.tracker.InstanceTracker;
 
 
@@ -23,5 +25,7 @@ import org.codehaus.wadi.aop.tracker.InstanceTracker;
  * @version $Revision: 1538 $
  */
 public interface ClusteredStateMarker {
+    Map $wadiGetFieldValues();
+
     InstanceTracker $wadiGetTracker();
 }

@@ -15,18 +15,18 @@
  */
 package org.codehaus.wadi.aop.tracker.basic;
 
-import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.codehaus.wadi.aop.ClusteredStateMarker;
-import org.codehaus.wadi.aop.tracker.InstanceRegistry;
 import org.codehaus.wadi.aop.tracker.InstanceTracker;
 import org.codehaus.wadi.aop.tracker.InstanceTrackerVisitor;
 import org.codehaus.wadi.aop.tracker.VisitorContext;
@@ -36,11 +36,21 @@ import org.codehaus.wadi.aop.tracker.VisitorContext;
  * @version $Revision: 1538 $
  */
 public class BasicInstanceTracker implements InstanceTracker {
+    private final transient ClusteredStateMarker stateMarker;
     private String instanceId;
     private Map<Long, ValueUpdaterInfo> indexToValueUpdaterInfo;
     
-    public BasicInstanceTracker() {
+    public BasicInstanceTracker(ClusteredStateMarker stateMarker) {
+        if (null == stateMarker) {
+            throw new IllegalArgumentException("stateMarker is required");
+        }
+        this.stateMarker = stateMarker;
+        
         indexToValueUpdaterInfo = new HashMap<Long, ValueUpdaterInfo>();
+    }
+    
+    public ClusteredStateMarker getInstance() {
+        return stateMarker;
     }
     
     public String getInstanceId() {
@@ -56,7 +66,7 @@ public class BasicInstanceTracker implements InstanceTracker {
         this.instanceId = instanceId;
         
         for (ValueUpdaterInfo updaterInfo : indexToValueUpdaterInfo.values()) {
-            updaterInfo.instanceId = instanceId;
+            updaterInfo.setInstanceId(instanceId);
         }
     }
     
@@ -68,8 +78,8 @@ public class BasicInstanceTracker implements InstanceTracker {
         visitor.visit(this, context);
 
         for (ValueUpdaterInfo valueUpdaterInfo : indexToValueUpdaterInfo.values()) {
-            for (int i = 0; i < valueUpdaterInfo.parameters.length; i++) {
-                Object parameter = valueUpdaterInfo.parameters[i];
+            for (int i = 0; i < valueUpdaterInfo.getParameters().length; i++) {
+                Object parameter = valueUpdaterInfo.getParameters()[i];
                 if (parameter instanceof InstanceTracker) {
                     InstanceTracker nestedInstanceTracker = (InstanceTracker) parameter;
                     nestedInstanceTracker.visit(visitor, context);
@@ -80,30 +90,28 @@ public class BasicInstanceTracker implements InstanceTracker {
     
     public void track(long index, Constructor constructor, Object[] parameters) {
         ValueUpdaterInfo valueUpdaterInfo = new ValueUpdaterInfo(new ConstructorInfo(constructor), parameters);
-        valueUpdaterInfo.instanceId = instanceId;
+        valueUpdaterInfo.setInstanceId(instanceId);
         indexToValueUpdaterInfo.put(new Long(index), valueUpdaterInfo);
     }
 
     public void track(long index, Field field, Object value) {
         ValueUpdaterInfo valueUpdaterInfo = new ValueUpdaterInfo(new FieldInfo(field), new Object[] {value});
-        valueUpdaterInfo.instanceId = instanceId;
+        valueUpdaterInfo.setInstanceId(instanceId);
         indexToValueUpdaterInfo.put(new Long(index), valueUpdaterInfo);
     }
 
     public void track(long index, Method method, Object[] parameters) {
         ValueUpdaterInfo valueUpdaterInfo = new ValueUpdaterInfo(new MethodInfo(method), parameters);
-        valueUpdaterInfo.instanceId = instanceId;
+        valueUpdaterInfo.setInstanceId(instanceId);
         indexToValueUpdaterInfo.put(new Long(index), valueUpdaterInfo);
     }
-
-    public void applyTo(InstanceRegistry instanceRegistry) {
+    
+    
+    public List<ValueUpdaterInfo> retrieveValueUpdaterInfos() {
         IdentityHashMap<InstanceTracker, Boolean> visitedTracker = new IdentityHashMap<InstanceTracker, Boolean>();
         SortedMap<Long, ValueUpdaterInfo> overallToValueUpdaterInfo = new TreeMap<Long, ValueUpdaterInfo>();
         addValueUpdaterInfoTo(visitedTracker, overallToValueUpdaterInfo);
-        
-        for (ValueUpdaterInfo valueUpdaterInfo : overallToValueUpdaterInfo.values()) {
-            valueUpdaterInfo.execute(instanceRegistry);
-        }
+        return new ArrayList<ValueUpdaterInfo>(overallToValueUpdaterInfo.values());
     }
 
     protected void addValueUpdaterInfoTo(IdentityHashMap<InstanceTracker, Boolean> visitedTracker,
@@ -117,8 +125,8 @@ public class BasicInstanceTracker implements InstanceTracker {
             ValueUpdaterInfo valueUpdaterInfo = entry.getValue();
             overallToValueUpdaterInfo.put(entry.getKey(), valueUpdaterInfo);
             
-            for (int i = 0; i < valueUpdaterInfo.parameters.length; i++) {
-                Object parameter = valueUpdaterInfo.parameters[i];
+            for (int i = 0; i < valueUpdaterInfo.getParameters().length; i++) {
+                Object parameter = valueUpdaterInfo.getParameters()[i];
                 if (parameter instanceof BasicInstanceTracker) {
                     BasicInstanceTracker nestedInstanceTracker = (BasicInstanceTracker) parameter;
                     nestedInstanceTracker.addValueUpdaterInfoTo(visitedTracker, overallToValueUpdaterInfo);
@@ -129,58 +137,6 @@ public class BasicInstanceTracker implements InstanceTracker {
     
     public void resetTracking() {
         indexToValueUpdaterInfo.clear();
-    }
-    
-    protected static class ValueUpdaterInfo implements Serializable {
-        private final ValueUpdater valueUpdater;
-        private final Object[] parameters;
-        private String instanceId;
-        
-        protected ValueUpdaterInfo(ValueUpdater valueUpdater, Object[] parameters) {
-            this.valueUpdater = valueUpdater;
-            this.parameters = replaceInstanceWithItsTracker(parameters);
-        }
-        
-        protected void execute(InstanceRegistry instanceRegistry) {
-            Object[] newParameters = replaceTrackerWithItsInstance(instanceRegistry, parameters);
-            valueUpdater.executeWithParameters(instanceRegistry, instanceId, newParameters);
-        }
-        
-        protected Object[] replaceInstanceWithItsTracker(Object[] parameters) {
-            Object[] actualParameters = new Object[parameters.length];
-            for (int i = 0; i < parameters.length; i++) {
-                Object value = parameters[i];
-                value = replaceInstanceWithItsTracker(value);
-                actualParameters[i] = value;
-            }
-            return actualParameters;
-        }
-        
-        protected Object replaceInstanceWithItsTracker(Object parameter) {
-            if (parameter instanceof ClusteredStateMarker) {
-                parameter = ((ClusteredStateMarker) parameter).$wadiGetTracker();
-            }
-            return parameter;
-        }
-        
-        protected Object[] replaceTrackerWithItsInstance(InstanceRegistry instanceRegistry, Object[] parameters) {
-            Object[] actualParameters = new Object[parameters.length];
-            for (int i = 0; i < parameters.length; i++) {
-                Object parameter = parameters[i];
-                parameter = replaceTrackerWithItsInstance(instanceRegistry, parameter);
-                actualParameters[i] = parameter;
-            }
-            return actualParameters;
-        }
-        
-        protected Object replaceTrackerWithItsInstance(InstanceRegistry instanceRegistry, Object parameter) {
-            if (parameter instanceof InstanceTracker) {
-                String instanceId = ((InstanceTracker) parameter).getInstanceId();
-                return instanceRegistry.getInstance(instanceId);
-            }
-            return parameter;
-        }
-        
     }
 
 }

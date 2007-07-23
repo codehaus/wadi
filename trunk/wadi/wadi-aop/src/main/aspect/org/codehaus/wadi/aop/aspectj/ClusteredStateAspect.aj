@@ -19,15 +19,17 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
+import java.util.Map;
+import java.util.HashMap;
+
 import org.aspectj.lang.Signature;
 import org.aspectj.lang.reflect.ConstructorSignature;
 import org.aspectj.lang.reflect.FieldSignature;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.codehaus.wadi.aop.ClusteredStateMarker;
 import org.codehaus.wadi.aop.annotation.ClusteredState;
-import org.codehaus.wadi.aop.annotation.TrackingLevel;
-import org.codehaus.wadi.aop.annotation.TrackedField;
 import org.codehaus.wadi.aop.annotation.TrackedMethod;
+import org.codehaus.wadi.aop.annotation.TrackingLevel;
 import org.codehaus.wadi.aop.tracker.InstanceTracker;
 import org.codehaus.wadi.aop.tracker.InstanceTrackerFactory;
 
@@ -43,11 +45,15 @@ public aspect ClusteredStateAspect {
         (@ClusteredState *) implements ClusteredStateMarker;
 
     public static InstanceTrackerFactory trackerFactory;
-
-    private static long index = 0;
+    public static long index = 0;
     
-    private InstanceTracker ClusteredStateMarker.tracker;
+    private transient Map<Field, Object> ClusteredStateMarker.fieldValues;
+    private transient InstanceTracker ClusteredStateMarker.tracker;
 
+    public Map ClusteredStateMarker.$wadiGetFieldValues() {
+        return fieldValues;
+    }
+    
     public InstanceTracker ClusteredStateMarker.$wadiGetTracker() {
         return tracker;
     }
@@ -66,6 +72,8 @@ public aspect ClusteredStateAspect {
         instanceConstruction(stateMarker) {
         stateMarker.tracker =  trackerFactory.newInstanceTracker(stateMarker);
         
+        stateMarker.fieldValues = new HashMap<Field, Object>();
+        
         Signature signature = thisJoinPointStaticPart.getSignature();
         Constructor constructor = ((ConstructorSignature) signature).getConstructor();
 
@@ -75,7 +83,7 @@ public aspect ClusteredStateAspect {
     // Track field updates
     pointcut setTrackedField(ClusteredState clusteredState, ClusteredStateMarker stateMarker, Object value):
         targetAnnotatedWithClusteredState(clusteredState, stateMarker) &&
-        set(@TrackedField * ClusteredStateMarker+.*) &&
+        set(!transient * ClusteredStateMarker+.*) &&
         args(value) &&
         (
             if(clusteredState.trackingLevel() == TrackingLevel.FIELD) ||
@@ -88,6 +96,7 @@ public aspect ClusteredStateAspect {
         Field field = ((FieldSignature) signature).getField();
         
         stateMarker.tracker.track(nextIndex(), field, value);
+        stateMarker.fieldValues.put(field, value);
     }
     
     // Track method executions

@@ -17,7 +17,6 @@ package org.codehaus.wadi.aop.aspectj;
 
 import org.codehaus.wadi.aop.ClusteredStateMarker;
 import org.codehaus.wadi.aop.annotation.ClusteredState;
-import org.codehaus.wadi.aop.annotation.TrackedField;
 import org.codehaus.wadi.aop.annotation.TrackedMethod;
 import org.codehaus.wadi.aop.annotation.TrackingLevel;
 import org.codehaus.wadi.aop.tracker.InstanceTracker;
@@ -86,10 +85,9 @@ public class MixedTrackingLevelAspectTest extends RMockTestCase {
     
     @ClusteredState(trackingLevel=TrackingLevel.MIXED)
     public static class MixedLevelTrackingClass {
-        @TrackedField
         private int test;
         
-        private int transientTest;
+        private transient int transientTest;
         
         @TrackedMethod
         public void setTest(int test) throws Exception {

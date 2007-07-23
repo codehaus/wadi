@@ -15,21 +15,13 @@
  */
 package org.codehaus.wadi.aop.tracker.basic;
 
-import java.io.ByteArrayInputStream;
-import java.io.ObjectInputStream;
 import java.io.Serializable;
 
-import org.codehaus.wadi.aop.ClusteredStateMarker;
 import org.codehaus.wadi.aop.annotation.ClusteredState;
-import org.codehaus.wadi.aop.annotation.TrackedField;
 import org.codehaus.wadi.aop.aspectj.ClusteredStateAspectUtil;
 import org.codehaus.wadi.aop.tracker.InstanceIdFactory;
 import org.codehaus.wadi.aop.tracker.InstanceRegistry;
-import org.codehaus.wadi.aop.tracker.InstanceTracker;
-import org.codehaus.wadi.aop.tracker.visitor.CopyStateVisitor;
-import org.codehaus.wadi.aop.tracker.visitor.ResetTrackingVisitor;
-import org.codehaus.wadi.aop.tracker.visitor.SetInstanceIdVisitor;
-import org.codehaus.wadi.aop.tracker.visitor.CopyStateVisitor.CopyStateVisitorContext;
+import org.codehaus.wadi.aop.util.ClusteredStateHelper;
 
 import com.agical.rmock.extension.junit.RMockTestCase;
 
@@ -58,7 +50,6 @@ public class BasicInstanceTrackerTest extends RMockTestCase {
         startVerification();
         
         A a = new A();
-        ClusteredStateMarker clusteredStateMarkerA = (ClusteredStateMarker) a;
         a.field = 123;
         
         B b = new B();
@@ -66,16 +57,10 @@ public class BasicInstanceTrackerTest extends RMockTestCase {
         b.field = 1234;
         b.a = a;
         
-        CopyStateVisitor visitor = new CopyStateVisitor(new SetInstanceIdVisitor(instanceIdFactory),
-            new ResetTrackingVisitor());
-        CopyStateVisitorContext context = visitor.newContext();
-        visitor.visit(clusteredStateMarkerA.$wadiGetTracker(), context);
-        
-        ByteArrayInputStream memIn = new ByteArrayInputStream(context.getSerializedInstanceTracker());
-        ObjectInputStream in = new ObjectInputStream(memIn);
-        InstanceTracker instanceTracker = (InstanceTracker) in.readObject();
+        byte[] serialized = ClusteredStateHelper.serialize(instanceIdFactory, a);
+
         InstanceRegistry instanceRegistry = new BasicInstanceRegistry();
-        instanceTracker.applyTo(instanceRegistry);
+        ClusteredStateHelper.deserialize(instanceRegistry, serialized);
         
         A aCopy = (A) instanceRegistry.getInstance("a");
         assertEquals(a.field, aCopy.field);
@@ -87,19 +72,15 @@ public class BasicInstanceTrackerTest extends RMockTestCase {
 
     @ClusteredState
     private static class A implements Serializable {
-        @TrackedField
         private int field;
         
-        @TrackedField
         private B b;
     }
     
     @ClusteredState
     private static class B implements Serializable {
-        @TrackedField
         private int field;
         
-        @TrackedField
         private A a;
     }
     

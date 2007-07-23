@@ -20,9 +20,8 @@ import java.lang.reflect.Method;
 
 import org.codehaus.wadi.aop.ClusteredStateMarker;
 import org.codehaus.wadi.aop.annotation.ClusteredState;
-import org.codehaus.wadi.aop.annotation.TrackedField;
-import org.codehaus.wadi.aop.annotation.TrackingLevel;
 import org.codehaus.wadi.aop.annotation.TrackedMethod;
+import org.codehaus.wadi.aop.annotation.TrackingLevel;
 import org.codehaus.wadi.aop.tracker.InstanceTracker;
 import org.codehaus.wadi.aop.tracker.InstanceTrackerFactory;
 
@@ -163,7 +162,6 @@ public class MethodTrackingLevelAspectTest extends RMockTestCase {
     
     @ClusteredState(trackingLevel=TrackingLevel.FIELD)
     public static class ChildFieldLevelTrackingClass {
-        @TrackedField
         private int test;
     }
     
