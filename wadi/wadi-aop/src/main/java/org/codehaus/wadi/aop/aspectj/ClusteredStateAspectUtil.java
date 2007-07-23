@@ -32,6 +32,9 @@ public class ClusteredStateAspectUtil {
             aspectClass = ClusteredStateAspectUtil.class.getClassLoader().loadClass("org.codehaus.wadi.aop.aspectj.ClusteredStateAspect");
             Field trackerFactoryField = aspectClass.getField("trackerFactory");
             trackerFactoryField.set(null, trackerFactory);
+            
+            Field indexField = aspectClass.getField("index");
+            indexField.set(null, 0);
         } catch (Exception e) {
             throw (AssertionError) new AssertionError("See nested").initCause(e);
         }

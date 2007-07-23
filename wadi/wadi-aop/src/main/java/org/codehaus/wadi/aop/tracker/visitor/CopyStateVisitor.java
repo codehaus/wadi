@@ -17,11 +17,13 @@ package org.codehaus.wadi.aop.tracker.visitor;
 
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectOutputStream;
+import java.util.List;
 
 import org.codehaus.wadi.aop.tracker.InstanceTracker;
 import org.codehaus.wadi.aop.tracker.InstanceTrackerException;
 import org.codehaus.wadi.aop.tracker.InstanceTrackerVisitor;
 import org.codehaus.wadi.aop.tracker.VisitorContext;
+import org.codehaus.wadi.aop.tracker.basic.ValueUpdaterInfo;
 
 /**
  * 
@@ -55,32 +57,36 @@ public class CopyStateVisitor extends AbstractVisitor {
         CopyStateVisitorContext copyContext = (CopyStateVisitorContext) context;
         
         instanceTracker.visit(setInstanceIdVisitor, setInstanceIdVisitor.newContext());
-        
-        serializeInstanceTracker(copyContext, instanceTracker);
+
+        serializeValueUpdaterInfos(copyContext, instanceTracker);
         
         instanceTracker.visit(resetTrackingVisitor, resetTrackingVisitor.newContext());
     }
 
-
-    protected void serializeInstanceTracker(CopyStateVisitorContext copyContext, InstanceTracker instanceTracker) {
+    protected void serializeValueUpdaterInfos(CopyStateVisitorContext copyContext, InstanceTracker instanceTracker) {
+        List<ValueUpdaterInfo> valueUpdaterInfos = buildValueUpdaterInfos(instanceTracker);
+        
         ByteArrayOutputStream memOut = new ByteArrayOutputStream();
         try {
             ObjectOutputStream out = new ObjectOutputStream(memOut);
-            out.writeObject(instanceTracker);
+            out.writeObject(valueUpdaterInfos);
             out.close();
         } catch (Exception e) {
             throw new InstanceTrackerException(e);
         }
-        copyContext.serializedInstanceTracker = memOut.toByteArray();
+        copyContext.serializedValueUpdaterInfos = memOut.toByteArray();
+    }
+
+    protected List<ValueUpdaterInfo> buildValueUpdaterInfos(InstanceTracker instanceTracker) {
+        return instanceTracker.retrieveValueUpdaterInfos();
     }
     
     public static class CopyStateVisitorContext extends BaseVisitorContext {
-        private byte[] serializedInstanceTracker;
+        private byte[] serializedValueUpdaterInfos;
 
-        public byte[] getSerializedInstanceTracker() {
-            return serializedInstanceTracker;
+        public byte[] getSerializedValueUpdaterInfos() {
+            return serializedValueUpdaterInfos;
         }
-
     }
 
 }

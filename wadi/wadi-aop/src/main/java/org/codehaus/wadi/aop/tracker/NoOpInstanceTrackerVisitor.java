@@ -13,21 +13,23 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.aop.tracker.basic;
-
-import org.codehaus.wadi.aop.ClusteredStateMarker;
-import org.codehaus.wadi.aop.tracker.InstanceTracker;
-import org.codehaus.wadi.aop.tracker.InstanceTrackerFactory;
-
+package org.codehaus.wadi.aop.tracker;
 
 /**
  * 
  * @version $Revision: 1538 $
  */
-public class BasicInstanceTrackerFactory implements InstanceTrackerFactory {
+public final class NoOpInstanceTrackerVisitor implements InstanceTrackerVisitor {
+    public static final InstanceTrackerVisitor SINGLETON = new NoOpInstanceTrackerVisitor();
     
-    public InstanceTracker newInstanceTracker(ClusteredStateMarker stateMarker) {
-        return new BasicInstanceTracker(stateMarker);
+    private NoOpInstanceTrackerVisitor() {
+    }
+    
+    public VisitorContext newContext() {
+        return null;
+    }
+
+    public void visit(InstanceTracker instanceTracker, VisitorContext context) {
     }
     
 }
