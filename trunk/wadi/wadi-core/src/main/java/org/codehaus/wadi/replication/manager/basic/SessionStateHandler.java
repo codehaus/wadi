@@ -21,7 +21,6 @@ import java.io.IOException;
 import org.codehaus.wadi.core.WADIRuntimeException;
 import org.codehaus.wadi.core.session.Session;
 import org.codehaus.wadi.core.session.SessionFactory;
-import org.codehaus.wadi.core.util.SimpleStreamer;
 import org.codehaus.wadi.core.util.Streamer;
 import org.codehaus.wadi.core.util.Utils;
 
