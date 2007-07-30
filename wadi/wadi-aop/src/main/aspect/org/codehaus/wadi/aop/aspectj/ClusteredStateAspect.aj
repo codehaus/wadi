@@ -19,9 +19,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
-import java.util.Map;
-import java.util.HashMap;
-
 import org.aspectj.lang.Signature;
 import org.aspectj.lang.reflect.ConstructorSignature;
 import org.aspectj.lang.reflect.FieldSignature;
@@ -47,17 +44,16 @@ public aspect ClusteredStateAspect {
     public static InstanceTrackerFactory trackerFactory;
     public static long index = 0;
     
-    private transient Map<Field, Object> ClusteredStateMarker.fieldValues;
     private transient InstanceTracker ClusteredStateMarker.tracker;
 
-    public Map ClusteredStateMarker.$wadiGetFieldValues() {
-        return fieldValues;
-    }
-    
     public InstanceTracker ClusteredStateMarker.$wadiGetTracker() {
         return tracker;
     }
-    
+
+    public Class ClusteredStateMarker.$wadiGetInstanceClass() {
+        return this.getClass();
+    }
+
     pointcut withinClusteredStateAspectAdviceExecution():
         adviceexecution() && within(ClusteredStateAspect);
     
@@ -71,8 +67,6 @@ public aspect ClusteredStateAspect {
     before(ClusteredStateMarker stateMarker):
         instanceConstruction(stateMarker) {
         stateMarker.tracker =  trackerFactory.newInstanceTracker(stateMarker);
-        
-        stateMarker.fieldValues = new HashMap<Field, Object>();
         
         Signature signature = thisJoinPointStaticPart.getSignature();
         Constructor constructor = ((ConstructorSignature) signature).getConstructor();
@@ -96,7 +90,16 @@ public aspect ClusteredStateAspect {
         Field field = ((FieldSignature) signature).getField();
         
         stateMarker.tracker.track(nextIndex(), field, value);
-        stateMarker.fieldValues.put(field, value);
+    }
+    
+    after(ClusteredState clusteredState, ClusteredStateMarker stateMarker, Object value):
+        targetAnnotatedWithClusteredState(clusteredState, stateMarker) &&
+        set(!transient * ClusteredStateMarker+.*) &&
+        args(value) {
+        Signature signature = thisJoinPointStaticPart.getSignature();
+        Field field = ((FieldSignature) signature).getField();
+
+        stateMarker.tracker.recordFieldUpdate(field, value);
     }
     
     // Track method executions

@@ -30,7 +30,7 @@ import javax.servlet.http.HttpSessionEvent;
 import org.codehaus.wadi.core.manager.Manager;
 import org.codehaus.wadi.core.manager.Router;
 import org.codehaus.wadi.core.session.AtomicallyReplicableSession;
-import org.codehaus.wadi.core.session.Attributes;
+import org.codehaus.wadi.core.session.DistributableAttributes;
 import org.codehaus.wadi.core.util.Streamer;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
 
@@ -48,7 +48,7 @@ public class BasicWebSession extends AtomicallyReplicableSession implements WADI
     protected final HttpSessionEvent httpSessionEvent;
 
     public BasicWebSession(WebSessionConfig config,
-            Attributes attributes,
+            DistributableAttributes attributes,
             WebSessionWrapperFactory wrapperFactory,
             Router router,
             Manager manager,
@@ -89,19 +89,19 @@ public class BasicWebSession extends AtomicallyReplicableSession implements WADI
         if (null == name) {
             throw new IllegalArgumentException("HttpSession attribute names must be non-null (see SRV.15.1.7.1)");
         }
-        return getAttributes().get(name);
+        return attributes.get(name);
     }
 
     public synchronized Set getAttributeNameSet() {
-        return getAttributes().keySet();
+        return attributes.keySet();
     }
 
     public synchronized Enumeration getAttributeNameEnumeration() {
-        return getAttributes().size() == 0 ? EMPTY_ENUMERATION : Collections.enumeration(getAttributes().keySet());
+        return attributes.size() == 0 ? EMPTY_ENUMERATION : Collections.enumeration(attributes.keySet());
     }
 
     public synchronized String[] getAttributeNameStringArray() {
-        return getAttributes().size() == 0 ? EMPTY_STRING_ARRAY : (String[]) getAttributes().keySet().toArray(new String[0]);
+        return attributes.size() == 0 ? EMPTY_STRING_ARRAY : (String[]) attributes.keySet().toArray(new String[0]);
     }
 
     public synchronized Object setAttribute(String name, Object newValue) {
@@ -119,7 +119,7 @@ public class BasicWebSession extends AtomicallyReplicableSession implements WADI
     }
 
     protected void onDeserialization() {
-        for (Iterator iter = getAttributes().values().iterator(); iter.hasNext();) {
+        for (Iterator iter = attributes.values().iterator(); iter.hasNext();) {
             Object value = iter.next();
             if (value instanceof HttpSessionActivationListener) {
                 HttpSessionActivationListener listener = (HttpSessionActivationListener) value;
@@ -129,7 +129,7 @@ public class BasicWebSession extends AtomicallyReplicableSession implements WADI
     }
     
     protected void onSerialization() {
-        for (Iterator iter = getAttributes().values().iterator(); iter.hasNext();) {
+        for (Iterator iter = attributes.values().iterator(); iter.hasNext();) {
             Object value = iter.next();
             if (value instanceof HttpSessionActivationListener) {
                 HttpSessionActivationListener listener = (HttpSessionActivationListener) value;

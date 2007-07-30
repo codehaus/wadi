@@ -16,10 +16,8 @@
  */
 package org.codehaus.wadi.core.session;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
@@ -30,7 +28,7 @@ import java.util.Set;
  */
 public class StandardAttributes implements Attributes {
     protected final ValueFactory valueFactory;
-    protected Map attributes;
+    protected StandardAttributesMemento memento;
 
     public StandardAttributes(ValueFactory valueFactory) {
         if (null == valueFactory) {
@@ -38,44 +36,27 @@ public class StandardAttributes implements Attributes {
         }
         this.valueFactory = valueFactory;
         
-        attributes = newAttributes();
+        memento = newMemento();
     }
 
-    protected Map newAttributes() {
-        return new HashMap();
+    protected StandardAttributesMemento newMemento() {
+        return new StandardAttributesMemento();
+    }
+
+    protected Map<Object, Object> getAttributesMap() {
+        return memento.getAttributes();
     }
     
-    protected Map getAttributesMap() {
-        return attributes;
-    }
-
     public synchronized Object get(Object key) {
-        Value a = (Value) getAttributesMap().get(key);
-        if (a == null) {
-            return null;
-        } else {
-            return a.getValue();
-        }
+        return getAttributesMap().get(key);
     }
 
     public synchronized Object remove(Object key) {
-        Value a = (Value) getAttributesMap().remove(key);
-        if (a == null) {
-            return null;
-        } else {
-            return a.getValue();
-        }
+        return getAttributesMap().remove(key);
     }
 
     public synchronized Object put(Object key, Object newValue) {
-        Value in = valueFactory.create();
-        in.setValue(newValue);
-        Value out = (Value) getAttributesMap().put(key, in);
-        if (out == null) {
-            return null;
-        } else {
-            return out.getValue();
-        }
+        return getAttributesMap().put(key, newValue);
     }
 
     public synchronized void clear() {
@@ -99,13 +80,15 @@ public class StandardAttributes implements Attributes {
     }
 
     public synchronized Collection values() {
-        Collection values = new ArrayList();
-        Map attributesMap = getAttributesMap();
-        for (Iterator iter = attributesMap.values().iterator(); iter.hasNext();) {
-            Value value = (Value) iter.next();
-            values.add(value.getValue());
-        }
-        return values;
+        return Collections.unmodifiableCollection(getAttributesMap().values());
     }
 
+    public StandardAttributesMemento getMemento() {
+        return memento;
+    }
+
+    public void setMemento(StandardAttributesMemento memento) {
+        this.memento = memento;
+    }
+    
 }

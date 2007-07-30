@@ -35,7 +35,7 @@ public class DistributableSession extends StandardSession {
     
     private final Streamer streamer;
 
-    public DistributableSession(Attributes attributes, Manager manager, Streamer streamer) {
+    public DistributableSession(DistributableAttributes attributes, Manager manager, Streamer streamer) {
         super(attributes, manager);
         if (null == streamer) {
             throw new IllegalArgumentException("streamer is required");
@@ -50,6 +50,11 @@ public class DistributableSession extends StandardSession {
     
     public DistributableSessionMemento getDistributableSessionMemento() {
         return (DistributableSessionMemento) memento;
+    }
+    
+    public void setDistributableSessionMemento(DistributableSessionMemento memento) {
+        this.memento = memento;
+        attributes.setMemento(memento.getAttributesMemento());
     }
     
     public synchronized byte[] getBodyAsByteArray() throws Exception {

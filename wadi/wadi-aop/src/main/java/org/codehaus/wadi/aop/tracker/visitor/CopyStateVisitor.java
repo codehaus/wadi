@@ -48,8 +48,7 @@ public class CopyStateVisitor extends AbstractVisitor {
         return new CopyStateVisitorContext();
     }
 
-    @Override
-    protected void doVisit(InstanceTracker instanceTracker, VisitorContext context) {
+    public void visit(InstanceTracker instanceTracker, VisitorContext context) {
         if (!(context instanceof CopyStateVisitorContext)) {
             throw new IllegalArgumentException("Context is a [" + context.getClass().getName() + "] expected ["
                     + CopyStateVisitorContext.class.getName() + "]");

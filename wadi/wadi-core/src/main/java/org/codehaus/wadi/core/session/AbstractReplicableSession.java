@@ -30,7 +30,7 @@ import org.codehaus.wadi.replication.manager.ReplicationManager;
 public abstract class AbstractReplicableSession extends DistributableSession {
     protected final transient ReplicationManager replicationManager;
 
-	public AbstractReplicableSession(Attributes attributes,
+	public AbstractReplicableSession(DistributableAttributes attributes,
             Manager manager,
             Streamer streamer,
             ReplicationManager replicationManager) {

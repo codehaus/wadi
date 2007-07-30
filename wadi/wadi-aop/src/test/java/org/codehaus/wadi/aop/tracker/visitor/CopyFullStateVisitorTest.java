@@ -17,16 +17,15 @@ package org.codehaus.wadi.aop.tracker.visitor;
 
 import java.io.ByteArrayInputStream;
 import java.io.ObjectInputStream;
-import java.lang.reflect.Field;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
-import org.codehaus.wadi.aop.ClusteredStateMarker;
 import org.codehaus.wadi.aop.tracker.InstanceTracker;
 import org.codehaus.wadi.aop.tracker.InstanceTrackerVisitor;
 import org.codehaus.wadi.aop.tracker.NoOpInstanceTrackerVisitor;
 import org.codehaus.wadi.aop.tracker.VisitorContext;
+import org.codehaus.wadi.aop.tracker.basic.ConstructorInfo;
 import org.codehaus.wadi.aop.tracker.basic.ValueUpdaterInfo;
 import org.codehaus.wadi.aop.tracker.visitor.CopyStateVisitor.CopyStateVisitorContext;
 
@@ -55,13 +54,12 @@ public class CopyFullStateVisitorTest extends RMockTestCase {
         VisitorContext setInstanceId = setInstanceIdVisitor.newContext();
         instanceTracker.visit(setInstanceIdVisitor, setInstanceId);
         
-        Map<Field, Object> fieldValues = new HashMap<Field, Object>();
-        fieldValues.put(Integer.class.getDeclaredField("MIN_VALUE"), 0);
-        ClusteredStateMarker instance = instanceTracker.getInstance();
-        instance.$wadiGetFieldValues();
-        modify().returnValue(fieldValues);
+        instanceTracker.retrieveInstantiationValueUpdaterInfos();
+        modify().returnValue(Collections.singletonList(
+            new ValueUpdaterInfo(new ConstructorInfo(ArrayList.class.getDeclaredConstructor()), new Object[0])));
         
         instanceTracker.visit(NoOpInstanceTrackerVisitor.SINGLETON, null);
+        modify().args(is.AS_RECORDED, is.NOT_NULL);
         
         startVerification();
         

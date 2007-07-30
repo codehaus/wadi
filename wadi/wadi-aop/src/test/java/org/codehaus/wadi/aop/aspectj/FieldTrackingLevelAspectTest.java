@@ -16,7 +16,6 @@
 package org.codehaus.wadi.aop.aspectj;
 
 import java.lang.reflect.Field;
-import java.util.Map;
 
 import org.codehaus.wadi.aop.ClusteredStateMarker;
 import org.codehaus.wadi.aop.annotation.ClusteredState;
@@ -50,31 +49,15 @@ public class FieldTrackingLevelAspectTest extends RMockTestCase {
     }
     
     public void testSetTrackedField() throws Exception {
-        instanceTracker.track(1, FieldLevelTrackingClass.class.getDeclaredField("test"), new Integer(1));
+        Field testField = FieldLevelTrackingClass.class.getDeclaredField("test");
+        Integer fieldValue = new Integer(1);
+        instanceTracker.track(1, testField, fieldValue);
+        instanceTracker.recordFieldUpdate(testField, fieldValue);
         
         startVerification();
         
         FieldLevelTrackingClass instance = new FieldLevelTrackingClass();
         instance.test = 1;
-    }
-
-    public void testGetFieldValues() throws Exception {
-        Field field = FieldLevelTrackingClass.class.getDeclaredField("test");
-        instanceTracker.track(1, (Field) null, null);
-        modify().multiplicity(expect.from(1)).args(is.ANYTHING, is.NOT_NULL, is.NOT_NULL);
-        
-        startVerification();
-        
-        FieldLevelTrackingClass instance = new FieldLevelTrackingClass();
-        instance.test = 1;
-        instance.test = 2;
-        instance.test = 3;
-        
-        ClusteredStateMarker clusteredStateMarker = (ClusteredStateMarker) instance;
-        Map fieldValues = clusteredStateMarker.$wadiGetFieldValues();
-        assertEquals(1, fieldValues.size());
-        Integer value = (Integer) fieldValues.get(field);
-        assertEquals(new Integer(3), value);
     }
 
     public void testSetTransientField() throws Exception {

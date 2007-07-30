@@ -21,6 +21,10 @@ package org.codehaus.wadi.aop.tracker;
  */
 public class InstanceTrackerException extends RuntimeException {
 
+    public InstanceTrackerException(String message) {
+        super(message);
+    }
+
     public InstanceTrackerException(Throwable cause) {
         super(cause);
     }

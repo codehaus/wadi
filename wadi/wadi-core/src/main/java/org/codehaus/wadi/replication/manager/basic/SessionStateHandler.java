@@ -29,8 +29,8 @@ import org.codehaus.wadi.core.util.Utils;
  * @version $Revision: 2340 $
  */
 public class SessionStateHandler implements ObjectStateHandler {
-    private final Streamer streamer;
-    private SessionFactory sessionFactory;
+    protected final Streamer streamer;
+    protected SessionFactory sessionFactory;
     
     public SessionStateHandler(Streamer streamer) {
         if (null == streamer) {
@@ -49,7 +49,7 @@ public class SessionStateHandler implements ObjectStateHandler {
     }
     
     public byte[] extractFullState(Object key, Object target) {
-        Externalizable externalizable = newExternalizable(key, target);
+        Externalizable externalizable = newExtractFullStateExternalizable(key, target);
         try {
             return Utils.getContent(externalizable, streamer);
         } catch (IOException e) {
@@ -58,7 +58,7 @@ public class SessionStateHandler implements ObjectStateHandler {
     }
 
     public byte[] extractUpdatedState(Object key, Object target) {
-        Externalizable externalizable = newExternalizable(key, target);
+        Externalizable externalizable = newExtractUpdatedStateExternalizable(key, target);
         try {
             return Utils.getContent(externalizable, streamer);
         } catch (IOException e) {
@@ -66,6 +66,9 @@ public class SessionStateHandler implements ObjectStateHandler {
         }
     }
 
+    public void resetObjectState(Object target) {
+    }
+    
     public Object restoreFromFullState(Object key, byte[] state) {
         Externalizable externalizable = newExternalizable(key);
         try {
@@ -86,13 +89,20 @@ public class SessionStateHandler implements ObjectStateHandler {
         return externalizable;
     }
     
-    protected Externalizable newExternalizable(Object key, Object tmp) {
-        if (false == tmp instanceof Session) {
-            throw new IllegalArgumentException(tmp.getClass().getName() + " is not a Session");
+    protected Externalizable newExtractFullStateExternalizable(Object key, Object target) {
+        if (false == target instanceof Session) {
+            throw new IllegalArgumentException(target.getClass().getName() + " is not a Session");
         }
-        return (Session) tmp;
+        return (Session) target;
     }
 
+    protected Externalizable newExtractUpdatedStateExternalizable(Object key, Object target) {
+        if (false == target instanceof Session) {
+            throw new IllegalArgumentException(target.getClass().getName() + " is not a Session");
+        }
+        return (Session) target;
+    }
+    
     protected Externalizable newExternalizable(Object key) {
         return sessionFactory.create();
     }

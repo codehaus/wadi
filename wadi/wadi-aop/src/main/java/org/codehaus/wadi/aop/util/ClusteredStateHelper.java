@@ -40,12 +40,15 @@ public final class ClusteredStateHelper {
     private ClusteredStateHelper() {
     }
 
+    public static void resetTracker(Object opaque) {
+        ClusteredStateMarker stateMarker = castAndEnsureType(opaque);
+
+        stateMarker.$wadiGetTracker().visit(ResetTrackingVisitor.SINGLETON, ResetTrackingVisitor.SINGLETON.newContext());
+    }
+
+    
     public static byte[] serializeFully(InstanceIdFactory instanceIdFactory, Object opaque) {
-        if (!(opaque instanceof ClusteredStateMarker)) {
-            throw new IllegalArgumentException(opaque.getClass() + " is not a ClusteredStateMarker. " +
-                    "The class may not have been weaved.");
-        }
-        ClusteredStateMarker stateMarker = (ClusteredStateMarker) opaque;
+        ClusteredStateMarker stateMarker = castAndEnsureType(opaque);
         
         CopyFullStateVisitor visitor = new CopyFullStateVisitor(new SetInstanceIdVisitor(instanceIdFactory));
         CopyStateVisitorContext context = visitor.newContext();
@@ -53,16 +56,12 @@ public final class ClusteredStateHelper {
         
         return context.getSerializedValueUpdaterInfos();
     }
-    
+
     public static byte[] serialize(InstanceIdFactory instanceIdFactory, Object opaque) {
-        if (!(opaque instanceof ClusteredStateMarker)) {
-            throw new IllegalArgumentException(opaque.getClass() + " is not a ClusteredStateMarker. " +
-            		"The class may not have been weaved.");
-        }
-        ClusteredStateMarker stateMarker = (ClusteredStateMarker) opaque;
+        ClusteredStateMarker stateMarker = castAndEnsureType(opaque);
         
         CopyStateVisitor visitor = new CopyStateVisitor(new SetInstanceIdVisitor(instanceIdFactory),
-            new ResetTrackingVisitor());
+            ResetTrackingVisitor.SINGLETON);
         CopyStateVisitorContext context = visitor.newContext();
         visitor.visit(stateMarker.$wadiGetTracker(), context);
         
@@ -79,6 +78,14 @@ public final class ClusteredStateHelper {
             throw new WADIRuntimeException(e);
         }
         ValueUpdaterInfo.applyTo(instanceRegistry, valueUpdaterInfos);
+    }
+    
+    public static ClusteredStateMarker castAndEnsureType(Object opaque) {
+        if (!(opaque instanceof ClusteredStateMarker)) {
+            throw new IllegalArgumentException(opaque.getClass() + " is not a ClusteredStateMarker. " +
+                    "The class may not have been weaved.");
+        }
+        return (ClusteredStateMarker) opaque;
     }
     
 }

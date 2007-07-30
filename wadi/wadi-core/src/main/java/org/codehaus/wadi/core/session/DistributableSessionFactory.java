@@ -26,7 +26,7 @@ public class DistributableSessionFactory extends StandardSessionFactory {
 
     protected final Streamer streamer;
 
-    public DistributableSessionFactory(AttributesFactory attributesFactory, Streamer streamer) {
+    public DistributableSessionFactory(DistributableAttributesFactory attributesFactory, Streamer streamer) {
         super(attributesFactory);
         if (null == streamer) {
             throw new IllegalArgumentException("streamer is required");
@@ -34,8 +34,12 @@ public class DistributableSessionFactory extends StandardSessionFactory {
         this.streamer = streamer;
     }
 
+    protected DistributableAttributesFactory getDistributableAttributesFactory() {
+        return (DistributableAttributesFactory) attributesFactory;
+    }
+    
     public Session create() {
-        return new DistributableSession(newAttributes(), getManager(), streamer);
+        return new DistributableSession(getDistributableAttributesFactory().create(), getManager(), streamer);
     }
     
 }

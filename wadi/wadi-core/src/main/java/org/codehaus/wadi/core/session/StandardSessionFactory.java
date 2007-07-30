@@ -25,10 +25,10 @@ import org.codehaus.wadi.core.manager.Manager;
  */
 public class StandardSessionFactory implements SessionFactory {
 
-    protected final AttributesFactory attributesFactory;
+    protected final StandardAttributesFactory attributesFactory;
     private Manager manager;
 
-    public StandardSessionFactory(AttributesFactory attributesFactory) {
+    public StandardSessionFactory(StandardAttributesFactory attributesFactory) {
         if (null == attributesFactory) {
             throw new IllegalArgumentException("attributesFactory is required");
         }
@@ -43,7 +43,7 @@ public class StandardSessionFactory implements SessionFactory {
         return new StandardSession(newAttributes(), getManager());
     }
 
-    protected Attributes newAttributes() {
+    protected StandardAttributes newAttributes() {
         return attributesFactory.create();
     }
 

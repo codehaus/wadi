@@ -44,7 +44,7 @@ public class ValueUpdaterInfoTest extends RMockTestCase {
         }
     }
     
-    public void testClusteredStateMarkerParamIsTransformedIntoItsUnderlyingInstanceTracker() throws Exception {
+    public void testClusteredStateMarkersAreTransformedIntoInstanceTrackers() throws Exception {
         ClusteredStateMarker stateMarker = (ClusteredStateMarker) mock(ClusteredStateMarker.class);
         InstanceTracker instanceTracker = stateMarker.$wadiGetTracker();
         
@@ -52,6 +52,9 @@ public class ValueUpdaterInfoTest extends RMockTestCase {
         
         String param0 = "test";
         ValueUpdaterInfo updaterInfo = new ValueUpdaterInfo(valueUpdater, new Object[] {param0, stateMarker});
+        updaterInfo.setInstanceId("instanceId");
+        updaterInfo = updaterInfo.snapshotForSerialization();
+        
         Object[] newParameters = updaterInfo.getParameters();
         assertSame(param0, newParameters[0]);
         assertSame(instanceTracker, newParameters[1]);
@@ -75,6 +78,7 @@ public class ValueUpdaterInfoTest extends RMockTestCase {
         
         ValueUpdaterInfo updaterInfo = new ValueUpdaterInfo(valueUpdater, new Object[] {stateMarker});
         updaterInfo.setInstanceId(instanceId);
+        updaterInfo = updaterInfo.snapshotForSerialization();
         updaterInfo.execute(instanceRegistry);
     }
     
