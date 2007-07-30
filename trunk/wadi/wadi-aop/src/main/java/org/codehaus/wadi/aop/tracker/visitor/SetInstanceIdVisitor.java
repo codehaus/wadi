@@ -34,8 +34,7 @@ public class SetInstanceIdVisitor extends AbstractVisitor {
         this.instanceIdFactory = instanceIdFactory;
     }
 
-    @Override
-    protected void doVisit(InstanceTracker instanceTracker, VisitorContext context) {
+    public void visit(InstanceTracker instanceTracker, VisitorContext context) {
         if (null != instanceTracker.getInstanceId()) {
             return;
         }

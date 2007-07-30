@@ -50,16 +50,23 @@ public class MethodTrackingLevelAspectTest extends RMockTestCase {
         
         instanceTracker.track(0, MethodLevelTrackingClass.class.getConstructor(new Class[0]), null);
         modify().args(is.ANYTHING, is.AS_RECORDED, is.ANYTHING);
+        instanceTracker.recordFieldUpdate(MethodLevelTrackingClass.class.getDeclaredField("childMethod"), null);
+        modify().args(is.AS_RECORDED, is.ANYTHING);
+        instanceTracker.recordFieldUpdate(MethodLevelTrackingClass.class.getDeclaredField("childField"), null);
+        modify().args(is.AS_RECORDED, is.ANYTHING);
+        
         instanceTracker.track(0, ChildMethodLevelTrackingClass.class.getConstructor(new Class[0]), null);
         modify().args(is.ANYTHING, is.AS_RECORDED, is.ANYTHING);
+        
         instanceTracker.track(0, ChildFieldLevelTrackingClass.class.getConstructor(new Class[0]), null);
         modify().args(is.ANYTHING, is.AS_RECORDED, is.ANYTHING);
     }
     
-    public void testExecuteNotTransientMethodIsTracked() throws Exception {
+    public void testExecuteTrackedMethod() throws Exception {
         instanceTracker.track(1,
             MethodLevelTrackingClass.class.getDeclaredMethod("test", new Class[] { int.class }),
             null);
+        final Integer fieldValue = new Integer(123);
         modify().args(is.ANYTHING, is.AS_RECORDED, new AbstractExpression() {
 
             public void describeWith(ExpressionDescriber arg0) throws IOException {
@@ -67,44 +74,53 @@ public class MethodTrackingLevelAspectTest extends RMockTestCase {
 
             public boolean passes(Object arg0) {
                 Object[] args = (Object[]) arg0;
-                assertEquals(new Integer(123), args[0]);
+                assertEquals(fieldValue, args[0]);
                 return true;
             }
             
         });
+        instanceTracker.recordFieldUpdate(MethodLevelTrackingClass.class.getDeclaredField("test"), fieldValue);
         
         startVerification();
         
         MethodLevelTrackingClass instance = new MethodLevelTrackingClass();
-        int result = instance.test(123);
+        int result = instance.test(fieldValue);
         assertEquals(246, result);
     }
     
-    public void testExecuteTransientMethodIsNotTracked() throws Exception {
+    public void testExecuteStandardMethod() throws Exception {
+        Integer fieldValue = new Integer(123);
+        instanceTracker.recordFieldUpdate(MethodLevelTrackingClass.class.getDeclaredField("test"), fieldValue);
         startVerification();
         
         MethodLevelTrackingClass instance = new MethodLevelTrackingClass();
-        instance.transientTest(123);
+        instance.transientTest(fieldValue);
     }
     
     public void testMethodInvokeMethodAndOnlyRootMethodIsActuallyTracked() throws Exception {
         instanceTracker.track(1, (Method) null, null);
         modify().args(is.ANYTHING, is.ANYTHING, is.ANYTHING);
         
+        Integer fieldValue = new Integer(123);
+        instanceTracker.recordFieldUpdate(ChildMethodLevelTrackingClass.class.getDeclaredField("test"), fieldValue);
+
         startVerification();
         
         MethodLevelTrackingClass instance = new MethodLevelTrackingClass();
-        instance.invokeChildMethod(123);
+        instance.invokeChildMethod(fieldValue);
     }
     
     public void testMethodSetFieldAndOnlyRootMethodIsActuallyTracked() throws Exception {
         instanceTracker.track(1, (Method) null, null);
         modify().args(is.ANYTHING ,is.ANYTHING, is.ANYTHING);
         
+        Integer fieldValue = 123;
+        instanceTracker.recordFieldUpdate(ChildFieldLevelTrackingClass.class.getDeclaredField("test"), fieldValue);
+        
         startVerification();
         
         MethodLevelTrackingClass instance = new MethodLevelTrackingClass();
-        instance.invokeChildField(123);
+        instance.invokeChildField(fieldValue);
     }
     
     public void testMethodThrowExceptionIsNotTracked() throws Exception {

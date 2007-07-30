@@ -29,7 +29,7 @@ import java.io.ObjectOutput;
  * @version $Revision: 2244 $
  */
 public abstract class SimpleEvictable implements Evictable, Externalizable {
-    protected final SimpleEvictableMemento memento;
+    protected SimpleEvictableMemento memento;
 
     public SimpleEvictable() {
         memento = newMemento();

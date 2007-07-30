@@ -15,6 +15,8 @@
  */
 package org.codehaus.wadi.aop.aspectj;
 
+import java.lang.reflect.Field;
+
 import org.codehaus.wadi.aop.ClusteredStateMarker;
 import org.codehaus.wadi.aop.annotation.ClusteredState;
 import org.codehaus.wadi.aop.annotation.TrackedMethod;
@@ -48,8 +50,12 @@ public class MixedTrackingLevelAspectTest extends RMockTestCase {
     }
     
     public void testSetTrackedField() throws Exception {
-        instanceTracker.track(1, MixedLevelTrackingClass.class.getDeclaredField("test"), new Integer(1));
+        Field testField = MixedLevelTrackingClass.class.getDeclaredField("test");
+        Integer fieldValue = new Integer(1);
+        instanceTracker.track(1, testField, fieldValue);
         modify().args(is.ANYTHING, is.AS_RECORDED, is.AS_RECORDED);
+        
+        instanceTracker.recordFieldUpdate(testField, fieldValue);
         
         startVerification();
         
@@ -70,10 +76,14 @@ public class MixedTrackingLevelAspectTest extends RMockTestCase {
             null);
         modify().args(is.ANYTHING, is.AS_RECORDED, is.ANYTHING);
         
+        Field testField = MixedLevelTrackingClass.class.getDeclaredField("test");
+        Integer fieldValue = new Integer(1);
+        instanceTracker.recordFieldUpdate(testField, fieldValue);
+        
         startVerification();
         
         MixedLevelTrackingClass instance = new MixedLevelTrackingClass();
-        instance.setTest(1);
+        instance.setTest(fieldValue);
     }
 
     public void testInvokeTransientMethod() throws Exception {

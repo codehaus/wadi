@@ -32,7 +32,7 @@ public class StandardAttributesFactory implements AttributesFactory {
         this.valueFactory = valueFactory;
     }
 
-    public Attributes create() {
+    public StandardAttributes create() {
         return new StandardAttributes(valueFactory);
     }
     

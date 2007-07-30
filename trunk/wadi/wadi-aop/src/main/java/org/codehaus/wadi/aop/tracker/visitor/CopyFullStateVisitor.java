@@ -15,16 +15,11 @@
  */
 package org.codehaus.wadi.aop.tracker.visitor;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
-import org.codehaus.wadi.aop.ClusteredStateMarker;
 import org.codehaus.wadi.aop.tracker.InstanceTracker;
 import org.codehaus.wadi.aop.tracker.InstanceTrackerVisitor;
 import org.codehaus.wadi.aop.tracker.NoOpInstanceTrackerVisitor;
-import org.codehaus.wadi.aop.tracker.basic.FieldInfo;
 import org.codehaus.wadi.aop.tracker.basic.ValueUpdaterInfo;
 
 /**
@@ -38,15 +33,7 @@ public class CopyFullStateVisitor extends CopyStateVisitor {
     }
 
     protected List<ValueUpdaterInfo> buildValueUpdaterInfos(InstanceTracker instanceTracker) {
-        ClusteredStateMarker instance = instanceTracker.getInstance();
-        Map<Field, Object> fieldValues = instance.$wadiGetFieldValues();
-        
-        List<ValueUpdaterInfo> valueUpdaterInfos = new ArrayList<ValueUpdaterInfo>();
-        for (Map.Entry<Field, Object> entry : fieldValues.entrySet()) {
-            valueUpdaterInfos.add(new ValueUpdaterInfo(new FieldInfo(entry.getKey()), new Object[] {entry.getValue()}));
-        }
-        
-        return valueUpdaterInfos;
+        return instanceTracker.retrieveInstantiationValueUpdaterInfos();
     }
-    
+
 }

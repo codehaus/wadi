@@ -15,21 +15,19 @@
  */
 package org.codehaus.wadi.aop.tracker;
 
+import org.codehaus.wadi.aop.tracker.visitor.AbstractVisitor;
+
 /**
  * 
  * @version $Revision: 1538 $
  */
-public final class NoOpInstanceTrackerVisitor implements InstanceTrackerVisitor {
+public final class NoOpInstanceTrackerVisitor extends AbstractVisitor {
     public static final InstanceTrackerVisitor SINGLETON = new NoOpInstanceTrackerVisitor();
     
     private NoOpInstanceTrackerVisitor() {
     }
     
-    public VisitorContext newContext() {
-        return null;
-    }
-
     public void visit(InstanceTracker instanceTracker, VisitorContext context) {
     }
-    
+
 }

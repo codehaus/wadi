@@ -32,7 +32,7 @@ import org.apache.catalina.SessionListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.core.manager.Router;
-import org.codehaus.wadi.core.session.Attributes;
+import org.codehaus.wadi.core.session.DistributableAttributes;
 import org.codehaus.wadi.core.util.Streamer;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
 import org.codehaus.wadi.web.BasicWebSession;
@@ -55,7 +55,7 @@ public class TomcatSession extends BasicWebSession implements Session {
   protected static final Log _log = LogFactory.getLog(TomcatSession.class);
 
   public TomcatSession(WebSessionConfig config,
-          Attributes attributes,
+          DistributableAttributes attributes,
           WebSessionWrapperFactory wrapperFactory,
           Router router,
           org.codehaus.wadi.core.manager.Manager manager,

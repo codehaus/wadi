@@ -20,8 +20,6 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.Iterator;
-import java.util.Map;
 
 
 /**
@@ -40,26 +38,18 @@ public class DistributableAttributes extends StandardAttributes implements Exter
         super(valueFactory);
     }
 
+    @Override
+    protected StandardAttributesMemento newMemento() {
+        return new DistributableAttributesMemento();
+    }
+    
     public synchronized void readExternal(ObjectInput oi) throws IOException, ClassNotFoundException {
-        int size = oi.readInt();
-        attributes = newAttributes();
-        for (int i = 0; i < size; i++) {
-            Object key = oi.readObject();
-            DistributableValue val = (DistributableValue) valueFactory.create();
-            val.readExternal(oi);
-            attributes.put(key, val);
-        }
+        memento = newMemento();
+        ((DistributableAttributesMemento) memento).readExternal(oi);
     }
 
     public synchronized void writeExternal(ObjectOutput oo) throws IOException {
-        oo.writeInt(attributes.size());
-        for (Iterator i = attributes.entrySet().iterator(); i.hasNext();) {
-            Map.Entry e = (Map.Entry) i.next();
-            Object key = e.getKey();
-            oo.writeObject(key);
-            DistributableValue val = (DistributableValue) e.getValue();
-            val.writeExternal(oo);
-        }
+        ((DistributableAttributesMemento) memento).writeExternal(oo);
     }
 
 }

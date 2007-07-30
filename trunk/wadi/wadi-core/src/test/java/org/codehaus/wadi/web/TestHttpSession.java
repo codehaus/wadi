@@ -50,13 +50,11 @@ import org.codehaus.wadi.core.manager.SessionIdFactory;
 import org.codehaus.wadi.core.manager.SessionMonitor;
 import org.codehaus.wadi.core.manager.StandardManager;
 import org.codehaus.wadi.core.manager.TomcatSessionIdFactory;
-import org.codehaus.wadi.core.session.AttributesFactory;
 import org.codehaus.wadi.core.session.DistributableAttributesFactory;
 import org.codehaus.wadi.core.session.StandardValueFactory;
 import org.codehaus.wadi.core.session.ValueFactory;
 import org.codehaus.wadi.core.util.SimpleStreamer;
 import org.codehaus.wadi.replication.manager.basic.NoOpReplicationManager;
-import org.codehaus.wadi.replication.manager.basic.NoOpReplicationManagerFactory;
 import org.codehaus.wadi.web.impl.BasicHttpInvocationContextFactory;
 import org.codehaus.wadi.web.impl.StandardSessionWrapperFactory;
 
@@ -83,7 +81,7 @@ public class TestHttpSession extends TestCase {
     protected WebSessionWrapperFactory webSessionWrapperFactory = new StandardSessionWrapperFactory();
     protected SessionIdFactory sessionIdFactory = new TomcatSessionIdFactory();
     protected ValueFactory valueFactory = new StandardValueFactory();
-    protected AttributesFactory attributesFactory = new DistributableAttributesFactory(valueFactory);
+    protected DistributableAttributesFactory attributesFactory = new DistributableAttributesFactory(valueFactory);
     protected WebSessionFactory webSessionFactory = new BasicWebSessionFactory(attributesFactory,
             new SimpleStreamer(),
             new NoOpReplicationManager(),

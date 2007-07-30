@@ -15,13 +15,13 @@
  */
 package org.codehaus.wadi.aop.tracker.basic;
 
-import java.io.Serializable;
+import java.lang.reflect.Field;
+import java.util.List;
 
-import org.codehaus.wadi.aop.annotation.ClusteredState;
-import org.codehaus.wadi.aop.aspectj.ClusteredStateAspectUtil;
-import org.codehaus.wadi.aop.tracker.InstanceIdFactory;
-import org.codehaus.wadi.aop.tracker.InstanceRegistry;
-import org.codehaus.wadi.aop.util.ClusteredStateHelper;
+import org.codehaus.wadi.aop.ClusteredStateMarker;
+import org.codehaus.wadi.aop.tracker.InstanceTrackerVisitor;
+import org.codehaus.wadi.aop.tracker.VisitorContext;
+import org.codehaus.wadi.aop.tracker.visitor.BaseVisitorContext;
 
 import com.agical.rmock.extension.junit.RMockTestCase;
 
@@ -31,57 +31,59 @@ import com.agical.rmock.extension.junit.RMockTestCase;
  */
 public class BasicInstanceTrackerTest extends RMockTestCase {
 
-    private InstanceIdFactory instanceIdFactory;
+    private Field trackerField;
+    private ClusteredStateMarker stateMarkerParent;
+    private BasicInstanceTracker instanceTrackerParent;
+    private ClusteredStateMarker stateMarkerChild;
+    private BasicInstanceTracker instanceTrackerChild;
 
     @Override
     protected void setUp() throws Exception {
-        instanceIdFactory = (InstanceIdFactory) mock(InstanceIdFactory.class);
+        trackerField = BasicBean.class.getDeclaredField("tracker");
         
-        ClusteredStateAspectUtil.setInstanceTrackerFactory(new BasicInstanceTrackerFactory());
+        stateMarkerParent = (ClusteredStateMarker) mock(ClusteredStateMarker.class);
+        instanceTrackerParent = new BasicInstanceTracker(stateMarkerParent);
+        instanceTrackerParent.setInstanceId("instanceTrackerParent");
+        stateMarkerParent.$wadiGetTracker();
+        modify().multiplicity(expect.from(0)).returnValue(instanceTrackerParent);
+        
+        stateMarkerChild = (ClusteredStateMarker) mock(ClusteredStateMarker.class);
+        instanceTrackerChild = new BasicInstanceTracker(stateMarkerChild);
+        instanceTrackerChild.setInstanceId("instanceTrackerChild");
+        stateMarkerChild.$wadiGetTracker();
+        modify().multiplicity(expect.from(0)).returnValue(instanceTrackerChild);
     }
     
-    public void testApplyTo() throws Exception {
-        instanceIdFactory.newId();
-        modify().returnValue("a");
+    public void testVisitCircularInstanceTrackers() throws Exception {
+        InstanceTrackerVisitor visitor = (InstanceTrackerVisitor) mock(InstanceTrackerVisitor.class);
+        VisitorContext visitorContext = new BaseVisitorContext();
         
-        instanceIdFactory.newId();
-        modify().returnValue("b");
-        
+        beginSection(s.ordered("Visit trackers"));
+        visitor.visit(instanceTrackerParent, visitorContext);
+        visitor.visit(instanceTrackerChild, visitorContext);
+        endSection();
         startVerification();
         
-        A a = new A();
-        a.field = 123;
-        
-        B b = new B();
-        a.b = b;
-        b.field = 1234;
-        b.a = a;
-        
-        byte[] serialized = ClusteredStateHelper.serialize(instanceIdFactory, a);
-
-        InstanceRegistry instanceRegistry = new BasicInstanceRegistry();
-        ClusteredStateHelper.deserialize(instanceRegistry, serialized);
-        
-        A aCopy = (A) instanceRegistry.getInstance("a");
-        assertEquals(a.field, aCopy.field);
-        B bCopy = aCopy.b;
-        assertNotNull(bCopy);
-        assertEquals(b.field, bCopy.field);
-        assertSame(aCopy, bCopy.a);
-    }
-
-    @ClusteredState
-    private static class A implements Serializable {
-        private int field;
-        
-        private B b;
+        instanceTrackerParent.recordFieldUpdate(trackerField, stateMarkerChild);
+        instanceTrackerChild.recordFieldUpdate(trackerField, stateMarkerParent);
+        instanceTrackerParent.visit(visitor, visitorContext);
     }
     
-    @ClusteredState
-    private static class B implements Serializable {
-        private int field;
+    public void testRetrieveValueUpdaterInfos() throws Exception {
+        startVerification();
         
-        private A a;
+        instanceTrackerParent.track(1, trackerField, stateMarkerChild);
+        instanceTrackerParent.recordFieldUpdate(trackerField, stateMarkerChild);
+
+        instanceTrackerChild.track(2, trackerField, stateMarkerParent);
+        instanceTrackerChild.recordFieldUpdate(trackerField, stateMarkerParent);
+        
+        List<ValueUpdaterInfo> valueUpdaterInfos = instanceTrackerParent.retrieveValueUpdaterInfos();
+        assertEquals(2, valueUpdaterInfos.size());
+    }
+    
+    private static class BasicBean {
+        private Object tracker;
     }
     
 }

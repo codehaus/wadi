@@ -15,6 +15,7 @@
  */
 package org.codehaus.wadi.replication.manager.basic;
 
+
 /**
  * 
  * @version $Revision: 2340 $
@@ -23,6 +24,8 @@ public interface ObjectStateHandler {
     byte[] extractFullState(Object key, Object target);
     
     byte[] extractUpdatedState(Object key, Object target);
+    
+    void resetObjectState(Object target);
     
     Object restoreFromFullState(Object key, byte[] state);
     

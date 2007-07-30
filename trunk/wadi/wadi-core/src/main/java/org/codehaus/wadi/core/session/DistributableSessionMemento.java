@@ -26,20 +26,20 @@ import java.io.ObjectOutput;
  */
 public class DistributableSessionMemento extends StandardSessionMemento {
 
-    public DistributableAttributes getDistributableAttributes() {
-        return ((DistributableAttributes) attributes);
-    }
-    
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         super.readExternal(in);
-        getDistributableAttributes().readExternal(in);
+        getDistributableAttributesMemento().readExternal(in);
     }
 
     public void writeExternal(ObjectOutput out) throws IOException {
         super.writeExternal(out);
-        getDistributableAttributes().writeExternal(out);
+        getDistributableAttributesMemento().writeExternal(out);
     }
 
+    protected DistributableAttributesMemento getDistributableAttributesMemento() {
+        return (DistributableAttributesMemento) getAttributesMemento();
+    }
+    
 }
 
 

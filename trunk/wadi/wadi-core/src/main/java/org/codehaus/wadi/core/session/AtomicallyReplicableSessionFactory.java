@@ -27,7 +27,7 @@ public class AtomicallyReplicableSessionFactory extends DistributableSessionFact
 
     protected final ReplicationManager replicationManager;
     
-    public AtomicallyReplicableSessionFactory(AttributesFactory attributesFactory,
+    public AtomicallyReplicableSessionFactory(DistributableAttributesFactory attributesFactory,
             Streamer streamer,
             ReplicationManager replicationManager) {
         super(attributesFactory, streamer);
@@ -38,7 +38,10 @@ public class AtomicallyReplicableSessionFactory extends DistributableSessionFact
     }
 
     public Session create() {
-        return new AtomicallyReplicableSession(newAttributes(), getManager(), streamer, replicationManager);
+        return new AtomicallyReplicableSession(getDistributableAttributesFactory().create(), 
+            getManager(), 
+            streamer, 
+            replicationManager);
     }
     
 }

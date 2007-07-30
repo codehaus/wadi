@@ -17,7 +17,7 @@ package org.codehaus.wadi.web;
 
 import org.codehaus.wadi.core.manager.Router;
 import org.codehaus.wadi.core.session.AtomicallyReplicableSessionFactory;
-import org.codehaus.wadi.core.session.AttributesFactory;
+import org.codehaus.wadi.core.session.DistributableAttributesFactory;
 import org.codehaus.wadi.core.session.Session;
 import org.codehaus.wadi.core.util.Streamer;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
@@ -32,7 +32,7 @@ public class BasicWebSessionFactory extends AtomicallyReplicableSessionFactory i
     protected final Router router;
     protected final WebSessionWrapperFactory wrapperFactory;
 
-    public BasicWebSessionFactory(AttributesFactory attributesFactory,
+    public BasicWebSessionFactory(DistributableAttributesFactory attributesFactory,
             Streamer streamer,
             ReplicationManager replicationManager,
             Router router,
@@ -55,7 +55,7 @@ public class BasicWebSessionFactory extends AtomicallyReplicableSessionFactory i
     
     public Session create() {
         return new BasicWebSession(webSessionConfig,
-                newAttributes(),
+                getDistributableAttributesFactory().create(),
                 wrapperFactory,
                 router,
                 getManager(),

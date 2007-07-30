@@ -27,7 +27,7 @@ public class LazyAttributesFactory extends DistributableAttributesFactory {
         super(valueFactory);
     }
 
-    public Attributes create() {
+    public LazyAttributes create() {
         return new LazyAttributes(valueFactory);
     }
 

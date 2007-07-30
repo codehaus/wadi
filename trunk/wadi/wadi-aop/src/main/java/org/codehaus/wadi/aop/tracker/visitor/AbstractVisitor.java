@@ -15,7 +15,6 @@
  */
 package org.codehaus.wadi.aop.tracker.visitor;
 
-import org.codehaus.wadi.aop.tracker.InstanceTracker;
 import org.codehaus.wadi.aop.tracker.InstanceTrackerVisitor;
 import org.codehaus.wadi.aop.tracker.VisitorContext;
 
@@ -25,15 +24,8 @@ import org.codehaus.wadi.aop.tracker.VisitorContext;
  */
 public abstract class AbstractVisitor implements InstanceTrackerVisitor {
     
-    public final void visit(InstanceTracker instanceTracker, VisitorContext context) {
-        context.registerAsVisited(instanceTracker);
-
-        doVisit(instanceTracker, context);
-    }
-
     public VisitorContext newContext() {
         return new BaseVisitorContext();
     }
     
-    protected abstract void doVisit(InstanceTracker instanceTracker, VisitorContext context);
 }

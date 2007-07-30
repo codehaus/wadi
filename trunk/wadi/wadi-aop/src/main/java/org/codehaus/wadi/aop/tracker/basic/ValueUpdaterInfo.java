@@ -16,9 +16,10 @@
 package org.codehaus.wadi.aop.tracker.basic;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
-import org.codehaus.wadi.aop.ClusteredStateMarker;
 import org.codehaus.wadi.aop.tracker.InstanceRegistry;
 import org.codehaus.wadi.aop.tracker.InstanceTracker;
 
@@ -27,9 +28,10 @@ import org.codehaus.wadi.aop.tracker.InstanceTracker;
  * @version $Revision: 1538 $
  */
 public class ValueUpdaterInfo implements Serializable {
-    private final ValueUpdater valueUpdater;
-    private final Object[] parameters;
-    private String instanceId;
+    protected final ValueUpdater valueUpdater;
+    protected final Object[] parameters;
+    private final InstanceAndTrackerReplacer replacer;
+    protected String instanceId;
     
     public static void applyTo(InstanceRegistry instanceRegistry, List<ValueUpdaterInfo> valueUpdaterInfos) {
         for (ValueUpdaterInfo valueUpdaterInfo : valueUpdaterInfos) {
@@ -44,7 +46,23 @@ public class ValueUpdaterInfo implements Serializable {
             throw new IllegalArgumentException("parameters is required");
         }
         this.valueUpdater = valueUpdater;
-        this.parameters = replaceInstanceWithItsTracker(parameters);
+        this.parameters = parameters;
+        
+        replacer = new CompoundReplacer();
+    }
+    
+    protected ValueUpdaterInfo(ValueUpdaterInfo prototype) {
+        if (null == prototype) {
+            throw new IllegalArgumentException("prototype is required");
+        } else if (null == prototype.instanceId) {
+            throw new IllegalArgumentException("prototype does not have an instanceId");
+        }
+        
+        valueUpdater = prototype.valueUpdater;
+        instanceId = prototype.instanceId;
+        replacer = prototype.replacer;
+        
+        parameters = (Object[]) replacer.replaceWithTracker(prototype.parameters, new HashSet<InstanceTracker>());
     }
     
     public String getInstanceId() {
@@ -58,48 +76,23 @@ public class ValueUpdaterInfo implements Serializable {
         this.instanceId = instanceId;
     }
 
+    public Set<InstanceTracker> getInstanceTrackers() {
+        Set<InstanceTracker> trackers = new HashSet<InstanceTracker>();
+        replacer.replaceWithTracker(parameters, trackers);
+        return trackers;
+    }
+    
     public Object[] getParameters() {
         return parameters;
     }
     
     public void execute(InstanceRegistry instanceRegistry) {
-        Object[] newParameters = replaceTrackerWithItsInstance(instanceRegistry, parameters);
+        Object[] newParameters =  (Object[]) replacer.replaceWithInstance(instanceRegistry, parameters);
         valueUpdater.executeWithParameters(instanceRegistry, instanceId, newParameters);
     }
-    
-    protected Object[] replaceInstanceWithItsTracker(Object[] parameters) {
-        Object[] actualParameters = new Object[parameters.length];
-        for (int i = 0; i < parameters.length; i++) {
-            Object value = parameters[i];
-            value = replaceInstanceWithItsTracker(value);
-            actualParameters[i] = value;
-        }
-        return actualParameters;
-    }
-    
-    protected Object replaceInstanceWithItsTracker(Object parameter) {
-        if (parameter instanceof ClusteredStateMarker) {
-            parameter = ((ClusteredStateMarker) parameter).$wadiGetTracker();
-        }
-        return parameter;
-    }
-    
-    protected Object[] replaceTrackerWithItsInstance(InstanceRegistry instanceRegistry, Object[] parameters) {
-        Object[] actualParameters = new Object[parameters.length];
-        for (int i = 0; i < parameters.length; i++) {
-            Object parameter = parameters[i];
-            parameter = replaceTrackerWithItsInstance(instanceRegistry, parameter);
-            actualParameters[i] = parameter;
-        }
-        return actualParameters;
-    }
-    
-    protected Object replaceTrackerWithItsInstance(InstanceRegistry instanceRegistry, Object parameter) {
-        if (parameter instanceof InstanceTracker) {
-            String instanceId = ((InstanceTracker) parameter).getInstanceId();
-            return instanceRegistry.getInstance(instanceId);
-        }
-        return parameter;
+
+    public ValueUpdaterInfo snapshotForSerialization() {
+        return new ValueUpdaterInfo(this);
     }
 
 }

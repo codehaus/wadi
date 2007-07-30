@@ -48,7 +48,7 @@ public class AtomicallyReplicableSession extends AbstractReplicableSession {
     protected transient boolean dirty = false;
     protected transient Semantics semantics = new ByReferenceSemantics();
 
-    public AtomicallyReplicableSession(Attributes attributes,
+    public AtomicallyReplicableSession(DistributableAttributes attributes,
             Manager manager,
             Streamer streamer,
             ReplicationManager replicationManager) {

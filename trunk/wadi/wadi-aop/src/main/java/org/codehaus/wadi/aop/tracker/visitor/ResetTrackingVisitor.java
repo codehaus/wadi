@@ -16,6 +16,7 @@
 package org.codehaus.wadi.aop.tracker.visitor;
 
 import org.codehaus.wadi.aop.tracker.InstanceTracker;
+import org.codehaus.wadi.aop.tracker.InstanceTrackerVisitor;
 import org.codehaus.wadi.aop.tracker.VisitorContext;
 
 /**
@@ -23,9 +24,12 @@ import org.codehaus.wadi.aop.tracker.VisitorContext;
  * @version $Revision: 1538 $
  */
 public class ResetTrackingVisitor extends AbstractVisitor {
+    public static final InstanceTrackerVisitor SINGLETON = new ResetTrackingVisitor();
+
+    private ResetTrackingVisitor() {
+    }
     
-    @Override
-    protected void doVisit(InstanceTracker instanceTracker, VisitorContext context) {
+    public void visit(InstanceTracker instanceTracker, VisitorContext context) {
         instanceTracker.resetTracking();
     }
     

@@ -28,7 +28,7 @@ public class DistributableAttributesFactory extends StandardAttributesFactory {
         super(valueFactory);
     }
 
-    public Attributes create() {
+    public DistributableAttributes create() {
         return new DistributableAttributes(valueFactory);
     }
 

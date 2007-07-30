@@ -22,14 +22,14 @@ import org.codehaus.wadi.core.motable.AbstractMotableMemento;
  * @version $Revision: 1538 $
  */
 public class StandardSessionMemento extends AbstractMotableMemento {
-    protected Attributes attributes;
+    private StandardAttributesMemento attributesMemento;
 
-    public Attributes getAttributes() {
-        return attributes;
+    public StandardAttributesMemento getAttributesMemento() {
+        return attributesMemento;
     }
 
-    public void setAttributes(Attributes attributes) {
-        this.attributes = attributes;
+    public void setAttributesMemento(StandardAttributesMemento attributesMemento) {
+        this.attributesMemento = attributesMemento;
     }
     
 }
