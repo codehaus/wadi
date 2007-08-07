@@ -15,8 +15,8 @@
  */
 package org.codehaus.wadi.core.store;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -174,12 +174,8 @@ public class DatabaseStoreTest extends RMockTestCase {
         ResultSet rs = ps.executeQuery();
         rs.next();
         modify().returnValue(true);
-        Blob blob = rs.getBlob("body");
-        blob.length();
-        modify().returnValue(10);
-        blob.getBytes(1, 10);
-        byte[] body = new byte[0];
-        modify().returnValue(body);
+        rs.getBinaryStream("body");
+        modify().returnValue(new ByteArrayInputStream(new byte[0]));
 
         rs.close();
         ps.close();
@@ -189,7 +185,7 @@ public class DatabaseStoreTest extends RMockTestCase {
         startVerification();
         
         byte[] actualBody = store.loadBody(motable);
-        assertSame(body, actualBody);
+        assertEquals(0, actualBody.length);
     }
     
     public void testUpdate() throws Exception {

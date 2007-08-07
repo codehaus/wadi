@@ -43,7 +43,7 @@ public class SharedStoreIntegrationTest extends TestCase {
         VMBroker cluster = new VMBroker("TEST");
         cluster.start();
 
-        final Store store = newStore();
+        Store store = newStore();
 
         StackContext stackContext = newStackContext("red", cluster, store);
         ServiceSpace serviceSpace = stackContext.getServiceSpace();
@@ -103,11 +103,15 @@ public class SharedStoreIntegrationTest extends TestCase {
     }
 
     private Store newStore() {
+//        PGPoolingDataSource dataSource = new PGPoolingDataSource();
+//        dataSource.setUser("postgres");
+//        dataSource.setDatabaseName("wadi");
+//        return new DatabaseStore(dataSource, "sessions", DatabaseStore.PGSQL_LOB_TYPE_NAME, true, false);
+        
         EmbeddedDataSource dataSource = new EmbeddedDataSource();
         dataSource.setCreateDatabase("create");
         dataSource.setDatabaseName("target/derby/SharedDataStoreDB");
-        final Store store = new DatabaseStore(dataSource, "session_table", true, false);
-        return store;
+        return new DatabaseStore(dataSource, "sessions", true, false);
     }
     
 }

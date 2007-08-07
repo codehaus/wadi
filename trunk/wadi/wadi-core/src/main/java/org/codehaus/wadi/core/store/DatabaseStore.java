@@ -17,7 +17,9 @@
 package org.codehaus.wadi.core.store;
 
 import java.io.ByteArrayInputStream;
-import java.sql.Blob;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -35,6 +37,9 @@ import org.codehaus.wadi.core.motable.Motable;
  * @version $Revision$
  */
 public class DatabaseStore implements Store {
+    public static final String DEFAULT_BLOB_TYPE_NAME = "BLOB";
+    public static final String PGSQL_LOB_TYPE_NAME = "BYTEA";
+    
     private static final Log log = LogFactory.getLog(DatabaseStore.class);
 
     private final DataSource ds;
@@ -48,21 +53,29 @@ public class DatabaseStore implements Store {
     private final boolean accessOnLoad;
 
     public DatabaseStore(DataSource dataSource,
-            String table,
-            boolean build,
-            boolean accessOnLoad) {
-        this(dataSource,
-                "CREATE TABLE " + table + " (name VARCHAR(50), creation_time BIGINT, last_accessed_time BIGINT, max_inactive_interval INTEGER, body BLOB)",
-                "SELECT name, creation_time, last_accessed_time, max_inactive_interval FROM " + table,
-                "SELECT body FROM " + table + " WHERE name = ?",
-                "DELETE FROM " + table,
-                "INSERT INTO " + table + " (name, creation_time, last_accessed_time, max_inactive_interval, body) VALUES (?, ?, ?, ?, ?)",
-                "UPDATE " + table + " SET last_accessed_time = ?, max_inactive_interval = ?, body = ? WHERE name = ?",
-                "DELETE FROM " + table + " WHERE name = ?",
-                build,
-                accessOnLoad);
+        String table,
+        boolean build,
+        boolean accessOnLoad) {
+        this(dataSource, table, DEFAULT_BLOB_TYPE_NAME, build, accessOnLoad);
     }
-
+    
+    public DatabaseStore(DataSource dataSource,
+        String table,
+        String lobTypeName,
+        boolean build,
+        boolean accessOnLoad) {
+        this(dataSource,
+            "CREATE TABLE " + table + " (name VARCHAR(50), creation_time BIGINT, last_accessed_time BIGINT, max_inactive_interval INTEGER, body " + lobTypeName + ")",
+            "SELECT name, creation_time, last_accessed_time, max_inactive_interval FROM " + table,
+            "SELECT body FROM " + table + " WHERE name = ?",
+            "DELETE FROM " + table,
+            "INSERT INTO " + table + " (name, creation_time, last_accessed_time, max_inactive_interval, body) VALUES (?, ?, ?, ?, ?)",
+            "UPDATE " + table + " SET last_accessed_time = ?, max_inactive_interval = ?, body = ? WHERE name = ?",
+            "DELETE FROM " + table + " WHERE name = ?",
+            build,
+            accessOnLoad);
+    }
+    
     public DatabaseStore(DataSource dataSource,
             String createTableDDL,
             String selectAllSQL,
@@ -236,10 +249,18 @@ public class DatabaseStore implements Store {
     }
 
     protected byte[] loadBody(ResultSet rs) throws SQLException {
-        boolean usingAxion = ds.getClass().getName().startsWith("org.axiondb.");
-        Blob blob = rs.getBlob("body");
-        // axion-1.0-M3-dev copies from blobs starting at 0 instead of 1
-        return blob.getBytes(usingAxion ? 0 : 1, (int) blob.length());
+        InputStream in = rs.getBinaryStream("body");
+        ByteArrayOutputStream memOut = new ByteArrayOutputStream();
+        byte[] buffer = new byte[1024];
+        int read;
+        try {
+            while (-1 < (read = in.read(buffer))) {
+                memOut.write(buffer, 0, read);   
+            }
+        } catch (IOException e) {
+            throw (SQLException) new SQLException().initCause(e);
+        }
+        return memOut.toByteArray();
     }
     
     protected void load(Putter putter, Connection conn) {
