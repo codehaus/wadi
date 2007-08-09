@@ -33,6 +33,9 @@ import org.codehaus.wadi.location.session.MoveIMToSM;
 import org.codehaus.wadi.location.session.MoveSMToIM;
 import org.codehaus.wadi.servicespace.ServiceSpace;
 
+import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
+import EDU.oswego.cs.dl.util.concurrent.Sync;
+
 import com.agical.rmock.core.describe.ExpressionDescriber;
 import com.agical.rmock.core.match.operator.AbstractExpression;
 import com.agical.rmock.extension.junit.RMockTestCase;
@@ -95,11 +98,22 @@ public class HybridRelocaterTest extends RMockTestCase {
 
         recordReplyToSM(envelope, true);
         
+        ReadWriteLock rwLock = relocatedSession.getReadWriteLock();
+        modify().multiplicity(expect.from(2));
+
+        Sync readLock = rwLock.readLock();
+        modify().multiplicity(expect.from(2));
+
+        readLock.acquire();
+        
         immoter.immote(relocatedMotable, relocatedSession);
         modify().returnValue(true);
         
         immoter.contextualise(invocation, key, relocatedSession);
         modify().returnValue(true);
+
+        readLock.release();
+        
         startVerification();
         
         HybridRelocater relocater = new HybridRelocater(serviceSpace, manager);

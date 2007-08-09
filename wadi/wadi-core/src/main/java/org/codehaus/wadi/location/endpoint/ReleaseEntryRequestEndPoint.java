@@ -76,7 +76,7 @@ public class ReleaseEntryRequestEndPoint implements Lifecycle, ReleaseEntryReque
         String name = emotable.getName();
         Emoter emoter = new ReleaseEntryRequestEmoter(message);
         Immoter immoter = contextualiser.getDemoter(name, emotable);
-        immoter = new RehydrationImmoter(immoter, emotable);
+        immoter = new RehydrationImmoter(immoter);
         Utils.mote(emoter, immoter, emotable, name);
         stateManager.relocate(name);
     }

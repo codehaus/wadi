@@ -142,7 +142,7 @@ class BasicEvenBalancer implements PartitionBalancingStrategy {
     protected void balance(PartitionInfoUpdateBuilder balancingInfoBuilder, PartitionBalancingInfo balancingInfo) {
         int nbLocal = balancingInfo.getNumberOfLocalPartitionInfos();
         int nbPartitionToAdd = nbPartitionPerPeer - nbLocal;
-        if (nbPartitionToAdd > 0) {
+        if (0 < nbPartitionToAdd) {
             balancingInfoBuilder.addPartitionInfos(balancingInfo, nbPartitionToAdd);
         } else {
             if (0 < nbSparePartitions) {
@@ -151,6 +151,8 @@ class BasicEvenBalancer implements PartitionBalancingStrategy {
             }
             if (0 == nbPartitionToAdd) {
                 balancingInfoBuilder.mergePartitionInfos(balancingInfo);
+            } else if (0 < nbPartitionToAdd) {
+                balancingInfoBuilder.addPartitionInfos(balancingInfo, nbPartitionToAdd);
             } else {
                 balancingInfoBuilder.removePartitions(balancingInfo, -nbPartitionToAdd);
             }
