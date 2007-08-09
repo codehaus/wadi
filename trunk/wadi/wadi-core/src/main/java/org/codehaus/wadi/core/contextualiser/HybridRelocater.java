@@ -25,6 +25,7 @@ import org.codehaus.wadi.core.WADIRuntimeException;
 import org.codehaus.wadi.core.motable.AbstractChainedEmoter;
 import org.codehaus.wadi.core.motable.Emoter;
 import org.codehaus.wadi.core.motable.Immoter;
+import org.codehaus.wadi.core.motable.LockingRehydrationImmoter;
 import org.codehaus.wadi.core.motable.Motable;
 import org.codehaus.wadi.core.motable.RehydrationImmoter;
 import org.codehaus.wadi.core.util.Utils;
@@ -137,7 +138,7 @@ public class HybridRelocater implements Relocater {
         } else {
             // We are receiving an incoming state migration. Insert motable into contextualiser stack...
             Emoter emoter = new SMToIMEmoter(message);
-            immoter = new RehydrationImmoter(immoter, emotable);
+            immoter = new LockingRehydrationImmoter(immoter);
             Motable immotable = Utils.mote(emoter, immoter, emotable, name);
             return immoter.contextualise(invocation, name, immotable);
         }

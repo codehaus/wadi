@@ -13,24 +13,24 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-import java.io.IOException;
+import java.net.URI;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-
+import org.codehaus.wadi.core.assembler.StackContext;
+import org.codehaus.wadi.core.contextualiser.BasicInvocation;
+import org.codehaus.wadi.core.contextualiser.BasicInvocationContextFactory;
+import org.codehaus.wadi.core.contextualiser.Invocation;
+import org.codehaus.wadi.core.contextualiser.InvocationContext;
+import org.codehaus.wadi.core.contextualiser.InvocationContextFactory;
 import org.codehaus.wadi.core.contextualiser.InvocationException;
+import org.codehaus.wadi.core.manager.DummyRouter;
 import org.codehaus.wadi.core.manager.Manager;
+import org.codehaus.wadi.core.manager.Router;
 import org.codehaus.wadi.core.session.Session;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.vm.VMBroker;
 import org.codehaus.wadi.group.vm.VMDispatcher;
-import org.codehaus.wadi.web.impl.WebInvocation;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.MockHttpServletResponse;
+import org.codehaus.wadi.replication.strategy.RoundRobinBackingStrategyFactory;
+import org.codehaus.wadi.servicespace.ServiceSpaceName;
 
 import EDU.oswego.cs.dl.util.concurrent.Latch;
 
@@ -40,6 +40,9 @@ import EDU.oswego.cs.dl.util.concurrent.Latch;
  */
 public class Launcher {
     private static final String SESSION_ID = "myID";
+    private static final String ATTRIBUTE = "attribute";
+    private static final String LAST_MANAGER_HASHCODE = "lastManagerHashCode";
+    private static final String SESSION_RELOCATION = "sessionRelocation";
 
     public static void main(String[] args) throws Exception {
         Launcher launcher = new Launcher();
@@ -47,65 +50,57 @@ public class Launcher {
     }
 
     private final VMBroker broker;
-    private final FilterChain filterChain;
     private final Latch latch;
-    private Manager redManager;
-    private Manager greenManager;
-    private Manager yellowManager;
-    private volatile Long cpt;
     
     private Launcher() {
         broker = new VMBroker("brokerName");
-        
-        filterChain = new FilterChain() {
-            public void doFilter(ServletRequest request, ServletResponse response) throws IOException, ServletException {
-                HttpServletRequest httpServletRequest = (HttpServletRequest) request;
-                HttpSession session = httpServletRequest.getSession(false);
-                Long currCpt = (Long) session.getAttribute("attr1");
-                if (null == currCpt) {
-                    throw new IllegalStateException();
-                } else if (cpt.longValue() != currCpt.longValue()) {
-                    throw new IllegalStateException("cpt [" + cpt + "]; currCpt [" + currCpt + "]");
-                }
-                cpt = new Long(currCpt.longValue() + 1);
-                session.setAttribute("attr1", cpt);
-            }
-        };
-        
         latch = new Latch();
     }
 
     private void start() throws Exception {
-        redManager = newManager(broker, "red");
-        greenManager = newManager(broker, "green");
-        yellowManager = newManager(broker, "yellow");
+        Manager[] managers = new Manager[26];
+        for (int i = 0; i < managers.length; i++) {
+            managers[i] = newManager(broker, "node" + i);
+        }
+        Manager firstManager = managers[0];
         
-        Session session = greenManager.createWithName(SESSION_ID);
-        cpt = new Long(0);
-        session.addState("attr1", cpt);
+        Session session = firstManager.createWithName(SESSION_ID);
+        session.addState(LAST_MANAGER_HASHCODE, firstManager.hashCode());
+        session.addState(SESSION_RELOCATION, new Long(0));
+        session.addState(ATTRIBUTE, new Long(0));
         session.onEndProcessing();
         
-        Manager managers[] = new Manager[] {redManager, greenManager, yellowManager};
-        Thread threads[] = new Thread[2];
+        Thread threads[] = new Thread[managers.length];
         for (int i = 0; i < threads.length; i++) {
-            threads[i] = new ThreadRunner(managers[i % 3], filterChain);
+            threads[i] = new ThreadRunner(managers[i]);
         }
 
         for (int i = 0; i < threads.length; i++) {
             threads[i].start();
         }
-
         latch.release();
-        long start = System.currentTimeMillis();
         
+        long start = System.currentTimeMillis();
         for (int i = 0; i < threads.length; i++) {
             threads[i].join();
         }
-
         long end = System.currentTimeMillis();
 
-        System.out.println("Done in [" + (end - start) + "]");
-        System.out.println(cpt.longValue());
+        Invocation invocation = new IncrementCptInvocation(SESSION_ID, 1000, firstManager.hashCode());
+        try {
+            firstManager.contextualise(invocation);
+        } catch (InvocationException e) {
+            e.printStackTrace();
+        }
+        session = invocation.getSession();
+        
+        System.out.println("Done in " + (end - start) + "ms");
+        Long cpt = (Long) session.getState(ATTRIBUTE);
+        System.out.println("Number of invocations " + cpt.longValue());
+        
+        Long nbReloc = (Long) session.getState(SESSION_RELOCATION);
+        System.out.println("Number of relocations " + nbReloc.longValue());
+
         System.exit(0);
     }
 
@@ -114,49 +109,42 @@ public class Launcher {
         VMDispatcher dispatcher = new VMDispatcher(broker, nodeName, null);
         dispatcher.start();
 
-        SampleStack stack = new SampleStack();
-        stack.create(dispatcher);
-        stack.start();
-        return stack.getManager();
-    }
-
-    private static MockHttpServletResponse newResponse() {
-        MockHttpServletResponse response = new MockHttpServletResponse();
-        return response;
-    }
-
-    private static MockHttpServletRequest newRequest() {
-        MockHttpServletRequest request = new MockHttpServletRequest() {
-            public String getRequestedSessionId() {
-                return SESSION_ID;
+        StackContext stackContext = new StackContext(Thread.currentThread().getContextClassLoader(),
+            new ServiceSpaceName(new URI("name")),
+                dispatcher,
+                30 * 60,
+                48,
+                1000 * 60 * 60 * 24,
+                new RoundRobinBackingStrategyFactory(1)) {
+            protected Router newRouter() {
+                return new DummyRouter();
+            }
+            @Override
+            protected InvocationContextFactory newInvocationContextFactory() {
+                return new BasicInvocationContextFactory();
             }
         };
-        request.setMethod("POST");
-        return request;
+        stackContext.build();
+        stackContext.getServiceSpace().start();
+        return stackContext.getManager();
     }
 
     public class ThreadRunner extends Thread {
         private final Manager manager;
-        private final FilterChain filterChain;
 
-        public ThreadRunner(Manager manager, FilterChain filterChain) {
+        public ThreadRunner(Manager manager) {
             this.manager = manager;
-            this.filterChain = filterChain;
         }
 
         public void run() {
-            
             try {
                 latch.acquire();
             } catch (InterruptedException e) {
                 throw new IllegalStateException("Cannot acquire latch");
             }
 
-            for (int i = 0; i < 1000; i++) {
-                MockHttpServletRequest request = newRequest();
-                MockHttpServletResponse response = newResponse();
-                WebInvocation invocation = new WebInvocation();
-                invocation.init(request, response, filterChain);
+            for (int i = 0; i < 20000; i++) {
+                Invocation invocation = new IncrementCptInvocation(SESSION_ID, 1000, manager.hashCode());
                 try {
                     manager.contextualise(invocation);
                 } catch (InvocationException e) {
@@ -166,5 +154,33 @@ public class Launcher {
                 }
             }
         }
+    }
+    
+    private static class IncrementCptInvocation extends BasicInvocation {
+        private final int managerHashCode;
+
+        public IncrementCptInvocation(String sessionKey, long exclusiveSessionLockWaitTime, int managerHashCode) {
+            super(sessionKey, exclusiveSessionLockWaitTime);
+            this.managerHashCode = managerHashCode;
+        }
+        
+        @Override
+        public void invoke(InvocationContext context) throws InvocationException {
+            Session session = getSession();
+            Long cpt = (Long) session.getState(ATTRIBUTE);
+            if (null == cpt) {
+                throw new InvocationException("cpt is null");
+            }
+            session.addState(ATTRIBUTE, new Long(cpt.longValue() + 1));
+            
+            Integer lastManagerHashCode = (Integer) session.getState(LAST_MANAGER_HASHCODE);
+            if (lastManagerHashCode.intValue() != managerHashCode) {
+                session.addState(LAST_MANAGER_HASHCODE, new Integer(managerHashCode));
+                
+                Long nbReloc = (Long) session.getState(SESSION_RELOCATION);
+                session.addState(SESSION_RELOCATION, new Long(nbReloc.longValue() + 1));
+            }
+        }  
+
     }
 }

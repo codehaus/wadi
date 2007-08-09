@@ -1,5 +1,5 @@
 /**
- * Copyright 2006 The Apache Software Foundation
+ * Copyright 2007 The Apache Software Foundation
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
  */
 package org.codehaus.wadi.core.motable;
 
-import org.codehaus.wadi.core.WADIRuntimeException;
 import org.codehaus.wadi.core.contextualiser.Invocation;
 import org.codehaus.wadi.core.contextualiser.InvocationException;
 
@@ -23,35 +22,28 @@ import org.codehaus.wadi.core.contextualiser.InvocationException;
  * 
  * @version $Revision: 1538 $
  */
-public class RehydrationImmoter implements Immoter {
-    private final Immoter delegate;
+public class LockingRehydrationImmoter extends RehydrationImmoter {
     
-    public RehydrationImmoter(Immoter delegate) {
-        if (null == delegate) {
-            throw new IllegalArgumentException("delegate is required");
-        }
-        this.delegate = delegate;
+    public LockingRehydrationImmoter(Immoter delegate) {
+        super(delegate);
     }
 
     public boolean contextualise(Invocation invocation, String id, Motable immotable) throws InvocationException {
-        return delegate.contextualise(invocation, id, immotable);
+        try {
+            return super.contextualise(invocation, id, immotable);
+        } finally {
+            immotable.getReadWriteLock().readLock().release();
+        }
     }
 
     public boolean immote(Motable emotable, Motable immotable) {
-        return delegate.immote(emotable, immotable);
+        try {
+            immotable.getReadWriteLock().readLock().acquire();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return false;
+        }
+        return super.immote(emotable, immotable);
     }
 
-    public Motable newMotable(Motable emotable) {
-        Motable immotable = delegate.newMotable(emotable);
-        try {
-            immotable.rehydrate(emotable.getCreationTime(),
-                    emotable.getLastAccessedTime(),
-                    emotable.getMaxInactiveInterval(),
-                    emotable.getName(),
-                    emotable.getBodyAsByteArray());
-        } catch (Exception e) {
-            throw new WADIRuntimeException(e);
-        }
-        return immotable;
-    }
 }

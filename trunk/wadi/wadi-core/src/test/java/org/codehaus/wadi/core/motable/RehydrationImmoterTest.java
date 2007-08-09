@@ -53,7 +53,7 @@ public class RehydrationImmoterTest extends RMockTestCase {
         
         startVerification();
         
-        RehydrationImmoter immoter = new RehydrationImmoter(delegate, motable);
+        RehydrationImmoter immoter = new RehydrationImmoter(delegate);
         immoter.newMotable(motable);
     }
     
