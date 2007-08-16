@@ -27,5 +27,9 @@ public interface SessionRequestMessage extends SessionMessage {
 
     void setVersion(int version);
     
+    int getNumberOfExpectedMerge();
+    
+    void setNumberOfExpectedMerge(int numberOfExpectedMerge);
+    
     SessionResponseMessage newResponseFailure();
 }

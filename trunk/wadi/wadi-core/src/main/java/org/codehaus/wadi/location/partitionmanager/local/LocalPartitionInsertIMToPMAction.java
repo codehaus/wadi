@@ -22,7 +22,6 @@ import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.Peer;
-import org.codehaus.wadi.location.partitionmanager.local.LocalPartition.Location;
 import org.codehaus.wadi.location.session.InsertIMToPM;
 import org.codehaus.wadi.location.session.InsertPMToIM;
 import org.codehaus.wadi.location.session.SessionResponseMessage;
@@ -33,7 +32,7 @@ import org.codehaus.wadi.location.session.SessionResponseMessage;
  */
 public class LocalPartitionInsertIMToPMAction extends AbstractLocalPartitionAction {
     
-    public LocalPartitionInsertIMToPMAction(Dispatcher dispatcher, Map nameToLocation, Log log) {
+    public LocalPartitionInsertIMToPMAction(Dispatcher dispatcher, Map<Object, Location> nameToLocation, Log log) {
         super(dispatcher, nameToLocation, log);
     }
 

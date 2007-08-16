@@ -21,7 +21,6 @@ import org.apache.commons.logging.Log;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.MessageExchangeException;
-import org.codehaus.wadi.location.partitionmanager.local.LocalPartition.Location;
 import org.codehaus.wadi.location.session.DeleteIMToPM;
 import org.codehaus.wadi.location.session.DeletePMToIM;
 import org.codehaus.wadi.location.session.SessionResponseMessage;
@@ -32,7 +31,7 @@ import org.codehaus.wadi.location.session.SessionResponseMessage;
  */
 public class LocalPartitionDeleteIMToPMAction  extends AbstractLocalPartitionAction {
     
-    public LocalPartitionDeleteIMToPMAction(Dispatcher dispatcher, Map nameToLocation, Log log) {
+    public LocalPartitionDeleteIMToPMAction(Dispatcher dispatcher, Map<Object, Location> nameToLocation, Log log) {
         super(dispatcher, nameToLocation, log);
     }
 

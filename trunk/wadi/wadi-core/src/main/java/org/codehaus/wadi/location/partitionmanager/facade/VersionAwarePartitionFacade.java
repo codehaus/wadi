@@ -25,7 +25,9 @@ import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.location.balancing.PartitionInfo;
 import org.codehaus.wadi.location.partitionmanager.Partition;
+import org.codehaus.wadi.location.partitionmanager.UnknownPartition;
 import org.codehaus.wadi.location.partitionmanager.local.LocalPartition;
+import org.codehaus.wadi.location.partitionmanager.remote.RemotePartition;
 import org.codehaus.wadi.location.session.DeleteIMToPM;
 import org.codehaus.wadi.location.session.EvacuateIMToPM;
 import org.codehaus.wadi.location.session.InsertIMToPM;
@@ -41,50 +43,58 @@ import EDU.oswego.cs.dl.util.concurrent.Latch;
 public class VersionAwarePartitionFacade implements PartitionFacade {
     private static final Log log = LogFactory.getLog(VersionAwarePartitionFacade.class);
     
+    private final int key;
+    private final Latch partitionDefinedLatch;
     private final Dispatcher dispatcher;
-    private final PartitionFacade delegate;
     private final long partitionUpdateWaitTime;
     private final Object partitionInfoLock = new Object();
     private PartitionInfo partitionInfo;
+    private Partition partition;
     private Latch partitionInfoLatch;
 
-    public VersionAwarePartitionFacade(Dispatcher dispatcher,
+    public VersionAwarePartitionFacade(int key,
+            Dispatcher dispatcher,
             PartitionInfo partitionInfo,
-            PartitionFacade delegate,
             long partitionUpdateWaitTime) {
-        if (null == dispatcher ) {
+        if (0 > key) {
+            throw new IllegalArgumentException("key must be greater than 0");
+        } else if (null == dispatcher ) {
             throw new IllegalArgumentException("dispatcher is required");
         } else if (null == partitionInfo) {
             throw new IllegalArgumentException("partitionInfo is required");
-        } else if (null == delegate) {
-            throw new IllegalArgumentException("delegate is required");
         } else if (0 > partitionUpdateWaitTime) {
             throw new IllegalArgumentException("partitionUpdateWaitTime must be >= 0");
         }
+        this.key = key;
         this.dispatcher = dispatcher;
         this.partitionInfo = partitionInfo;
-        this.delegate = delegate;
         this.partitionUpdateWaitTime = partitionUpdateWaitTime;
+
+        partitionDefinedLatch = new Latch();
         
+        partition = new UnknownPartition(key);
         partitionInfoLatch = new Latch();
     }
     
     public boolean waitForBoot(long attemptPeriod) throws InterruptedException {
-        return delegate.waitForBoot(attemptPeriod);
+        return partitionDefinedLatch.attempt(attemptPeriod);
     }
 
     public Envelope exchange(SessionRequestMessage request, long timeout) throws MessageExchangeException {
         PartitionInfo localPartitionInfo;
+        Partition localPartition;
         Latch localRequestLatch;
         synchronized (partitionInfoLock) {
             localPartitionInfo = partitionInfo;
+            localPartition = partition;
             localRequestLatch = partitionInfoLatch;
         }
         request.setVersion(localPartitionInfo.getVersion());
+        request.setNumberOfExpectedMerge(localPartitionInfo.getNumberOfExpectedMerge());
         
         Envelope envelope;
         try {
-            envelope = delegate.exchange(request, timeout);
+            envelope = localPartition.exchange(request, timeout);
         } catch (MessageExchangeException e) {
             envelope = waitForUpdateAndExchange(request, timeout, localRequestLatch);
             if (null == envelope) {
@@ -112,11 +122,13 @@ public class VersionAwarePartitionFacade implements PartitionFacade {
     }
 
     public int getKey() {
-        return delegate.getKey();
+        return key;
     }
 
     public boolean isLocal() {
-        return delegate.isLocal();
+        synchronized (partitionInfoLock) {
+            return partition.isLocal();
+        }
     }
 
     public void onMessage(final Envelope message, final DeleteIMToPM request) {
@@ -125,9 +137,9 @@ public class VersionAwarePartitionFacade implements PartitionFacade {
                 onMessage(message, request);
             }
         };
-        Runnable delegateAction = new Runnable() {
+        PartitionRunnable delegateAction = new PartitionRunnable() {
             public void run() {
-                delegate.onMessage(message, request);
+                partition.onMessage(message, request);
             }
         };
         onMessage(message, request, attemptAction, delegateAction);
@@ -140,9 +152,9 @@ public class VersionAwarePartitionFacade implements PartitionFacade {
                 onMessage(message, request);
             }
         };
-        Runnable delegateAction = new Runnable() {
+        PartitionRunnable delegateAction = new PartitionRunnable() {
             public void run() {
-                delegate.onMessage(message, request);
+                partition.onMessage(message, request);
             }
         };
         onMessage(message, request, attemptAction, delegateAction);
@@ -154,9 +166,9 @@ public class VersionAwarePartitionFacade implements PartitionFacade {
                 onMessage(message, request);
             }
         };
-        Runnable delegateAction = new Runnable() {
+        PartitionRunnable delegateAction = new PartitionRunnable() {
             public void run() {
-                delegate.onMessage(message, request);
+                partition.onMessage(message, request);
             }
         };
         onMessage(message, request, attemptAction, delegateAction);
@@ -168,34 +180,22 @@ public class VersionAwarePartitionFacade implements PartitionFacade {
                 onMessage(message, request);
             }
         };
-        Runnable delegateAction = new Runnable() {
+        PartitionRunnable delegateAction = new PartitionRunnable() {
             public void run() {
-                delegate.onMessage(message, request);
+                partition.onMessage(message, request);
             }
         };
         onMessage(message, request, attemptAction, delegateAction);
     }
 
     public Partition setContent(PartitionInfo partitionInfo, LocalPartition content) {
-        Partition oldPartition = delegate.setContent(partitionInfo, content);
-        setPartitionInfo(partitionInfo);
-        return oldPartition;
+        return setPartitionInfo(partitionInfo, content);
     }
     
     public Partition setContentRemote(PartitionInfo partitionInfo, Peer peer) {
-        Partition oldPartition = delegate.setContentRemote(partitionInfo, peer);
-        setPartitionInfo(partitionInfo);
-        return oldPartition;
+        return setPartitionInfo(partitionInfo, new RemotePartition(key, dispatcher, peer));
     }
     
-    public boolean equals(Object obj) {
-        return delegate.equals(obj);
-    }
-
-    public int hashCode() {
-        return delegate.hashCode();
-    }
-
     public PartitionInfo getPartitionInfo() {
         synchronized (partitionInfoLock) {
             return partitionInfo;
@@ -203,19 +203,52 @@ public class VersionAwarePartitionFacade implements PartitionFacade {
     }
 
     public void setPartitionInfo(PartitionInfo partitionInfo) {
+        setPartitionInfo(partitionInfo, null);
+    }
+
+    protected Partition setPartitionInfo(PartitionInfo partitionInfo, Partition partition) {
         if (null == partitionInfo) {
             throw new IllegalArgumentException("partitionInfo is required");
         }
         
+        Partition oldPartition;
         Latch oldPartitionInfoLatch;
         synchronized (partitionInfoLock) {
-            this.partitionInfo = partitionInfo;
+            oldPartition = this.partition;
             oldPartitionInfoLatch = partitionInfoLatch;
             partitionInfoLatch = new Latch();
+
+            if (null == partition) {
+                if (this.partitionInfo.getVersion() != partitionInfo.getVersion()) {
+                    this.partitionInfo = partitionInfo;
+                }
+            } else if (partition instanceof LocalPartition) {
+                LocalPartition newLocalPartition = (LocalPartition) partition;
+                if (this.partitionInfo.getVersion() == partitionInfo.getVersion()) {
+                    if (!(this.partition instanceof LocalPartition)) {
+                        throw new AssertionError("State should never been reached");
+                    }
+                    ((LocalPartition) this.partition).merge(newLocalPartition);
+                    this.partitionInfo.incrementNumberOfCurrentMerge();
+                } else {
+                    this.partitionInfo = partitionInfo;
+                    if (partitionInfo.getNumberOfExpectedMerge() > 0) {
+                        partitionInfo.incrementNumberOfCurrentMerge();
+                    }
+                    this.partition = partition;
+                }
+            } else {
+                this.partitionInfo = partitionInfo;
+                this.partition = partition;
+            }
         }
         oldPartitionInfoLatch.release();
-    }
 
+        partitionDefinedLatch.release();
+        
+        return oldPartition;
+    }
+    
     protected Envelope waitForUpdateAndExchange(SessionRequestMessage request, long timeout, Latch latch)  
         throws MessageExchangeException {
         boolean success;
@@ -231,11 +264,13 @@ public class VersionAwarePartitionFacade implements PartitionFacade {
     }
 
     protected void onMessage(Envelope message, SessionRequestMessage request, Runnable attemptAction, 
-            Runnable delegateAction) {
+            PartitionRunnable delegateAction) {
         PartitionInfo localPartitionInfo;
+        Partition localPartition;
         Latch localPartitionInfoLatch;
         synchronized (partitionInfoLock) {
             localPartitionInfo = partitionInfo;
+            localPartition = partition;
             localPartitionInfoLatch = partitionInfoLatch;
         }
         
@@ -243,7 +278,12 @@ public class VersionAwarePartitionFacade implements PartitionFacade {
             handleVersionTooLow(message, request.newResponseFailure());
         } else if (localPartitionInfo.getVersion() < request.getVersion()) {
             handleVersionTooHigh(message, request, attemptAction, localPartitionInfoLatch);
+        } else if (localPartitionInfo.getNumberOfCurrentMerge() > request.getNumberOfExpectedMerge()) {
+            throw new AssertionError("Impossible state.");
+        } else if (localPartitionInfo.getNumberOfCurrentMerge() < request.getNumberOfExpectedMerge()) {
+            handleVersionTooHigh(message, request, attemptAction, localPartitionInfoLatch);
         } else {
+            delegateAction.setPartition(localPartition);
             delegateAction.run();
         }
     }
@@ -279,4 +319,12 @@ public class VersionAwarePartitionFacade implements PartitionFacade {
         }
     }
 
+    protected abstract class PartitionRunnable implements Runnable {
+        protected Partition partition;
+        
+        public void setPartition(Partition partition) {
+            this.partition = partition;
+        }
+    }
+    
 }

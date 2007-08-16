@@ -18,7 +18,6 @@ package org.codehaus.wadi.location.balancing;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 import org.codehaus.wadi.group.MessageExchangeException;
@@ -29,7 +28,7 @@ import org.codehaus.wadi.group.Peer;
  * @version $Revision: 1538 $
  */
 class BasicEvenBalancer implements PartitionBalancingStrategy {
-    private final Map peerToBalancingInfo;
+    private final Map<Peer, PartitionBalancingInfo> peerToBalancingInfo;
     private final int nbPeers;
     private final int nbPartitionPerPeer;
     private final int nbPartitions;
@@ -37,11 +36,12 @@ class BasicEvenBalancer implements PartitionBalancingStrategy {
     private final int version;
     private int nbSparePartitions;
     
-    public BasicEvenBalancer(int nbPartitions, Map peerToBalancingInfoState) {
+    public BasicEvenBalancer(int nbPartitions, Map<Peer, PartitionBalancingInfoState> peerToBalancingInfoState) {
         this.nbPartitions = nbPartitions;
 
-        version = newBalancingVersion(peerToBalancingInfoState.values());
-        lostPartitions = identifyLostPartitions(peerToBalancingInfoState.values());
+        Collection<PartitionBalancingInfoState> balancingStates = peerToBalancingInfoState.values();
+        version = newBalancingVersion(balancingStates);
+        lostPartitions = identifyLostPartitions(balancingStates);
         peerToBalancingInfo = filterOutEvacuatingState(peerToBalancingInfoState);
         
         nbPeers = peerToBalancingInfo.size();
@@ -54,12 +54,58 @@ class BasicEvenBalancer implements PartitionBalancingStrategy {
         }
     }
 
-    protected Map filterOutEvacuatingState(Map peerToBalancingInfoState) {
-        Map peerToBalancingInfo = new HashMap();
-        for (Iterator iter = peerToBalancingInfoState.entrySet().iterator(); iter.hasNext();) {
-            Map.Entry entry = (Map.Entry) iter.next();
-            Peer peer = (Peer) entry.getKey();
-            PartitionBalancingInfoState balancingInfoState = (PartitionBalancingInfoState) entry.getValue();
+    public PartitionInfoUpdates computePartitionInfoUpdates() throws MessageExchangeException {
+        if (0 == nbPeers) {
+            return new PartitionInfoUpdates(version, new PartitionInfoUpdate[0]);
+        }
+        
+        PartitionInfoUpdateBuilder builder = new PartitionInfoUpdateBuilder(nbPartitions, version, lostPartitions);
+
+        for (PartitionBalancingInfo balancingInfo : peerToBalancingInfo.values()) {
+            balance(builder, balancingInfo);
+        }
+
+        if (nbSparePartitions > 0) {
+            balanceSpare(builder);
+        }
+
+        if (0 != nbSparePartitions) {
+            throw new AssertionError("nbSparePartitions should equal 0 at this stage.");
+        }
+        
+        return builder.build();
+    }
+
+    protected int newBalancingVersion(Collection<PartitionBalancingInfoState> balancingStates) {
+        int highestBalancingVersion = 0;
+        for (PartitionBalancingInfoState balancingInfoState : balancingStates) {
+            int version = balancingInfoState.getBalancingInfo().getHighestPartitionInfoVersion();
+            if (version > highestBalancingVersion) {
+                highestBalancingVersion = version;
+            }
+        }
+        return ++highestBalancingVersion;
+    }
+    
+    protected BitSet identifyLostPartitions(Collection<PartitionBalancingInfoState> balancingStates) {
+        BitSet lostPartitions = new BitSet(nbPartitions);
+        for (PartitionBalancingInfoState balancingInfoState : balancingStates) {
+            PartitionInfo[] localPartitionInfos = balancingInfoState.getBalancingInfo().getLocalPartitionInfos();
+            for (int i = 0; i < localPartitionInfos.length; i++) {
+                PartitionInfo localPartitionInfo = localPartitionInfos[i];
+                int index = localPartitionInfo.getIndex();
+                lostPartitions.set(index);
+            }
+        }
+        lostPartitions.flip(0, nbPartitions);
+        return lostPartitions;
+    }
+
+    protected Map<Peer, PartitionBalancingInfo> filterOutEvacuatingState(Map<Peer, PartitionBalancingInfoState> peerToBalancingInfoState) {
+        Map<Peer, PartitionBalancingInfo> peerToBalancingInfo = new HashMap<Peer, PartitionBalancingInfo>();
+        for (Map.Entry<Peer, PartitionBalancingInfoState> entry : peerToBalancingInfoState.entrySet()) {
+            Peer peer = entry.getKey();
+            PartitionBalancingInfoState balancingInfoState = entry.getValue();
             if (balancingInfoState.isEvacuatingPartitions()) {
                 continue;
             }
@@ -68,67 +114,8 @@ class BasicEvenBalancer implements PartitionBalancingStrategy {
         return peerToBalancingInfo;
     }
     
-    protected int newBalancingVersion(Collection balancingStates) {
-        int highestBalancingVersion = 0;
-        for (Iterator iter = balancingStates.iterator(); iter.hasNext();) {
-            PartitionBalancingInfoState balancingInfoState = (PartitionBalancingInfoState) iter.next();
-            int version = balancingInfoState.getBalancingInfo().getHighestPartitionInfoVersion();
-            if (version > highestBalancingVersion) {
-                highestBalancingVersion = version;
-            }
-        }
-        return ++highestBalancingVersion;
-    }
-
-    public PartitionInfoUpdates computePartitionInfoUpdates() throws MessageExchangeException {
-        if (0 == nbPeers) {
-            return new PartitionInfoUpdates(version, new PartitionInfoUpdate[0]);
-        }
-        
-        PartitionInfoUpdateBuilder balancingInfoBuilder = new PartitionInfoUpdateBuilder(nbPartitions, version);
-        balancingInfoBuilder.setLostPartitions(lostPartitions);
-
-        for (Iterator iter = peerToBalancingInfo.entrySet().iterator(); iter.hasNext();) {
-            Map.Entry entry = (Map.Entry) iter.next();
-            PartitionBalancingInfo balancingInfo = (PartitionBalancingInfo) entry.getValue();
-            balance(balancingInfoBuilder, balancingInfo);
-        }
-
-        if (nbSparePartitions > 0) {
-            balanceSpare(balancingInfoBuilder);
-        }
-
-        if (0 != nbSparePartitions) {
-            throw new AssertionError("nbSparePartitions should equal 0 at this stage.");
-        }
-        
-        return balancingInfoBuilder.build();
-    }
-
-    protected BitSet identifyLostPartitions(Collection balancingStates) {
-        BitSet lostPartitions = new BitSet(nbPartitions);
-        for (Iterator iter = balancingStates.iterator(); iter.hasNext();) {
-            PartitionBalancingInfoState balancingInfoState = (PartitionBalancingInfoState) iter.next();
-            PartitionInfo[] localPartitionInfos = balancingInfoState.getBalancingInfo().getLocalPartitionInfos();
-            for (int i = 0; i < localPartitionInfos.length; i++) {
-                PartitionInfo localPartitionInfo = localPartitionInfos[i];
-                int index = localPartitionInfo.getIndex();
-                if (lostPartitions.get(index)) {
-                    throw new IllegalStateException("Partition [" + localPartitionInfo + "] is already defined");
-                } else {
-                    lostPartitions.set(index);
-                }
-            }
-        }
-        lostPartitions.flip(0, nbPartitions);
-        return lostPartitions;
-    }
-    
     protected void balanceSpare(PartitionInfoUpdateBuilder balancingInfoBuilder) {
-        for (Iterator iter = peerToBalancingInfo.entrySet().iterator(); iter.hasNext();) {
-            Map.Entry entry = (Map.Entry) iter.next();
-            Peer peer = (Peer) entry.getKey();
-            
+        for (Peer peer : peerToBalancingInfo.keySet()) {
             if (nbPartitionPerPeer == balancingInfoBuilder.getNumberOfPartitionsOwnedBy(peer)) {
                 balancingInfoBuilder.addPartitionInfos(peer, 1);
                 nbSparePartitions--;

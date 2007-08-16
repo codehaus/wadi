@@ -30,6 +30,7 @@ import org.codehaus.wadi.core.motable.Motable;
 public class ReleaseEntryRequest implements SessionRequestMessage, Serializable {
 	protected final Motable _motable;
     private int version;
+    private int numberOfExpectedMerge;
 
 	public ReleaseEntryRequest(Motable motable) {
 		_motable=motable;
@@ -49,6 +50,14 @@ public class ReleaseEntryRequest implements SessionRequestMessage, Serializable 
 
     public void setVersion(int version) {
         this.version = version;
+    }
+
+    public int getNumberOfExpectedMerge() {
+        return numberOfExpectedMerge;
+    }
+
+    public void setNumberOfExpectedMerge(int numberOfExpectedMerge) {
+        this.numberOfExpectedMerge = numberOfExpectedMerge;
     }
 
     public SessionResponseMessage newResponseFailure() {
