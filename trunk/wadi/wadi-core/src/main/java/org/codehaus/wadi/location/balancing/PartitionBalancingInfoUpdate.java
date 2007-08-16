@@ -62,10 +62,6 @@ public class PartitionBalancingInfoUpdate implements Serializable {
         return new PartitionBalancingInfo(peer, newBalancingInfo);
     }
     
-    public boolean isRepopulationRequested() {
-        return getRepopulatePartitionInfoUpdates().length > 0;
-    }
-    
     public PartitionInfoUpdate[] getRepopulatePartitionInfoUpdates() {
         List<PartitionInfoUpdate> partitionInfoUpdatesToRepopulate = new ArrayList<PartitionInfoUpdate>();
         for (int i = 0; i < balancingInfoUpdates.length; i++) {
