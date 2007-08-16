@@ -16,7 +16,6 @@
  */
 package org.codehaus.wadi.location.partitionmanager.local;
 
-import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -42,7 +41,7 @@ import EDU.oswego.cs.dl.util.concurrent.WaitableInt;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision:1815 $
  */
-public class BasicLocalPartition implements Serializable, LocalPartition {
+public class BasicLocalPartition implements LocalPartition {
     private transient final Dispatcher dispatcher;
     private transient final LocalPeer peer;
     private transient final Log log;
