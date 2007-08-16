@@ -195,7 +195,7 @@ public class StackContext {
         contextualiser = newClusteredContextualiser(contextualiser);
         stackExplorer.pushContextualiser(contextualiser);
 
-        memoryMap = new OswegoConcurrentMotableMap();
+        memoryMap = newConcurrentMap();
         contextualiser = newCollapserContextualiser(contextualiser, memoryMap);
         stackExplorer.pushContextualiser(contextualiser);
 
@@ -226,6 +226,10 @@ public class StackContext {
         registerStateManager();
         registerClusteredManager(manager);
         // End of implementation note.
+    }
+
+    protected OswegoConcurrentMotableMap newConcurrentMap() {
+        return new OswegoConcurrentMotableMap();
     }
 
     private ObjectStateHandler newObjectStateHandler(Streamer streamer) {
