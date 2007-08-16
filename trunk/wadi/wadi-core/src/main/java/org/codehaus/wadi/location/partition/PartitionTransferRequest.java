@@ -18,6 +18,9 @@ package org.codehaus.wadi.location.partition;
 
 import java.util.Map;
 
+import org.codehaus.wadi.location.balancing.PartitionInfo;
+import org.codehaus.wadi.location.partitionmanager.local.LocalPartition;
+
 
 /**
  * Sent from one peer to another, requesting that it take over ownership of a number of Partitions (enclosed).
@@ -26,16 +29,16 @@ import java.util.Map;
  * @version $Revision:1815 $
  */
 public class PartitionTransferRequest implements PartitionRequestMessage {
-	protected final Map partitionInfoToLocalPartition;
+	protected final Map<PartitionInfo, LocalPartition> partitionInfoToLocalPartition;
 
-    public PartitionTransferRequest(Map partitionInfoToLocalPartition) {
+    public PartitionTransferRequest(Map<PartitionInfo, LocalPartition> partitionInfoToLocalPartition) {
         if (null == partitionInfoToLocalPartition) {
             throw new IllegalArgumentException("partitionInfoToLocalPartition is required");
         }
         this.partitionInfoToLocalPartition = partitionInfoToLocalPartition;
     }
 
-    public Map getPartitionInfoToLocalPartition() {
+    public Map<PartitionInfo, LocalPartition> getPartitionInfoToLocalPartition() {
         return partitionInfoToLocalPartition;
     }
 
