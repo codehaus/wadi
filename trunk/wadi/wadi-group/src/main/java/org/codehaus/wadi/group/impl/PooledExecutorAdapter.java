@@ -28,7 +28,7 @@ public class PooledExecutorAdapter implements ThreadPool {
     public PooledExecutorAdapter(int minPoolSize) {
         pooledExecutor = new PooledExecutor(); 
         pooledExecutor.setMinimumPoolSize(minPoolSize);
-        pooledExecutor.runWhenBlocked();
+        pooledExecutor.setMaximumPoolSize(Integer.MAX_VALUE);
         pooledExecutor.setThreadFactory(new ThreadFactory() {
             public synchronized Thread newThread(Runnable runnable) {
                 return new Thread(runnable);
