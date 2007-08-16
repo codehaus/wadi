@@ -225,11 +225,10 @@ public class VersionAwarePartitionFacade implements PartitionFacade {
             } else if (partition instanceof LocalPartition) {
                 LocalPartition newLocalPartition = (LocalPartition) partition;
                 if (this.partitionInfo.getVersion() == partitionInfo.getVersion()) {
-                    if (!(this.partition instanceof LocalPartition)) {
-                        throw new AssertionError("State should never been reached");
+                    if (this.partition instanceof LocalPartition) {
+                        ((LocalPartition) this.partition).merge(newLocalPartition);
+                        this.partitionInfo.incrementNumberOfCurrentMerge();
                     }
-                    ((LocalPartition) this.partition).merge(newLocalPartition);
-                    this.partitionInfo.incrementNumberOfCurrentMerge();
                 } else {
                     this.partitionInfo = partitionInfo;
                     if (partitionInfo.getNumberOfExpectedMerge() > 0) {
@@ -278,8 +277,6 @@ public class VersionAwarePartitionFacade implements PartitionFacade {
             handleVersionTooLow(message, request.newResponseFailure());
         } else if (localPartitionInfo.getVersion() < request.getVersion()) {
             handleVersionTooHigh(message, request, attemptAction, localPartitionInfoLatch);
-        } else if (localPartitionInfo.getNumberOfCurrentMerge() > request.getNumberOfExpectedMerge()) {
-            throw new AssertionError("Impossible state.");
         } else if (localPartitionInfo.getNumberOfCurrentMerge() < request.getNumberOfExpectedMerge()) {
             handleVersionTooHigh(message, request, attemptAction, localPartitionInfoLatch);
         } else {
