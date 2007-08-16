@@ -16,11 +16,10 @@
  */
 package org.codehaus.wadi.location.partitionmanager;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -195,11 +194,10 @@ public class SimplePartitionManager implements PartitionManager, PartitionManage
     }
 
     public void onPartitionTransferRequest(Envelope om, PartitionTransferRequest request) {
-        Map partitionInfoToLocalPartition = request.getPartitionInfoToLocalPartition();
-        for (Iterator iter = partitionInfoToLocalPartition.entrySet().iterator(); iter.hasNext();) {
-            Map.Entry entry = (Map.Entry) iter.next();
-            PartitionInfo partitionInfo = (PartitionInfo) entry.getKey();
-            LocalPartition partition = (LocalPartition) entry.getValue();
+        Map<PartitionInfo, LocalPartition> partitionInfoToLocalPartition = request.getPartitionInfoToLocalPartition();
+        for (Map.Entry<PartitionInfo, LocalPartition> entry : partitionInfoToLocalPartition.entrySet()) {
+            PartitionInfo partitionInfo = entry.getKey();
+            LocalPartition partition = entry.getValue();
             partition = new BasicLocalPartition(dispatcher, partition);
             PartitionFacade facade = partitions[partitionInfo.getIndex()];
             facade.setContent(partitionInfo, partition);
@@ -279,11 +277,10 @@ public class SimplePartitionManager implements PartitionManager, PartitionManage
     }
 
     protected void transferPartitions(PartitionInfo[] newPartitionInfos) throws MessageExchangeException, PartitionBalancingException {
-        Map peerToPartitionInfosToTransfer = identifyTransfers(newPartitionInfos);
-        for (Iterator iter = peerToPartitionInfosToTransfer.entrySet().iterator(); iter.hasNext();) {
-            Map.Entry entry = (Map.Entry) iter.next();
-            Peer peer = (Peer) entry.getKey();
-            List partitionInfos = (List) entry.getValue();
+        Map<Peer, Set<PartitionInfo>> peerToPartitionInfosToTransfer = identifyTransfers(newPartitionInfos);
+        for (Map.Entry<Peer, Set<PartitionInfo>> entry : peerToPartitionInfosToTransfer.entrySet()) {
+            Peer peer = entry.getKey();
+            Set<PartitionInfo> partitionInfos = entry.getValue();
             transferPartitionToPeers(peer, partitionInfos);
         }
     }
@@ -341,11 +338,10 @@ public class SimplePartitionManager implements PartitionManager, PartitionManage
         }
     }
 
-    protected void transferPartitionToPeers(Peer peer, List partitionInfos) throws MessageExchangeException, PartitionBalancingException {
-        Map partitionInfoToLocalPartition = new HashMap();
+    protected void transferPartitionToPeers(Peer peer, Set<PartitionInfo> partitionInfos) throws MessageExchangeException, PartitionBalancingException {
+        Map<PartitionInfo, LocalPartition> partitionInfoToLocalPartition = new HashMap<PartitionInfo, LocalPartition>();
         try {
-            for (Iterator iter = partitionInfos.iterator(); iter.hasNext();) {
-                PartitionInfo partitionInfo = (PartitionInfo) iter.next();
+            for (PartitionInfo partitionInfo : partitionInfos) {
                 PartitionFacade facade = partitions[partitionInfo.getIndex()];
                 LocalPartition localPartition = (LocalPartition) facade.setContentRemote(partitionInfo, peer);
                 localPartition.waitForClientCompletion();
@@ -359,8 +355,8 @@ public class SimplePartitionManager implements PartitionManager, PartitionManage
         }
     }
 
-    protected Map identifyTransfers(PartitionInfo[] newPartitionInfos) {
-        Map peerToPartitionInfos = new HashMap();
+    protected Map<Peer, Set<PartitionInfo>> identifyTransfers(PartitionInfo[] newPartitionInfos) {
+        Map<Peer, Set<PartitionInfo>> peerToPartitionInfos = new HashMap<Peer, Set<PartitionInfo>>();
         for (int i = 0; i < partitions.length; i++) {
             PartitionInfo newPartitionInfo = newPartitionInfos[i];
             Peer newOwner = newPartitionInfo.getOwner();
@@ -371,9 +367,9 @@ public class SimplePartitionManager implements PartitionManager, PartitionManage
             if (!facade.isLocal()) {
                 continue;
             }
-            List partitionInfos = (List) peerToPartitionInfos.get(newOwner);
+            Set<PartitionInfo> partitionInfos = peerToPartitionInfos.get(newOwner);
             if (null == partitionInfos) {
-                partitionInfos = new ArrayList();
+                partitionInfos = new HashSet<PartitionInfo>();
                 peerToPartitionInfos.put(newOwner, partitionInfos);
             }
             partitionInfos.add(newPartitionInfo);
