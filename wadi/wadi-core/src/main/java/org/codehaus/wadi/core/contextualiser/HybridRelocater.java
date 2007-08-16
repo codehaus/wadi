@@ -22,12 +22,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.core.MotableBusyException;
 import org.codehaus.wadi.core.WADIRuntimeException;
-import org.codehaus.wadi.core.motable.AbstractChainedEmoter;
 import org.codehaus.wadi.core.motable.Emoter;
 import org.codehaus.wadi.core.motable.Immoter;
 import org.codehaus.wadi.core.motable.LockingRehydrationImmoter;
 import org.codehaus.wadi.core.motable.Motable;
-import org.codehaus.wadi.core.motable.RehydrationImmoter;
 import org.codehaus.wadi.core.util.Utils;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.EndPoint;
@@ -42,8 +40,6 @@ import org.codehaus.wadi.location.session.MovePMToIM;
 import org.codehaus.wadi.location.session.MovePMToIMInvocation;
 import org.codehaus.wadi.location.session.MoveSMToIM;
 import org.codehaus.wadi.servicespace.ServiceSpace;
-
-import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
  * Combine various RelocationStrategies to produce a cleverer one
@@ -137,34 +133,25 @@ public class HybridRelocater implements Relocater {
             return false;
         } else {
             // We are receiving an incoming state migration. Insert motable into contextualiser stack...
-            Emoter emoter = new SMToIMEmoter(message);
+            Emoter emoter = new SMToIMEmoter();
             immoter = new LockingRehydrationImmoter(immoter);
             Motable immotable = Utils.mote(emoter, immoter, emotable, name);
+            
+            MoveIMToSM response = new MoveIMToSM(true);
+            try {
+                dispatcher.reply(message, response);
+            } catch (MessageExchangeException e) {
+                log.warn("Session migration has not been acknowledged. SM has disappeared.", e);
+            }
+            
             return immoter.contextualise(invocation, name, immotable);
         }
     }
 
-    class SMToIMEmoter extends AbstractChainedEmoter {
-        protected final Log _log = LogFactory.getLog(SMToIMEmoter.class);
-        protected final Envelope _message;
-        protected Sync _invocationLock;
-        protected Sync _stateLock;
-
-        public SMToIMEmoter(Envelope message) {
-            _message = message;
-        }
-
+    class SMToIMEmoter implements Emoter {
         public boolean emote(Motable emotable, Motable immotable) {
-            try {
-                MoveIMToSM response = new MoveIMToSM(true);
-                dispatcher.reply(_message, response);
-            } catch (Exception e) {
-                _log.warn(e);
-                return false;
-            }
             return true;
         }
-        
     }
 
 }

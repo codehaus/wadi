@@ -14,6 +14,8 @@
  *  limitations under the License.
  */
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.codehaus.wadi.core.assembler.StackContext;
 import org.codehaus.wadi.core.contextualiser.BasicInvocation;
@@ -29,10 +31,11 @@ import org.codehaus.wadi.core.session.Session;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.vm.VMBroker;
 import org.codehaus.wadi.group.vm.VMDispatcher;
+import org.codehaus.wadi.replication.manager.ReplicationManagerFactory;
+import org.codehaus.wadi.replication.manager.basic.NoOpReplicationManagerFactory;
+import org.codehaus.wadi.replication.manager.basic.ObjectStateHandler;
 import org.codehaus.wadi.replication.strategy.RoundRobinBackingStrategyFactory;
 import org.codehaus.wadi.servicespace.ServiceSpaceName;
-
-import EDU.oswego.cs.dl.util.concurrent.Latch;
 
 /**
  * 
@@ -50,19 +53,19 @@ public class Launcher {
     }
 
     private final VMBroker broker;
-    private final Latch latch;
     
     private Launcher() {
         broker = new VMBroker("brokerName");
-        latch = new Latch();
     }
 
     private void start() throws Exception {
-        Manager[] managers = new Manager[26];
-        for (int i = 0; i < managers.length; i++) {
-            managers[i] = newManager(broker, "node" + i);
+        StackContext[] stackContexts = new StackContext[10];
+        for (int i = 0; i < stackContexts.length; i++) {
+            stackContexts[i] = newStackContext(broker, "node" + i);
         }
-        Manager firstManager = managers[0];
+        
+        stackContexts[0].getServiceSpace().start();
+        Manager firstManager = stackContexts[0].getManager();
         
         Session session = firstManager.createWithName(SESSION_ID);
         session.addState(LAST_MANAGER_HASHCODE, firstManager.hashCode());
@@ -70,15 +73,11 @@ public class Launcher {
         session.addState(ATTRIBUTE, new Long(0));
         session.onEndProcessing();
         
-        Thread threads[] = new Thread[managers.length];
+        Thread threads[] = new Thread[stackContexts.length];
         for (int i = 0; i < threads.length; i++) {
-            threads[i] = new ThreadRunner(managers[i]);
-        }
-
-        for (int i = 0; i < threads.length; i++) {
+            threads[i] = new ExecuteRunnablesInThread(newRunnables(stackContexts[i], i));
             threads[i].start();
         }
-        latch.release();
         
         long start = System.currentTimeMillis();
         for (int i = 0; i < threads.length; i++) {
@@ -104,8 +103,34 @@ public class Launcher {
         System.exit(0);
     }
 
-    private Manager newManager(VMBroker broker, String nodeName) throws MessageExchangeException,
-            Exception {
+    private List<Runnable> newRunnables(StackContext stackContext, int index) {
+        if (0 == index) {
+            List<Runnable> runnables = new ArrayList<Runnable>();
+            runnables.add(new InvokationRunner(stackContext, 70000));
+            return runnables;
+        } else {
+            return generateRunnable(stackContext, index);            
+        }
+    }
+    
+    private List<Runnable> generateRunnable(StackContext stackContext, int index) {
+        List<Runnable> runnables = new ArrayList<Runnable>();
+        runnables.add(new WaitRunner(index * 500));
+        runnables.add(new StartRunner(stackContext));
+        runnables.add(new InvokationRunner(stackContext, 500));
+        runnables.add(new StopRunner(stackContext));
+        runnables.add(new StartRunner(stackContext));
+        runnables.add(new InvokationRunner(stackContext, 500));
+        runnables.add(new StopRunner(stackContext));
+        runnables.add(new StartRunner(stackContext));
+        runnables.add(new InvokationRunner(stackContext, 500));
+        runnables.add(new StopRunner(stackContext));
+        runnables.add(new StartRunner(stackContext));
+        runnables.add(new InvokationRunner(stackContext, 500));
+        return runnables;
+    }
+
+    private StackContext newStackContext(VMBroker broker, String nodeName) throws MessageExchangeException, Exception {
         VMDispatcher dispatcher = new VMDispatcher(broker, nodeName, null);
         dispatcher.start();
 
@@ -116,6 +141,10 @@ public class Launcher {
                 48,
                 1000 * 60 * 60 * 24,
                 new RoundRobinBackingStrategyFactory(1)) {
+            @Override
+            protected ReplicationManagerFactory newReplicationManagerFactory(ObjectStateHandler objectStateManager) {
+                return new NoOpReplicationManagerFactory();
+            }
             protected Router newRouter() {
                 return new DummyRouter();
             }
@@ -125,31 +154,100 @@ public class Launcher {
             }
         };
         stackContext.build();
-        stackContext.getServiceSpace().start();
-        return stackContext.getManager();
+        return stackContext;
     }
 
-    public class ThreadRunner extends Thread {
-        private final Manager manager;
+    public class ExecuteRunnablesInThread extends Thread {
+        private final List<Runnable> runnables;
 
-        public ThreadRunner(Manager manager) {
-            this.manager = manager;
+        public ExecuteRunnablesInThread(List<Runnable> runnables) {
+            this.runnables = runnables;
+        }
+
+        @Override
+        public void run() {
+            for (Runnable runnable : runnables) {
+                runnable.run();
+            }
+        }
+        
+    }
+    
+    public class StartRunner implements Runnable {
+        private final StackContext stackContext;
+
+        public StartRunner(StackContext stackContext) {
+            this.stackContext = stackContext;
+        }
+        
+        public void run() {
+            try {
+                stackContext.getServiceSpace().start();
+            } catch (Exception e) {
+                e.printStackTrace();
+                return;
+            }
+        }
+    }    
+    
+    public class WaitRunner implements Runnable {
+        private final long duration;
+
+        public WaitRunner(long duration) {
+            this.duration = duration;
+        }
+        
+        public void run() {
+            try {
+                Thread.sleep(duration);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                Thread.currentThread().interrupt();
+            }
+        }
+    }    
+    
+    public class StopRunner implements Runnable {
+        private final StackContext stackContext;
+        
+        public StopRunner(StackContext stackContext) {
+            this.stackContext = stackContext;
+        }
+        
+        public void run() {
+            try {
+                stackContext.getServiceSpace().stop();
+            } catch (Exception e) {
+                e.printStackTrace();
+                return;
+            }
+        }
+    }    
+    
+    public class InvokationRunner extends Thread {
+        private final StackContext stackContext;
+        private final long duration;
+
+        public InvokationRunner(StackContext stackContext, long duration) {
+            this.stackContext = stackContext;
+            this.duration = duration;
         }
 
         public void run() {
-            try {
-                latch.acquire();
-            } catch (InterruptedException e) {
-                throw new IllegalStateException("Cannot acquire latch");
-            }
-
-            for (int i = 0; i < 20000; i++) {
-                Invocation invocation = new IncrementCptInvocation(SESSION_ID, 1000, manager.hashCode());
+            Manager manager = stackContext.getManager();
+            long end = System.currentTimeMillis() + duration;
+            while (System.currentTimeMillis() < end) {
+                try {
+                    Thread.sleep(5);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                
+                Invocation invocation = new IncrementCptInvocation(SESSION_ID, 8000, manager.hashCode());
                 try {
                     manager.contextualise(invocation);
                 } catch (InvocationException e) {
                     e.printStackTrace();
-                    System.out.println("loop [" + i + "]");
                     break;
                 }
             }

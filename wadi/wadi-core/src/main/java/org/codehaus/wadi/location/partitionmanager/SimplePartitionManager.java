@@ -42,8 +42,8 @@ import org.codehaus.wadi.location.partition.BasicPartitionRepopulateTask;
 import org.codehaus.wadi.location.partition.PartitionEvacuationRequest;
 import org.codehaus.wadi.location.partition.PartitionTransferRequest;
 import org.codehaus.wadi.location.partitionmanager.facade.PartitionFacade;
-import org.codehaus.wadi.location.partitionmanager.facade.PartitionFacadeDelegate;
 import org.codehaus.wadi.location.partitionmanager.facade.VersionAwarePartitionFacade;
+import org.codehaus.wadi.location.partitionmanager.local.BasicLocalPartition;
 import org.codehaus.wadi.location.partitionmanager.local.LocalPartition;
 import org.codehaus.wadi.location.statemanager.SimpleStateManager;
 import org.codehaus.wadi.servicespace.InvocationMetaData;
@@ -143,7 +143,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionManage
             if (!evacuationCompleted) {
                 failures++;
                 long evacuationBackoffTime = timing.getEvacuationBackoffTime();
-                log.warn("Could not contact Coordinator - backing off for [" + evacuationBackoffTime + "] ms");
+                log.warn("Partition balancer has disappeared - backing off for [" + evacuationBackoffTime + "]ms");
                 try {
                     Thread.sleep(evacuationBackoffTime);
                 } catch (InterruptedException e) {
@@ -200,7 +200,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionManage
             Map.Entry entry = (Map.Entry) iter.next();
             PartitionInfo partitionInfo = (PartitionInfo) entry.getKey();
             LocalPartition partition = (LocalPartition) entry.getValue();
-            partition = new LocalPartition(dispatcher, partition);
+            partition = new BasicLocalPartition(dispatcher, partition);
             PartitionFacade facade = partitions[partitionInfo.getIndex()];
             facade.setContent(partitionInfo, partition);
         }
@@ -244,9 +244,9 @@ public class SimplePartitionManager implements PartitionManager, PartitionManage
 
     protected void initializePartitionFacades() {
         for (int i = 0; i < numPartitions; i++) {
-            partitions[i] = new VersionAwarePartitionFacade(dispatcher,
+            partitions[i] = new VersionAwarePartitionFacade(i,
+                    dispatcher,
                     new PartitionInfo(0, i),
-                    new PartitionFacadeDelegate(i, dispatcher),
                     timing.getWaitForPartitionUpdateTime());
         }
     }
@@ -296,7 +296,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionManage
         LocalPartition[] toBePopulated = new LocalPartition[updates.length];
         for (int i = 0; i < updates.length; i++) {
             int index = updates[i].getPartitionInfo().getIndex();
-            toBePopulated[i] = new LocalPartition(dispatcher, index);
+            toBePopulated[i] = new BasicLocalPartition(dispatcher, index);
         }
         
         BasicPartitionRepopulateTask repopulateTask =
@@ -389,7 +389,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionManage
             if (facade.isLocal()) {
                 facade.setPartitionInfo(partitionInfos[i]);
             } else {
-                LocalPartition local = new LocalPartition(dispatcher, i);
+                LocalPartition local = new BasicLocalPartition(dispatcher, i);
                 facade.setContent(partitionInfos[i], local);
             }
         }

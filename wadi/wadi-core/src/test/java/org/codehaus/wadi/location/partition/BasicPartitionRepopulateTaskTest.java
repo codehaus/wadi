@@ -28,6 +28,7 @@ import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.Quipu;
+import org.codehaus.wadi.location.partitionmanager.local.BasicLocalPartition;
 import org.codehaus.wadi.location.partitionmanager.local.LocalPartition;
 
 import com.agical.rmock.core.describe.ExpressionDescriber;
@@ -109,8 +110,8 @@ public class BasicPartitionRepopulateTaskTest extends RMockTestCase {
 
         BasicPartitionRepopulateTask repopulateTask = new BasicPartitionRepopulateTask(dispatcher, 200);
 
-        LocalPartition partition1 = new LocalPartition(dispatcher, 1);
-        LocalPartition partition3 = new LocalPartition(dispatcher, 3);
+        LocalPartition partition1 = new BasicLocalPartition(dispatcher, 1);
+        LocalPartition partition3 = new BasicLocalPartition(dispatcher, 3);
         LocalPartition[] localPartitions = new LocalPartition[] {partition1, partition3};
         repopulateTask.repopulate(localPartitions);
         
@@ -133,8 +134,8 @@ public class BasicPartitionRepopulateTaskTest extends RMockTestCase {
 
         BasicPartitionRepopulateTask repopulateTask = new BasicPartitionRepopulateTask(dispatcher, 100);
 
-        LocalPartition partition1 = new LocalPartition(dispatcher, 1);
-        LocalPartition partition3 = new LocalPartition(dispatcher, 3);
+        LocalPartition partition1 = new BasicLocalPartition(dispatcher, 1);
+        LocalPartition partition3 = new BasicLocalPartition(dispatcher, 3);
         LocalPartition[] localPartitions = new LocalPartition[] {partition1, partition3};
         repopulateTask.repopulate(localPartitions);
         

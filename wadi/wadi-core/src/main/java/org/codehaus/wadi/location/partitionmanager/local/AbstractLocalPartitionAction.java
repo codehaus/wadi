@@ -26,10 +26,10 @@ import org.codehaus.wadi.group.Dispatcher;
  */
 public abstract class AbstractLocalPartitionAction {
     protected final Dispatcher dispatcher;
-    protected final Map nameToLocation;
+    protected final Map<Object, Location> nameToLocation;
     protected final Log log;
     
-    protected AbstractLocalPartitionAction(Dispatcher dispatcher, Map nameToLocation, Log log) {
+    protected AbstractLocalPartitionAction(Dispatcher dispatcher, Map<Object, Location> nameToLocation, Log log) {
         if (null == dispatcher) {
             throw new IllegalArgumentException("dispatcher is required");
         } else if (null == nameToLocation) {

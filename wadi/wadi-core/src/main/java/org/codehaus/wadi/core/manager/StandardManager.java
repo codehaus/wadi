@@ -90,6 +90,7 @@ public class StandardManager implements Lifecycle, Manager {
     public void start() throws Exception {
         contextualiser.promoteToExclusive(null);
         contextualiser.start();
+        acceptingSessions.set(true);
         log.info("WADI Manager Successfully Started");
     }
 

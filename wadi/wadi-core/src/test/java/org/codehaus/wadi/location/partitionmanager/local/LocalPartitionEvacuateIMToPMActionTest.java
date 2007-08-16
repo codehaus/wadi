@@ -19,8 +19,6 @@ import java.io.IOException;
 
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.Peer;
-import org.codehaus.wadi.location.partitionmanager.local.LocalPartitionEvacuateIMToPMAction;
-import org.codehaus.wadi.location.partitionmanager.local.LocalPartition.Location;
 import org.codehaus.wadi.location.session.EvacuateIMToPM;
 import org.codehaus.wadi.location.session.EvacuatePMToIM;
 

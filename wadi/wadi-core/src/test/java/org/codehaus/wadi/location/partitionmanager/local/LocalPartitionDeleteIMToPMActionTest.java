@@ -18,8 +18,6 @@ package org.codehaus.wadi.location.partitionmanager.local;
 import java.io.IOException;
 
 import org.codehaus.wadi.group.MessageExchangeException;
-import org.codehaus.wadi.location.partitionmanager.local.LocalPartitionDeleteIMToPMAction;
-import org.codehaus.wadi.location.partitionmanager.local.LocalPartition.Location;
 import org.codehaus.wadi.location.session.DeleteIMToPM;
 import org.codehaus.wadi.location.session.DeletePMToIM;
 

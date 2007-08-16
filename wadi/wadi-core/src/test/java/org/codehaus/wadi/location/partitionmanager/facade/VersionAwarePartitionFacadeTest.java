@@ -21,8 +21,7 @@ import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.location.balancing.PartitionInfo;
-import org.codehaus.wadi.location.partitionmanager.facade.PartitionFacade;
-import org.codehaus.wadi.location.partitionmanager.facade.VersionAwarePartitionFacade;
+import org.codehaus.wadi.location.partitionmanager.local.LocalPartition;
 import org.codehaus.wadi.location.session.DeleteIMToPM;
 import org.codehaus.wadi.location.session.DeletePMToIM;
 import org.codehaus.wadi.location.session.SessionRequestMessage;
@@ -38,18 +37,21 @@ import com.agical.rmock.extension.junit.RMockTestCase;
  * @version $Revision:1815 $
  */
 public class VersionAwarePartitionFacadeTest extends RMockTestCase {
-    private static final long TIMEOUT = 4000;
+    private static final long TIMEOUT = 200;
     private PartitionInfo PARTITION_INFO_V0 = new PartitionInfo(0, 0);
     private PartitionInfo PARTITION_INFO_V1 = new PartitionInfo(1, 0);
+    private PartitionInfo PARTITION_INFO_V2 = new PartitionInfo(2, 0);
+    private PartitionInfo PARTITION_INFO_V3 = new PartitionInfo(3, 1);
 
     private Dispatcher dispatcher;
-    private PartitionFacade delegate;
+    private LocalPartition partition;
     private VersionAwarePartitionFacade facade;
 
     protected void setUp() throws Exception {
         dispatcher = (Dispatcher) mock(Dispatcher.class);
-        delegate = (PartitionFacade) mock(PartitionFacade.class);
-        facade = new VersionAwarePartitionFacade(dispatcher, new PartitionInfo(0, 0), delegate, TIMEOUT);
+        partition = (LocalPartition) mock(LocalPartition.class);
+        facade = new VersionAwarePartitionFacade(1, dispatcher, PARTITION_INFO_V0, TIMEOUT);
+        facade.setContent(PARTITION_INFO_V1, partition);
         facade.setPartitionInfo(PARTITION_INFO_V0);
     }
 
@@ -64,8 +66,9 @@ public class VersionAwarePartitionFacadeTest extends RMockTestCase {
         beginSection(s.ordered("Exchange with communication failure"));
         SessionRequestMessage reqMsg = (SessionRequestMessage) mock(SessionRequestMessage.class);
         reqMsg.setVersion(PARTITION_INFO_V0.getVersion());
+        reqMsg.setNumberOfExpectedMerge(PARTITION_INFO_V0.getNumberOfExpectedMerge());
 
-        delegate.exchange(reqMsg, TIMEOUT);
+        partition.exchange(reqMsg, TIMEOUT);
         modify().throwException(new MessageExchangeException(""));
         endSection();
         startVerification();
@@ -83,17 +86,18 @@ public class VersionAwarePartitionFacadeTest extends RMockTestCase {
         beginSection(s.ordered("Exchange with communication failure"));
         SessionRequestMessage reqMsg = (SessionRequestMessage) mock(SessionRequestMessage.class);
         reqMsg.setVersion(PARTITION_INFO_V0.getVersion());
+        reqMsg.setNumberOfExpectedMerge(PARTITION_INFO_V0.getNumberOfExpectedMerge());
 
-        delegate.exchange(reqMsg, TIMEOUT);
+        partition.exchange(reqMsg, TIMEOUT);
         modify().perform(new Action() {
 
             public Object invocation(Object[] arguments, MethodHandle methodHandle) throws Throwable {
-                facade.setPartitionInfo(PARTITION_INFO_V1);
+                facade.setPartitionInfo(PARTITION_INFO_V2);
                 throw new MessageExchangeException("");
             }
             
         });
-        recordSuccessFulExchange(reqMsg, PARTITION_INFO_V1);
+        recordSuccessFulExchange(reqMsg, PARTITION_INFO_V2);
         endSection();
         startVerification();
 
@@ -107,7 +111,7 @@ public class VersionAwarePartitionFacadeTest extends RMockTestCase {
         Envelope env = (Envelope) mock(Envelope.class);
 
         beginSection(s.ordered("straight delegate to delegate"));
-        delegate.onMessage(env, deleteIMToPM);
+        partition.onMessage(env, deleteIMToPM);
         endSection();
         startVerification();
 
@@ -136,13 +140,13 @@ public class VersionAwarePartitionFacadeTest extends RMockTestCase {
         endSection();
         startVerification();
 
-        facade.setPartitionInfo(PARTITION_INFO_V1);
+        facade.setPartitionInfo(PARTITION_INFO_V2);
         facade.onMessage(env, deleteIMToPM);
     }
 
     public void testDeleteIMToPMWithTooHighVersionTimeOut() throws Exception {
         DeleteIMToPM deleteIMToPM = new DeleteIMToPM("name");
-        deleteIMToPM.setVersion(PARTITION_INFO_V1.getVersion());
+        deleteIMToPM.setVersion(PARTITION_INFO_V2.getVersion());
         
         Envelope env = (Envelope) mock(Envelope.class);
         dispatcher.reply(env, new DeletePMToIM(false));
@@ -164,11 +168,11 @@ public class VersionAwarePartitionFacadeTest extends RMockTestCase {
 
     public void testDeleteIMToPMWithTooHighVersionAndReAttempt() throws Exception {
         DeleteIMToPM deleteIMToPM = new DeleteIMToPM("name");
-        deleteIMToPM.setVersion(PARTITION_INFO_V1.getVersion());
+        deleteIMToPM.setVersion(PARTITION_INFO_V2.getVersion());
         
         Envelope env = (Envelope) mock(Envelope.class);
 
-        delegate.onMessage(env, deleteIMToPM);
+        partition.onMessage(env, deleteIMToPM);
         startVerification();
 
         Thread setV1Partition = new Thread() {
@@ -178,11 +182,25 @@ public class VersionAwarePartitionFacadeTest extends RMockTestCase {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                facade.setPartitionInfo(PARTITION_INFO_V1);
+                facade.setPartitionInfo(PARTITION_INFO_V2);
             }
         };
         setV1Partition.start();
         facade.onMessage(env, deleteIMToPM);
+    }
+    
+    public void testPartitionMerge() throws Exception {
+        LocalPartition partitionToMerge = (LocalPartition) mock(LocalPartition.class);
+
+        partition.merge(partitionToMerge);
+        
+        startVerification();
+
+        facade.setPartitionInfo(PARTITION_INFO_V3);
+        assertEquals(0, facade.getPartitionInfo().getNumberOfCurrentMerge());
+        
+        facade.setContent(PARTITION_INFO_V3, partitionToMerge);
+        assertEquals(1, facade.getPartitionInfo().getNumberOfCurrentMerge());
     }
 
     private SessionRequestMessage recordSuccessFulExchange(SessionRequestMessage reqMsg, PartitionInfo partitionInfo) throws MessageExchangeException {
@@ -191,9 +209,10 @@ public class VersionAwarePartitionFacadeTest extends RMockTestCase {
             reqMsg = (SessionRequestMessage) mock(SessionRequestMessage.class);
         }
         reqMsg.setVersion(partitionInfo.getVersion());
+        reqMsg.setNumberOfExpectedMerge(partitionInfo.getNumberOfExpectedMerge());
 
         Envelope respEnv = (Envelope) mock(Envelope.class);
-        delegate.exchange(reqMsg, TIMEOUT);
+        partition.exchange(reqMsg, TIMEOUT);
         modify().returnValue(respEnv);
         
         SessionResponseMessage respMsg = (SessionResponseMessage) mock(SessionResponseMessage.class);

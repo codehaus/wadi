@@ -52,5 +52,5 @@ public class ServiceSpaceName implements Serializable {
     public String toString() {
         return uri.toString();
     }
-    
+ 
 }

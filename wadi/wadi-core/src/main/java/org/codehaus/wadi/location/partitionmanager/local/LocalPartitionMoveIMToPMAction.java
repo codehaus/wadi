@@ -24,7 +24,6 @@ import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.Peer;
-import org.codehaus.wadi.location.partitionmanager.local.LocalPartition.Location;
 import org.codehaus.wadi.location.session.MoveIMToPM;
 import org.codehaus.wadi.location.session.MovePMToIM;
 import org.codehaus.wadi.location.session.MovePMToIMInvocation;
@@ -39,7 +38,7 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  */
 public class LocalPartitionMoveIMToPMAction extends AbstractLocalPartitionAction {
 
-    public LocalPartitionMoveIMToPMAction(Dispatcher dispatcher, Map nameToLocation, Log log) {
+    public LocalPartitionMoveIMToPMAction(Dispatcher dispatcher, Map<Object, Location> nameToLocation, Log log) {
         super(dispatcher, nameToLocation, log);
     }
 

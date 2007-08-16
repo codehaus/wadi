@@ -63,14 +63,14 @@ public class SimplePartitionManagerSmokeTest extends RMockTestCase {
     public void testRebalancingUnderLoad() throws Exception {
         VMBroker broker = new VMBroker("broker");
         
-        List managers = new ArrayList();
-        Collection loadThreads = new ArrayList();
+        List<SimplePartitionManager> managers = new ArrayList<SimplePartitionManager>();
+        Collection<Thread> loadThreads = new ArrayList<Thread>();
         for (int i = 0; i < 6; i++) {
             Contextualiser contextualiser = (Contextualiser) mock(Contextualiser.class);
             SimplePartitionManager manager = newManager(broker, i, contextualiser);
             managers.add(manager);
             ServiceSpace serviceSpace = manager.getServiceSpace();
-            SimpleStateManager stateManager = new SimpleStateManager(serviceSpace, manager,EXCHANGE_TIMEOUT);
+            SimpleStateManager stateManager = new SimpleStateManager(serviceSpace, manager, EXCHANGE_TIMEOUT);
             stateManager.start();
             serviceSpace.start();
             loadThreads.add(new LoadThread(stateManager));
@@ -80,15 +80,13 @@ public class SimplePartitionManagerSmokeTest extends RMockTestCase {
         RebalanceThread rebalanceThread = new RebalanceThread(managers);
         rebalanceThread.start();
         
-        for (Iterator iter = loadThreads.iterator(); iter.hasNext();) {
-            Thread loadThread = (Thread) iter.next();
+        for (Thread loadThread : loadThreads) {
             loadThread.start();
         }
         
         boolean success = failureLatch.attempt(10000);
         rebalanceThread.interrupt();
-        for (Iterator iter = loadThreads.iterator(); iter.hasNext();) {
-            Thread loadThread = (Thread) iter.next();
+        for (Thread loadThread : loadThreads) {
             loadThread.interrupt();
         }
         if (success) {
@@ -123,10 +121,10 @@ public class SimplePartitionManagerSmokeTest extends RMockTestCase {
     }
 
     private class RebalanceThread extends Thread {
-        private List managers;
+        private List<SimplePartitionManager> managers;
         private int version = 1;
         
-        public RebalanceThread(List managers) {
+        public RebalanceThread(List<SimplePartitionManager> managers) {
             this.managers = managers;
             
             bootManagers();
@@ -135,7 +133,7 @@ public class SimplePartitionManagerSmokeTest extends RMockTestCase {
         public void run() {
             while (!Thread.interrupted()) {
                 try {
-                    Thread.sleep(100);
+                    Thread.sleep(50);
                     version++;
                     doRun();
                     nbRebalancing++;
@@ -146,24 +144,22 @@ public class SimplePartitionManagerSmokeTest extends RMockTestCase {
         }
 
         protected void doRun() {
-            Iterator managerIter = managers.iterator();
+            Iterator<SimplePartitionManager> managerIter = managers.iterator();
             
             PartitionInfoUpdate[] updates = new PartitionInfoUpdate[nbPartitions];
             for (int i = 0; i < updates.length; i++) {
                 if (!managerIter.hasNext()) {
                     managerIter = managers.iterator();
                 }
-                SimplePartitionManager manager = (SimplePartitionManager) managerIter.next();
+                SimplePartitionManager manager = managerIter.next();
                 Peer owner = manager.getServiceSpace().getDispatcher().getCluster().getLocalPeer();
                 PartitionInfo partitionInfo = new PartitionInfo(version, i, owner);
                 updates[i] = new PartitionInfoUpdate(false, partitionInfo);
             }
-            Object object = managers.remove(0);
-            managers.add(object);
+            managers.add(managers.remove(0));
             
             final PartitionBalancingInfoUpdate update = new PartitionBalancingInfoUpdate(updates, false, false);
-            for (Iterator iter = managers.iterator(); iter.hasNext();) {
-                final SimplePartitionManager manager = (SimplePartitionManager) iter.next();
+            for (final SimplePartitionManager manager : managers) {
                 new Thread() {
                     public void run() {
                         try {
@@ -180,8 +176,8 @@ public class SimplePartitionManagerSmokeTest extends RMockTestCase {
         }
         
         protected void bootManagers() {
-            Iterator managerIter = managers.iterator();
-            SimplePartitionManager manager = (SimplePartitionManager) managerIter.next();
+            Iterator<SimplePartitionManager> managerIter = managers.iterator();
+            SimplePartitionManager manager = managerIter.next();
             Peer owner = manager.getServiceSpace().getDispatcher().getCluster().getLocalPeer();
             PartitionInfoUpdate[] updates = new PartitionInfoUpdate[nbPartitions];
             for (int i = 0; i < updates.length; i++) {

@@ -26,6 +26,7 @@ import java.io.Serializable;
 public abstract class SessionRequestImpl implements SessionRequestMessage, Serializable {
     protected final Object _key;
     private int version;
+    private int numberOfExpectedMerge;
 
     public SessionRequestImpl(Object key) {
         if (null == key) {
@@ -44,6 +45,14 @@ public abstract class SessionRequestImpl implements SessionRequestMessage, Seria
 
     public int getVersion() {
         return version;
+    }
+
+    public int getNumberOfExpectedMerge() {
+        return numberOfExpectedMerge;
+    }
+
+    public void setNumberOfExpectedMerge(int numberOfExpectedMerge) {
+        this.numberOfExpectedMerge = numberOfExpectedMerge;
     }
     
 }

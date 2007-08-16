@@ -24,9 +24,11 @@ import org.codehaus.wadi.group.Peer;
  * @version $Revision: 1538 $
  */
 public class PartitionInfo implements Serializable {
-    private final Peer owner;
+    private Peer owner;
     private final int index;
     private final int version;
+    private int numberOfExpectedMerge;
+    private int numberOfCurrentMerge;
 
     public PartitionInfo(int version, int index) {
         if (version < 0) {
@@ -57,6 +59,13 @@ public class PartitionInfo implements Serializable {
         return null != owner;
     }
     
+    public void setOwner(Peer owner) {
+        if (null == owner) {
+            throw new IllegalStateException("No owner is defined");
+        }
+        this.owner = owner;
+    }
+    
     public Peer getOwner() {
         if (null == owner) {
             throw new IllegalStateException("No owner is defined");
@@ -72,6 +81,25 @@ public class PartitionInfo implements Serializable {
         return version;
     }
     
+    public int getNumberOfExpectedMerge() {
+        return numberOfExpectedMerge;
+    }
+
+    public void setNumberOfExpectedMerge(int numberOfExpectedMerge) {
+        if (numberOfExpectedMerge < 1) {
+            throw new IllegalArgumentException("numberOfExpectedMerge must be greater than 0");
+        }
+        this.numberOfExpectedMerge = numberOfExpectedMerge;
+    }
+    
+    public int getNumberOfCurrentMerge() {
+        return numberOfCurrentMerge;
+    }
+
+    public void incrementNumberOfCurrentMerge() {
+        numberOfCurrentMerge++;
+    }
+
     public int hashCode() {
         return index * 37;
     }
@@ -83,18 +111,18 @@ public class PartitionInfo implements Serializable {
         PartitionInfo other = (PartitionInfo) obj;
         if (index != other.index) {
             return false;
-        }
-        if (version != other.version) {
+        } else if (version != other.version) {
             return false;
-        }
-        if (owner != other.owner) {
+        } else if (numberOfExpectedMerge != other.numberOfExpectedMerge) {
+            return false;
+        } else if (owner != other.owner) {
             return false;
         }
         return true;
     }
     
     public String toString() {
-        return "Partition[" + index + "]; owned by [" + owner + "]; version [" + version + "]";
+        return "Partition[" + index + "]; owned by [" + owner + "]; version [" + version + ".]; mergeVersion [" + numberOfExpectedMerge + "]";
     }
 
 }
