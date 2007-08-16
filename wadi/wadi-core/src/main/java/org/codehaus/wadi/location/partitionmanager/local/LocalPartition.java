@@ -15,6 +15,7 @@
  */
 package org.codehaus.wadi.location.partitionmanager.local;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Map;
 
@@ -25,7 +26,7 @@ import org.codehaus.wadi.location.partitionmanager.Partition;
  * 
  * @version $Revision$
  */
-public interface LocalPartition extends Partition {
+public interface LocalPartition extends Partition, Serializable {
     void waitForClientCompletion();
 
     void put(Collection<Object> names, Peer peer);
