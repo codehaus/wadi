@@ -34,6 +34,13 @@ public class ClusteredStateSessionFactory implements SessionFactory {
     public ClusteredStateSessionFactory(ClusteredStateAttributesFactory attributesFactory,
             Streamer streamer,
             ReplicationManager replicationManager) {
+        if (null == attributesFactory) {
+            throw new IllegalArgumentException("attributesFactory is required");
+        } else if (null == streamer) {
+            throw new IllegalArgumentException("streamer is required");
+        } else if (null == replicationManager) {
+            throw new IllegalArgumentException("replicationManager is required");
+        }
         this.attributesFactory = attributesFactory;
         this.streamer = streamer;
         this.replicationManager = replicationManager;

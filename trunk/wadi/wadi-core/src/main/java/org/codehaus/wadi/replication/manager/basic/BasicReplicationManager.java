@@ -16,7 +16,6 @@
 package org.codehaus.wadi.replication.manager.basic;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -37,10 +36,8 @@ import org.codehaus.wadi.servicespace.ServiceInvocationException;
 import org.codehaus.wadi.servicespace.ServiceLifecycleEvent;
 import org.codehaus.wadi.servicespace.ServiceListener;
 import org.codehaus.wadi.servicespace.ServiceMonitor;
-import org.codehaus.wadi.servicespace.ServiceProxy;
 import org.codehaus.wadi.servicespace.ServiceProxyFactory;
 import org.codehaus.wadi.servicespace.ServiceSpace;
-import org.codehaus.wadi.servicespace.replyaccessor.DoNotReplyWithNull;
 
 /**
  * 
@@ -49,43 +46,49 @@ import org.codehaus.wadi.servicespace.replyaccessor.DoNotReplyWithNull;
 public class BasicReplicationManager implements ReplicationManager {
     private static final Log log = LogFactory.getLog(BasicReplicationManager.class);
     
-    private final ServiceSpace serviceSpace;
     private final ObjectStateHandler stateHandler;
     private final BackingStrategy backingStrategy;
     private final LocalPeer localPeer;
-    private final Map keyToReplicaInfo;
+    private final Map<Object, ReplicaInfo> keyToReplicaInfo;
     private final ServiceMonitor storageMonitor;
     private final ReplicationManager replicationManagerProxy;
     private final ReplicaStorage replicaStorageProxy;
     private final ServiceProxyFactory replicaStorageServiceProxy;
+    private final ProxyFactory proxyFactory;
 
     public BasicReplicationManager(ServiceSpace serviceSpace,
+        ObjectStateHandler stateHandler,
+        BackingStrategy backingStrategy) {
+        this(serviceSpace, stateHandler, backingStrategy, new BasicProxyFactory(serviceSpace));
+    }    
+    
+    public BasicReplicationManager(ServiceSpace serviceSpace,
             ObjectStateHandler stateHandler,
-            BackingStrategy backingStrategy) {
+            BackingStrategy backingStrategy,
+            ProxyFactory proxyFactory) {
         if (null == serviceSpace) {
             throw new IllegalArgumentException("serviceSpace is required");
         } else if (null == stateHandler) {
             throw new IllegalArgumentException("stateHandler is required");
         } else if (null == backingStrategy) {
             throw new IllegalArgumentException("backingStrategy is required");
+        } else if (null == proxyFactory) {
+            throw new IllegalArgumentException("proxyFactory is required");
         }
-        this.serviceSpace = serviceSpace;
         this.stateHandler = stateHandler;
         this.backingStrategy = backingStrategy;
+        this.proxyFactory = proxyFactory;
         
         localPeer = serviceSpace.getLocalPeer();
 
         storageMonitor = serviceSpace.getServiceMonitor(ReplicaStorage.NAME);
         storageMonitor.addServiceLifecycleListener(new UpdateBackingStrategyListener(backingStrategy));
         
-        replicationManagerProxy = newReplicationManagerProxy(serviceSpace);
-        replicaStorageServiceProxy = serviceSpace.getServiceProxyFactory(
-                        ReplicaStorage.NAME, new Class[] {ReplicaStorage.class});
-        replicaStorageProxy = (ReplicaStorage) replicaStorageServiceProxy.getProxy();
-        ServiceProxy serviceProxy = (ServiceProxy) replicaStorageProxy;
-        serviceProxy.getInvocationMetaData().setReplyAssessor(DoNotReplyWithNull.ASSESSOR);
+        replicationManagerProxy = proxyFactory.newReplicationManagerProxy();
+        replicaStorageServiceProxy = proxyFactory.newReplicaStorageServiceProxyFactory();
+        replicaStorageProxy = proxyFactory.newReplicaStorageProxy();
 
-        keyToReplicaInfo = new HashMap();
+        keyToReplicaInfo = new HashMap<Object, ReplicaInfo>();
     }
 
     public void start() throws Exception {
@@ -107,6 +110,8 @@ public class BasicReplicationManager implements ReplicationManager {
         }
 
         byte[] fullState = stateHandler.extractFullState(key, tmp);
+        stateHandler.resetObjectState(tmp);
+        
         CreateReplicaTask backOffCapableTask = new CreateReplicaTask(key, tmp, fullState);
         backOffCapableTask.attempt();
     }
@@ -114,13 +119,15 @@ public class BasicReplicationManager implements ReplicationManager {
     public void update(Object key, Object tmp) {
         ReplicaInfo replicaInfo;
         synchronized (keyToReplicaInfo) {
-            replicaInfo = (ReplicaInfo) keyToReplicaInfo.get(key);
+            replicaInfo = keyToReplicaInfo.get(key);
         }
         if (null == replicaInfo) {
             throw new ReplicationKeyNotFoundException(key);
         }
         
         byte[] updatedState = stateHandler.extractUpdatedState(key, tmp);
+        stateHandler.resetObjectState(tmp);
+        
         replicaInfo.increaseVersion();
         
         if (replicaInfo.getSecondaries().length != 0) {
@@ -131,7 +138,7 @@ public class BasicReplicationManager implements ReplicationManager {
     public void destroy(Object key) {
         ReplicaInfo replicaInfo;
         synchronized (keyToReplicaInfo) {
-            replicaInfo = (ReplicaInfo) keyToReplicaInfo.remove(key);
+            replicaInfo = keyToReplicaInfo.remove(key);
         }
         if (null == replicaInfo) {
             log.warn("Key [" + key + "] is not defined; cannot destroy it.");
@@ -156,7 +163,7 @@ public class BasicReplicationManager implements ReplicationManager {
             }
         }
 
-        Object target = stateHandler.restoreFromFullState(key, storageInfo.getSerializedPayload());
+        Object target = stateHandler.restoreFromFullStateTransient(key, storageInfo.getSerializedPayload());
         ReplicaInfo replicaInfo = storageInfo.getReplicaInfo();
         replicaInfo.setPayload(target);
         
@@ -176,7 +183,7 @@ public class BasicReplicationManager implements ReplicationManager {
     }
     
     protected void cascadeCreate(Object key, ReplicaInfo replicaInfo, byte[] updatedState, BackOffCapableTask task) {
-        ReplicaStorage storage = newReplicaStorageStub(replicaInfo.getSecondaries());
+        ReplicaStorage storage = proxyFactory.newReplicaStorageProxy(replicaInfo.getSecondaries());
         try {
             storage.mergeCreate(key, new ReplicaStorageInfo(replicaInfo, updatedState));
             task.complete();
@@ -190,7 +197,7 @@ public class BasicReplicationManager implements ReplicationManager {
     }
     
     protected void cascadeUpdate(Object key, ReplicaInfo replicaInfo, byte[] updatedState) {
-        ReplicaStorage storage = newReplicaStorageStub(replicaInfo.getSecondaries());
+        ReplicaStorage storage = proxyFactory.newReplicaStorageProxy(replicaInfo.getSecondaries());
         try {
             storage.mergeUpdate(key, new ReplicaStorageInfo(replicaInfo, updatedState));
         } catch (ServiceInvocationException e) {
@@ -204,22 +211,18 @@ public class BasicReplicationManager implements ReplicationManager {
     }
     
     protected void cascadeDestroy(Object key, ReplicaInfo replicaInfo) {
-        ReplicaStorage storage = newReplicaStorageStub(replicaInfo.getSecondaries());
-        ServiceProxy serviceProxy = (ServiceProxy) storage;
-        serviceProxy.getInvocationMetaData().setOneWay(true);
-        serviceProxy.getInvocationMetaData().setIgnoreMessageExchangeExceptionOnSend(true);
+        ReplicaStorage storage = proxyFactory.newReplicaStorageProxyForDelete(replicaInfo.getSecondaries());
         storage.mergeDestroy(key);
     }
 
     protected void reOrganizeSecondaries() {
-        Map tmpKeyToReplicaInfo;
+        Map<Object, ReplicaInfo> tmpKeyToReplicaInfo;
         synchronized (keyToReplicaInfo) {
-            tmpKeyToReplicaInfo = new HashMap(keyToReplicaInfo);
+            tmpKeyToReplicaInfo = new HashMap<Object, ReplicaInfo>(keyToReplicaInfo);
         }
-        for (Iterator iter = tmpKeyToReplicaInfo.entrySet().iterator(); iter.hasNext();) {
-            Map.Entry entry = (Map.Entry) iter.next();
+        for (Map.Entry<Object, ReplicaInfo> entry : tmpKeyToReplicaInfo.entrySet()) {
             Object key = entry.getKey();
-            ReplicaInfo replicaInfo = (ReplicaInfo) entry.getValue();
+            ReplicaInfo replicaInfo = entry.getValue();
             reOrganizeSecondaries(key, replicaInfo);
         }
     }
@@ -236,12 +239,6 @@ public class BasicReplicationManager implements ReplicationManager {
         return replicaInfo;
     }
 
-    protected ReplicaStorage newReplicaStorageStub(Peer[] peers) {
-        ServiceProxy serviceProxy = (ServiceProxy) replicaStorageServiceProxy.getProxy();
-        serviceProxy.getInvocationMetaData().setTargets(peers);
-        return (ReplicaStorage) serviceProxy;
-    }
-    
     protected void updateReplicaStorages(Object key, ReplicaInfo replicaInfo, Peer[] oldSecondaries) {
         StorageCommandBuilder commandBuilder = new StorageCommandBuilder(key, replicaInfo, oldSecondaries, stateHandler);
         StorageCommand[] commands = commandBuilder.build();
@@ -262,12 +259,6 @@ public class BasicReplicationManager implements ReplicationManager {
         backingStrategy.reset();
     }
     
-    protected ReplicationManager newReplicationManagerProxy(ServiceSpace serviceSpace) {
-        ServiceProxyFactory repManagerProxyFactory = serviceSpace.getServiceProxyFactory(ReplicationManager.NAME, 
-                new Class[] {ReplicationManager.class});
-        return (ReplicationManager) repManagerProxyFactory.getProxy();
-    }
-
     protected class UpdateBackingStrategyListener implements ServiceListener {
         private final BackingStrategy backingStrategy;
         

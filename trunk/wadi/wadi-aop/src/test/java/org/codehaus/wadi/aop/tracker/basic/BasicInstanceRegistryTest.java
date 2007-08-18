@@ -30,7 +30,23 @@ public class BasicInstanceRegistryTest extends TestCase {
     protected void setUp() throws Exception {
         instanceRegistry = new BasicInstanceRegistry();
     }
-    
+
+    public void testWeakReference() throws Exception {
+        for (int i = 0; i < 10000; i++) {
+            instanceRegistry.registerInstance(i + "", new byte[1]);
+        }
+
+        int nbInstances = 0;
+        for (int i = 0; i < 10000; i++) {
+            try {
+                instanceRegistry.getInstance(i + "");
+                nbInstances++;
+            } catch (InstanceRegistryException e) {
+            }
+        }
+        assertTrue(nbInstances < 10000);
+    }
+
     public void testInstanceRegistry() throws Exception {
         Object instance = new Object();
         String instanceId = "instanceId";

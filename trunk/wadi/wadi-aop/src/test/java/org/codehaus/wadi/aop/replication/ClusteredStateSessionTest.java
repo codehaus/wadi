@@ -88,8 +88,10 @@ public class ClusteredStateSessionTest extends RMockTestCase {
 
         assertNotNull(restoredNode.child);
         assertEquals(node.child.value, restoredNode.child.value);
+        
+        assertSessionMetaData(restoredSession);
     }
-    
+
     public void testRestoreSessionFromFullThenPartialSerialization() throws Exception {
         Node node = new Node();
         node.value = 1;
@@ -101,6 +103,9 @@ public class ClusteredStateSessionTest extends RMockTestCase {
         byte[] state = clientStateHandler.extractFullState(session.getName(), session);
         clientStateHandler.resetObjectState(session);
         serverStateHandler.restoreFromFullState(session.getName(), state);
+        
+        session.setLastAccessedTime(10);
+        session.setMaxInactiveInterval(20);
         
         node.value = 2;
         node.child.value = 3;
@@ -115,8 +120,15 @@ public class ClusteredStateSessionTest extends RMockTestCase {
         assertNotNull(restoredNode.child);
         assertEquals(node.child.value, restoredNode.child.value);
         
+        assertSessionMetaData(restoredSession);
     }
     
+    protected void assertSessionMetaData(ClusteredStateSession restoredSession) {
+        assertEquals(session.getCreationTime(), restoredSession.getCreationTime());
+        assertEquals(session.getLastAccessedTime(), restoredSession.getLastAccessedTime());
+        assertEquals(session.getMaxInactiveInterval(), restoredSession.getMaxInactiveInterval());
+    }
+
     @ClusteredState
     private static class Node {
         private int value;
