@@ -15,23 +15,23 @@
  */
 package org.codehaus.wadi.replication.manager.basic;
 
+import org.codehaus.wadi.group.Peer;
+import org.codehaus.wadi.replication.manager.ReplicationManager;
+import org.codehaus.wadi.replication.storage.ReplicaStorage;
+import org.codehaus.wadi.servicespace.ServiceProxyFactory;
 
 /**
  * 
  * @version $Revision: 2340 $
  */
-public interface ObjectStateHandler {
-    byte[] extractFullState(Object key, Object target);
+public interface ProxyFactory {
+    ReplicationManager newReplicationManagerProxy();
+
+    ServiceProxyFactory newReplicaStorageServiceProxyFactory();
     
-    byte[] extractUpdatedState(Object key, Object target);
+    ReplicaStorage newReplicaStorageProxy();
     
-    void resetObjectState(Object target);
+    ReplicaStorage newReplicaStorageProxy(Peer[] peers);
     
-    Object restoreFromFullState(Object key, byte[] state);
-    
-    Object restoreFromUpdatedState(Object key, byte[] state);
-    
-    Object restoreFromFullStateTransient(Object key, byte[] state);
-    
-    void setObjectFactory(Object factory);
+    ReplicaStorage newReplicaStorageProxyForDelete(Peer[] peers);
 }

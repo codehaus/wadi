@@ -54,12 +54,15 @@ public class MemoryReplicaStorageTest extends RMockTestCase {
         objectStateManager.restoreFromFullState(key, serializedState);
         modify().returnValue(payload);
         
+        objectStateManager.extractFullState(key, payload);
+        modify().returnValue(serializedState);
+        
         startVerification();
         
         storage.mergeCreate(key, new ReplicaStorageInfo(replicaInfo, serializedState));
-        assertTrue(storage.storeReplicaInfo(key));
         ReplicaStorageInfo storageInfo = storage.retrieveReplicaStorageInfo(key);
         assertNotNull(storageInfo);
+        assertSame(serializedState, storageInfo.getSerializedPayload());
         assertReplicaInfo(new ReplicaInfo(node1, new Peer[] {node2}, payload), storageInfo.getReplicaInfo());
     }
 
@@ -71,12 +74,14 @@ public class MemoryReplicaStorageTest extends RMockTestCase {
         objectStateManager.restoreFromUpdatedState(key, updateSerializedState);
         modify().returnValue(payload);
         
+        objectStateManager.extractFullState(key, payload);
+        modify().returnValue(serializedState);
+
         startVerification();
         
         storage.mergeCreate(key, new ReplicaStorageInfo(replicaInfo, serializedState));
         storage.mergeUpdate(key, new ReplicaStorageInfo(replicaInfo, updateSerializedState));
         
-        assertTrue(storage.storeReplicaInfo(key));
         ReplicaStorageInfo storageInfo = storage.retrieveReplicaStorageInfo(key);
         assertNotNull(storageInfo);
         assertReplicaInfo(new ReplicaInfo(node1, new Peer[] {node2}, payload), storageInfo.getReplicaInfo());

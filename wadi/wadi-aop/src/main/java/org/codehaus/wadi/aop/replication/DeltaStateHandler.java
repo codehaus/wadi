@@ -19,6 +19,7 @@ import java.io.Externalizable;
 
 import org.codehaus.wadi.aop.tracker.InstanceIdFactory;
 import org.codehaus.wadi.aop.tracker.InstanceRegistry;
+import org.codehaus.wadi.aop.tracker.basic.BasicInstanceRegistry;
 import org.codehaus.wadi.aop.util.ClusteredStateHelper;
 import org.codehaus.wadi.core.WADIRuntimeException;
 import org.codehaus.wadi.core.util.Streamer;
@@ -66,14 +67,19 @@ public class DeltaStateHandler extends SessionStateHandler {
     }
     
     public Object restoreFromFullState(Object key, byte[] state) {
-        return restore(state);
+        return restore(state, instanceRegistry);
     }
 
+    @Override
+    public Object restoreFromFullStateTransient(Object key, byte[] state) {
+        return restore(state, new BasicInstanceRegistry());
+    }
+    
     public Object restoreFromUpdatedState(Object key, byte[] state) {
-        return restore(state);
+        return restore(state, instanceRegistry);
     }
 
-    private Object restore(byte[] state) {
+    private Object restore(byte[] state, InstanceRegistry instanceRegistry) {
         RestoreStateExternalizable externalizable = new RestoreStateExternalizable(instanceRegistry);
         try {
             Utils.setContent(externalizable, state, streamer);
@@ -81,6 +87,7 @@ public class DeltaStateHandler extends SessionStateHandler {
             throw new WADIRuntimeException(e);
         }
         ClusteredStateSessionMemento memento = externalizable.getMemento();
+        memento.onRestore();
         
         ClusteredStateSession session = (ClusteredStateSession) sessionFactory.create();
         session.setDistributableSessionMemento(memento);

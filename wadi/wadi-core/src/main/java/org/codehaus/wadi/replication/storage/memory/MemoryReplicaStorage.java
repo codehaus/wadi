@@ -20,6 +20,7 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.replication.common.ReplicaInfo;
 import org.codehaus.wadi.replication.common.ReplicaStorageInfo;
 import org.codehaus.wadi.replication.manager.basic.ObjectStateHandler;
 import org.codehaus.wadi.replication.storage.ReplicaKeyAlreadyExistsException;
@@ -66,10 +67,8 @@ public class MemoryReplicaStorage implements ReplicaStorage {
             keyToStorageInfo.put(key, storageInfo);
         }
         
-        synchronized (storageInfo) {
-            Object payload = objectStateManager.restoreFromFullState(key, storageInfo.getSerializedPayload());
-            storageInfo.getReplicaInfo().setPayload(payload);
-        }
+        Object payload = objectStateManager.restoreFromFullState(key, storageInfo.getSerializedPayload());
+        storageInfo.getReplicaInfo().setPayload(payload);
     }
 
     public void mergeUpdate(Object key, ReplicaStorageInfo updateStorageInfo) throws ReplicaKeyNotFoundException {
@@ -85,10 +84,8 @@ public class MemoryReplicaStorage implements ReplicaStorage {
             keyToStorageInfo.put(key, storageInfo);
         }
 
-        synchronized (storageInfo) {
-            Object payload = objectStateManager.restoreFromUpdatedState(key, storageInfo.getSerializedPayload());
-            storageInfo.getReplicaInfo().setPayload(payload);
-        }
+        Object payload = objectStateManager.restoreFromUpdatedState(key, storageInfo.getSerializedPayload());
+        storageInfo.getReplicaInfo().setPayload(payload);
     }
 
     public void mergeDestroy(Object key) {
@@ -101,9 +98,20 @@ public class MemoryReplicaStorage implements ReplicaStorage {
     }
     
     public ReplicaStorageInfo retrieveReplicaStorageInfo(Object key) {
+        ReplicaStorageInfo storageInfo;
         synchronized (keyToStorageInfo) {
-            return keyToStorageInfo.get(key);
+            storageInfo = keyToStorageInfo.get(key);
         }
+        if (null == storageInfo) {
+            return null;
+        }
+        
+        ReplicaInfo replicaInfo = storageInfo.getReplicaInfo();
+        byte[] fullState;
+        synchronized (storageInfo) {
+            fullState = objectStateManager.extractFullState(key, replicaInfo.getPayload());
+        }
+        return new ReplicaStorageInfo(replicaInfo, fullState);
     }
     
     public boolean storeReplicaInfo(Object key) {

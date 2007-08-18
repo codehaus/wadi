@@ -79,6 +79,10 @@ public class SessionStateHandler implements ObjectStateHandler {
         return externalizable;
     }
 
+    public Object restoreFromFullStateTransient(Object key, byte[] state) {
+        return restoreFromFullState(key, state);
+    }
+    
     public Object restoreFromUpdatedState(Object key, byte[] state) {
         Externalizable externalizable = newExternalizable(key);
         try {

@@ -15,6 +15,9 @@
  */
 package org.codehaus.wadi.aop.tracker.basic;
 
+import java.lang.ref.Reference;
+import java.lang.ref.ReferenceQueue;
+import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -26,31 +29,75 @@ import org.codehaus.wadi.aop.tracker.InstanceRegistryException;
  * @version $Revision: 1538 $
  */
 public class BasicInstanceRegistry implements InstanceRegistry {
-    private final Map<String, Object> instanceIdToInstance;
+    private final Map<String, WeakReferenceWithMapKey<Object>> instanceIdToReference;
+    private final ReferenceQueue<Object> refQueue;
     
     public BasicInstanceRegistry() {
-        instanceIdToInstance = new HashMap<String, Object>();
+        instanceIdToReference = new HashMap<String, WeakReferenceWithMapKey<Object>>();
+        refQueue = new ReferenceQueue<Object>();
     }
     
     public Object getInstance(String instanceId) {
-        Object instance = instanceIdToInstance.get(instanceId);
-        if (null == instance) {
+        sweepMap();
+
+        WeakReference<Object> softReference;
+        synchronized (instanceIdToReference) {
+            softReference = instanceIdToReference.get(instanceId);
+        }
+        if (null == softReference) {
             throw new InstanceRegistryException("Instance [" + instanceId + "] does not exist");
         }
-        return instance;
+        return softReference.get();
     }
 
     public void registerInstance(String instanceId, Object instance) {
-        if (instanceIdToInstance.containsKey(instanceId)) {
-            throw new InstanceRegistryException("Instance [" + instanceId + "] is already registered");
+        sweepMap();
+        
+        synchronized (instanceIdToReference) {
+            if (instanceIdToReference.containsKey(instanceId)) {
+                throw new InstanceRegistryException("Instance [" + instanceId + "] is already registered");
+            }
+            instanceIdToReference.put(instanceId, new WeakReferenceWithMapKey<Object>(instanceId, instance, refQueue));
         }
-        instanceIdToInstance.put(instanceId, instance);
     }
 
     public void unregisterInstance(String instanceId) {
-        Object instance = instanceIdToInstance.remove(instanceId);
-        if (null == instance) {
+        sweepMap();
+
+        WeakReference<Object> softReference;
+        synchronized (instanceIdToReference) {
+            softReference = instanceIdToReference.remove(instanceId);
+        }
+        if (null == softReference) {
             throw new InstanceRegistryException("Instance [" + instanceId + "] does not exist");
         }
     }
+    
+    protected void sweepMap() {
+        Reference ref;
+        synchronized (refQueue) {
+            while (null != (ref = refQueue.poll())) {
+                instanceIdToReference.remove(((WeakReferenceWithMapKey) ref).getMapKey());   
+            }
+        }
+    }
+    
+    protected static class WeakReferenceWithMapKey<T> extends WeakReference<T> {
+
+        private final String mapKey;
+
+        public WeakReferenceWithMapKey(String mapKey, T referent, ReferenceQueue<? super T> q) {
+            super(referent, q);
+            if (null == mapKey) {
+                throw new IllegalArgumentException("mapKey is required");
+            }
+            this.mapKey = mapKey;
+        }
+
+        public String getMapKey() {
+            return mapKey;
+        }
+        
+    }
+    
 }

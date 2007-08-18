@@ -25,16 +25,13 @@ import org.codehaus.wadi.group.vm.VMPeer;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
 import org.codehaus.wadi.replication.storage.ReplicaStorage;
 import org.codehaus.wadi.replication.strategy.BackingStrategy;
-import org.codehaus.wadi.servicespace.InvocationMetaData;
 import org.codehaus.wadi.servicespace.LifecycleState;
 import org.codehaus.wadi.servicespace.ServiceLifecycleEvent;
 import org.codehaus.wadi.servicespace.ServiceListener;
 import org.codehaus.wadi.servicespace.ServiceMonitor;
-import org.codehaus.wadi.servicespace.ServiceProxy;
 import org.codehaus.wadi.servicespace.ServiceProxyFactory;
 import org.codehaus.wadi.servicespace.ServiceSpace;
 import org.codehaus.wadi.servicespace.ServiceSpaceName;
-import org.codehaus.wadi.servicespace.replyaccessor.DoNotReplyWithNull;
 
 import com.agical.rmock.core.Action;
 import com.agical.rmock.core.MethodHandle;
@@ -51,22 +48,26 @@ public class BasicReplicationManagerTest extends RMockTestCase {
     private ServiceListener serviceListener;
     private BackingStrategy backingStrategy;
     private ServiceSpaceName serviceSpaceName;
-    private ServiceProxyFactory replicaStorageServiceProxyFactory;
-    private ReplicaStorageMixInServiceProxy replicaStorageProxy;
-    private ReplicationManager replicationManagerProxy;
     private ObjectStateHandler stateHandler;
+    private ProxyFactory proxyFactory;
+    private ReplicationManager replicationManagerProxy;
+    private ServiceProxyFactory replicaStorageServiceProxyFactory;
+    private ReplicaStorage replicaStorageProxy;
 
     protected void setUp() throws Exception {
         localPeer = new VMLocalPeer("peer1");
         peer2 = new VMPeer("peer2", null);
         peer3 = new VMPeer("peer3", null);
         peer4 = new VMPeer("peer4", null);
-        
+
+        proxyFactory = (ProxyFactory) mock(ProxyFactory.class);
+        replicationManagerProxy = proxyFactory.newReplicationManagerProxy();
+        replicaStorageServiceProxyFactory = proxyFactory.newReplicaStorageServiceProxyFactory();
+        replicaStorageProxy = proxyFactory.newReplicaStorageProxy();
+
         serviceSpace = (ServiceSpace) mock(ServiceSpace.class);
         serviceSpace.getLocalPeer();
         modify().returnValue(localPeer);
-        
-        recordCreateProxies();
         
         serviceSpaceName = new ServiceSpaceName(new URI("name"));
         storageMonitor = serviceSpace.getServiceMonitor(ReplicaStorage.NAME);
@@ -97,9 +98,7 @@ public class BasicReplicationManagerTest extends RMockTestCase {
         endSection();
         startVerification();
         
-        BasicReplicationManager manager = new BasicReplicationManager(serviceSpace,
-            stateHandler,
-            backingStrategy);
+        BasicReplicationManager manager = newBasicReplicationManager();
         manager.start();
     }
     
@@ -112,7 +111,7 @@ public class BasicReplicationManagerTest extends RMockTestCase {
         endSection();
         startVerification();
         
-        new BasicReplicationManager(serviceSpace, stateHandler, backingStrategy);
+        newBasicReplicationManager();
         
         receiveEvent(peer3, LifecycleState.AVAILABLE);
         receiveEvent(peer4, LifecycleState.STARTED);
@@ -120,48 +119,92 @@ public class BasicReplicationManagerTest extends RMockTestCase {
         receiveEvent(peer4, LifecycleState.FAILED);
     }
     
+    public void testCreate() throws Exception {
+        Object key = new Object();
+        Object instance = new Object();
+        Peer[] targets = new Peer[] {peer2};
+        
+        recordCreate(key, instance, targets);
+
+        ReplicaStorage newReplicaStorageProxy = proxyFactory.newReplicaStorageProxy(targets);
+        newReplicaStorageProxy.mergeCreate(key, null);
+        modify().args(is.AS_RECORDED, is.ANYTHING);
+        
+        startVerification();
+        
+        BasicReplicationManager manager = newBasicReplicationManager();
+        manager.create(key, instance);
+        assertTrue(manager.releasePrimary(key));
+    }
+
+    public void testUpdate() throws Exception {
+        Object key = new Object();
+        Object instance = new Object();
+        Peer[] targets = new Peer[] {peer2};
+        Object newInstance = new Object();
+
+        recordCreate(key, instance, targets);
+        
+        ReplicaStorage newReplicaStorageProxy = proxyFactory.newReplicaStorageProxy(targets);
+        newReplicaStorageProxy.mergeCreate(key, null);
+        modify().args(is.AS_RECORDED, is.ANYTHING);
+
+        beginSection(s.ordered("Extract Uupdate; Reset state; Elect Secondaries"));
+        stateHandler.extractUpdatedState(key, newInstance);
+        modify().returnValue(new byte[0]);
+        
+        stateHandler.resetObjectState(newInstance);
+        
+        newReplicaStorageProxy = proxyFactory.newReplicaStorageProxy(targets);
+        newReplicaStorageProxy.mergeUpdate(key, null);
+        modify().args(is.AS_RECORDED, is.ANYTHING);
+        
+        endSection();
+        
+        startVerification();
+        
+        BasicReplicationManager manager = newBasicReplicationManager();
+        manager.create(key, instance);
+        manager.update(key, newInstance);
+        assertTrue(manager.releasePrimary(key));
+    }
+    
+    public void testDelete() throws Exception {
+        Object key = new Object();
+        Object instance = new Object();
+        
+        recordCreate(key, instance, new Peer[0]);
+
+        startVerification();
+        
+        BasicReplicationManager manager = newBasicReplicationManager();
+        manager.create(key, instance);
+        manager.destroy(key);
+        assertFalse(manager.releasePrimary(key));
+    }
+
+    protected BasicReplicationManager newBasicReplicationManager() {
+        return new BasicReplicationManager(serviceSpace,
+            stateHandler,
+            backingStrategy,
+            proxyFactory);
+    }
+    
+    protected void recordCreate(Object key, Object instance, Peer[] targets) {
+        beginSection(s.ordered("Extract State; Reset state; Elect Secondaries; mergeCreate"));
+        stateHandler.extractFullState(key, instance);
+        modify().returnValue(new byte[0]);
+        
+        stateHandler.resetObjectState(instance);
+        
+        backingStrategy.electSecondaries(key);
+        modify().returnValue(targets);
+        endSection();
+    }
+
     private void receiveEvent(Peer peer, LifecycleState state) {
         serviceListener.receive(new ServiceLifecycleEvent(serviceSpaceName, ReplicaStorage.NAME, peer, state), 
                 Collections.EMPTY_SET);
-    }
-    
-    private void recordCreateProxies() {
-        recordCreateReplicationManagerProxy();
-        recordCreateReplicaStorageProxy();
-    }
-
-    private void recordCreateReplicationManagerProxy() {
-        replicationManagerProxy = (ReplicationManager) mock(ReplicationManagerMixInServiceProxy.class);
-
-        beginSection(s.ordered("Create ReplicationManager proxy"));
-        ServiceProxyFactory serviceProxyFactory =
-            serviceSpace.getServiceProxyFactory(ReplicationManager.NAME, new Class[] {ReplicationManager.class});
-        serviceProxyFactory.getProxy();
-        modify().returnValue(replicationManagerProxy);
-        endSection();
-    }
-    
-    private void recordCreateReplicaStorageProxy() {
-        beginSection(s.ordered("Create ReplicaStorage proxy"));
-        replicaStorageServiceProxyFactory = serviceSpace.getServiceProxyFactory(ReplicaStorage.NAME, new Class[] {ReplicaStorage.class});
-        replicaStorageServiceProxyFactory.getProxy();
-        replicaStorageProxy = (ReplicaStorageMixInServiceProxy) mock(ReplicaStorageMixInServiceProxy.class);
-        modify().returnValue(replicaStorageProxy);
-        
-        InvocationMetaData invMetaData = 
-            (InvocationMetaData) intercept(InvocationMetaData.class, "replicaStorageProxyInvMetaData");
-        replicaStorageProxy.getInvocationMetaData();
-        modify().returnValue(invMetaData);
-        invMetaData.setReplyAssessor(DoNotReplyWithNull.ASSESSOR);
-        modify().forward();
-
-        endSection();
-    }
-
-    public interface ReplicaStorageMixInServiceProxy extends ReplicaStorage, ServiceProxy {
-    }
-    
-    public interface ReplicationManagerMixInServiceProxy extends ReplicationManager, ServiceProxy {
     }
     
 }
