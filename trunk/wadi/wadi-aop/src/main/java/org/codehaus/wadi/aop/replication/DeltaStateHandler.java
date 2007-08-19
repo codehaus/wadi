@@ -79,8 +79,8 @@ public class DeltaStateHandler extends SessionStateHandler {
         return restore(state, instanceRegistry);
     }
 
-    private Object restore(byte[] state, InstanceRegistry instanceRegistry) {
-        RestoreStateExternalizable externalizable = new RestoreStateExternalizable(instanceRegistry);
+    protected Object restore(byte[] state, InstanceRegistry instanceRegistry) {
+        RestoreStateExternalizable externalizable = new RestoreStateExternalizable(streamer, instanceRegistry);
         try {
             Utils.setContent(externalizable, state, streamer);
         } catch (Exception e) {

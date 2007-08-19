@@ -232,7 +232,7 @@ public class StackContext {
         return new OswegoConcurrentMotableMap();
     }
 
-    private ObjectStateHandler newObjectStateHandler(Streamer streamer) {
+    protected ObjectStateHandler newObjectStateHandler(Streamer streamer) {
         return new SessionStateHandler(streamer);
     }
 

@@ -74,6 +74,7 @@ public class ClusteredStateSessionMemento extends DistributableSessionMemento {
     }
     
     public void onRestore() {
+        setNewSession(false);
         super.setName(name);
         super.setCreationTime(creationTime);
         super.setLastAccessedTime(lastAccessedTime);

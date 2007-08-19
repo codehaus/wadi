@@ -22,6 +22,7 @@ import java.io.ObjectOutput;
 
 import org.codehaus.wadi.aop.tracker.InstanceRegistry;
 import org.codehaus.wadi.aop.util.ClusteredStateHelper;
+import org.codehaus.wadi.core.util.Streamer;
 
 
 /**
@@ -29,10 +30,17 @@ import org.codehaus.wadi.aop.util.ClusteredStateHelper;
  * @version $Revision: 1538 $
  */
 public class RestoreStateExternalizable implements Externalizable {
+    private final Streamer streamer;
     private final InstanceRegistry instanceRegistry;
     private ClusteredStateSessionMemento memento;
 
-    public RestoreStateExternalizable(InstanceRegistry instanceRegistry) {
+    public RestoreStateExternalizable(Streamer streamer, InstanceRegistry instanceRegistry) {
+        if (null == streamer) {
+            throw new IllegalArgumentException("streamer is required");
+        } else if (null == instanceRegistry) {
+            throw new IllegalArgumentException("instanceRegistry is required");
+        }
+        this.streamer = streamer;
         this.instanceRegistry = instanceRegistry;
     }
 
@@ -44,7 +52,7 @@ public class RestoreStateExternalizable implements Externalizable {
         int length = in.readInt();
         byte[] serInstTracker = new byte[length];
         in.readFully(serInstTracker);
-        ClusteredStateHelper.deserialize(instanceRegistry, serInstTracker);
+        ClusteredStateHelper.deserialize(instanceRegistry, streamer, serInstTracker);
         String instanceId = in.readUTF();
         memento = (ClusteredStateSessionMemento) instanceRegistry.getInstance(instanceId);
     }

@@ -17,6 +17,7 @@
 package org.codehaus.wadi.core.session;
 
 import org.codehaus.wadi.core.manager.Manager;
+import org.codehaus.wadi.core.motable.RehydrationException;
 import org.codehaus.wadi.core.util.Streamer;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
 
@@ -41,9 +42,35 @@ public abstract class AbstractReplicableSession extends DistributableSession {
         this.replicationManager = replicationManager;
     }
 
+    public synchronized void rehydrate(long creationTime,
+        long lastAccessedTime,
+        int maxInactiveInterval,
+        String name,
+        byte[] body) throws RehydrationException {
+        super.rehydrate(creationTime,
+            lastAccessedTime,
+            maxInactiveInterval,
+            name,
+            body);
+        replicationManager.acquirePrimary(getName());
+    }
+
+    public synchronized void onEndProcessing() {
+        if (getAbstractMotableMemento().isNewSession()) {
+            replicationManager.create(getName(), this);
+            getAbstractMotableMemento().setNewSession(false);
+        } else if (isDirty()) {
+            replicationManager.update(getName(), this);
+        }
+    }
+
     public synchronized void destroy() throws Exception {
         replicationManager.destroy(getName());
         super.destroy();
     }
 
+    protected boolean isDirty() {
+        return true;
+    }
+    
 }

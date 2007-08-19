@@ -27,9 +27,13 @@ import org.codehaus.wadi.aop.tracker.InstanceTrackerFactory;
 public class ClusteredStateAspectUtil {
     
     public static void setInstanceTrackerFactory(InstanceTrackerFactory trackerFactory) {
+        setInstanceTrackerFactory(ClusteredStateAspectUtil.class.getClassLoader(), trackerFactory);
+    }
+    
+    public static void setInstanceTrackerFactory(ClassLoader classLoader, InstanceTrackerFactory trackerFactory) {
         Class aspectClass;
         try {
-            aspectClass = ClusteredStateAspectUtil.class.getClassLoader().loadClass("org.codehaus.wadi.aop.aspectj.ClusteredStateAspect");
+            aspectClass = classLoader.loadClass("org.codehaus.wadi.aop.aspectj.ClusteredStateAspect");
             Field trackerFactoryField = aspectClass.getField("trackerFactory");
             trackerFactoryField.set(null, trackerFactory);
             

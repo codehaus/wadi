@@ -54,4 +54,35 @@
 
   </dependencies>
 
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+          <configuration>
+            <forkMode>pertest</forkMode><!-- we must fork in order to enable argLine -->
+            <argLine>-enableassertions -Xmx1024m</argLine>
+            <systemProperties>
+              <property>
+                <name>org.apache.commons.logging.Log</name>
+                <value>org.apache.commons.logging.impl.SimpleLog</value>
+              </property>
+              <property>
+                <name>org.apache.commons.logging.simplelog.showdatetime</name>
+                <value>true</value>
+              </property>
+              <property>
+                <name>org.apache.commons.logging.simplelog.log.org.codehaus.wadi</name>
+                <value>warn</value>
+              </property>
+              <property>
+                <name>java.net.preferIPv4Stack</name>
+                <value>true</value>
+              </property>
+            </systemProperties>
+          </configuration>
+        </plugin>
+    </plugins>
+  </build>
+
 </project>
