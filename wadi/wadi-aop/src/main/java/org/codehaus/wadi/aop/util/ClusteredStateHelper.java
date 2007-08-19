@@ -16,7 +16,7 @@
 package org.codehaus.wadi.aop.util;
 
 import java.io.ByteArrayInputStream;
-import java.io.ObjectInputStream;
+import java.io.ObjectInput;
 import java.util.List;
 
 import org.codehaus.wadi.aop.ClusteredStateMarker;
@@ -29,6 +29,7 @@ import org.codehaus.wadi.aop.tracker.visitor.ResetTrackingVisitor;
 import org.codehaus.wadi.aop.tracker.visitor.SetInstanceIdVisitor;
 import org.codehaus.wadi.aop.tracker.visitor.CopyStateVisitor.CopyStateVisitorContext;
 import org.codehaus.wadi.core.WADIRuntimeException;
+import org.codehaus.wadi.core.util.Streamer;
 
 
 /**
@@ -68,11 +69,11 @@ public final class ClusteredStateHelper {
         return context.getSerializedValueUpdaterInfos();
     }
     
-    public static void deserialize(InstanceRegistry instanceRegistry, byte[] serialized) {
+    public static void deserialize(InstanceRegistry instanceRegistry, Streamer streamer, byte[] serialized) {
         ByteArrayInputStream memIn = new ByteArrayInputStream(serialized);
         List<ValueUpdaterInfo> valueUpdaterInfos;
         try {
-            ObjectInputStream in = new ObjectInputStream(memIn);
+            ObjectInput in = streamer.getInputStream(memIn);
             valueUpdaterInfos = (List<ValueUpdaterInfo>) in.readObject();
         } catch (Exception e) {
             throw new WADIRuntimeException(e);

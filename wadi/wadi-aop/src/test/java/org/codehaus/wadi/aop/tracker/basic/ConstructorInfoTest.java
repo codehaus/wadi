@@ -20,8 +20,15 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 
+import org.codehaus.wadi.aop.ClusteredStateMarker;
+import org.codehaus.wadi.aop.annotation.ClusteredState;
+import org.codehaus.wadi.aop.aspectj.ClusteredStateAspectUtil;
 import org.codehaus.wadi.aop.tracker.InstanceRegistry;
+import org.codehaus.wadi.aop.tracker.InstanceTracker;
+import org.codehaus.wadi.aop.tracker.InstanceTrackerFactory;
 
 import com.agical.rmock.core.describe.ExpressionDescriber;
 import com.agical.rmock.core.match.operator.AbstractExpression;
@@ -33,11 +40,21 @@ import com.agical.rmock.extension.junit.RMockTestCase;
  */
 public class ConstructorInfoTest extends RMockTestCase {
 
+    private InstanceTracker instanceTracker;
     private ConstructorInfo constructorInfo;
     private InstanceRegistry instanceRegistry;
 
     @Override
     protected void setUp() throws Exception {
+        instanceTracker = (InstanceTracker) mock(InstanceTracker.class);
+        
+        InstanceTrackerFactory trackerFactory = new InstanceTrackerFactory() {
+            public InstanceTracker newInstanceTracker(ClusteredStateMarker stateMarker) {
+                return instanceTracker;
+            }    
+        };
+        ClusteredStateAspectUtil.setInstanceTrackerFactory(trackerFactory);
+        
         instanceRegistry = (InstanceRegistry) mock(InstanceRegistry.class);
         constructorInfo = new ConstructorInfo(DummyClass.class.getConstructor(new Class[] {int.class}));
     }
@@ -57,6 +74,15 @@ public class ConstructorInfoTest extends RMockTestCase {
     public void testExecuteWithParameters() throws Exception {
         final int testValue = 123;
         String instanceId = "instanceId";
+        
+        instanceTracker.track(0, (Constructor) null, null);
+        modify().args(is.ANYTHING, is.ANYTHING, is.ANYTHING);
+        instanceTracker.track(0, (Field) null, null);
+        modify().args(is.ANYTHING, is.ANYTHING, is.ANYTHING);
+        instanceTracker.recordFieldUpdate(null, null);
+        modify().args(is.ANYTHING, is.ANYTHING);
+        instanceTracker.setInstanceId(instanceId);
+        
         instanceRegistry.registerInstance(instanceId, null);
         modify().args(is.AS_RECORDED, new AbstractExpression() {
 
@@ -75,6 +101,7 @@ public class ConstructorInfoTest extends RMockTestCase {
         constructorInfo.executeWithParameters(instanceRegistry, instanceId, new Object[] {new Integer(testValue)});
     }
     
+    @ClusteredState
     public static class DummyClass {
         private final int test;
 

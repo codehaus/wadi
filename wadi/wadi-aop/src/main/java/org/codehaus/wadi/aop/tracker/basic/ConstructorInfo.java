@@ -19,6 +19,7 @@ import java.io.InvalidClassException;
 import java.io.ObjectStreamException;
 import java.lang.reflect.Constructor;
 
+import org.codehaus.wadi.aop.ClusteredStateMarker;
 import org.codehaus.wadi.aop.tracker.InstanceRegistry;
 import org.codehaus.wadi.aop.tracker.InstanceTrackerException;
 
@@ -43,12 +44,13 @@ public class ConstructorInfo implements ValueUpdater {
     }
     
     public void executeWithParameters(InstanceRegistry instanceRegistry, String instanceId, Object[] parameters) {
-        Object instance;
+        ClusteredStateMarker instance;
         try {
-            instance = constructor.newInstance(parameters);
+            instance = (ClusteredStateMarker) constructor.newInstance(parameters);
         } catch (Exception e) {
             throw new InstanceTrackerException(e);
         }
+        instance.$wadiGetTracker().setInstanceId(instanceId);
         instanceRegistry.registerInstance(instanceId, instance);
     }
     

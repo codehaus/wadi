@@ -19,14 +19,14 @@ import java.util.Map;
 
 import org.codehaus.wadi.aop.annotation.ClusteredState;
 import org.codehaus.wadi.aop.util.TrackedMap;
-import org.codehaus.wadi.core.session.StandardAttributesMemento;
+import org.codehaus.wadi.core.session.DistributableAttributesMemento;
 
 /**
  * 
  * @version $Revision: 1538 $
  */
 @ClusteredState
-public class ClusteredStateAttributesMemento extends StandardAttributesMemento {
+public class ClusteredStateAttributesMemento extends DistributableAttributesMemento {
     protected Map<Object, Object> attributes;
 
     @Override

@@ -23,6 +23,7 @@ import org.codehaus.wadi.aop.tracker.InstanceIdFactory;
 import org.codehaus.wadi.aop.tracker.InstanceRegistry;
 import org.codehaus.wadi.aop.tracker.basic.BasicInstanceRegistry;
 import org.codehaus.wadi.aop.tracker.basic.BasicInstanceTrackerFactory;
+import org.codehaus.wadi.core.util.SimpleStreamer;
 
 import com.agical.rmock.extension.junit.RMockTestCase;
 
@@ -34,6 +35,7 @@ public class ClusteredStateHelperTest extends RMockTestCase {
 
     private InstanceIdFactory instanceIdFactory;
     private InstanceRegistry instanceRegistry;
+    private SimpleStreamer streamer;
 
     @Override
     protected void setUp() throws Exception {
@@ -41,6 +43,7 @@ public class ClusteredStateHelperTest extends RMockTestCase {
         instanceRegistry = new BasicInstanceRegistry();
         
         ClusteredStateAspectUtil.setInstanceTrackerFactory(new BasicInstanceTrackerFactory());
+        streamer = new SimpleStreamer();
     }
     
     public void testFullSerialization() throws Exception {
@@ -56,7 +59,7 @@ public class ClusteredStateHelperTest extends RMockTestCase {
         b.a = a;
         
         byte[] serialized = ClusteredStateHelper.serializeFully(instanceIdFactory, a);
-        ClusteredStateHelper.deserialize(instanceRegistry, serialized);
+        ClusteredStateHelper.deserialize(instanceRegistry, streamer, serialized);
         
         assertInstances(a, b, instanceRegistry);
     }
@@ -76,13 +79,13 @@ public class ClusteredStateHelperTest extends RMockTestCase {
         byte[] serialized = ClusteredStateHelper.serializeFully(instanceIdFactory, a);
         ClusteredStateHelper.resetTracker(a);
         
-        ClusteredStateHelper.deserialize(instanceRegistry, serialized);
+        ClusteredStateHelper.deserialize(instanceRegistry, streamer, serialized);
 
         a.field = 1234;
         b.field = 12345;
         
         serialized = ClusteredStateHelper.serialize(instanceIdFactory, a);
-        ClusteredStateHelper.deserialize(instanceRegistry, serialized);
+        ClusteredStateHelper.deserialize(instanceRegistry, streamer, serialized);
         
         assertInstances(a, b, instanceRegistry);
     }

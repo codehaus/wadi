@@ -479,8 +479,6 @@
 	    <exclude implementation="java.lang.String">**/TestJGRelocation.java</exclude><!-- fails occasionally, investigate -->
 	    <exclude implementation="java.lang.String">**/TestJGEvacuation.java</exclude><!-- fails occasionally, investigate -->
 
-	    <exclude implementation="java.lang.String">**/TestWadiWebXml.java</exclude><!-- looks like something has changed -->
-
 	    <!--
 	    Peer group tests fail when executed with
 	    maven. TestACPeerGroup: when the two testMETHOD are
@@ -490,8 +488,6 @@
 	    -->
 	    <exclude implementation="java.lang.String">**/TestAC*.java</exclude>
 	  </excludes>
-	  <forkMode>pertest</forkMode><!-- we must fork in order to enable argLine -->
-	  <argLine>-enableassertions -Xmx1024m</argLine>
 	  <systemProperties>
 	    <property>
 	      <name>org.apache.commons.logging.Log</name>
@@ -504,10 +500,6 @@
 	    <property>
 	      <name>org.apache.commons.logging.simplelog.log.org.codehaus.wadi</name>
 	      <value>warn</value>
-	    </property>
-	    <property>
-	      <name>java.net.preferIPv4Stack</name><!-- keep jgroups happy -->
-	      <value>true</value>
 	    </property>
 	  </systemProperties>
 	</configuration>

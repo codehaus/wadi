@@ -102,7 +102,8 @@ public class ClusteredStateSessionTest extends RMockTestCase {
         
         byte[] state = clientStateHandler.extractFullState(session.getName(), session);
         clientStateHandler.resetObjectState(session);
-        serverStateHandler.restoreFromFullState(session.getName(), state);
+        ClusteredStateSession restoredSession = 
+            (ClusteredStateSession) serverStateHandler.restoreFromFullState(session.getName(), state);
         
         session.setLastAccessedTime(10);
         session.setMaxInactiveInterval(20);
@@ -111,8 +112,7 @@ public class ClusteredStateSessionTest extends RMockTestCase {
         node.child.value = 3;
 
         state = clientStateHandler.extractUpdatedState(session.getName(), session);
-        ClusteredStateSession restoredSession = 
-            (ClusteredStateSession) serverStateHandler.restoreFromUpdatedState(session.getName(), state);
+        restoredSession = (ClusteredStateSession) serverStateHandler.restoreFromUpdatedState(session.getName(), state);
 
         Node restoredNode = (Node) restoredSession.getState(key);
         assertEquals(node.value, restoredNode.value);
