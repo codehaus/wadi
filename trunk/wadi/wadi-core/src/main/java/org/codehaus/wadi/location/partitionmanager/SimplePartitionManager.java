@@ -108,6 +108,8 @@ public class SimplePartitionManager implements PartitionManager, PartitionManage
         
         endpointBuilder.addSEI(dispatcher, PartitionManagerMessageListener.class, this);
         
+        Thread.sleep(2000);
+        
         queueRebalancing();
         
         evacuationCompletionLatch = new Latch();
