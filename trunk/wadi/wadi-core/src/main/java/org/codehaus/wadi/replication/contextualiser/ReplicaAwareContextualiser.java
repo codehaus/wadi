@@ -59,7 +59,7 @@ public class ReplicaAwareContextualiser extends AbstractSharedContextualiser {
     protected Motable get(String id, boolean exclusiveOnly) {
         Object object;
         try {
-            object = replicationManager.acquirePrimary(id);
+            object = replicationManager.retrieveReplica(id);
         } catch (Exception e) {
             return null;
         }

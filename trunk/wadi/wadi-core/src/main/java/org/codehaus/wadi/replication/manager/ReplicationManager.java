@@ -31,7 +31,9 @@ public interface ReplicationManager extends Lifecycle {
     
     void destroy(Object key);
 
-    Object acquirePrimary(Object key) throws ReplicationKeyNotFoundException, InternalReplicationManagerException;
+    Object retrieveReplica(Object key) throws ReplicationKeyNotFoundException, InternalReplicationManagerException;
+
+    void acquirePrimary(Object key, Object tmp) throws ReplicationKeyNotFoundException, InternalReplicationManagerException;
 
     boolean releasePrimary(Object key);
 }

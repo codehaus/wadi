@@ -19,13 +19,18 @@ import java.net.URI;
 import java.util.Collections;
 
 import org.codehaus.wadi.group.LocalPeer;
+import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.vm.VMLocalPeer;
 import org.codehaus.wadi.group.vm.VMPeer;
+import org.codehaus.wadi.replication.common.ReplicaInfo;
+import org.codehaus.wadi.replication.common.ReplicaStorageInfo;
+import org.codehaus.wadi.replication.manager.ReplicationKeyAlreadyExistsException;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
 import org.codehaus.wadi.replication.storage.ReplicaStorage;
 import org.codehaus.wadi.replication.strategy.BackingStrategy;
 import org.codehaus.wadi.servicespace.LifecycleState;
+import org.codehaus.wadi.servicespace.ServiceInvocationException;
 import org.codehaus.wadi.servicespace.ServiceLifecycleEvent;
 import org.codehaus.wadi.servicespace.ServiceListener;
 import org.codehaus.wadi.servicespace.ServiceMonitor;
@@ -183,11 +188,71 @@ public class BasicReplicationManagerTest extends RMockTestCase {
         assertFalse(manager.releasePrimary(key));
     }
 
+    public void testRetrieveReplicaWithNoReplicaReturnsNull() throws Exception {
+        Object key = new Object();
+        replicationManagerProxy.releasePrimary(key);
+        replicaStorageProxy.retrieveReplicaStorageInfo(key);
+        modify().throwException(new ServiceInvocationException(new MessageExchangeException("desc")));
+        
+        startVerification();
+        
+        BasicReplicationManager manager = newBasicReplicationManager();
+        Object retrieveReplica = manager.retrieveReplica(key);
+        assertNull(retrieveReplica);
+    }
+
+    public void testRetrieveReplicaWithFoundReplica() throws Exception {
+        Object key = new Object();
+        Object instance = new Object();
+        ReplicaInfo replicaInfo = new ReplicaInfo(peer2, new Peer[] {peer3}, instance);
+        ReplicaStorageInfo replicaStorageInfo = new ReplicaStorageInfo(replicaInfo, new byte[0]);
+        
+        replicationManagerProxy.releasePrimary(key);
+        replicaStorageProxy.retrieveReplicaStorageInfo(key);
+        modify().returnValue(replicaStorageInfo);
+        stateHandler.restoreFromFullStateTransient(key, replicaStorageInfo.getSerializedPayload());
+        modify().returnValue(instance);
+        
+        backingStrategy.reElectSecondaries(key, replicaInfo.getPrimary(), replicaInfo.getSecondaries());
+        modify().returnValue(new Peer[] {peer4});
+        startVerification();
+        
+        BasicReplicationManager manager = newBasicReplicationManager();
+        Object retrieveReplica = manager.retrieveReplica(key);
+        assertSame(instance, retrieveReplica);
+    }
+
+    public void testAcquirePrimaryWithNoReplicaCreateReplica() throws Exception {
+        Object key = new Object();
+        Object instance = new Object();
+
+        replicationManagerProxy.releasePrimary(key);
+        replicaStorageProxy.retrieveReplicaStorageInfo(key);
+        modify().throwException(new ServiceInvocationException(new MessageExchangeException("desc")));
+        
+        backingStrategy.reElectSecondaries(key, localPeer, new Peer[0]);
+        modify().returnValue(new Peer[] {peer2});
+        startVerification();
+        
+        BasicReplicationManager manager = newBasicReplicationManager();
+        manager.acquirePrimary(key, instance);
+        
+        try {
+            manager.create(key, instance);
+            fail();
+        } catch (ReplicationKeyAlreadyExistsException e) {
+        }
+    }
+    
     protected BasicReplicationManager newBasicReplicationManager() {
         return new BasicReplicationManager(serviceSpace,
             stateHandler,
             backingStrategy,
-            proxyFactory);
+            proxyFactory) {
+            @Override
+            protected void updateReplicaStorages(Object key, ReplicaInfo replicaInfo, Peer[] oldSecondaries) {
+            }
+        };
     }
     
     protected void recordCreate(Object key, Object instance, Peer[] targets) {

@@ -71,11 +71,14 @@ public class DatabaseReplicationManager implements ReplicationManager {
         }
     }
 
-    public Object acquirePrimary(Object key) 
-            throws ReplicationKeyNotFoundException, InternalReplicationManagerException {
+    public Object retrieveReplica(Object key) {
         throw new ReplicationKeyNotFoundException(key);
     }
 
+    public void acquirePrimary(Object key, Object tmp) {
+        throw new ReplicationKeyNotFoundException(key);
+    }
+    
     public boolean releasePrimary(Object key) {
         return false;
     }
