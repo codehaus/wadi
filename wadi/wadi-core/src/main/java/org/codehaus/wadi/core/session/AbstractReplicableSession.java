@@ -52,7 +52,7 @@ public abstract class AbstractReplicableSession extends DistributableSession {
             maxInactiveInterval,
             name,
             body);
-        replicationManager.acquirePrimary(getName());
+        replicationManager.acquirePrimary(getName(), this);
     }
 
     public synchronized void onEndProcessing() {

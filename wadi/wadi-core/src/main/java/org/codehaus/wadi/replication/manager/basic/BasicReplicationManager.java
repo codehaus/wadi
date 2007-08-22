@@ -149,23 +149,37 @@ public class BasicReplicationManager implements ReplicationManager {
             cascadeDestroy(key, replicaInfo);
         }
     }
+    
+    public Object retrieveReplica(Object key) {
+        return retrieveOrCreateReplica(key, null);
+    }
 
-    public Object acquirePrimary(Object key) {
-        ReplicaStorageInfo storageInfo;
+    public void acquirePrimary(Object key, Object tmp) {
+        retrieveOrCreateReplica(key, tmp);
+    }
+
+    protected Object retrieveOrCreateReplica(Object key, Object tmp) {
+        ReplicaInfo replicaInfo;
         try {
             replicationManagerProxy.releasePrimary(key);
-            storageInfo = replicaStorageProxy.retrieveReplicaStorageInfo(key);
+            ReplicaStorageInfo storageInfo = replicaStorageProxy.retrieveReplicaStorageInfo(key);
+            
+            Object target = stateHandler.restoreFromFullStateTransient(key, storageInfo.getSerializedPayload());
+            replicaInfo = storageInfo.getReplicaInfo();
+            replicaInfo.setPayload(target);
         } catch (ServiceInvocationException e) {
             if (e.isMessageExchangeException()) {
-                return null;
+                if (null == tmp) {
+                    return null;
+                }
+                synchronized (keyToReplicaInfo) {
+                    replicaInfo = new ReplicaInfo(localPeer, new Peer[0], tmp);
+                    keyToReplicaInfo.put(key, replicaInfo);
+                }
             } else {
                 throw new ReplicationKeyNotFoundException(key, e);
             }
         }
-
-        Object target = stateHandler.restoreFromFullStateTransient(key, storageInfo.getSerializedPayload());
-        ReplicaInfo replicaInfo = storageInfo.getReplicaInfo();
-        replicaInfo.setPayload(target);
         
         replicaInfo = reOrganizeSecondaries(key, replicaInfo);
         return replicaInfo.getPayload();

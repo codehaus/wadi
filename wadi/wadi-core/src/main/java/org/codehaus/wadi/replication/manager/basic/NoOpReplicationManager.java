@@ -26,8 +26,11 @@ import org.codehaus.wadi.replication.manager.ReplicationManager;
  */
 public class NoOpReplicationManager implements ReplicationManager {
 
-    public Object acquirePrimary(Object key) throws ReplicationKeyNotFoundException, InternalReplicationManagerException {
+    public Object retrieveReplica(Object key) throws ReplicationKeyNotFoundException, InternalReplicationManagerException {
         return null;
+    }
+    
+    public void acquirePrimary(Object key, Object tmp) {
     }
 
     public void create(Object key, Object tmp) throws ReplicationKeyAlreadyExistsException, InternalReplicationManagerException {

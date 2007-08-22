@@ -73,7 +73,7 @@ public class ReplicaAwareContextualiserTest extends RMockTestCase {
         motable.getName();
         String key = "id";
         modify().returnValue(key);
-        manager.acquirePrimary(key);
+        manager.retrieveReplica(key);
         modify().returnValue(motable);
         
         stateManager.insert(key);

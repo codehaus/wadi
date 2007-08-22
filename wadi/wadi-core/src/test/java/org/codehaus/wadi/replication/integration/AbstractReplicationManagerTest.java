@@ -88,12 +88,12 @@ public abstract class AbstractReplicationManagerTest extends RMockTestCase {
         assertDefinedByStorage(key, 1, replicaStorage2, new ReplicaInfo(peer1, new Peer[] {peer2, peer3}, session));
         assertDefinedByStorage(key, 1, replicaStorage3, new ReplicaInfo(peer1, new Peer[] {peer2, peer3}, session));
 
-        manager2.acquirePrimary(key);
+        manager2.retrieveReplica(key);
         assertDefinedByStorage(key, 2, replicaStorage1, new ReplicaInfo(peer2, new Peer[] {peer1, peer3}, session));
         assertNotDefinedByStorage(key, replicaStorage2);
         assertDefinedByStorage(key, 2, replicaStorage3, new ReplicaInfo(peer2, new Peer[] {peer1, peer3}, session));
 
-        manager1.acquirePrimary(key);
+        manager1.retrieveReplica(key);
         assertNotDefinedByStorage(key, replicaStorage1);
         assertDefinedByStorage(key, 3, replicaStorage2, new ReplicaInfo(peer1, new Peer[] {peer2, peer3}, session));
         assertDefinedByStorage(key, 3, replicaStorage3, new ReplicaInfo(peer1, new Peer[] {peer2, peer3}, session));
