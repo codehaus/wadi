@@ -115,11 +115,11 @@ public class BasicServiceSpaceDispatcher extends AbstractDispatcher {
             startLatch = new Latch();
             listener = new ServiceSpaceListener() {
 
-                public void receive(ServiceSpaceLifecycleEvent event, Set newHostingPeers) {
+                public void receive(ServiceSpaceLifecycleEvent event, Set<Peer> newHostingPeers) {
                     LifecycleState state = event.getState();
                     Peer hostingPeer = event.getHostingPeer();
-                    Set joiners = Collections.EMPTY_SET;
-                    Set leavers = Collections.EMPTY_SET;
+                    Set<Peer> joiners = Collections.emptySet();
+                    Set<Peer> leavers = Collections.emptySet();
                     synchronized (_addressToPeer) {
                         if (state == LifecycleState.STARTED || state == LifecycleState.AVAILABLE) {
                             _addressToPeer.put(hostingPeer.getAddress(), hostingPeer);

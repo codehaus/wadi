@@ -137,6 +137,7 @@ public class BasicServiceRegistry implements StartableServiceRegistry {
 
     public void start() throws Exception {
         started = true;
+        
         dispatcher.register(queryEndpoint);
         
         Collection services;

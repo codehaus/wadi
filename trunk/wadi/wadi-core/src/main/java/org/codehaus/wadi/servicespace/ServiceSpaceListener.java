@@ -17,11 +17,13 @@ package org.codehaus.wadi.servicespace;
 
 import java.util.Set;
 
+import org.codehaus.wadi.group.Peer;
+
 
 /**
  * 
  * @version $Revision: 1538 $
  */
 public interface ServiceSpaceListener {
-    void receive(ServiceSpaceLifecycleEvent event, Set newHostingPeers);
+    void receive(ServiceSpaceLifecycleEvent event, Set<Peer> newHostingPeers);
 }

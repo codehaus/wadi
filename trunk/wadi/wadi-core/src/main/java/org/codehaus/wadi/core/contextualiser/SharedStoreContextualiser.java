@@ -114,7 +114,7 @@ public class SharedStoreContextualiser extends AbstractSharedContextualiser {
             stateManager.insert(name);
             Session session = (Session) Utils.mote(emoter, immoter, motable, name);
             sessionMonitor.notifySessionCreation(session);
-//            replicationManager.create(name, session);
+            replicationManager.create(name, session);
         }
     }
 

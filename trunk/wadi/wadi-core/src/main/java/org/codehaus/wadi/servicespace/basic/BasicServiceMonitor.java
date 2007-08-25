@@ -53,7 +53,7 @@ public class BasicServiceMonitor implements ServiceMonitor, Lifecycle {
     private final ServiceSpace serviceSpace;
     private final ServiceName serviceName;
     private final CopyOnWriteArrayList listeners;
-    private final Set hostingPeers;
+    private final Set<Peer> hostingPeers;
     private final ServiceLifecycleEndpoint lifecycleEndpoint;
     private final ServiceSpaceListener hostingServiceSpaceFailure;
     private volatile boolean started;
@@ -70,7 +70,7 @@ public class BasicServiceMonitor implements ServiceMonitor, Lifecycle {
         dispatcher = serviceSpace.getDispatcher();
         localPeer = dispatcher.getCluster().getLocalPeer();
         listeners = new CopyOnWriteArrayList();
-        hostingPeers = new HashSet();
+        hostingPeers = new HashSet<Peer>();
         lifecycleEndpoint = new ServiceLifecycleEndpoint();
         hostingServiceSpaceFailure = new HostingServiceSpaceFailure();
     }
@@ -119,7 +119,7 @@ public class BasicServiceMonitor implements ServiceMonitor, Lifecycle {
         started = false;
     }
     
-    protected void notifyListeners(ServiceLifecycleEvent event, Set newHostingPeers) {
+    protected void notifyListeners(ServiceLifecycleEvent event, Set<Peer> newHostingPeers) {
         for (Iterator iter = listeners.iterator(); iter.hasNext();) {
             ServiceListener listener = (ServiceListener) iter.next();
             listener.receive(event, newHostingPeers);
@@ -129,7 +129,7 @@ public class BasicServiceMonitor implements ServiceMonitor, Lifecycle {
     protected void processLifecycleEvent(ServiceLifecycleEvent event) {
         log.debug("Processing event [" + event + "]");
         
-        Set newHostingPeers;
+        Set<Peer> newHostingPeers;
         LifecycleState state = event.getState();
         synchronized (hostingPeers) {
             if (state == LifecycleState.STARTED || state == LifecycleState.AVAILABLE) {
@@ -137,7 +137,7 @@ public class BasicServiceMonitor implements ServiceMonitor, Lifecycle {
             } else if (state == LifecycleState.STOPPED || state == LifecycleState.FAILED) {
                 hostingPeers.remove(event.getHostingPeer());
             }
-            newHostingPeers = new HashSet(hostingPeers);
+            newHostingPeers = new HashSet<Peer>(hostingPeers);
         }
         notifyListeners(event, newHostingPeers);
     }
@@ -166,14 +166,14 @@ public class BasicServiceMonitor implements ServiceMonitor, Lifecycle {
     
     protected class HostingServiceSpaceFailure implements ServiceSpaceListener {
 
-        public void receive(ServiceSpaceLifecycleEvent event, Set newHostingPeers) {
+        public void receive(ServiceSpaceLifecycleEvent event, Set<Peer> newHostingPeers) {
             if (event.getState() == LifecycleState.FAILED) {
                 Peer failingPeer = event.getHostingPeer();
                 boolean removed;
-                Set copyHostingPeers;
+                Set<Peer> copyHostingPeers;
                 synchronized (hostingPeers) {
                     removed = hostingPeers.remove(failingPeer);
-                    copyHostingPeers = new HashSet(hostingPeers);
+                    copyHostingPeers = new HashSet<Peer>(hostingPeers);
                 }
                 if (removed) {
                     ServiceLifecycleEvent failedEvent = new ServiceLifecycleEvent(serviceSpace.getServiceSpaceName(), 

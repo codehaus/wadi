@@ -44,6 +44,7 @@ public class AbstractServiceSpaceTestCase extends RMockTestCase {
     protected Address address2;
     protected Map remotePeers;
     protected Cluster cluster;
+    protected Address clusterAddress;
     protected Dispatcher dispatcher;
     protected ServiceSpaceName serviceSpaceName;
     protected ServiceSpace serviceSpace;
@@ -79,6 +80,8 @@ public class AbstractServiceSpaceTestCase extends RMockTestCase {
         modify().multiplicity(expect.from(0)).returnValue(localPeer);
         cluster.getRemotePeers();
         modify().multiplicity(expect.from(0)).returnValue(remotePeers);
+        clusterAddress = cluster.getAddress();
+        modify().multiplicity(expect.from(0));
     }
 
     private void setUpDispatcher() {

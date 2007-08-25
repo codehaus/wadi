@@ -108,7 +108,10 @@ public class BasicServiceRegistryTest extends AbstractServiceSpaceTestCase {
     }
 
     public void testFailureUponStart() throws Exception {
-        beginSection(s.ordered("service1 starts, service2 fails, service1 stops"));
+        beginSection(s.ordered("EndPoint is registered - service1 starts, service2 fails, service1 stops"));
+        dispatcher.register(null);
+        modify().args(is.NOT_NULL);
+        
         service1.start();
         
         service2.start();
@@ -174,11 +177,11 @@ public class BasicServiceRegistryTest extends AbstractServiceSpaceTestCase {
     }
 
     private void recordStartPhase() throws Exception {
-        beginSection(s.ordered("service1 starts - service2 starts - EndPoint is registered"));
-        service1.start();
-        service2.start();
+        beginSection(s.ordered("EndPoint is registered - service1 starts - service2 starts"));
         dispatcher.register(null);
         modify().args(is.NOT_NULL);
+        service1.start();
+        service2.start();
         endSection();
     }
     

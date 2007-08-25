@@ -18,7 +18,6 @@ package org.codehaus.wadi.servicespace.basic;
 import java.util.Collections;
 import java.util.Set;
 
-import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.ClusterListener;
 import org.codehaus.wadi.group.Dispatcher;
@@ -79,13 +78,13 @@ public class BasicServiceSpaceTest extends AbstractServiceSpaceTestCase {
     public void testDispatcherStartFailure() throws Exception {
         beginSection(s.ordered("Start Phase with Dispatcher failure"));
         recordEndPointsRegistration();
-        recordMulticast(LifecycleState.STARTING);
+        recordSendToCluster(LifecycleState.STARTING);
         
         serviceSpaceDispatcher.start();
         MessageExchangeException expectedException = new MessageExchangeException("");
         modify().throwException(expectedException);
 
-        recordMulticast(LifecycleState.FAILED);
+        recordSendToCluster(LifecycleState.FAILED);
         recordEndPointsUnregistration();
         endSection();
         
@@ -108,12 +107,12 @@ public class BasicServiceSpaceTest extends AbstractServiceSpaceTestCase {
         
         beginSection(s.ordered("Stop Phase"));
         serviceRegistry.stop();
-        recordMulticast(LifecycleState.STOPPING);
+        recordSendToCluster(LifecycleState.STOPPING);
         serviceMonitor.isStarted();
         modify().returnValue(true);
         serviceMonitor.stop();
         serviceSpaceDispatcher.stop();
-        recordMulticast(LifecycleState.STOPPED);
+        recordSendToCluster(LifecycleState.STOPPED);
         recordEndPointsUnregistration();
         endSection();
         
@@ -136,12 +135,12 @@ public class BasicServiceSpaceTest extends AbstractServiceSpaceTestCase {
         serviceRegistry.stop();
         modify().throwException(new Exception());
 
-        recordMulticast(LifecycleState.STOPPING);
+        recordSendToCluster(LifecycleState.STOPPING);
 
         serviceSpaceDispatcher.stop();
         modify().throwException(new MessageExchangeException(""));
 
-        recordMulticast(LifecycleState.FAILED);
+        recordSendToCluster(LifecycleState.FAILED);
         recordEndPointsUnregistration();
         endSection();
         
@@ -150,6 +149,27 @@ public class BasicServiceSpaceTest extends AbstractServiceSpaceTestCase {
         SwapMockBasicServiceSpace serviceSpace = new SwapMockBasicServiceSpace(serviceSpaceName, dispatcher);
         serviceSpace.start();
         serviceSpace.stop();
+    }
+    
+    public void testIgnoreLifecycleEventFromLocalPeer() throws Exception {
+        recordStartPhase();
+        
+        ServiceSpaceLifecycleEvent event = new ServiceSpaceLifecycleEvent(serviceSpaceName, localPeer, 
+            LifecycleState.STARTED);
+        Envelope message = recordEnvelope(event);
+        
+        startVerification();
+        
+        SwapMockBasicServiceSpace serviceSpace = new SwapMockBasicServiceSpace(serviceSpaceName, dispatcher);
+        serviceSpace.start();
+        serviceSpace.addServiceSpaceListener(listener);
+        
+        message.setPayload(event);
+        assertTrue(lifecycleEndpoint.testDispatchEnvelope(message));
+        lifecycleEndpoint.dispatch(message);
+        
+        Set hostingPeers = serviceSpace.getHostingPeers();
+        assertTrue(hostingPeers.isEmpty());
     }
     
     public void testProcessStartedLifecycleEvent() throws Exception {
@@ -302,9 +322,9 @@ public class BasicServiceSpaceTest extends AbstractServiceSpaceTestCase {
     private void recordStartPhase() throws MessageExchangeException, Exception {
         beginSection(s.ordered("Start Phase"));
         recordEndPointsRegistration();
-        recordMulticast(LifecycleState.STARTING);
+        recordSendToCluster(LifecycleState.STARTING);
         serviceSpaceDispatcher.start();
-        recordMulticast(LifecycleState.STARTED);
+        recordSendToCluster(LifecycleState.STARTED);
         serviceRegistry.start();
         endSection();
     }
@@ -353,31 +373,24 @@ public class BasicServiceSpaceTest extends AbstractServiceSpaceTestCase {
         endSection();
     }
     
-    private void recordMulticast(LifecycleState state) throws MessageExchangeException {
-        beginSection(s.unordered(state + " Events"));
-        recordCreateMessageAndSend(address1, state);
-        recordCreateMessageAndSend(address2, state);
-        endSection();
-    }
-
-    private void recordCreateMessageAndSend(Address address, LifecycleState state) throws MessageExchangeException {
+    private void recordSendToCluster(LifecycleState state) throws MessageExchangeException {
         beginSection(s.ordered("Create message and send with ServiceSpaceName"));
         Envelope message = (Envelope) mock(Envelope.class);
-
+        
         dispatcher.createEnvelope();
         modify().returnValue(message);
-
+        
         beginSection(s.unordered("Set message fields"));
         ServiceSpaceEnvelopeHelper.setServiceSpaceName(serviceSpaceName, message);
-
+        
         ServiceSpaceLifecycleEvent event = newLifecycleEvent(state);
         message.setPayload(event);
         
         message.setReplyTo(localPeer.getAddress());
-        message.setAddress(address);
+        message.setAddress(clusterAddress);
         endSection();
         
-        dispatcher.send(address, message);
+        dispatcher.send(clusterAddress, message);
         endSection();
     }
 

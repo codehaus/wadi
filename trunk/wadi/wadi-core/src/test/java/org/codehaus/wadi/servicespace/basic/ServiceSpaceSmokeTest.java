@@ -117,9 +117,9 @@ public class ServiceSpaceSmokeTest extends TestCase {
     }
     
     private static class EventTracker implements ServiceSpaceListener {
-        private final List received = new ArrayList();
+        private final List<ServiceSpaceLifecycleEvent> received = new ArrayList<ServiceSpaceLifecycleEvent>();
         
-        public void receive(ServiceSpaceLifecycleEvent event, Set newHostingPeers) {
+        public void receive(ServiceSpaceLifecycleEvent event, Set<Peer> newHostingPeers) {
             received.add(event);
         }
         

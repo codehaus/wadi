@@ -55,8 +55,8 @@ public class BasicServiceSpace implements ServiceSpace, Lifecycle {
     private static final Log log = LogFactory.getLog(BasicServiceSpace.class);
     
     private final CopyOnWriteArrayList listeners;
-    private final Set hostingPeers;
-    private final Collection monitors;
+    private final Set<Peer> hostingPeers;
+    private final Collection<ServiceMonitor> monitors;
     private final LocalPeer localPeer;
     private final StartableServiceRegistry serviceRegistry;
     private final ServiceSpaceName name;
@@ -74,8 +74,8 @@ public class BasicServiceSpace implements ServiceSpace, Lifecycle {
         } else if (null == underlyingDispatcher) {
             throw new IllegalArgumentException("underlyingDispatcher is required");
         }
-        monitors = new ArrayList();
-        hostingPeers = new HashSet();
+        monitors = new ArrayList<ServiceMonitor>();
+        hostingPeers = new HashSet<Peer>();
         listeners = new CopyOnWriteArrayList();
 
         this.name = name;
@@ -171,8 +171,7 @@ public class BasicServiceSpace implements ServiceSpace, Lifecycle {
 
         sendLifecycleEventToCluster(LifecycleState.STOPPING);
         synchronized (monitors) {
-            for (Iterator iter = monitors.iterator(); iter.hasNext();) {
-                ServiceMonitor monitor = (ServiceMonitor) iter.next();
+            for (ServiceMonitor monitor : monitors) {
                 if (monitor.isStarted()) {
                     try {
                         monitor.stop();
@@ -261,7 +260,7 @@ public class BasicServiceSpace implements ServiceSpace, Lifecycle {
         }
     }
 
-    protected void notifyListeners(ServiceSpaceLifecycleEvent event, Set newHostingPeers) {
+    protected void notifyListeners(ServiceSpaceLifecycleEvent event, Set<Peer> newHostingPeers) {
         for (Iterator iter = listeners.iterator(); iter.hasNext();) {
             ServiceSpaceListener listener = (ServiceSpaceListener) iter.next();
             listener.receive(event, newHostingPeers);
@@ -272,8 +271,12 @@ public class BasicServiceSpace implements ServiceSpace, Lifecycle {
         log.debug("Processing event [" + event + "]");
         
         Peer hostingPeer = event.getHostingPeer();
+        if (hostingPeer.equals(localPeer)) {
+            return;
+        }
+        
         LifecycleState state = event.getState();
-        Set copyHostingPeers;
+        Set<Peer> copyHostingPeers;
         synchronized (hostingPeers) {
             if (state == LifecycleState.STARTING) {
                 try {
@@ -287,7 +290,7 @@ public class BasicServiceSpace implements ServiceSpace, Lifecycle {
             } else if (state == LifecycleState.STOPPING || state == LifecycleState.FAILED) {
                 hostingPeers.remove(hostingPeer);
             }
-            copyHostingPeers = new HashSet(hostingPeers);
+            copyHostingPeers = new HashSet<Peer>(hostingPeers);
         }
         notifyListeners(event, copyHostingPeers);
     }

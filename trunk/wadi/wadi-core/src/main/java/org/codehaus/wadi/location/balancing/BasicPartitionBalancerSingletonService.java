@@ -20,6 +20,7 @@ import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.group.MessageExchangeException;
+import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.servicespace.LifecycleState;
 import org.codehaus.wadi.servicespace.ServiceSpace;
 import org.codehaus.wadi.servicespace.ServiceSpaceLifecycleEvent;
@@ -105,7 +106,7 @@ public class BasicPartitionBalancerSingletonService implements PartitionBalancer
     
     private class LeavingServiceSpaceMonitor implements ServiceSpaceListener {
 
-        public void receive(ServiceSpaceLifecycleEvent event, Set newHostingPeers) {
+        public void receive(ServiceSpaceLifecycleEvent event, Set<Peer> newHostingPeers) {
             if (event.getState() == LifecycleState.FAILED) {
                 queueRebalancing();
             }
