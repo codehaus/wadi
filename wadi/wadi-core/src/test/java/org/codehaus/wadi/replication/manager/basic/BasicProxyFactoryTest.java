@@ -45,6 +45,13 @@ public class BasicProxyFactoryTest extends RMockTestCase {
 
         ServiceProxyFactory serviceProxyFactory =
             serviceSpace.getServiceProxyFactory(ReplicationManager.NAME, new Class[] {ReplicationManager.class});
+
+        InvocationMetaData invMetaData = 
+            (InvocationMetaData) intercept(InvocationMetaData.class, "replicaStorageProxyInvMetaData");
+        serviceProxyFactory.getInvocationMetaData();
+        modify().returnValue(invMetaData);
+        invMetaData.setOneWay(true);
+        
         serviceProxyFactory.getProxy();
         modify().returnValue(replicationManager);
         startVerification();

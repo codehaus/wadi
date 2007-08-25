@@ -27,7 +27,7 @@ import org.codehaus.wadi.servicespace.resultcombiner.FirstSuccessThenFailureComb
  * @version $Revision: 1538 $
  */
 public class InvocationMetaData implements Serializable {
-    private static final long DEFAULT_TIMEOUT = 500;
+    private static final long DEFAULT_TIMEOUT = 2000;
     
     private transient Peer[] targets;
     private transient long timeout = DEFAULT_TIMEOUT;

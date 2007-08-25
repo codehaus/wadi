@@ -46,10 +46,33 @@ public class BasicInvocation implements Invocation {
     }
 
     public void invoke() throws InvocationException {
-        throw new UnsupportedOperationException();
+        try {
+            doInvoke();
+        } catch (Exception e) {
+            throw new InvocationException(e);
+        } finally {
+            if (null != session) {
+                session.onEndProcessing();
+            }
+        }
     }
 
     public void invoke(InvocationContext context) throws InvocationException {
+        try {
+            doInvoke(context);
+        } catch (Exception e) {
+            throw new InvocationException(e);
+        } finally {
+            if (null != session) {
+                session.onEndProcessing();
+            }
+        }
+    }
+
+    protected void doInvoke() throws InvocationException {
+    }
+    
+    protected void doInvoke(InvocationContext context) throws InvocationException {
     }
 
     public boolean isProxiedInvocation() {

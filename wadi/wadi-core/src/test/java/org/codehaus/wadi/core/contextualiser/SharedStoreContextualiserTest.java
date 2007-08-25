@@ -23,6 +23,7 @@ import org.codehaus.wadi.core.session.Session;
 import org.codehaus.wadi.core.store.Store;
 import org.codehaus.wadi.core.store.Store.Putter;
 import org.codehaus.wadi.location.statemanager.StateManager;
+import org.codehaus.wadi.replication.manager.ReplicationManager;
 
 import com.agical.rmock.core.Action;
 import com.agical.rmock.core.MethodHandle;
@@ -34,10 +35,11 @@ import com.agical.rmock.extension.junit.RMockTestCase;
  */
 public class SharedStoreContextualiserTest extends RMockTestCase {
 
-    public void testStateManagerIsNotifiedOnLoad() throws Exception {
+    public void testStateAndReplicationManagersAreNotifiedOnLoad() throws Exception {
         Contextualiser next = (Contextualiser) mock(Contextualiser.class);
         Store store = (Store) mock(Store.class);
         StateManager stateManager = (StateManager) mock(StateManager.class);
+        ReplicationManager replicationManager = (ReplicationManager) mock(ReplicationManager.class);
         SessionMonitor sessionMonitor = (SessionMonitor) mock(SessionMonitor.class);
         Emoter emoter = (Emoter) mock(Emoter.class);
         Immoter immoter = (Immoter) mock(Immoter.class);
@@ -65,11 +67,14 @@ public class SharedStoreContextualiserTest extends RMockTestCase {
         
         sessionMonitor.notifySessionCreation(newSession);
         
+        replicationManager.create(name, newSession);
+        
         startVerification();
         
         SharedStoreContextualiser contextualiser = new SharedStoreContextualiser(next,
                 store,
                 stateManager,
+                replicationManager,
                 sessionMonitor);
         contextualiser.load(emoter, immoter);
     }

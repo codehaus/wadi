@@ -18,7 +18,9 @@ package org.codehaus.wadi.replication.strategy;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.Peer;
+import org.codehaus.wadi.servicespace.ServiceSpace;
 
 
 /**
@@ -28,17 +30,22 @@ import org.codehaus.wadi.group.Peer;
 public class RoundRobinBackingStrategy implements BackingStrategy {
     private static final Peer[] EMPTY_NODES = new Peer[0];
     
+    private final LocalPeer localPeer;
     private final int nbReplica;
-    private final List secondaries;
+    private final List<Peer> secondaries;
     private int lastReplicaIndex;
+
     
-    public RoundRobinBackingStrategy(int nbReplica) {
-        if (nbReplica < 1) {
+    public RoundRobinBackingStrategy(ServiceSpace serviceSpace, int nbReplica) {
+        if (null == serviceSpace) {
+            throw new IllegalArgumentException("serviceSpace is required");
+        } else if (nbReplica < 1) {
             throw new IllegalArgumentException("nbReplica must be greater than 0");
         }
         this.nbReplica = nbReplica;
         
-        secondaries = new LinkedList();
+        localPeer = serviceSpace.getLocalPeer();
+        secondaries = new LinkedList<Peer>();
     }
 
     public Peer[] electSecondaries(Object key) {
@@ -61,7 +68,7 @@ public class RoundRobinBackingStrategy implements BackingStrategy {
                 if (lastReplicaIndex == initialReplicaIndex && looped) {
                     break;
                 }
-                result[resultIndex++] = (Peer) secondaries.get(lastReplicaIndex++);
+                result[resultIndex++] = secondaries.get(lastReplicaIndex++);
             }
         }
         
@@ -81,14 +88,16 @@ public class RoundRobinBackingStrategy implements BackingStrategy {
     public void addSecondaries(Peer[] newSecondaries) {
         synchronized (secondaries) {
             for (int i = 0; i < newSecondaries.length; i++) {
-                secondaries.add(newSecondaries[i]);
+                addSecondary(newSecondaries[i]);
             }
         }
     }
     
     public void addSecondary(Peer secondary) {
         synchronized (secondaries) {
-            secondaries.add(secondary);
+            if (!secondaries.contains(secondary) && !localPeer.equals(secondary)) {
+                secondaries.add(secondary);
+            }
         }
     }
 

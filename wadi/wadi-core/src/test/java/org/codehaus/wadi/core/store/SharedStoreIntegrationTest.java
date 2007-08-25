@@ -23,8 +23,9 @@ import org.apache.derby.jdbc.EmbeddedDataSource;
 import org.codehaus.wadi.core.ConcurrentMotableMap;
 import org.codehaus.wadi.core.assembler.StackContext;
 import org.codehaus.wadi.core.contextualiser.BasicInvocationContextFactory;
-import org.codehaus.wadi.core.contextualiser.Contextualiser;
+import org.codehaus.wadi.core.contextualiser.InvocationContext;
 import org.codehaus.wadi.core.contextualiser.InvocationContextFactory;
+import org.codehaus.wadi.core.contextualiser.InvocationException;
 import org.codehaus.wadi.core.contextualiser.ThrowExceptionIfNoSessionInvocation;
 import org.codehaus.wadi.core.manager.Manager;
 import org.codehaus.wadi.core.session.Session;
@@ -52,8 +53,8 @@ public class SharedStoreIntegrationTest extends TestCase {
         Manager manager = stackContext.getManager();
         String name = "name";
         Session session = manager.createWithName(name);
-        String key = "key";
-        String value = "value";
+        final String key = "key";
+        final String value = "value";
         session.addState(key, value);
         
         // Saves the session in SharedStore.
@@ -81,7 +82,13 @@ public class SharedStoreIntegrationTest extends TestCase {
         
         // Ensures that the session is successfully migrated; its name is registered by a partition.
         Manager managerGreen = stackContextGreen.getManager();
-        managerGreen.contextualise(new ThrowExceptionIfNoSessionInvocation(name, 500));
+        managerGreen.contextualise(new ThrowExceptionIfNoSessionInvocation(name, 500) {
+            @Override
+            protected void doInvoke(InvocationContext context) throws InvocationException {
+                Session session = getSession();
+                assertEquals(value, session.getState(key));
+            }
+        });
     }
 
     private StackContext newStackContext(String dispatcherName, VMBroker cluster, final Store store) throws Exception {
@@ -93,9 +100,6 @@ public class SharedStoreIntegrationTest extends TestCase {
             }
             protected Store getSharedStore() {
                 return store;
-            }
-            protected Contextualiser newReplicaAwareContextualiser(Contextualiser next) {
-                return next;
             }
         };
         stackContext.build();
