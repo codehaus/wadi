@@ -400,7 +400,7 @@ public class StackContext {
         if (null == sharedStore) {
             return next;
         } else {
-            return new SharedStoreContextualiser(next, sharedStore, stateManager, sessionMonitor);
+            return new SharedStoreContextualiser(next, sharedStore, stateManager, replicationManager, sessionMonitor);
         }
     }
 

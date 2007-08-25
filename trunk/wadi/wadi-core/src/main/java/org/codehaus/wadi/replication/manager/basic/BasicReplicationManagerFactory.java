@@ -37,6 +37,7 @@ public class BasicReplicationManagerFactory implements ReplicationManagerFactory
     }
 
     public ReplicationManager factory(ServiceSpace serviceSpace, BackingStrategyFactory backingStrategyFactory) {
+        backingStrategyFactory.setServiceSpace(serviceSpace);
         BackingStrategy backingStrategy = backingStrategyFactory.factory();
         return new BasicReplicationManager(serviceSpace, stateHandler, backingStrategy);
     }

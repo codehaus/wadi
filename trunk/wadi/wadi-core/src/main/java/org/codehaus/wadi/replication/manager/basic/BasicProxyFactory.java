@@ -42,6 +42,7 @@ public class BasicProxyFactory implements ProxyFactory {
     public ReplicationManager newReplicationManagerProxy() {
         ServiceProxyFactory repManagerProxyFactory = serviceSpace.getServiceProxyFactory(ReplicationManager.NAME, 
             new Class[] {ReplicationManager.class});
+        repManagerProxyFactory.getInvocationMetaData().setOneWay(true);
         return (ReplicationManager) repManagerProxyFactory.getProxy();
     }
 

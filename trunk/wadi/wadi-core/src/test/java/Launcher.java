@@ -263,7 +263,7 @@ public class Launcher {
         }
         
         @Override
-        public void invoke(InvocationContext context) throws InvocationException {
+        protected void doInvoke(InvocationContext context) throws InvocationException {
             Session session = getSession();
             Long cpt = (Long) session.getState(ATTRIBUTE);
             if (null == cpt) {

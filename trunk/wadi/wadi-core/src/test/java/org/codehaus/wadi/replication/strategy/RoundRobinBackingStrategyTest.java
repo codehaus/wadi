@@ -18,24 +18,45 @@ package org.codehaus.wadi.replication.strategy;
 import java.util.Arrays;
 import java.util.HashSet;
 
-import junit.framework.TestCase;
-
+import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.vm.VMPeer;
+import org.codehaus.wadi.servicespace.ServiceSpace;
 
-public class RoundRobinBackingStrategyTest extends TestCase {
+import com.agical.rmock.extension.junit.RMockTestCase;
+
+public class RoundRobinBackingStrategyTest extends RMockTestCase {
     private RoundRobinBackingStrategy strategy;
     private Peer peer1;
     private Peer peer2;
     private Peer peer3;
     private Peer peer4;
+    private LocalPeer localPeer;
 
     protected void setUp() throws Exception {
-        strategy = new RoundRobinBackingStrategy(2);
+        ServiceSpace serviceSpace = (ServiceSpace) mock(ServiceSpace.class);
+        localPeer = serviceSpace.getLocalPeer();
+        startVerification();
+        
+        strategy = new RoundRobinBackingStrategy(serviceSpace, 2);
         peer1 = new VMPeer("peer1", null);
         peer2 = new VMPeer("peer2", null);
         peer3 = new VMPeer("peer3", null);
         peer4 = new VMPeer("peer4", null);
+    }
+    
+    public void testLocalPeerIsNotIgnoredByAddSecondaries() {
+        strategy.addSecondaries(new Peer[] {localPeer});
+        
+        Peer[] actualSecondaries = strategy.electSecondaries(null);
+        assertSecondaries(new Peer[0], actualSecondaries);
+   }
+
+    public void testLocalPeerIsNotIgnoredByAddSecondary() {
+        strategy.addSecondary(localPeer);
+        
+        Peer[] actualSecondaries = strategy.electSecondaries(null);
+        assertSecondaries(new Peer[0], actualSecondaries);
     }
     
     public void testElectSecondaries() {
@@ -46,16 +67,16 @@ public class RoundRobinBackingStrategyTest extends TestCase {
         
         actualSecondaries = strategy.electSecondaries(null);
         assertSecondaries(new Peer[] {peer3, peer4}, actualSecondaries);
-
+        
         strategy.removeSecondary(peer2);
-
+        
         actualSecondaries = strategy.electSecondaries(null);
         assertSecondaries(new Peer[] {peer1, peer3}, actualSecondaries);
-
+        
         actualSecondaries = strategy.electSecondaries(null);
         assertSecondaries(new Peer[] {peer4, peer1}, actualSecondaries);
-   }
-
+    }
+    
     private void assertSecondaries(Peer[] expectedPeers, Peer[] actualPeers) {
         assertEquals(new HashSet(Arrays.asList(expectedPeers)), new HashSet(Arrays.asList(actualPeers)));
     }

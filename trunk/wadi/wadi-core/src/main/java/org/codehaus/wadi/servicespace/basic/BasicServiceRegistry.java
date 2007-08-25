@@ -137,6 +137,7 @@ public class BasicServiceRegistry implements StartableServiceRegistry {
 
     public void start() throws Exception {
         started = true;
+        dispatcher.register(queryEndpoint);
         
         Collection services;
         synchronized (nameToServiceHolder) {
@@ -154,8 +155,6 @@ public class BasicServiceRegistry implements StartableServiceRegistry {
                 throw e;
             }
         }
-        
-        dispatcher.register(queryEndpoint);
     }
 
     public void stop() throws Exception {

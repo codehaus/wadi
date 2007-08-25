@@ -20,12 +20,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.core.Lifecycle;
+import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.ClusterListener;
 import org.codehaus.wadi.group.Dispatcher;
@@ -141,12 +141,12 @@ public class BasicServiceSpace implements ServiceSpace, Lifecycle {
     public void start() throws Exception {
         registerEndPoints();
 
-        multicastLifecycleEvent(LifecycleState.STARTING);
+        sendLifecycleEventToCluster(LifecycleState.STARTING);
         try {
             dispatcher.start();
-            multicastLifecycleEvent(LifecycleState.STARTED);
+            sendLifecycleEventToCluster(LifecycleState.STARTED);
         } catch (Exception e) {
-            multicastLifecycleEvent(LifecycleState.FAILED);
+            sendLifecycleEventToCluster(LifecycleState.FAILED);
             unregisterEndPoints();
             throw e;
         }
@@ -169,7 +169,7 @@ public class BasicServiceSpace implements ServiceSpace, Lifecycle {
             log.warn("Error while stopping service registry", e);
         }
 
-        multicastLifecycleEvent(LifecycleState.STOPPING);
+        sendLifecycleEventToCluster(LifecycleState.STOPPING);
         synchronized (monitors) {
             for (Iterator iter = monitors.iterator(); iter.hasNext();) {
                 ServiceMonitor monitor = (ServiceMonitor) iter.next();
@@ -184,9 +184,9 @@ public class BasicServiceSpace implements ServiceSpace, Lifecycle {
         }
         try {
             dispatcher.stop();
-            multicastLifecycleEvent(LifecycleState.STOPPED);
+            sendLifecycleEventToCluster(LifecycleState.STOPPED);
         } catch (Exception e) {
-            multicastLifecycleEvent(LifecycleState.FAILED);
+            sendLifecycleEventToCluster(LifecycleState.FAILED);
             log.warn("Exception while stopping [" + dispatcher + "]", e);
         }
 
@@ -246,21 +246,18 @@ public class BasicServiceSpace implements ServiceSpace, Lifecycle {
         dispatcher.unregister(serviceSpaceRVEndPoint, 10, 500);
     }
     
-    protected void multicastLifecycleEvent(LifecycleState state) {
+    protected void sendLifecycleEventToCluster(LifecycleState state) {
         ServiceSpaceLifecycleEvent event = new ServiceSpaceLifecycleEvent(name, localPeer, state);
-        Map peerMulticasted = underlyingDispatcher.getCluster().getRemotePeers();
-        for (Iterator iter = peerMulticasted.values().iterator(); iter.hasNext();) {
-            Peer peer = (Peer) iter.next();
-            try {
-                Envelope message = underlyingDispatcher.createEnvelope();
-                envelopeHelper.setServiceSpaceName(message);
-                message.setReplyTo(underlyingDispatcher.getCluster().getLocalPeer().getAddress());
-                message.setAddress(peer.getAddress());
-                message.setPayload(event);
-                underlyingDispatcher.send(peer.getAddress(), message);
-            } catch (MessageExchangeException e) {
-                log.warn("Cannot send lifecycle event [" + event + "] to [" + peer + "]. This peer is gone?", e);
-            }
+        try {
+            Envelope message = underlyingDispatcher.createEnvelope();
+            envelopeHelper.setServiceSpaceName(message);
+            message.setReplyTo(underlyingDispatcher.getCluster().getLocalPeer().getAddress());
+            Address clusterAddress = underlyingDispatcher.getCluster().getAddress();
+            message.setAddress(clusterAddress);
+            message.setPayload(event);
+            underlyingDispatcher.send(clusterAddress, message);
+        } catch (MessageExchangeException e) {
+            log.warn("Cannot send lifecycle event [" + event + "] to cluster", e);
         }
     }
 

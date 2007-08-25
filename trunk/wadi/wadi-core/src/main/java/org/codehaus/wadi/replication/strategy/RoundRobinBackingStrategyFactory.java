@@ -15,6 +15,8 @@
  */
 package org.codehaus.wadi.replication.strategy;
 
+import org.codehaus.wadi.servicespace.ServiceSpace;
+
 
 
 /**
@@ -23,6 +25,7 @@ package org.codehaus.wadi.replication.strategy;
  */
 public class RoundRobinBackingStrategyFactory implements BackingStrategyFactory {
     private final int nbReplica;
+    private ServiceSpace serviceSpace;
     
     public RoundRobinBackingStrategyFactory(int nbReplica) {
         if (nbReplica < 1) {
@@ -31,8 +34,15 @@ public class RoundRobinBackingStrategyFactory implements BackingStrategyFactory 
         this.nbReplica = nbReplica;
     }
 
+    public void setServiceSpace(ServiceSpace serviceSpace) {
+        this.serviceSpace = serviceSpace;
+    }
+    
     public BackingStrategy factory() {
-        return new RoundRobinBackingStrategy(nbReplica);
+        if (null == serviceSpace) {
+            throw new IllegalStateException("serviceSpace is not set");
+        }
+        return new RoundRobinBackingStrategy(serviceSpace, nbReplica);
     }
 
 }

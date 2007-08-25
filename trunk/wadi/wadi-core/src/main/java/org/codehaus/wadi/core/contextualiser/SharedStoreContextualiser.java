@@ -26,6 +26,7 @@ import org.codehaus.wadi.core.session.Session;
 import org.codehaus.wadi.core.store.Store;
 import org.codehaus.wadi.core.util.Utils;
 import org.codehaus.wadi.location.statemanager.StateManager;
+import org.codehaus.wadi.replication.manager.ReplicationManager;
 
 /**
  * A Contextualiser which stores its Contexts in a shared database via JDBC.
@@ -40,22 +41,27 @@ public class SharedStoreContextualiser extends AbstractSharedContextualiser {
     private final Immoter immoter;
     private final Emoter emoter;
     private final StateManager stateManager;
+    private final ReplicationManager replicationManager;
     private final SessionMonitor sessionMonitor;
 
 	public SharedStoreContextualiser(Contextualiser next,
             Store store,
             StateManager stateManager,
+            ReplicationManager replicationManager,
             SessionMonitor sessionMonitor) {
 		super(next);
         if (null == store) {
             throw new IllegalArgumentException("store is required");
         } else if (null == stateManager) {
             throw new IllegalArgumentException("stateManager is required");
+        } else if (null == replicationManager) {
+            throw new IllegalArgumentException("replicationManager is required");
         } else if (null == sessionMonitor) {
             throw new IllegalArgumentException("sessionMonitor is required");
         }
         this.store = store;
         this.stateManager = stateManager;
+        this.replicationManager = replicationManager;
         this.sessionMonitor = sessionMonitor;
         
         immoter = new SharedImmoter();
@@ -108,6 +114,7 @@ public class SharedStoreContextualiser extends AbstractSharedContextualiser {
             stateManager.insert(name);
             Session session = (Session) Utils.mote(emoter, immoter, motable, name);
             sessionMonitor.notifySessionCreation(session);
+//            replicationManager.create(name, session);
         }
     }
 

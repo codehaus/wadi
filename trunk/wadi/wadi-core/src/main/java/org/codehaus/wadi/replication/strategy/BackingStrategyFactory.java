@@ -15,6 +15,8 @@
  */
 package org.codehaus.wadi.replication.strategy;
 
+import org.codehaus.wadi.servicespace.ServiceSpace;
+
 
 
 /**
@@ -22,5 +24,7 @@ package org.codehaus.wadi.replication.strategy;
  * @version $Revision$
  */
 public interface BackingStrategyFactory {
+    void setServiceSpace(ServiceSpace serviceSpace);
+    
     BackingStrategy factory();
 }

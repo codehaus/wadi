@@ -15,16 +15,12 @@
  */
 package org.codehaus.wadi.servicespace.basic;
 
-import java.util.Collection;
-import java.util.Iterator;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.core.Lifecycle;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.MessageExchangeException;
-import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.servicespace.LifecycleState;
 import org.codehaus.wadi.servicespace.ServiceLifecycleEvent;
 import org.codehaus.wadi.servicespace.ServiceName;
@@ -57,25 +53,25 @@ public class BasicServiceHolder implements Lifecycle {
     }
     
     public void start() throws Exception {
-        multicastLifecycleEvent(LifecycleState.STARTING);
+        sendLifecycleEventToCluster(LifecycleState.STARTING);
         try {
             service.start();
-            multicastLifecycleEvent(LifecycleState.STARTED);
+            started = true;
+            sendLifecycleEventToCluster(LifecycleState.STARTED);
         } catch (Exception e) {
-            multicastLifecycleEvent(LifecycleState.FAILED);
+            sendLifecycleEventToCluster(LifecycleState.FAILED);
             throw e;
         }
-        started = true;
     }
     
     public void stop() throws Exception {
         started = false;
-        multicastLifecycleEvent(LifecycleState.STOPPING);
+        sendLifecycleEventToCluster(LifecycleState.STOPPING);
         try {
             service.stop();
-            multicastLifecycleEvent(LifecycleState.STOPPED);
+            sendLifecycleEventToCluster(LifecycleState.STOPPED);
         } catch (Exception e) {
-            multicastLifecycleEvent(LifecycleState.FAILED);
+            sendLifecycleEventToCluster(LifecycleState.FAILED);
             throw e;
         }
     }
@@ -88,19 +84,17 @@ public class BasicServiceHolder implements Lifecycle {
         return service;
     }
 
-    protected void multicastLifecycleEvent(LifecycleState state) {
+    protected void sendLifecycleEventToCluster(LifecycleState state) {
         Dispatcher dispatcher = serviceSpace.getDispatcher();
         LocalPeer localPeer = dispatcher.getCluster().getLocalPeer();
-        ServiceLifecycleEvent event = new ServiceLifecycleEvent(serviceSpace.getServiceSpaceName(), serviceName,
-                localPeer, state);
-        Collection peers = dispatcher.getCluster().getRemotePeers().values();
-        for (Iterator iter = peers.iterator(); iter.hasNext();) {
-            Peer peer = (Peer) iter.next();
-            try {
-                dispatcher.send(peer.getAddress(), event);
-            } catch (MessageExchangeException e) {
-                log.warn("Cannot send lifecycle event [" + event + "] to [" + peer + "]. This peer is gone?", e);
-            }
+        ServiceLifecycleEvent event = new ServiceLifecycleEvent(serviceSpace.getServiceSpaceName(), 
+            serviceName, 
+            localPeer,
+            state);
+        try {
+            dispatcher.send(dispatcher.getCluster().getAddress(), event);
+        } catch (MessageExchangeException e) {
+            log.warn("Cannot send lifecycle event [" + event + "] to cluster", e);
         }
     }
     

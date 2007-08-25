@@ -27,7 +27,16 @@ public class ThrowExceptionIfNoSessionInvocation extends BasicInvocation {
         super(sessionKey, exclusiveSessionLockWaitTime);
     }
 
-    public void invoke() throws InvocationException {
+    @Override
+    protected void doInvoke(InvocationContext context) throws InvocationException {
+        Session session = getSession();
+        if (null == session) {
+            throw new InvocationException("No session bound to invocation");
+        }
+    }
+
+    @Override
+    protected void doInvoke() throws InvocationException {
         Session session = getSession();
         if (null == session) {
             throw new InvocationException("No session bound to invocation");
