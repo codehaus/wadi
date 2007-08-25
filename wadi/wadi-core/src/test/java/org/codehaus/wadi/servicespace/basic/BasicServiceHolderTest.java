@@ -38,13 +38,9 @@ public class BasicServiceHolderTest extends AbstractServiceSpaceTestCase {
     
     public void testSuccessfulStart() throws Exception {
         beginSection(s.ordered("STARTING Events - Start Service - STARTED Events"));
-        {
-            recordMulticast(LifecycleState.STARTING);
-
-            service.start();
-
-            recordMulticast(LifecycleState.STARTED);
-        }
+        recordSendToCluster(LifecycleState.STARTING);
+        service.start();
+        recordSendToCluster(LifecycleState.STARTED);
         endSection();
         
         startVerification();
@@ -56,14 +52,10 @@ public class BasicServiceHolderTest extends AbstractServiceSpaceTestCase {
     public void testServiceThrowsExceptionDuringStart() throws Exception {
         Exception expectedException = new Exception();
         beginSection(s.ordered("STARTING Events - Start Service - FAILED Events"));
-        {
-            recordMulticast(LifecycleState.STARTING);
-    
-            service.start();
-            modify().throwException(expectedException);
-
-            recordMulticast(LifecycleState.FAILED);
-        }
+        recordSendToCluster(LifecycleState.STARTING);
+        service.start();
+        modify().throwException(expectedException);
+        recordSendToCluster(LifecycleState.FAILED);
         endSection();
         
         startVerification();
@@ -79,13 +71,9 @@ public class BasicServiceHolderTest extends AbstractServiceSpaceTestCase {
 
     public void testSuccessfulStop() throws Exception {
         beginSection(s.ordered("STOPPING Events - Stop Service - STOPPED Events"));
-        {
-            recordMulticast(LifecycleState.STOPPING);
-
-            service.stop();
-
-            recordMulticast(LifecycleState.STOPPED);
-        }
+        recordSendToCluster(LifecycleState.STOPPING);
+        service.stop();
+        recordSendToCluster(LifecycleState.STOPPED);
         endSection();
         
         startVerification();
@@ -97,14 +85,10 @@ public class BasicServiceHolderTest extends AbstractServiceSpaceTestCase {
     public void testServiceThrowsExceptionDuringStop() throws Exception {
         Exception expectedException = new Exception();
         beginSection(s.ordered("STOPPING Events - Stop Service - FAILED Events"));
-        {
-            recordMulticast(LifecycleState.STOPPING);
-    
-            service.stop();
-            modify().throwException(expectedException);
-
-            recordMulticast(LifecycleState.FAILED);
-        }
+        recordSendToCluster(LifecycleState.STOPPING);
+        service.stop();
+        modify().throwException(expectedException);
+        recordSendToCluster(LifecycleState.FAILED);
         endSection();
         
         startVerification();
@@ -118,10 +102,9 @@ public class BasicServiceHolderTest extends AbstractServiceSpaceTestCase {
         }
     }
 
-    private void recordMulticast(LifecycleState state) throws MessageExchangeException {
+    private void recordSendToCluster(LifecycleState state) throws MessageExchangeException {
         beginSection(s.unordered(state + " Events"));
-        dispatcher.send(address1, newLifecycleEvent(state));
-        dispatcher.send(address2, newLifecycleEvent(state));
+        dispatcher.send(clusterAddress, newLifecycleEvent(state));
         endSection();
     }
     

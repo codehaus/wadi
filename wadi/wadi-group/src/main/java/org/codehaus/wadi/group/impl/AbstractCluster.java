@@ -109,7 +109,7 @@ public abstract class AbstractCluster implements Cluster {
         }
     }
 
-    protected void notifyMembershipChanged(Set joiners, Set leavers) {
+    protected void notifyMembershipChanged(Set<Peer> joiners, Set<Peer> leavers) {
         for (Iterator iter = _clusterListeners.iterator(); iter.hasNext();) {
             ClusterListener listener = (ClusterListener) iter.next();
             listener.onMembershipChanged(this, joiners, leavers);

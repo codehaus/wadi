@@ -15,7 +15,6 @@
  */
 package org.codehaus.wadi.servicespace.basic;
 
-import java.util.Iterator;
 import java.util.Set;
 
 import org.apache.commons.logging.Log;
@@ -112,11 +111,10 @@ public class BasicSingletonServiceHolder extends BasicServiceHolder implements S
         }
     }
 
-    protected void elect(Set newHostingPeers) {
+    protected void elect(Set<Peer> newHostingPeers) {
         Peer oldest = localPeer;
         long oldestBirthtime = localPeer.getPeerInfo().getBirthtime();
-        for (Iterator iter = newHostingPeers.iterator(); iter.hasNext();) {
-            Peer hostingPeer = (Peer) iter.next();
+        for (Peer hostingPeer : newHostingPeers) {
             long birthTime = hostingPeer.getPeerInfo().getBirthtime();
             if (oldestBirthtime > birthTime) {
                 oldest = hostingPeer;
@@ -132,7 +130,7 @@ public class BasicSingletonServiceHolder extends BasicServiceHolder implements S
 
     protected class SeniorityElector implements ServiceSpaceListener {
 
-        public void receive(ServiceSpaceLifecycleEvent event, Set newHostingPeers) {
+        public void receive(ServiceSpaceLifecycleEvent event, Set<Peer> newHostingPeers) {
             LifecycleState state = event.getState();
             if (state != LifecycleState.AVAILABLE && state != LifecycleState.FAILED &&
                     state != LifecycleState.STARTED && state != LifecycleState.STOPPED) {
