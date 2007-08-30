@@ -32,8 +32,6 @@ import javax.servlet.http.HttpSessionBindingListener;
 import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
 
-import junit.framework.TestCase;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.core.ConcurrentMotableMap;
@@ -50,13 +48,17 @@ import org.codehaus.wadi.core.manager.SessionIdFactory;
 import org.codehaus.wadi.core.manager.SessionMonitor;
 import org.codehaus.wadi.core.manager.StandardManager;
 import org.codehaus.wadi.core.manager.TomcatSessionIdFactory;
+import org.codehaus.wadi.core.motable.Motable;
 import org.codehaus.wadi.core.session.DistributableAttributesFactory;
 import org.codehaus.wadi.core.session.StandardValueFactory;
 import org.codehaus.wadi.core.session.ValueFactory;
 import org.codehaus.wadi.core.util.SimpleStreamer;
+import org.codehaus.wadi.location.statemanager.StateManager;
 import org.codehaus.wadi.replication.manager.basic.NoOpReplicationManager;
 import org.codehaus.wadi.web.impl.BasicHttpInvocationContextFactory;
 import org.codehaus.wadi.web.impl.StandardSessionWrapperFactory;
+
+import com.agical.rmock.extension.junit.RMockTestCase;
 
 /**
  * Test WADI's HttpSession implementation
@@ -66,7 +68,7 @@ import org.codehaus.wadi.web.impl.StandardSessionWrapperFactory;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class TestHttpSession extends TestCase {
+public class TestHttpSession extends RMockTestCase {
     protected Log _log = LogFactory.getLog(TestHttpSession.class);
     protected final String _clusterName = "WADI.TEST";
     protected Listener _listener;
@@ -77,7 +79,31 @@ public class TestHttpSession extends TestCase {
 
     // Standard
     protected SessionMonitor sessionMonitor = new BasicSessionMonitor();
-    protected Contextualiser contextualiser = new DummyContextualiser();
+    protected Contextualiser contextualiser = new DummyContextualiser(new StateManager() {
+        public boolean insert(String name) {
+            throw new UnsupportedOperationException();
+        }
+
+        public boolean offerEmigrant(Motable emotable) {
+            throw new UnsupportedOperationException();
+        }
+
+        public void relocate(String name) {
+            throw new UnsupportedOperationException();
+        }
+
+        public void remove(String name) {
+            throw new UnsupportedOperationException();
+        }
+
+        public void start() throws Exception {
+            throw new UnsupportedOperationException();
+        }
+
+        public void stop() throws Exception {
+            throw new UnsupportedOperationException();
+        }
+    });
     protected WebSessionWrapperFactory webSessionWrapperFactory = new StandardSessionWrapperFactory();
     protected SessionIdFactory sessionIdFactory = new TomcatSessionIdFactory();
     protected ValueFactory valueFactory = new StandardValueFactory();

@@ -60,7 +60,7 @@ public class ReplicaAwareContextualiserTest extends RMockTestCase {
         
         startVerification();
         
-        ReplicaAwareContextualiser contextualiser = new ReplicaAwareContextualiser(new DummyContextualiser(),
+        ReplicaAwareContextualiser contextualiser = new ReplicaAwareContextualiser(new DummyContextualiser(stateManager),
                 manager,
                 stateManager);
         
@@ -79,7 +79,7 @@ public class ReplicaAwareContextualiserTest extends RMockTestCase {
         stateManager.insert(key);
         startVerification();
         
-        ReplicaAwareContextualiser contextualiser = new ReplicaAwareContextualiser(new DummyContextualiser(),
+        ReplicaAwareContextualiser contextualiser = new ReplicaAwareContextualiser(new DummyContextualiser(stateManager),
                 manager,
                 stateManager);
         Motable actualMotable = contextualiser.get(key, false);
