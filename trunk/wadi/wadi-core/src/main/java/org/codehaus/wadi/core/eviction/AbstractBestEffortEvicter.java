@@ -25,6 +25,7 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.core.ConcurrentMotableMap;
+import org.codehaus.wadi.core.MotableBusyException;
 import org.codehaus.wadi.core.contextualiser.EvictionStrategy;
 import org.codehaus.wadi.core.motable.Motable;
 
@@ -64,7 +65,12 @@ public abstract class AbstractBestEffortEvicter extends AbstractEvicter {
         long time = System.currentTimeMillis();
         for (Iterator iter = idToEvictable.getNames().iterator(); iter.hasNext();) {
             String id = (String) iter.next();
-            Motable motable = idToEvictable.acquireExclusive(id, 1);
+            Motable motable = null;
+            try {
+                motable = idToEvictable.acquireExclusive(id, 1);
+            } catch (MotableBusyException ignore) {
+                // ignore
+            }
             if (null == motable) {
                 continue;
             }
