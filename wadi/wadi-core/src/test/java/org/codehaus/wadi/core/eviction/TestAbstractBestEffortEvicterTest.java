@@ -3,13 +3,14 @@ package org.codehaus.wadi.core.eviction;
 import java.util.Collections;
 
 import org.codehaus.wadi.core.ConcurrentMotableMap;
+import org.codehaus.wadi.core.MotableBusyException;
 import org.codehaus.wadi.core.contextualiser.EvictionStrategy;
 import org.codehaus.wadi.core.eviction.AbstractBestEffortEvicter;
 import org.codehaus.wadi.core.motable.Motable;
 
 import com.agical.rmock.extension.junit.RMockTestCase;
 
-public class AbstractBestEffortEvicterTest extends RMockTestCase {
+public class TestAbstractBestEffortEvicterTest extends RMockTestCase {
 
     private Motable motable;
     private ConcurrentMotableMap idToEvictable;
@@ -33,7 +34,7 @@ public class AbstractBestEffortEvicterTest extends RMockTestCase {
         String id = "id";
         modify().returnValue(Collections.singleton(id));
 
-        idToEvictable.acquireExclusive(id, 500);
+        idToEvictable.acquireExclusive(id, 1);
         modify().returnValue(motable);
 
         motable.getTimeToLive(10);
@@ -61,7 +62,7 @@ public class AbstractBestEffortEvicterTest extends RMockTestCase {
         String id = "id";
         modify().returnValue(Collections.singleton(id));
 
-        idToEvictable.acquireExclusive(id, 500);
+        idToEvictable.acquireExclusive(id, 1);
         modify().returnValue(motable);
 
         motable.getTimeToLive(10);
@@ -77,6 +78,27 @@ public class AbstractBestEffortEvicterTest extends RMockTestCase {
         evicter.evict(idToEvictable, evictionStrategy);
     }
 
+    public void testBuzyMotablesAreSkipped() throws Exception {
+        AbstractBestEffortEvicter evicter = new AbstractBestEffortEvicter(10, false) {
+            public boolean testForDemotion(Motable motable, long time, long ttl) {
+                throw new UnsupportedOperationException();
+            }
+        };
+
+        beginSection(s.ordered("Expire"));
+        idToEvictable.getNames();
+        String id = "id";
+        modify().returnValue(Collections.singleton(id));
+
+        idToEvictable.acquireExclusive(id, 1);
+        modify().throwException(new MotableBusyException("buzy"));
+
+        endSection();
+        startVerification();
+
+        evicter.evict(idToEvictable, evictionStrategy);
+    }
+    
     public void testNothingToDo() throws Exception {
         AbstractBestEffortEvicter evicter = new AbstractBestEffortEvicter(10, false) {
             public boolean testForDemotion(Motable motable, long time, long ttl) {
@@ -89,7 +111,7 @@ public class AbstractBestEffortEvicterTest extends RMockTestCase {
         String id = "id";
         modify().returnValue(Collections.singleton(id));
 
-        idToEvictable.acquireExclusive(id, 500);
+        idToEvictable.acquireExclusive(id, 1);
         modify().returnValue(motable);
 
         motable.getTimeToLive(10);
