@@ -34,17 +34,19 @@ public class RequestHelper {
         Map<String, String> parameters = request.getParameterMap();
         parameters = new HashMap<String, String>(parameters);
         
-        if (parameters.isEmpty() && null == session.getAttribute("node")) {
-            parameters.put("depth", "10");
+        if (null == session.getAttribute("node")) {
+            String depthAsString = parameters.get("depth");
+            if (null == depthAsString) {
+                depthAsString = "10";
+            }
+            int depth = Integer.parseInt(depthAsString);
+            Node node = Node.buildNodeWithDepth(depth);
+            session.setAttribute("node", node);
         }
 
         for (Map.Entry<String, String> entry : parameters.entrySet()) {
             String key = entry.getKey();
-            if (key.equals("depth")) {
-                int depth = Integer.parseInt(entry.getValue());
-                Node node = Node.buildNodeWithDepth(depth);
-                session.setAttribute("node", node);
-            } else if (key.startsWith("node.")) {
+            if (key.startsWith("node.")) {
                 String nodeDepthAsString = key.substring(5);
                 int nodeDepth = Integer.parseInt(nodeDepthAsString);
                 Node node = (Node) session.getAttribute("node");

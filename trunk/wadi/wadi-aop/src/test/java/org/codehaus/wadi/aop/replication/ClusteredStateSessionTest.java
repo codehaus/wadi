@@ -15,12 +15,15 @@
  */
 package org.codehaus.wadi.aop.replication;
 
+import java.io.Serializable;
+
 import org.codehaus.wadi.aop.annotation.ClusteredState;
 import org.codehaus.wadi.aop.aspectj.ClusteredStateAspectUtil;
 import org.codehaus.wadi.aop.tracker.basic.BasicInstanceIdFactory;
 import org.codehaus.wadi.aop.tracker.basic.BasicInstanceRegistry;
 import org.codehaus.wadi.aop.tracker.basic.BasicInstanceTrackerFactory;
 import org.codehaus.wadi.core.manager.Manager;
+import org.codehaus.wadi.core.motable.SimpleMotable;
 import org.codehaus.wadi.core.session.ValueFactory;
 import org.codehaus.wadi.core.util.SimpleStreamer;
 import org.codehaus.wadi.core.util.Streamer;
@@ -41,6 +44,7 @@ public class ClusteredStateSessionTest extends RMockTestCase {
     private ClusteredStateSession session;
     private DeltaStateHandler serverStateHandler;
     private DeltaStateHandler clientStateHandler;
+    private ClusteredStateSessionFactory sessionFactory;
 
     @Override
     protected void setUp() throws Exception {
@@ -51,10 +55,11 @@ public class ClusteredStateSessionTest extends RMockTestCase {
         streamer = new SimpleStreamer();
         replicationManager = (ReplicationManager) mock(ReplicationManager.class);
         
-        ClusteredStateSessionFactory sessionFactory = new ClusteredStateSessionFactory(
+        sessionFactory = new ClusteredStateSessionFactory(
             new ClusteredStateAttributesFactory(valueFactory),
             streamer,
-            replicationManager);
+            replicationManager,
+            new BasicInstanceIdFactory());
         sessionFactory.setManager(manager);
         
         session = sessionFactory.create();
@@ -71,6 +76,23 @@ public class ClusteredStateSessionTest extends RMockTestCase {
         serverStateHandler.setObjectFactory(sessionFactory);
     }
     
+    public void testEmotionFollowedByImotionRestoreSession() throws Exception {
+        Node node = new Node();
+        node.value = 1;
+        node.child = new Node();
+        node.child.value = 2;
+        String key = "key";
+        session.addState(key, node);
+        
+        SimpleMotable motable = new SimpleMotable();
+        session.mote(motable);
+        
+        ClusteredStateSession restoredSession = sessionFactory.create();
+        motable.mote(restoredSession);
+        
+        assertSession(node, key, restoredSession);
+    }
+
     public void testRestoreSessionFromFullSerialization() throws Exception {
         Node node = new Node();
         node.value = 1;
@@ -80,16 +102,10 @@ public class ClusteredStateSessionTest extends RMockTestCase {
         session.addState(key, node);
         
         byte[] state = clientStateHandler.extractFullState(session.getName(), session);
-     
+        
         ClusteredStateSession restoredSession = 
             (ClusteredStateSession) serverStateHandler.restoreFromFullState(session.getName(), state);
-        Node restoredNode = (Node) restoredSession.getState(key);
-        assertEquals(node.value, restoredNode.value);
-
-        assertNotNull(restoredNode.child);
-        assertEquals(node.child.value, restoredNode.child.value);
-        
-        assertSessionMetaData(restoredSession);
+        assertSession(node, key, restoredSession);
     }
 
     public void testRestoreSessionFromFullThenPartialSerialization() throws Exception {
@@ -114,9 +130,13 @@ public class ClusteredStateSessionTest extends RMockTestCase {
         state = clientStateHandler.extractUpdatedState(session.getName(), session);
         restoredSession = (ClusteredStateSession) serverStateHandler.restoreFromUpdatedState(session.getName(), state);
 
+        assertSession(node, key, restoredSession);
+    }
+    
+    protected void assertSession(Node node, String key, ClusteredStateSession restoredSession) {
         Node restoredNode = (Node) restoredSession.getState(key);
         assertEquals(node.value, restoredNode.value);
-
+        
         assertNotNull(restoredNode.child);
         assertEquals(node.child.value, restoredNode.child.value);
         
@@ -130,7 +150,7 @@ public class ClusteredStateSessionTest extends RMockTestCase {
     }
 
     @ClusteredState
-    private static class Node {
+    public static class Node implements Serializable {
         private int value;
         private Node child;
     }

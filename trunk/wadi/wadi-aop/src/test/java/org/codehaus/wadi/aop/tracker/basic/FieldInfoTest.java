@@ -19,8 +19,15 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 
+import org.codehaus.wadi.aop.ClusteredStateMarker;
+import org.codehaus.wadi.aop.annotation.ClusteredState;
+import org.codehaus.wadi.aop.aspectj.ClusteredStateAspectUtil;
 import org.codehaus.wadi.aop.tracker.InstanceRegistry;
+import org.codehaus.wadi.aop.tracker.InstanceTracker;
+import org.codehaus.wadi.aop.tracker.InstanceTrackerFactory;
 
 import com.agical.rmock.extension.junit.RMockTestCase;
 
@@ -30,13 +37,25 @@ import com.agical.rmock.extension.junit.RMockTestCase;
  */
 public class FieldInfoTest extends RMockTestCase {
 
+    private InstanceTracker instanceTracker;
+    private Field field;
     private FieldInfo fieldInfo;
     private InstanceRegistry instanceRegistry;
 
     @Override
     protected void setUp() throws Exception {
-        instanceRegistry = (InstanceRegistry) mock(InstanceRegistry.class);
-        fieldInfo = new FieldInfo(DummyClass.class.getDeclaredField("test"));
+        instanceTracker = (InstanceTracker) mock(InstanceTracker.class);
+        
+        InstanceTrackerFactory trackerFactory = new InstanceTrackerFactory() {
+            public InstanceTracker newInstanceTracker(ClusteredStateMarker stateMarker) {
+                return instanceTracker;
+            }    
+        };
+        ClusteredStateAspectUtil.setInstanceTrackerFactory(trackerFactory);
+        
+        instanceRegistry = new BasicInstanceRegistry();
+        field = DummyClass.class.getDeclaredField("test");
+        fieldInfo = new FieldInfo(field);
     }
     
     public void testSerialization() throws Exception {
@@ -54,18 +73,23 @@ public class FieldInfoTest extends RMockTestCase {
     public void testExecuteWithParameters() throws Exception {
         int testValue = 123;
         String instanceId = "instanceId";
-        instanceRegistry.getInstance(instanceId);
-        DummyClass instance = new DummyClass();
-        modify().returnValue(instance);
+        
+        instanceTracker.track(0, (Constructor) null, null);
+        modify().args(is.ANYTHING, is.ANYTHING, is.ANYTHING);
+        
+        instanceTracker.recordFieldUpdate(field, new Integer(testValue));
         startVerification();
+        
+        DummyClass instance = new DummyClass();
+        instanceRegistry.registerInstance(instanceId, instance);
         
         fieldInfo.executeWithParameters(instanceRegistry, instanceId, new Object[] {new Integer(testValue)});
         assertEquals(testValue, instance.test);
     }
     
+    @ClusteredState
     public static class DummyClass {
         private int test;
-
     }
     
 }

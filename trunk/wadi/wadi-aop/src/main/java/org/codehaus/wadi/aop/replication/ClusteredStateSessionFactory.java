@@ -15,6 +15,7 @@
  */
 package org.codehaus.wadi.aop.replication;
 
+import org.codehaus.wadi.aop.tracker.InstanceIdFactory;
 import org.codehaus.wadi.core.manager.Manager;
 import org.codehaus.wadi.core.session.SessionFactory;
 import org.codehaus.wadi.core.util.Streamer;
@@ -29,28 +30,34 @@ public class ClusteredStateSessionFactory implements SessionFactory {
     private final ClusteredStateAttributesFactory attributesFactory;
     private final Streamer streamer;
     private final ReplicationManager replicationManager;
+    private final InstanceIdFactory instanceIdFactory;
     private Manager manager;
     
     public ClusteredStateSessionFactory(ClusteredStateAttributesFactory attributesFactory,
             Streamer streamer,
-            ReplicationManager replicationManager) {
+            ReplicationManager replicationManager,
+            InstanceIdFactory instanceIdFactory) {
         if (null == attributesFactory) {
             throw new IllegalArgumentException("attributesFactory is required");
         } else if (null == streamer) {
             throw new IllegalArgumentException("streamer is required");
         } else if (null == replicationManager) {
             throw new IllegalArgumentException("replicationManager is required");
+        } else if (null == instanceIdFactory) {
+            throw new IllegalArgumentException("instanceIdFactory is required");
         }
         this.attributesFactory = attributesFactory;
         this.streamer = streamer;
         this.replicationManager = replicationManager;
+        this.instanceIdFactory = instanceIdFactory;
     }
 
     public ClusteredStateSession create() {
         return new ClusteredStateSession(attributesFactory.create(),
             manager,
             streamer,
-            replicationManager);
+            replicationManager,
+            instanceIdFactory);
     }
 
     public void setManager(Manager manager) {

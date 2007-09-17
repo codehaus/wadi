@@ -61,11 +61,6 @@ public class ClusteredStateSessionMemento extends DistributableSessionMemento {
         super.setMaxInactiveInterval(maxInactiveInterval);
     }
     
-    @Override
-    public StandardAttributesMemento getAttributesMemento() {
-        return memento;
-    }
-    
     @TrackedMethod
     @Override
     public void setAttributesMemento(StandardAttributesMemento attributesMemento) {
@@ -79,6 +74,9 @@ public class ClusteredStateSessionMemento extends DistributableSessionMemento {
         super.setCreationTime(creationTime);
         super.setLastAccessedTime(lastAccessedTime);
         super.setMaxInactiveInterval(maxInactiveInterval);
+
+        memento.onRestore();
+        super.setAttributesMemento(memento);
     }
     
 }

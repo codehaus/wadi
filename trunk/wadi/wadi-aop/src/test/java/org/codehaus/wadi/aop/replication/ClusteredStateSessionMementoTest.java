@@ -46,8 +46,23 @@ public class ClusteredStateSessionMementoTest extends RMockTestCase {
     }
     
     public void testRestore() throws Exception {
+        // ClusteredStateAttributesMemento instance tracking
         instanceTracker.track(1, (Constructor) null, null);
         modify().args(is.ANYTHING, is.ANYTHING, is.ANYTHING);
+        
+        // ClusteredStateAttributesMemento instance tracking
+        instanceTracker.track(1, (Constructor) null, null);
+        modify().args(is.ANYTHING, is.ANYTHING, is.ANYTHING);
+        instanceTracker.track(1, (Field) null, null);
+        modify().args(is.ANYTHING, is.ANYTHING, is.ANYTHING);
+        instanceTracker.recordFieldUpdate(null, null);
+        modify().args(is.ANYTHING, is.ANYTHING);
+        
+        // ClusteredStateAttributesMemento.onRestore
+        instanceTracker.track(1, (Field) null, null);
+        modify().args(is.ANYTHING, is.ANYTHING, is.ANYTHING);
+        instanceTracker.recordFieldUpdate(null, null);
+        modify().args(is.ANYTHING, is.ANYTHING);
         
         startVerification();
         
@@ -56,6 +71,7 @@ public class ClusteredStateSessionMementoTest extends RMockTestCase {
         setField(memento, "lastAccessedTime", new Long(2));
         setField(memento, "maxInactiveInterval", new Integer(3));
         setField(memento, "name", "name");
+        setField(memento, "memento", new ClusteredStateAttributesMemento());
         
         assertEquals(0, memento.getCreationTime());
         assertEquals(0, memento.getLastAccessedTime());
@@ -70,6 +86,7 @@ public class ClusteredStateSessionMementoTest extends RMockTestCase {
         assertEquals(3, memento.getMaxInactiveInterval());
         assertEquals("name", memento.getName());
         assertFalse(memento.isNewSession());
+        assertNotNull(memento.getAttributesMemento());
     }
 
     private void setField(ClusteredStateSessionMemento memento, String name, Object value) throws Exception {

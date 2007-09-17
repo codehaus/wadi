@@ -95,4 +95,9 @@ public class ValueUpdaterInfo implements Serializable {
         return new ValueUpdaterInfo(this);
     }
 
+    @Override
+    public String toString() {
+        return "ValueUpdaterInfo for [" + instanceId + "]; " + valueUpdater;
+    }
+    
 }
