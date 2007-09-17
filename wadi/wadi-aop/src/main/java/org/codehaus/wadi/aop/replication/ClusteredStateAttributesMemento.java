@@ -29,6 +29,10 @@ import org.codehaus.wadi.core.session.DistributableAttributesMemento;
 public class ClusteredStateAttributesMemento extends DistributableAttributesMemento {
     protected Map<Object, Object> attributes;
 
+    public ClusteredStateAttributesMemento() {
+        attributes = super.attributes;
+    }
+    
     @Override
     protected Map<Object,Object> newAttributesMap() {
         TrackedMap trackedMap = new TrackedMap();
@@ -36,12 +40,8 @@ public class ClusteredStateAttributesMemento extends DistributableAttributesMeme
         return trackedMap;
     }
     
-    @Override
-    public Map<Object, Object> getAttributes() {
-        if (null == attributes) {
-            attributes = super.getAttributes();
-        }
-        return attributes;
+    public void onRestore() {
+        super.attributes = attributes;
     }
     
 }

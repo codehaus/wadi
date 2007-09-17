@@ -19,6 +19,7 @@ import java.io.InvalidClassException;
 import java.io.ObjectStreamException;
 import java.lang.reflect.Field;
 
+import org.codehaus.wadi.aop.ClusteredStateMarker;
 import org.codehaus.wadi.aop.tracker.InstanceRegistry;
 import org.codehaus.wadi.aop.tracker.InstanceTrackerException;
 
@@ -43,12 +44,13 @@ public class FieldInfo implements ValueUpdater {
     }
 
     public void executeWithParameters(InstanceRegistry instanceRegistry, String instanceId, Object[] parameters) {
-        Object instance = instanceRegistry.getInstance(instanceId);
+        ClusteredStateMarker instance = (ClusteredStateMarker) instanceRegistry.getInstance(instanceId);
         try {
             field.set(instance, parameters[0]);
         } catch (Exception e) {
             throw new InstanceTrackerException(e);
         }
+        instance.$wadiGetTracker().recordFieldUpdate(field, parameters[0]);
     }
     
     private Object readResolve() throws ObjectStreamException {

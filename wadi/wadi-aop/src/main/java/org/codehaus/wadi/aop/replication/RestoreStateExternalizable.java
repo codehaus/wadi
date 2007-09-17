@@ -21,6 +21,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
 import org.codehaus.wadi.aop.tracker.InstanceRegistry;
+import org.codehaus.wadi.aop.tracker.basic.InFlyInstanceRegistry;
 import org.codehaus.wadi.aop.util.ClusteredStateHelper;
 import org.codehaus.wadi.core.util.Streamer;
 
@@ -52,7 +53,11 @@ public class RestoreStateExternalizable implements Externalizable {
         int length = in.readInt();
         byte[] serInstTracker = new byte[length];
         in.readFully(serInstTracker);
-        ClusteredStateHelper.deserialize(instanceRegistry, streamer, serInstTracker);
+        
+        InFlyInstanceRegistry inFlyInstanceRegistry = new InFlyInstanceRegistry(instanceRegistry);
+        ClusteredStateHelper.deserialize(inFlyInstanceRegistry, streamer, serInstTracker);
+        inFlyInstanceRegistry.merge();
+        
         String instanceId = in.readUTF();
         memento = (ClusteredStateSessionMemento) instanceRegistry.getInstance(instanceId);
     }

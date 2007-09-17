@@ -33,7 +33,7 @@ import org.codehaus.wadi.core.util.Utils;
  */
 public class DistributableSession extends StandardSession {
     
-    private final Streamer streamer;
+    protected final Streamer streamer;
 
     public DistributableSession(DistributableAttributes attributes, Manager manager, Streamer streamer) {
         super(attributes, manager);
