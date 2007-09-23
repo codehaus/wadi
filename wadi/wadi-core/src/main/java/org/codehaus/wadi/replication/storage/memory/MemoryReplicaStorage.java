@@ -35,13 +35,13 @@ public class MemoryReplicaStorage implements ReplicaStorage {
     private static final Log log = LogFactory.getLog(MemoryReplicaStorage.class);
     
     private final Map<Object, ReplicaStorageInfo> keyToStorageInfo;
-    private final ObjectStateHandler objectStateManager;
+    private final ObjectStateHandler objectStateHandler;
     
-    public MemoryReplicaStorage(ObjectStateHandler objectStateManager) {
-        if (null == objectStateManager) {
-            throw new IllegalArgumentException("objectStateManager is required");
+    public MemoryReplicaStorage(ObjectStateHandler objectStateHandler) {
+        if (null == objectStateHandler) {
+            throw new IllegalArgumentException("objectStateHandler is required");
         }
-        this.objectStateManager = objectStateManager;
+        this.objectStateHandler = objectStateHandler;
         
         keyToStorageInfo = new HashMap<Object, ReplicaStorageInfo>();
     }
@@ -67,7 +67,7 @@ public class MemoryReplicaStorage implements ReplicaStorage {
             keyToStorageInfo.put(key, storageInfo);
         }
         
-        Object payload = objectStateManager.restoreFromFullState(key, storageInfo.getSerializedPayload());
+        Object payload = objectStateHandler.restoreFromFullState(key, storageInfo.getSerializedPayload());
         storageInfo.getReplicaInfo().setPayload(payload);
     }
 
@@ -80,21 +80,28 @@ public class MemoryReplicaStorage implements ReplicaStorage {
             } else if (storageInfo.getVersion() > updateStorageInfo.getVersion()) {
                 throw new ReplicaKeyAlreadyExistsException(key);
             }
+            // Implementation note: keep a strong reference to the payload otherwise, it can be GCed and, hence, we
+            // can not apply a delta to it.
+            Object payload = storageInfo.getReplicaInfo().getPayload();
+            updateStorageInfo.getReplicaInfo().setPayload(payload);
             storageInfo = updateStorageInfo;
             keyToStorageInfo.put(key, storageInfo);
         }
 
-        Object payload = objectStateManager.restoreFromUpdatedState(key, storageInfo.getSerializedPayload());
+        Object payload = objectStateHandler.restoreFromUpdatedState(key, storageInfo.getSerializedPayload());
         storageInfo.getReplicaInfo().setPayload(payload);
     }
 
     public void mergeDestroy(Object key) {
+        ReplicaStorageInfo remove;
         synchronized (keyToStorageInfo) {
-            ReplicaStorageInfo remove = keyToStorageInfo.remove(key);
-            if (null == remove) {
-                log.warn("Key [" + key + "] is not defined; no replica to be removed.");
-            }
+            remove = keyToStorageInfo.remove(key);
         }
+        if (null == remove) {
+            log.warn("Key [" + key + "] is not defined; no replica to be removed.");
+            return;
+        }
+        objectStateHandler.discardState(key, remove.getReplicaInfo().getPayload());
     }
     
     public ReplicaStorageInfo retrieveReplicaStorageInfo(Object key) {
@@ -109,7 +116,7 @@ public class MemoryReplicaStorage implements ReplicaStorage {
         ReplicaInfo replicaInfo = storageInfo.getReplicaInfo();
         byte[] fullState;
         synchronized (storageInfo) {
-            fullState = objectStateManager.extractFullState(key, replicaInfo.getPayload());
+            fullState = objectStateHandler.extractFullState(key, replicaInfo.getPayload());
         }
         return new ReplicaStorageInfo(replicaInfo, fullState);
     }

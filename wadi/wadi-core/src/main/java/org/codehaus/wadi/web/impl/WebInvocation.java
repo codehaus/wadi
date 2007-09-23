@@ -42,6 +42,7 @@ public class WebInvocation implements Invocation {
     private Session session;
     private boolean errorIfSessionNotAcquired;
     private long exclusiveSessionLockWaitTime;
+    private boolean doNotExecuteOnEndProcessing;
 
     public WebInvocation() {
         this(5000);
@@ -62,7 +63,8 @@ public class WebInvocation implements Invocation {
         this.hreq = hreq;
         this.hres = hres;
         this.chain = chain;
-        this.proxiedInvocation = (null == hreq);
+        
+        proxiedInvocation = (null == hreq);
     }
 
     public void setInvocationProxy(InvocationProxy proxy) {
@@ -105,23 +107,33 @@ public class WebInvocation implements Invocation {
     }
 
     public void invoke(InvocationContext wrapper) throws InvocationException {
+        if (null == chain) {
+            throw new IllegalStateException("chain is not set");
+        }
         HttpInvocationContext actualWrapper = (HttpInvocationContext) wrapper;
         try {
             chain.doFilter(actualWrapper, hres);
         } catch (Exception e) {
             throw new InvocationException(e);
         } finally {
-            if (null != session) {
+            if (!doNotExecuteOnEndProcessing && null != session) {
                 session.onEndProcessing();
             }
         }
     }
 
     public void invoke() throws InvocationException {
+        if (null == chain) {
+            throw new IllegalStateException("chain is not set");
+        }
         try {
             chain.doFilter(hreq, hres);
         } catch (Exception e) {
             throw new InvocationException(e);
+        } finally {
+            if (!doNotExecuteOnEndProcessing && null != session) {
+                session.onEndProcessing();
+            }
         }
     }
 
@@ -157,5 +169,12 @@ public class WebInvocation implements Invocation {
         return exclusiveSessionLockWaitTime;
     }
 
+    public boolean isDoNotExecuteOnEndProcessing() {
+        return doNotExecuteOnEndProcessing;
+    }
+
+    public void setDoNotExecuteOnEndProcessing(boolean doNotExecuteOnEndProcessing) {
+        this.doNotExecuteOnEndProcessing = doNotExecuteOnEndProcessing;
+    }
     
 }

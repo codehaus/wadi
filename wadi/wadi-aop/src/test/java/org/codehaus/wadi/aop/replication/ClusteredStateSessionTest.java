@@ -48,6 +48,7 @@ public class ClusteredStateSessionTest extends RMockTestCase {
 
     @Override
     protected void setUp() throws Exception {
+        ClusteredStateAspectUtil.resetInstanceTrackerFactory();
         ClusteredStateAspectUtil.setInstanceTrackerFactory(new BasicInstanceTrackerFactory());
 
         valueFactory = (ValueFactory) mock(ValueFactory.class);

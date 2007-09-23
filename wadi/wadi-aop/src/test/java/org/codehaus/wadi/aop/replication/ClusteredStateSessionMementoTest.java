@@ -42,6 +42,7 @@ public class ClusteredStateSessionMementoTest extends RMockTestCase {
                 return instanceTracker;
             }    
         };
+        ClusteredStateAspectUtil.resetInstanceTrackerFactory();
         ClusteredStateAspectUtil.setInstanceTrackerFactory(trackerFactory);
     }
     

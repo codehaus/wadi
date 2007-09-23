@@ -31,6 +31,7 @@ public class BasicInvocation implements Invocation {
     private int errorCode;
     private String errorMessage;
     private long exclusiveSessionLockWaitTime;
+    private boolean doNotExecuteOnEndProcessing;
     
     public BasicInvocation(String sessionKey, long exclusiveSessionLockWaitTime) {
         this.sessionKey = sessionKey;
@@ -51,7 +52,7 @@ public class BasicInvocation implements Invocation {
         } catch (Exception e) {
             throw new InvocationException(e);
         } finally {
-            if (null != session) {
+            if (!doNotExecuteOnEndProcessing && null != session) {
                 session.onEndProcessing();
             }
         }
@@ -63,7 +64,7 @@ public class BasicInvocation implements Invocation {
         } catch (Exception e) {
             throw new InvocationException(e);
         } finally {
-            if (null != session) {
+            if (!doNotExecuteOnEndProcessing && null != session) {
                 session.onEndProcessing();
             }
         }
@@ -122,6 +123,14 @@ public class BasicInvocation implements Invocation {
 
     public long getExclusiveSessionLockWaitTime() {
         return exclusiveSessionLockWaitTime;
+    }
+
+    public boolean isDoNotExecuteOnEndProcessing() {
+        return doNotExecuteOnEndProcessing;
+    }
+
+    public void setDoNotExecuteOnEndProcessing(boolean doNotExecuteOnEndProcessing) {
+        this.doNotExecuteOnEndProcessing = doNotExecuteOnEndProcessing;
     }
 
 }

@@ -25,20 +25,54 @@ import org.codehaus.wadi.aop.tracker.InstanceTrackerFactory;
  * @version $Revision: 1538 $
  */
 public class ClusteredStateAspectUtil {
-    
-    public static void setInstanceTrackerFactory(InstanceTrackerFactory trackerFactory) {
+
+    public static synchronized void setInstanceTrackerFactory(InstanceTrackerFactory trackerFactory) {
         setInstanceTrackerFactory(ClusteredStateAspectUtil.class.getClassLoader(), trackerFactory);
     }
     
-    public static void setInstanceTrackerFactory(ClassLoader classLoader, InstanceTrackerFactory trackerFactory) {
-        Class aspectClass;
+    public static synchronized void setInstanceTrackerFactory(ClassLoader classLoader, InstanceTrackerFactory trackerFactory) {
+        Field trackerFactoryField = getTrackerFactoryField(classLoader);
         try {
-            aspectClass = classLoader.loadClass("org.codehaus.wadi.aop.aspectj.ClusteredStateAspect");
-            Field trackerFactoryField = aspectClass.getField("trackerFactory");
-            trackerFactoryField.set(null, trackerFactory);
+            Object isSet = trackerFactoryField.get(null);
+            if (null != isSet) {
+                return;
+            }
             
+            trackerFactoryField.set(null, trackerFactory);
+        } catch (Exception e) {
+            throw (AssertionError) new AssertionError("See nested").initCause(e);
+        }
+    }
+    
+    public static synchronized void resetInstanceTrackerFactory() {
+        resetInstanceTrackerFactory(ClusteredStateAspectUtil.class.getClassLoader());
+    }
+
+    public static synchronized void resetInstanceTrackerFactory(ClassLoader classLoader) {
+        Field trackerFactoryField = getTrackerFactoryField(classLoader);
+        try {
+            trackerFactoryField.set(null, null);
+            
+            Class aspectClass = getAspectClass(classLoader);
             Field indexField = aspectClass.getField("index");
             indexField.set(null, 0);
+        } catch (Exception e) {
+            throw (AssertionError) new AssertionError("See nested").initCause(e);
+        }
+    }
+    
+    protected static Field getTrackerFactoryField(ClassLoader classLoader) {
+        Class aspectClass = getAspectClass(classLoader);
+        try {
+            return aspectClass.getField("trackerFactory");
+        } catch (Exception e) {
+            throw (AssertionError) new AssertionError("See nested").initCause(e);
+        }
+    }
+    
+    protected static Class getAspectClass(ClassLoader classLoader) {
+        try {
+            return classLoader.loadClass("org.codehaus.wadi.aop.aspectj.ClusteredStateAspect");
         } catch (Exception e) {
             throw (AssertionError) new AssertionError("See nested").initCause(e);
         }

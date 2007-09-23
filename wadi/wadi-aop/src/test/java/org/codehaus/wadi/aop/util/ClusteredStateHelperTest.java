@@ -42,6 +42,7 @@ public class ClusteredStateHelperTest extends RMockTestCase {
         instanceIdFactory = (InstanceIdFactory) mock(InstanceIdFactory.class);
         instanceRegistry = new BasicInstanceRegistry();
         
+        ClusteredStateAspectUtil.resetInstanceTrackerFactory();
         ClusteredStateAspectUtil.setInstanceTrackerFactory(new BasicInstanceTrackerFactory());
         streamer = new SimpleStreamer();
     }

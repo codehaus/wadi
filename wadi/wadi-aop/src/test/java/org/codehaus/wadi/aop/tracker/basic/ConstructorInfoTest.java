@@ -53,6 +53,7 @@ public class ConstructorInfoTest extends RMockTestCase {
                 return instanceTracker;
             }    
         };
+        ClusteredStateAspectUtil.resetInstanceTrackerFactory();
         ClusteredStateAspectUtil.setInstanceTrackerFactory(trackerFactory);
         
         instanceRegistry = (InstanceRegistry) mock(InstanceRegistry.class);

@@ -93,6 +93,9 @@ public class SessionStateHandler implements ObjectStateHandler {
         return externalizable;
     }
     
+    public void discardState(Object key, Object payload) {
+    }
+    
     protected Externalizable newExtractFullStateExternalizable(Object key, Object target) {
         if (false == target instanceof Session) {
             throw new IllegalArgumentException(target.getClass().getName() + " is not a Session");

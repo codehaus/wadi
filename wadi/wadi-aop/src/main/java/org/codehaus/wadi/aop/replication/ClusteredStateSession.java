@@ -20,6 +20,7 @@ import java.io.IOException;
 
 import org.codehaus.wadi.aop.tracker.InstanceIdFactory;
 import org.codehaus.wadi.aop.tracker.basic.BasicInstanceRegistry;
+import org.codehaus.wadi.aop.util.ClusteredStateHelper;
 import org.codehaus.wadi.core.WADIRuntimeException;
 import org.codehaus.wadi.core.eviction.SimpleEvictableMemento;
 import org.codehaus.wadi.core.manager.Manager;
@@ -76,6 +77,7 @@ public class ClusteredStateSession extends AbstractReplicableSession {
 
         attributes.setMemento(clusteredMemento.getAttributesMemento());
 
+        ClusteredStateHelper.resetTracker(clusteredMemento);
         memento = clusteredMemento;
     }
     

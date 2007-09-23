@@ -212,6 +212,7 @@ public class BasicReplicationManagerTest extends RMockTestCase {
         modify().returnValue(replicaStorageInfo);
         stateHandler.restoreFromFullStateTransient(key, replicaStorageInfo.getSerializedPayload());
         modify().returnValue(instance);
+        stateHandler.resetObjectState(instance);
         
         backingStrategy.reElectSecondaries(key, replicaInfo.getPrimary(), replicaInfo.getSecondaries());
         modify().returnValue(new Peer[] {peer4});
@@ -236,6 +237,31 @@ public class BasicReplicationManagerTest extends RMockTestCase {
         
         BasicReplicationManager manager = newBasicReplicationManager();
         manager.acquirePrimary(key, instance);
+        
+        try {
+            manager.create(key, instance);
+            fail();
+        } catch (ReplicationKeyAlreadyExistsException e) {
+        }
+    }
+    
+    public void testAcquirePrimary() throws Exception {
+        Object key = new Object();
+        Object instance = new Object();
+        
+        replicationManagerProxy.releasePrimary(key);
+        replicaStorageProxy.retrieveReplicaStorageInfo(key);
+        ReplicaInfo replicaInfo = new ReplicaInfo(localPeer, new Peer[0], new Object());
+        modify().returnValue(new ReplicaStorageInfo(replicaInfo, new byte[0]));
+        
+        backingStrategy.reElectSecondaries(key, localPeer, new Peer[0]);
+        modify().returnValue(new Peer[] {peer2});
+        startVerification();
+        
+        BasicReplicationManager manager = newBasicReplicationManager();
+        manager.acquirePrimary(key, instance);
+        
+        assertSame(instance, replicaInfo.getPayload());
         
         try {
             manager.create(key, instance);
