@@ -43,6 +43,7 @@ public class MixedTrackingLevelAspectTest extends RMockTestCase {
                 return instanceTracker;
             }    
         };
+        ClusteredStateAspectUtil.resetInstanceTrackerFactory();
         ClusteredStateAspectUtil.setInstanceTrackerFactory(trackerFactory);
         
         instanceTracker.track(0, MixedLevelTrackingClass.class.getConstructor(new Class[0]), null);

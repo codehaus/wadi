@@ -91,6 +91,8 @@ public class MemoryReplicaStorageTest extends RMockTestCase {
         objectStateManager.restoreFromFullState(key, serializedState);
         modify().returnValue(payload);
 
+        objectStateManager.discardState(key, payload);
+        
         startVerification();
         
         storage.mergeCreate(key, new ReplicaStorageInfo(replicaInfo, serializedState));

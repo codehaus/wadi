@@ -51,6 +51,7 @@ public class FieldInfoTest extends RMockTestCase {
                 return instanceTracker;
             }    
         };
+        ClusteredStateAspectUtil.resetInstanceTrackerFactory();
         ClusteredStateAspectUtil.setInstanceTrackerFactory(trackerFactory);
         
         instanceRegistry = new BasicInstanceRegistry();

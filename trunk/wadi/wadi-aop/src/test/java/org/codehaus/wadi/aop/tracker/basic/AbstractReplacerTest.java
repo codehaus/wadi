@@ -48,6 +48,7 @@ public class AbstractReplacerTest extends RMockTestCase {
                 return tracker;
             }    
         };
+        ClusteredStateAspectUtil.resetInstanceTrackerFactory();
         ClusteredStateAspectUtil.setInstanceTrackerFactory(trackerFactory);
         
         trackers = new HashSet<InstanceTracker>();

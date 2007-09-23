@@ -164,9 +164,14 @@ public class BasicReplicationManager implements ReplicationManager {
             replicationManagerProxy.releasePrimary(key);
             ReplicaStorageInfo storageInfo = replicaStorageProxy.retrieveReplicaStorageInfo(key);
             
-            Object target = stateHandler.restoreFromFullStateTransient(key, storageInfo.getSerializedPayload());
             replicaInfo = storageInfo.getReplicaInfo();
-            replicaInfo.setPayload(target);
+            if (null == tmp) {
+                Object target = stateHandler.restoreFromFullStateTransient(key, storageInfo.getSerializedPayload());
+                stateHandler.resetObjectState(target);
+                replicaInfo.setPayload(target);
+            } else {
+                replicaInfo.setPayload(tmp);
+            }
         } catch (ServiceInvocationException e) {
             if (e.isMessageExchangeException()) {
                 if (null == tmp) {

@@ -22,11 +22,14 @@ import java.util.List;
 import org.codehaus.wadi.aop.ClusteredStateMarker;
 import org.codehaus.wadi.aop.tracker.InstanceIdFactory;
 import org.codehaus.wadi.aop.tracker.InstanceRegistry;
+import org.codehaus.wadi.aop.tracker.InstanceTrackerVisitor;
+import org.codehaus.wadi.aop.tracker.VisitorContext;
 import org.codehaus.wadi.aop.tracker.basic.ValueUpdaterInfo;
 import org.codehaus.wadi.aop.tracker.visitor.CopyFullStateVisitor;
 import org.codehaus.wadi.aop.tracker.visitor.CopyStateVisitor;
 import org.codehaus.wadi.aop.tracker.visitor.ResetTrackingVisitor;
 import org.codehaus.wadi.aop.tracker.visitor.SetInstanceIdVisitor;
+import org.codehaus.wadi.aop.tracker.visitor.UnregisterTrackingVisitor;
 import org.codehaus.wadi.aop.tracker.visitor.CopyStateVisitor.CopyStateVisitorContext;
 import org.codehaus.wadi.core.WADIRuntimeException;
 import org.codehaus.wadi.core.util.Streamer;
@@ -42,33 +45,38 @@ public final class ClusteredStateHelper {
     }
 
     public static void resetTracker(Object opaque) {
-        ClusteredStateMarker stateMarker = castAndEnsureType(opaque);
-
-        stateMarker.$wadiGetTracker().visit(ResetTrackingVisitor.SINGLETON, ResetTrackingVisitor.SINGLETON.newContext());
+        visit(opaque, ResetTrackingVisitor.SINGLETON, true);
     }
 
-    
+    public static void unregisterTracker(InstanceRegistry instanceRegistry, Object opaque) {
+        visit(opaque, new UnregisterTrackingVisitor(instanceRegistry), true);
+    }
+
     public static byte[] serializeFully(InstanceIdFactory instanceIdFactory, Object opaque) {
-        ClusteredStateMarker stateMarker = castAndEnsureType(opaque);
-        
         CopyFullStateVisitor visitor = new CopyFullStateVisitor(new SetInstanceIdVisitor(instanceIdFactory));
-        CopyStateVisitorContext context = visitor.newContext();
-        visitor.visit(stateMarker.$wadiGetTracker(), context);
-        
+        CopyStateVisitorContext context = (CopyStateVisitorContext) visit(opaque, visitor, false);
         return context.getSerializedValueUpdaterInfos();
     }
 
     public static byte[] serialize(InstanceIdFactory instanceIdFactory, Object opaque) {
-        ClusteredStateMarker stateMarker = castAndEnsureType(opaque);
-        
         CopyStateVisitor visitor = new CopyStateVisitor(new SetInstanceIdVisitor(instanceIdFactory),
             ResetTrackingVisitor.SINGLETON);
-        CopyStateVisitorContext context = visitor.newContext();
-        visitor.visit(stateMarker.$wadiGetTracker(), context);
-        
+        CopyStateVisitorContext context = (CopyStateVisitorContext) visit(opaque, visitor, false);
         return context.getSerializedValueUpdaterInfos();
     }
     
+    protected static VisitorContext visit(Object opaque, InstanceTrackerVisitor visitor, boolean visitTracker) {
+        ClusteredStateMarker stateMarker = castAndEnsureType(opaque);
+
+        VisitorContext context = visitor.newContext();
+        if (visitTracker) {
+            stateMarker.$wadiGetTracker().visit(visitor, context);
+        } else {
+            visitor.visit(stateMarker.$wadiGetTracker(), context);
+        }
+        return context;
+    }
+
     public static void deserialize(InstanceRegistry instanceRegistry, Streamer streamer, byte[] serialized) {
         ByteArrayInputStream memIn = new ByteArrayInputStream(serialized);
         List<ValueUpdaterInfo> valueUpdaterInfos;

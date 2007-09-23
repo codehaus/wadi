@@ -34,4 +34,6 @@ public interface ObjectStateHandler {
     Object restoreFromFullStateTransient(Object key, byte[] state);
     
     void setObjectFactory(Object factory);
+
+    void discardState(Object key, Object payload);
 }

@@ -42,6 +42,7 @@ public class FieldTrackingLevelAspectTest extends RMockTestCase {
                 return instanceTracker;
             }    
         };
+        ClusteredStateAspectUtil.resetInstanceTrackerFactory();
         ClusteredStateAspectUtil.setInstanceTrackerFactory(trackerFactory);
         
         instanceTracker.track(0, FieldLevelTrackingClass.class.getConstructor(new Class[0]), null);

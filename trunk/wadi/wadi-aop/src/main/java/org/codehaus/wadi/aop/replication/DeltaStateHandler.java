@@ -79,6 +79,12 @@ public class DeltaStateHandler extends SessionStateHandler {
         return restore(state, instanceRegistry);
     }
 
+    @Override
+    public void discardState(Object key, Object payload) {
+        ClusteredStateSessionMemento memento = extractMemento(payload);
+        ClusteredStateHelper.unregisterTracker(instanceRegistry, memento);
+    }
+    
     protected Object restore(byte[] state, InstanceRegistry instanceRegistry) {
         RestoreStateExternalizable externalizable = new RestoreStateExternalizable(streamer, instanceRegistry);
         try {
