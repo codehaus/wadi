@@ -67,6 +67,7 @@ import org.codehaus.wadi.replication.contextualiser.ReplicaAwareContextualiser;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
 import org.codehaus.wadi.replication.manager.ReplicationManagerFactory;
 import org.codehaus.wadi.replication.manager.basic.BasicReplicationManagerFactory;
+import org.codehaus.wadi.replication.manager.basic.NoOpReplicationManagerFactory;
 import org.codehaus.wadi.replication.manager.basic.ObjectStateHandler;
 import org.codehaus.wadi.replication.manager.basic.SessionStateHandler;
 import org.codehaus.wadi.replication.storage.ReplicaStorage;
@@ -99,6 +100,8 @@ public class StackContext {
     private final int sweepInterval;
     private final int numPartitions;
     private final BackingStrategyFactory backingStrategyFactory;
+    private boolean disableReplication;
+    private Store sharedStore;
     
     protected ServiceSpace serviceSpace;
     protected PartitionMapper partitionMapper;
@@ -241,6 +244,9 @@ public class StackContext {
     }
 
     protected ReplicationManagerFactory newReplicationManagerFactory(ObjectStateHandler objectStateManager) {
+        if (disableReplication) {
+            return new NoOpReplicationManagerFactory();
+        }
         return new BasicReplicationManagerFactory(objectStateManager);
     }
 
@@ -396,7 +402,6 @@ public class StackContext {
     }
 
     protected Contextualiser newSharedStoreContextualiser(Contextualiser next) {
-        Store sharedStore = getSharedStore();
         if (null == sharedStore) {
             return next;
         } else {
@@ -404,11 +409,10 @@ public class StackContext {
         }
     }
 
-    protected Store getSharedStore() {
-        return null;
-    }
-
     protected Contextualiser newReplicaAwareContextualiser(Contextualiser next) {
+        if (disableReplication) {
+            return next;
+        }
         return new ReplicaAwareContextualiser(next, replicationManager, stateManager);
     }
 
@@ -446,6 +450,18 @@ public class StackContext {
 
     public SessionMonitor getSessionMonitor() {
         return sessionMonitor;
+    }
+
+    public boolean isDisableReplication() {
+        return disableReplication;
+    }
+
+    public void setDisableReplication(boolean disableReplication) {
+        this.disableReplication = disableReplication;
+    }
+
+    public void setSharedStore(Store sharedStore) {
+        this.sharedStore = sharedStore;
     }
 
 }
