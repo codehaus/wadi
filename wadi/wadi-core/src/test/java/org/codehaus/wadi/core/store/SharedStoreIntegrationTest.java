@@ -98,10 +98,8 @@ public class SharedStoreIntegrationTest extends TestCase {
             protected InvocationContextFactory newInvocationContextFactory() {
                 return new BasicInvocationContextFactory();
             }
-            protected Store getSharedStore() {
-                return store;
-            }
         };
+        stackContext.setSharedStore(store);
         stackContext.build();
         return stackContext;
     }
