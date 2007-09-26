@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<project
+  xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"
+  >
+
+  <parent>
+    <groupId>org.codehaus.wadi</groupId>
+    <artifactId>wadi</artifactId>
+    <relativePath>../pom.xml</relativePath>
+    <version>2.0-SNAPSHOT</version>
+  </parent>
+
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>wadi-tribes</artifactId>
+  <packaging>jar</packaging>
+  <name>WADI :: Tribes</name>
+  <description>WADI Tribes Integration</description>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.codehaus.wadi</groupId>
+      <artifactId>wadi-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.tomcat</groupId>
+      <artifactId>tribes</artifactId>
+      <version>6.0.13</version>
+    </dependency>
+
+    <!-- test -->
+    <dependency>
+      <groupId>org.codehaus.wadi</groupId>
+      <artifactId>wadi-group</artifactId>
+      <version>${project.version}</version>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.wadi</groupId>
+      <artifactId>wadi-core</artifactId>
+      <version>${project.version}</version>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>geronimo-spec</groupId>
+      <artifactId>geronimo-spec-servlet</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+          <configuration>
+            <forkMode>pertest</forkMode><!-- we must fork in order to enable argLine -->
+            <argLine>-enableassertions -Xmx1024m</argLine>
+            <systemProperties>
+              <property>
+                <name>org.apache.commons.logging.Log</name>
+                <value>org.apache.commons.logging.impl.SimpleLog</value>
+              </property>
+              <property>
+                <name>org.apache.commons.logging.simplelog.showdatetime</name>
+                <value>true</value>
+              </property>
+              <property>
+                <name>org.apache.commons.logging.simplelog.log.org.codehaus.wadi</name>
+                <value>warn</value>
+              </property>
+              <property>
+                <name>java.net.preferIPv4Stack</name>
+                <value>true</value>
+              </property>
+            </systemProperties>
+          </configuration>
+        </plugin>
+    </plugins>
+  </build>
+
+</project>
