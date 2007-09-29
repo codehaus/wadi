@@ -42,7 +42,7 @@ public class TrackedMapTest extends RMockTestCase {
 
     @Override
     protected void setUp() throws Exception {
-        instanceIdFactory = new BasicInstanceIdFactory();
+        instanceIdFactory = new BasicInstanceIdFactory("");
         ClusteredStateAspectUtil.resetInstanceTrackerFactory();
         ClusteredStateAspectUtil.setInstanceTrackerFactory(new BasicInstanceTrackerFactory());
         

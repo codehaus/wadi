@@ -95,7 +95,7 @@ import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
 public class StackContext {
     private final ClassLoader cl;
     private final ServiceSpaceName serviceSpaceName;
-    private final Dispatcher underlyingDispatcher;
+    protected final Dispatcher underlyingDispatcher;
     private final int sessionTimeout;
     private final int sweepInterval;
     private final int numPartitions;

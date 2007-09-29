@@ -19,6 +19,7 @@ import java.io.Serializable;
 
 import org.codehaus.wadi.aop.annotation.ClusteredState;
 import org.codehaus.wadi.aop.aspectj.ClusteredStateAspectUtil;
+import org.codehaus.wadi.aop.tracker.InstanceIdFactory;
 import org.codehaus.wadi.aop.tracker.basic.BasicInstanceIdFactory;
 import org.codehaus.wadi.aop.tracker.basic.BasicInstanceRegistry;
 import org.codehaus.wadi.aop.tracker.basic.BasicInstanceTrackerFactory;
@@ -56,23 +57,24 @@ public class ClusteredStateSessionTest extends RMockTestCase {
         streamer = new SimpleStreamer();
         replicationManager = (ReplicationManager) mock(ReplicationManager.class);
         
+        InstanceIdFactory instanceIdFactory = new BasicInstanceIdFactory("prefix");
         sessionFactory = new ClusteredStateSessionFactory(
             new ClusteredStateAttributesFactory(valueFactory),
             streamer,
             replicationManager,
-            new BasicInstanceIdFactory());
+            instanceIdFactory);
         sessionFactory.setManager(manager);
         
         session = sessionFactory.create();
         session.init(1, 2, 3, "name");
         
         clientStateHandler = new DeltaStateHandler(streamer,
-            new BasicInstanceIdFactory(),
+            instanceIdFactory,
             new BasicInstanceRegistry());
         clientStateHandler.setObjectFactory(sessionFactory);
         
         serverStateHandler = new DeltaStateHandler(streamer,
-            new BasicInstanceIdFactory(),
+            instanceIdFactory,
             new BasicInstanceRegistry());
         serverStateHandler.setObjectFactory(sessionFactory);
     }
