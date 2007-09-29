@@ -60,7 +60,7 @@ public class AOPStackContext extends StackContext {
     public void build() throws ServiceAlreadyRegisteredException {
         ClusteredStateAspectUtil.setInstanceTrackerFactory(new BasicInstanceTrackerFactory());
         
-        instanceIdFactory = new BasicInstanceIdFactory();
+        instanceIdFactory = new BasicInstanceIdFactory(underlyingDispatcher.getCluster().getLocalPeer().getName());
         instanceRegistry = new BasicInstanceRegistry();
         
         super.build();

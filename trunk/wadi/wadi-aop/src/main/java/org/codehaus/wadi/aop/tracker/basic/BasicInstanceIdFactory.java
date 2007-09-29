@@ -22,10 +22,18 @@ import org.codehaus.wadi.aop.tracker.InstanceIdFactory;
  * @version $Revision: 1538 $
  */
 public class BasicInstanceIdFactory implements InstanceIdFactory {
-    private static long id = 0;
+    private final String prefix; 
+    private long id = 0;
     
+    public BasicInstanceIdFactory(String prefix) {
+        if (null == prefix) {
+            throw new IllegalArgumentException("prefix is required");
+        }
+        this.prefix = prefix;
+    }
+
     public synchronized String newId() {
-        return id++ + "";
+        return prefix + id++;
     }
     
 }
