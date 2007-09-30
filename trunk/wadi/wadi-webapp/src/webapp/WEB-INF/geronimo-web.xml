@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<web-app xmlns="http://geronimo.apache.org/xml/ns/j2ee/web/jetty-1.2">
+<web-app xmlns="http://geronimo.apache.org/xml/ns/j2ee/web/jetty-1.2"
+    xmlns:wadi="http://geronimo.apache.org/xml/ns/clustering-wadi-1.2">
 
     <environment>
         <moduleId>
@@ -11,6 +12,8 @@
         </moduleId>
     </environment>
 
-   <clustering-wadi/>
+   <wadi:clustering-wadi>
+       <wadi:deltaReplication>true</wadi:deltaReplication>
+   </wadi:clustering-wadi>
 
 </web-app>
