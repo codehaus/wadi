@@ -197,7 +197,7 @@ public class TribesPeer implements Member, LocalPeer, Address {
     }
     
     public String toString() {
-        return "TribesPeer[id:"+uniqueId+"; member:"+member+"]";
+        return "TribesPeer [" + name + "; " + member.getName() + "]";
     }
 
     private static class TribesPeerInfo implements Serializable {
