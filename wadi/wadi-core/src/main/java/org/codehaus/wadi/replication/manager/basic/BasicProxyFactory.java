@@ -18,10 +18,12 @@ package org.codehaus.wadi.replication.manager.basic;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
 import org.codehaus.wadi.replication.storage.ReplicaStorage;
+import org.codehaus.wadi.servicespace.InvocationMetaData;
 import org.codehaus.wadi.servicespace.ServiceProxy;
 import org.codehaus.wadi.servicespace.ServiceProxyFactory;
 import org.codehaus.wadi.servicespace.ServiceSpace;
 import org.codehaus.wadi.servicespace.replyaccessor.DoNotReplyWithNull;
+import org.codehaus.wadi.servicespace.resultcombiner.FirstSuccessThenFailureCombiner;
 
 /**
  * 
@@ -42,7 +44,9 @@ public class BasicProxyFactory implements ProxyFactory {
     public ReplicationManager newReplicationManagerProxy() {
         ServiceProxyFactory repManagerProxyFactory = serviceSpace.getServiceProxyFactory(ReplicationManager.NAME, 
             new Class[] {ReplicationManager.class});
-        repManagerProxyFactory.getInvocationMetaData().setOneWay(true);
+        InvocationMetaData invocationMetaData = repManagerProxyFactory.getInvocationMetaData();
+        invocationMetaData.setClusterAggregation(true);
+        invocationMetaData.setInvocationResultCombiner(FirstSuccessThenFailureCombiner.COMBINER);
         return (ReplicationManager) repManagerProxyFactory.getProxy();
     }
 
@@ -68,9 +72,10 @@ public class BasicProxyFactory implements ProxyFactory {
 
     public ReplicaStorage newReplicaStorageProxyForDelete(Peer[] peers) {
         ServiceProxy serviceProxy = newReplicaStorageServiceProxyFactory().getProxy();
-        serviceProxy.getInvocationMetaData().setTargets(peers);
-        serviceProxy.getInvocationMetaData().setOneWay(true);
-        serviceProxy.getInvocationMetaData().setIgnoreMessageExchangeExceptionOnSend(true);
+        InvocationMetaData invocationMetaData = serviceProxy.getInvocationMetaData();
+        invocationMetaData.setTargets(peers);
+        invocationMetaData.setOneWay(true);
+        invocationMetaData.setIgnoreMessageExchangeExceptionOnSend(true);
         return (ReplicaStorage) serviceProxy;
     }
 
