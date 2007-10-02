@@ -20,7 +20,7 @@ import org.codehaus.wadi.group.vm.VMPeer;
 import org.codehaus.wadi.replication.common.ReplicaInfo;
 import org.codehaus.wadi.replication.common.ReplicaStorageInfo;
 import org.codehaus.wadi.replication.manager.basic.ObjectStateHandler;
-import org.codehaus.wadi.replication.storage.memory.MemoryReplicaStorage;
+import org.codehaus.wadi.replication.storage.memory.SyncMemoryReplicaStorage;
 
 import com.agical.rmock.extension.junit.RMockTestCase;
 
@@ -28,8 +28,8 @@ import com.agical.rmock.extension.junit.RMockTestCase;
  * 
  * @version $Revision$
  */
-public class MemoryReplicaStorageTest extends RMockTestCase {
-    private MemoryReplicaStorage storage;
+public class SyncMemoryReplicaStorageTest extends RMockTestCase {
+    private SyncMemoryReplicaStorage storage;
     private ObjectStateHandler objectStateManager;
     private Peer node1;
     private Peer node2;
@@ -40,7 +40,7 @@ public class MemoryReplicaStorageTest extends RMockTestCase {
 
     protected void setUp() throws Exception {
         objectStateManager = (ObjectStateHandler) mock(ObjectStateHandler.class);
-        storage = new MemoryReplicaStorage(objectStateManager);
+        storage = new SyncMemoryReplicaStorage(objectStateManager);
         node1 = new VMPeer("node1", null);
         node2 = new VMPeer("node2", null);
         

@@ -20,7 +20,7 @@ import org.codehaus.wadi.group.vm.SysOutMessageRecorder;
 import org.codehaus.wadi.group.vm.VMBroker;
 import org.codehaus.wadi.group.vm.VMDispatcher;
 
-public class TestInVMReplicationManager extends AbstractReplicationManagerTest {
+public class TestInVMReplicationManager extends AbstractSyncReplicationManagerTest {
     private VMBroker cluster;
     
     protected Dispatcher createDispatcher(String clusterName, String nodeName, long timeout) throws Exception {

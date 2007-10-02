@@ -17,9 +17,9 @@ package org.codehaus.wadi.activecluster;
 
 import org.codehaus.wadi.activecluster.ActiveClusterDispatcher;
 import org.codehaus.wadi.group.Dispatcher;
-import org.codehaus.wadi.replication.integration.AbstractReplicationManagerTest;
+import org.codehaus.wadi.replication.integration.AbstractSyncReplicationManagerTest;
 
-public class TestACInVMReplicationManager extends AbstractReplicationManagerTest {
+public class TestACInVMReplicationManager extends AbstractSyncReplicationManagerTest {
 
     protected Dispatcher createDispatcher(String clusterName, String nodeName, long timeout) throws Exception {
         return new ActiveClusterDispatcher(clusterName, nodeName, ACTestUtil.CLUSTER_URI_VM, null, timeout);

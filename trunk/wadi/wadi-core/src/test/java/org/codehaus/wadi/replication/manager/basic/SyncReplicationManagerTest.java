@@ -42,7 +42,7 @@ import com.agical.rmock.core.Action;
 import com.agical.rmock.core.MethodHandle;
 import com.agical.rmock.extension.junit.RMockTestCase;
 
-public class BasicReplicationManagerTest extends RMockTestCase {
+public class SyncReplicationManagerTest extends RMockTestCase {
  
     private LocalPeer localPeer;
     private Peer peer2;
@@ -103,7 +103,7 @@ public class BasicReplicationManagerTest extends RMockTestCase {
         endSection();
         startVerification();
         
-        BasicReplicationManager manager = newBasicReplicationManager();
+        SyncReplicationManager manager = newBasicReplicationManager();
         manager.start();
     }
     
@@ -137,7 +137,7 @@ public class BasicReplicationManagerTest extends RMockTestCase {
         
         startVerification();
         
-        BasicReplicationManager manager = newBasicReplicationManager();
+        SyncReplicationManager manager = newBasicReplicationManager();
         manager.create(key, instance);
         assertTrue(manager.releasePrimary(key));
     }
@@ -168,7 +168,7 @@ public class BasicReplicationManagerTest extends RMockTestCase {
         
         startVerification();
         
-        BasicReplicationManager manager = newBasicReplicationManager();
+        SyncReplicationManager manager = newBasicReplicationManager();
         manager.create(key, instance);
         manager.update(key, newInstance);
         assertTrue(manager.releasePrimary(key));
@@ -182,7 +182,7 @@ public class BasicReplicationManagerTest extends RMockTestCase {
 
         startVerification();
         
-        BasicReplicationManager manager = newBasicReplicationManager();
+        SyncReplicationManager manager = newBasicReplicationManager();
         manager.create(key, instance);
         manager.destroy(key);
         assertFalse(manager.releasePrimary(key));
@@ -196,7 +196,7 @@ public class BasicReplicationManagerTest extends RMockTestCase {
         
         startVerification();
         
-        BasicReplicationManager manager = newBasicReplicationManager();
+        SyncReplicationManager manager = newBasicReplicationManager();
         Object retrieveReplica = manager.retrieveReplica(key);
         assertNull(retrieveReplica);
     }
@@ -218,7 +218,7 @@ public class BasicReplicationManagerTest extends RMockTestCase {
         modify().returnValue(new Peer[] {peer4});
         startVerification();
         
-        BasicReplicationManager manager = newBasicReplicationManager();
+        SyncReplicationManager manager = newBasicReplicationManager();
         Object retrieveReplica = manager.retrieveReplica(key);
         assertSame(instance, retrieveReplica);
     }
@@ -235,7 +235,7 @@ public class BasicReplicationManagerTest extends RMockTestCase {
         modify().returnValue(new Peer[] {peer2});
         startVerification();
         
-        BasicReplicationManager manager = newBasicReplicationManager();
+        SyncReplicationManager manager = newBasicReplicationManager();
         manager.acquirePrimary(key, instance);
         
         try {
@@ -258,7 +258,7 @@ public class BasicReplicationManagerTest extends RMockTestCase {
         modify().returnValue(new Peer[] {peer2});
         startVerification();
         
-        BasicReplicationManager manager = newBasicReplicationManager();
+        SyncReplicationManager manager = newBasicReplicationManager();
         manager.acquirePrimary(key, instance);
         
         assertSame(instance, replicaInfo.getPayload());
@@ -270,8 +270,8 @@ public class BasicReplicationManagerTest extends RMockTestCase {
         }
     }
     
-    protected BasicReplicationManager newBasicReplicationManager() {
-        return new BasicReplicationManager(serviceSpace,
+    protected SyncReplicationManager newBasicReplicationManager() {
+        return new SyncReplicationManager(serviceSpace,
             stateHandler,
             backingStrategy,
             proxyFactory) {

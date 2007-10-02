@@ -31,13 +31,13 @@ import org.codehaus.wadi.replication.storage.ReplicaStorage;
  * 
  * @version $Revision$
  */
-public class MemoryReplicaStorage implements ReplicaStorage {
-    private static final Log log = LogFactory.getLog(MemoryReplicaStorage.class);
+public class SyncMemoryReplicaStorage implements ReplicaStorage {
+    private static final Log log = LogFactory.getLog(SyncMemoryReplicaStorage.class);
     
     private final Map<Object, ReplicaStorageInfo> keyToStorageInfo;
     private final ObjectStateHandler objectStateHandler;
     
-    public MemoryReplicaStorage(ObjectStateHandler objectStateHandler) {
+    public SyncMemoryReplicaStorage(ObjectStateHandler objectStateHandler) {
         if (null == objectStateHandler) {
             throw new IllegalArgumentException("objectStateHandler is required");
         }

@@ -43,8 +43,8 @@ import org.codehaus.wadi.servicespace.ServiceSpace;
  * 
  * @version $Revision$
  */
-public class BasicReplicationManager implements ReplicationManager {
-    private static final Log log = LogFactory.getLog(BasicReplicationManager.class);
+public class SyncReplicationManager implements ReplicationManager {
+    private static final Log log = LogFactory.getLog(SyncReplicationManager.class);
     
     private final ObjectStateHandler stateHandler;
     private final BackingStrategy backingStrategy;
@@ -56,13 +56,13 @@ public class BasicReplicationManager implements ReplicationManager {
     private final ServiceProxyFactory replicaStorageServiceProxy;
     private final ProxyFactory proxyFactory;
 
-    public BasicReplicationManager(ServiceSpace serviceSpace,
+    public SyncReplicationManager(ServiceSpace serviceSpace,
         ObjectStateHandler stateHandler,
         BackingStrategy backingStrategy) {
         this(serviceSpace, stateHandler, backingStrategy, new BasicProxyFactory(serviceSpace));
     }    
     
-    public BasicReplicationManager(ServiceSpace serviceSpace,
+    public SyncReplicationManager(ServiceSpace serviceSpace,
             ObjectStateHandler stateHandler,
             BackingStrategy backingStrategy,
             ProxyFactory proxyFactory) {

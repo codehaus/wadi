@@ -25,11 +25,11 @@ import org.codehaus.wadi.servicespace.ServiceSpace;
  * 
  * @version $Revision$
  */
-public class MemoryReplicaStorageFactory implements ReplicaStorageFactory {
+public class SyncMemoryReplicaStorageFactory implements ReplicaStorageFactory {
     
     private final ObjectStateHandler objectStateManager;
 
-    public MemoryReplicaStorageFactory(ObjectStateHandler objectStateManager) {
+    public SyncMemoryReplicaStorageFactory(ObjectStateHandler objectStateManager) {
         if (null == objectStateManager) {
             throw new IllegalArgumentException("objectStateManager is required");
         }
@@ -37,7 +37,7 @@ public class MemoryReplicaStorageFactory implements ReplicaStorageFactory {
     }
     
     public ReplicaStorage factory(ServiceSpace serviceSpace) {
-        return new MemoryReplicaStorage(objectStateManager);
+        return new SyncMemoryReplicaStorage(objectStateManager);
     }
     
 }
