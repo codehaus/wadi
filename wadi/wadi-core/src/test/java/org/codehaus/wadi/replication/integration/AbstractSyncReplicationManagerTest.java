@@ -32,12 +32,12 @@ import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.replication.common.ReplicaInfo;
 import org.codehaus.wadi.replication.common.ReplicaStorageInfo;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
-import org.codehaus.wadi.replication.manager.basic.BasicReplicationManagerFactory;
+import org.codehaus.wadi.replication.manager.basic.SyncReplicationManagerFactory;
 import org.codehaus.wadi.replication.manager.basic.ObjectStateHandler;
 import org.codehaus.wadi.replication.manager.basic.SessionStateHandler;
 import org.codehaus.wadi.replication.storage.ReplicaStorage;
 import org.codehaus.wadi.replication.storage.ReplicaStorageFactory;
-import org.codehaus.wadi.replication.storage.memory.MemoryReplicaStorageFactory;
+import org.codehaus.wadi.replication.storage.memory.SyncMemoryReplicaStorageFactory;
 import org.codehaus.wadi.replication.strategy.RoundRobinBackingStrategyFactory;
 import org.codehaus.wadi.servicespace.ServiceRegistry;
 import org.codehaus.wadi.servicespace.ServiceSpaceName;
@@ -45,7 +45,7 @@ import org.codehaus.wadi.servicespace.basic.BasicServiceSpace;
 
 import com.agical.rmock.extension.junit.RMockTestCase;
 
-public abstract class AbstractReplicationManagerTest extends RMockTestCase {
+public abstract class AbstractSyncReplicationManagerTest extends RMockTestCase {
     private static final String CLUSTER_NAME = "CLUSTER";
     private static final long TEMPO = 1000;
 
@@ -161,8 +161,8 @@ public abstract class AbstractReplicationManagerTest extends RMockTestCase {
         ObjectStateHandler objectStateManager = new SessionStateHandler(streamer);
         objectStateManager.setObjectFactory(sessionFactory);
         
-        BasicReplicationManagerFactory managerFactory = new BasicReplicationManagerFactory(objectStateManager);
-        ReplicaStorageFactory storageFactory = new MemoryReplicaStorageFactory(objectStateManager);
+        SyncReplicationManagerFactory managerFactory = new SyncReplicationManagerFactory(objectStateManager);
+        ReplicaStorageFactory storageFactory = new SyncMemoryReplicaStorageFactory(objectStateManager);
         RoundRobinBackingStrategyFactory backingStrategy = new RoundRobinBackingStrategyFactory(2);
 
         serviceSpace1 = buildServiceSpace("peer1");

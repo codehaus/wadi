@@ -66,13 +66,13 @@ import org.codehaus.wadi.location.statemanager.StateManager;
 import org.codehaus.wadi.replication.contextualiser.ReplicaAwareContextualiser;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
 import org.codehaus.wadi.replication.manager.ReplicationManagerFactory;
-import org.codehaus.wadi.replication.manager.basic.BasicReplicationManagerFactory;
+import org.codehaus.wadi.replication.manager.basic.SyncReplicationManagerFactory;
 import org.codehaus.wadi.replication.manager.basic.NoOpReplicationManagerFactory;
 import org.codehaus.wadi.replication.manager.basic.ObjectStateHandler;
 import org.codehaus.wadi.replication.manager.basic.SessionStateHandler;
 import org.codehaus.wadi.replication.storage.ReplicaStorage;
 import org.codehaus.wadi.replication.storage.ReplicaStorageFactory;
-import org.codehaus.wadi.replication.storage.memory.MemoryReplicaStorageFactory;
+import org.codehaus.wadi.replication.storage.memory.SyncMemoryReplicaStorageFactory;
 import org.codehaus.wadi.replication.strategy.BackingStrategyFactory;
 import org.codehaus.wadi.replication.strategy.RoundRobinBackingStrategyFactory;
 import org.codehaus.wadi.servicespace.ServiceAlreadyRegisteredException;
@@ -240,14 +240,14 @@ public class StackContext {
     }
 
     protected ReplicaStorageFactory newReplicaStorageFactory(ObjectStateHandler objectStateManager) {
-        return new MemoryReplicaStorageFactory(objectStateManager);
+        return new SyncMemoryReplicaStorageFactory(objectStateManager);
     }
 
     protected ReplicationManagerFactory newReplicationManagerFactory(ObjectStateHandler objectStateManager) {
         if (disableReplication) {
             return new NoOpReplicationManagerFactory();
         }
-        return new BasicReplicationManagerFactory(objectStateManager);
+        return new SyncReplicationManagerFactory(objectStateManager);
     }
 
     protected void registerStackExplorer(ContextualiserStackExplorer stackExplorer) throws ServiceAlreadyRegisteredException {
