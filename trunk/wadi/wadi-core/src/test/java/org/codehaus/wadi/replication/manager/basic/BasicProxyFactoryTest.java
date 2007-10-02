@@ -23,6 +23,7 @@ import org.codehaus.wadi.servicespace.ServiceProxy;
 import org.codehaus.wadi.servicespace.ServiceProxyFactory;
 import org.codehaus.wadi.servicespace.ServiceSpace;
 import org.codehaus.wadi.servicespace.replyaccessor.DoNotReplyWithNull;
+import org.codehaus.wadi.servicespace.resultcombiner.FirstSuccessThenFailureCombiner;
 
 import com.agical.rmock.extension.junit.RMockTestCase;
 
@@ -47,10 +48,11 @@ public class BasicProxyFactoryTest extends RMockTestCase {
             serviceSpace.getServiceProxyFactory(ReplicationManager.NAME, new Class[] {ReplicationManager.class});
 
         InvocationMetaData invMetaData = 
-            (InvocationMetaData) intercept(InvocationMetaData.class, "replicaStorageProxyInvMetaData");
+            (InvocationMetaData) intercept(InvocationMetaData.class, "InvocationMetaData");
         serviceProxyFactory.getInvocationMetaData();
         modify().returnValue(invMetaData);
-        invMetaData.setOneWay(true);
+        invMetaData.setClusterAggregation(true);
+        invMetaData.setInvocationResultCombiner(FirstSuccessThenFailureCombiner.COMBINER);
         
         serviceProxyFactory.getProxy();
         modify().returnValue(replicationManager);
