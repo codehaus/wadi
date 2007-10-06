@@ -27,6 +27,8 @@ public interface BackingStrategy {
 
     Peer[] reElectSecondaries(Object key, Peer primary, Peer[] secondaries);
     
+    Peer[] reElectSecondariesForSwap(Object key, Peer newPrimary, Peer[] secondaries);
+    
     void addSecondaries(Peer[] secondaries);
     
     void addSecondary(Peer secondary);
@@ -34,4 +36,5 @@ public interface BackingStrategy {
     void removeSecondary(Peer secondary);
     
     void reset();
+
 }

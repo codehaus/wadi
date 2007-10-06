@@ -15,7 +15,11 @@
  */
 package org.codehaus.wadi.replication.manager;
 
+import java.util.Set;
+
 import org.codehaus.wadi.core.Lifecycle;
+import org.codehaus.wadi.group.Peer;
+import org.codehaus.wadi.replication.common.ReplicaInfo;
 import org.codehaus.wadi.servicespace.ServiceName;
 
 /**
@@ -33,7 +37,9 @@ public interface ReplicationManager extends Lifecycle {
 
     Object retrieveReplica(Object key) throws ReplicationKeyNotFoundException, InternalReplicationManagerException;
 
-    void acquirePrimary(Object key, Object tmp) throws ReplicationKeyNotFoundException, InternalReplicationManagerException;
-
-    boolean releasePrimary(Object key);
+    void insertReplicaInfo(Object key, ReplicaInfo replicaInfo) throws ReplicationKeyAlreadyExistsException;
+    
+    ReplicaInfo releaseReplicaInfo(Object key, Peer newPrimary) throws ReplicationKeyNotFoundException;
+    
+    Set<Object> getManagedReplicaInfoKeys();
 }

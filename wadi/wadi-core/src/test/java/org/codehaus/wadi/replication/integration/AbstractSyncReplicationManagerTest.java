@@ -32,9 +32,9 @@ import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.replication.common.ReplicaInfo;
 import org.codehaus.wadi.replication.common.ReplicaStorageInfo;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
-import org.codehaus.wadi.replication.manager.basic.SyncReplicationManagerFactory;
 import org.codehaus.wadi.replication.manager.basic.ObjectStateHandler;
 import org.codehaus.wadi.replication.manager.basic.SessionStateHandler;
+import org.codehaus.wadi.replication.manager.basic.SyncReplicationManagerFactory;
 import org.codehaus.wadi.replication.storage.ReplicaStorage;
 import org.codehaus.wadi.replication.storage.ReplicaStorageFactory;
 import org.codehaus.wadi.replication.storage.memory.SyncMemoryReplicaStorageFactory;
@@ -161,7 +161,9 @@ public abstract class AbstractSyncReplicationManagerTest extends RMockTestCase {
         ObjectStateHandler objectStateManager = new SessionStateHandler(streamer);
         objectStateManager.setObjectFactory(sessionFactory);
         
-        SyncReplicationManagerFactory managerFactory = new SyncReplicationManagerFactory(objectStateManager);
+        ReplicaStorage replicaStorage = (ReplicaStorage) mock(ReplicaStorage.class);
+        
+        SyncReplicationManagerFactory managerFactory = new SyncReplicationManagerFactory(objectStateManager, replicaStorage);
         ReplicaStorageFactory storageFactory = new SyncMemoryReplicaStorageFactory(objectStateManager);
         RoundRobinBackingStrategyFactory backingStrategy = new RoundRobinBackingStrategyFactory(2);
 

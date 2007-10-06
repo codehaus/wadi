@@ -16,6 +16,7 @@
 package org.codehaus.wadi.replication.manager.basic;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -47,24 +48,27 @@ public class SyncReplicationManager implements ReplicationManager {
     private static final Log log = LogFactory.getLog(SyncReplicationManager.class);
     
     private final ObjectStateHandler stateHandler;
+    private final ReplicaStorage localReplicaStorage;
     private final BackingStrategy backingStrategy;
     private final LocalPeer localPeer;
     private final Map<Object, ReplicaInfo> keyToReplicaInfo;
     private final ServiceMonitor storageMonitor;
-    private final ReplicationManager replicationManagerProxy;
     private final ReplicaStorage replicaStorageProxy;
     private final ServiceProxyFactory replicaStorageServiceProxy;
     private final ProxyFactory proxyFactory;
 
+
     public SyncReplicationManager(ServiceSpace serviceSpace,
         ObjectStateHandler stateHandler,
-        BackingStrategy backingStrategy) {
-        this(serviceSpace, stateHandler, backingStrategy, new BasicProxyFactory(serviceSpace));
+        BackingStrategy backingStrategy,
+        ReplicaStorage localReplicaStorage) {
+        this(serviceSpace, stateHandler, backingStrategy, localReplicaStorage, new BasicProxyFactory(serviceSpace));
     }    
     
     public SyncReplicationManager(ServiceSpace serviceSpace,
             ObjectStateHandler stateHandler,
             BackingStrategy backingStrategy,
+            ReplicaStorage localReplicaStorage,
             ProxyFactory proxyFactory) {
         if (null == serviceSpace) {
             throw new IllegalArgumentException("serviceSpace is required");
@@ -72,11 +76,14 @@ public class SyncReplicationManager implements ReplicationManager {
             throw new IllegalArgumentException("stateHandler is required");
         } else if (null == backingStrategy) {
             throw new IllegalArgumentException("backingStrategy is required");
+        } else if (null == localReplicaStorage) {
+            throw new IllegalArgumentException("localReplicaStorage is required");
         } else if (null == proxyFactory) {
             throw new IllegalArgumentException("proxyFactory is required");
         }
         this.stateHandler = stateHandler;
         this.backingStrategy = backingStrategy;
+        this.localReplicaStorage = localReplicaStorage;
         this.proxyFactory = proxyFactory;
         
         localPeer = serviceSpace.getLocalPeer();
@@ -84,11 +91,14 @@ public class SyncReplicationManager implements ReplicationManager {
         storageMonitor = serviceSpace.getServiceMonitor(ReplicaStorage.NAME);
         storageMonitor.addServiceLifecycleListener(new UpdateBackingStrategyListener(backingStrategy));
         
-        replicationManagerProxy = proxyFactory.newReplicationManagerProxy();
         replicaStorageServiceProxy = proxyFactory.newReplicaStorageServiceProxyFactory();
         replicaStorageProxy = proxyFactory.newReplicaStorageProxy();
 
-        keyToReplicaInfo = new HashMap<Object, ReplicaInfo>();
+        keyToReplicaInfo = newKeyToReplicaInfo();
+    }
+
+    protected Map<Object, ReplicaInfo> newKeyToReplicaInfo() {
+        return new HashMap<Object, ReplicaInfo>();
     }
 
     public void start() throws Exception {
@@ -151,60 +161,72 @@ public class SyncReplicationManager implements ReplicationManager {
     }
     
     public Object retrieveReplica(Object key) {
-        return retrieveOrCreateReplica(key, null);
-    }
-
-    public void acquirePrimary(Object key, Object tmp) {
-        retrieveOrCreateReplica(key, tmp);
-    }
-
-    protected Object retrieveOrCreateReplica(Object key, Object tmp) {
         ReplicaInfo replicaInfo;
         try {
-            replicationManagerProxy.releasePrimary(key);
             ReplicaStorageInfo storageInfo = replicaStorageProxy.retrieveReplicaStorageInfo(key);
             
             replicaInfo = storageInfo.getReplicaInfo();
-            if (null == tmp) {
-                Object target = stateHandler.restoreFromFullStateTransient(key, storageInfo.getSerializedPayload());
-                stateHandler.resetObjectState(target);
-                replicaInfo.setPayload(target);
-            } else {
-                replicaInfo.setPayload(tmp);
-            }
+            Object target = stateHandler.restoreFromFullStateTransient(key, storageInfo.getSerializedPayload());
+            stateHandler.resetObjectState(target);
+            replicaInfo.setPayload(target);
         } catch (ServiceInvocationException e) {
             if (e.isMessageExchangeException()) {
-                if (null == tmp) {
-                    return null;
-                }
-                synchronized (keyToReplicaInfo) {
-                    replicaInfo = new ReplicaInfo(localPeer, new Peer[0], tmp);
-                    keyToReplicaInfo.put(key, replicaInfo);
-                }
+                return null;
             } else {
                 throw new ReplicationKeyNotFoundException(key, e);
             }
         }
-        
+
         replicaInfo = reOrganizeSecondaries(key, replicaInfo);
         return replicaInfo.getPayload();
     }
 
-    public boolean releasePrimary(Object key) {
-        Object object;
+    public ReplicaInfo releaseReplicaInfo(Object key, Peer newPrimary) throws ReplicationKeyNotFoundException {
+        ReplicaInfo replicaInfo;
         synchronized (keyToReplicaInfo) {
-            object = keyToReplicaInfo.remove(key);
+            replicaInfo = keyToReplicaInfo.remove(key);
         }
-        // we do not need to inform the secondaries that this manager is
-        // no more owning the primary. The manager acquiring the primary
-        // will re-organize the secondaries itself.
-        return object != null;
+        if (null == replicaInfo) {
+            throw new ReplicationKeyNotFoundException(key);
+        }
+
+        Peer[] secondaries = replicaInfo.getSecondaries();
+        secondaries = backingStrategy.reElectSecondariesForSwap(key, newPrimary, secondaries);
+        replicaInfo = new ReplicaInfo(replicaInfo, newPrimary, secondaries);
+        
+        for (int i = 0; i < secondaries.length; i++) {
+            if (secondaries[i].equals(localPeer)) {
+                byte[] fullState = stateHandler.extractFullState(key, replicaInfo.getPayload());
+                localReplicaStorage.insert(key, new ReplicaStorageInfo(replicaInfo, fullState));
+                break;
+            }
+        }
+        
+        return replicaInfo;
     }
     
-    protected void cascadeCreate(Object key, ReplicaInfo replicaInfo, byte[] updatedState, BackOffCapableTask task) {
+    public void insertReplicaInfo(Object key, ReplicaInfo replicaInfo) throws ReplicationKeyAlreadyExistsException {
+        synchronized (keyToReplicaInfo) {
+            if (keyToReplicaInfo.containsKey(key)) {
+                throw new ReplicationKeyAlreadyExistsException(key);
+            }
+            keyToReplicaInfo.put(key, replicaInfo);
+        }
+        localReplicaStorage.mergeDestroyIfExist(key);
+        
+        reOrganizeSecondaries(key, replicaInfo);
+    }
+
+    public Set<Object> getManagedReplicaInfoKeys() {
+        synchronized (keyToReplicaInfo) {
+            return new HashSet<Object>(keyToReplicaInfo.keySet());
+        }
+    }
+    
+    protected void cascadeCreate(Object key, ReplicaInfo replicaInfo, byte[] fullState, BackOffCapableTask task) {
         ReplicaStorage storage = proxyFactory.newReplicaStorageProxy(replicaInfo.getSecondaries());
         try {
-            storage.mergeCreate(key, new ReplicaStorageInfo(replicaInfo, updatedState));
+            storage.mergeCreate(key, new ReplicaStorageInfo(replicaInfo, fullState));
             task.complete();
         } catch (ServiceInvocationException e) {
             if (e.isMessageExchangeException()) {
@@ -311,14 +333,14 @@ public class SyncReplicationManager implements ReplicationManager {
 
         protected final Object key;
         private final Object tmp;
-        private final byte[] updatedState;
+        private final byte[] fullState;
         private volatile int currentAttempt;
         private volatile ReplicaInfo replicaInfo;
 
-        private CreateReplicaTask(Object key, Object tmp, byte[] updatedState) {
+        private CreateReplicaTask(Object key, Object tmp, byte[] fullState) {
             this.key = key;
             this.tmp = tmp;
-            this.updatedState = updatedState;
+            this.fullState = fullState;
         }
 
         public void backoff() {
@@ -347,7 +369,7 @@ public class SyncReplicationManager implements ReplicationManager {
                 replicaInfo.updateSecondaries(secondaries);
             }
             if (secondaries.length != 0) {
-                cascadeCreate(key, replicaInfo, updatedState, this);
+                cascadeCreate(key, replicaInfo, fullState, this);
             } else {
                 complete();
             }
@@ -360,5 +382,5 @@ public class SyncReplicationManager implements ReplicationManager {
         }
 
     }
-    
+
 }

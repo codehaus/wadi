@@ -55,6 +55,19 @@ public class SyncMemoryReplicaStorage implements ReplicaStorage {
         }
     }
     
+    public void insert(Object key, ReplicaStorageInfo insertStorageInfo) throws ReplicaKeyAlreadyExistsException {
+        synchronized (keyToStorageInfo) {
+            if (keyToStorageInfo.containsKey(key)) {
+                throw new ReplicaKeyAlreadyExistsException(key);
+                
+            }
+            keyToStorageInfo.put(key, insertStorageInfo);
+        }
+        
+        Object payload = objectStateHandler.restoreFromFullState(key, insertStorageInfo.getSerializedPayload());
+        insertStorageInfo.getReplicaInfo().setPayload(payload);
+    }
+    
     public void mergeCreate(Object key, ReplicaStorageInfo createStorageInfo) throws ReplicaKeyAlreadyExistsException {
         ReplicaStorageInfo storageInfo;
         synchronized (keyToStorageInfo) {
@@ -99,6 +112,17 @@ public class SyncMemoryReplicaStorage implements ReplicaStorage {
         }
         if (null == remove) {
             log.warn("Key [" + key + "] is not defined; no replica to be removed.");
+            return;
+        }
+        objectStateHandler.discardState(key, remove.getReplicaInfo().getPayload());
+    }
+    
+    public void mergeDestroyIfExist(Object key) {
+        ReplicaStorageInfo remove;
+        synchronized (keyToStorageInfo) {
+            remove = keyToStorageInfo.remove(key);
+        }
+        if (null == remove) {
             return;
         }
         objectStateHandler.discardState(key, remove.getReplicaInfo().getPayload());

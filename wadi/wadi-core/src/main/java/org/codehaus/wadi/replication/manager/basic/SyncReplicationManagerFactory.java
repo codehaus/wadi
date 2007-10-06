@@ -17,6 +17,7 @@ package org.codehaus.wadi.replication.manager.basic;
 
 import org.codehaus.wadi.replication.manager.ReplicationManager;
 import org.codehaus.wadi.replication.manager.ReplicationManagerFactory;
+import org.codehaus.wadi.replication.storage.ReplicaStorage;
 import org.codehaus.wadi.replication.strategy.BackingStrategy;
 import org.codehaus.wadi.replication.strategy.BackingStrategyFactory;
 import org.codehaus.wadi.servicespace.ServiceSpace;
@@ -28,18 +29,22 @@ import org.codehaus.wadi.servicespace.ServiceSpace;
 public class SyncReplicationManagerFactory implements ReplicationManagerFactory {
 
     private final ObjectStateHandler stateHandler;
+    private final ReplicaStorage localReplicaStorage;
     
-    public SyncReplicationManagerFactory(ObjectStateHandler stateHandler) {
+    public SyncReplicationManagerFactory(ObjectStateHandler stateHandler, ReplicaStorage localReplicaStorage) {
         if (null == stateHandler) {
             throw new IllegalArgumentException("stateHandler is required");
+        } else if (null == localReplicaStorage) {
+            throw new IllegalArgumentException("localReplicaStorage is required");
         }
         this.stateHandler = stateHandler;
+        this.localReplicaStorage = localReplicaStorage;
     }
 
     public ReplicationManager factory(ServiceSpace serviceSpace, BackingStrategyFactory backingStrategyFactory) {
         backingStrategyFactory.setServiceSpace(serviceSpace);
         BackingStrategy backingStrategy = backingStrategyFactory.factory();
-        return new SyncReplicationManager(serviceSpace, stateHandler, backingStrategy);
+        return new SyncReplicationManager(serviceSpace, stateHandler, backingStrategy, localReplicaStorage);
     }
 
 }

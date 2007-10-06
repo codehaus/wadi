@@ -19,6 +19,7 @@ package org.codehaus.wadi.location.session;
 import java.io.Serializable;
 
 import org.codehaus.wadi.core.motable.Motable;
+import org.codehaus.wadi.replication.common.ReplicaInfo;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -26,21 +27,41 @@ import org.codehaus.wadi.core.motable.Motable;
  */
 public class MoveSMToIM implements Serializable {
 
-	protected boolean sessionBuzy;
-	protected Motable motable;
+	protected final boolean sessionBuzy;
+	protected final Motable motable;
+    private final ReplicaInfo replicaInfo;
 
-	public MoveSMToIM(Motable motable) {
+    public MoveSMToIM() {
+        motable = null;
+        replicaInfo = null;
+        sessionBuzy = false;
+    }
+    
+	public MoveSMToIM(Motable motable, ReplicaInfo replicaInfo) {
+	    if (null == motable) {
+            throw new IllegalArgumentException("motable is required");
+        }
 		this.motable = motable;
+        this.replicaInfo = replicaInfo;
+        
+        sessionBuzy = false;
 	}
 
 	public MoveSMToIM(boolean sessionBuzy) {
 	    this.sessionBuzy = sessionBuzy;
+	    
+	    motable = null;
+	    replicaInfo = null;
 	}
 	
 	public Motable getMotable() {
 		return motable;
 	}
 
+	public ReplicaInfo getReplicaInfo() {
+	    return replicaInfo;
+	}
+	
     public boolean isSessionBuzy() {
         return sessionBuzy;
     }
@@ -48,5 +69,5 @@ public class MoveSMToIM implements Serializable {
     public String toString() {
         return "<MoveSMToIM:"+motable+">";
     }
-    
+
 }

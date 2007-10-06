@@ -16,7 +16,6 @@
 package org.codehaus.wadi.replication.manager.basic;
 
 import org.codehaus.wadi.group.Peer;
-import org.codehaus.wadi.replication.manager.ReplicationManager;
 import org.codehaus.wadi.replication.storage.ReplicaStorage;
 import org.codehaus.wadi.servicespace.ServiceProxyFactory;
 
@@ -25,8 +24,6 @@ import org.codehaus.wadi.servicespace.ServiceProxyFactory;
  * @version $Revision: 2340 $
  */
 public interface ProxyFactory {
-    ReplicationManager newReplicationManagerProxy();
-
     ServiceProxyFactory newReplicaStorageServiceProxyFactory();
     
     ReplicaStorage newReplicaStorageProxy();

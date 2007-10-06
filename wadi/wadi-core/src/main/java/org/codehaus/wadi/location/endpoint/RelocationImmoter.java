@@ -27,6 +27,8 @@ import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.impl.EnvelopeHelper;
 import org.codehaus.wadi.location.session.MovePMToSM;
 import org.codehaus.wadi.location.session.MoveSMToIM;
+import org.codehaus.wadi.replication.common.ReplicaInfo;
+import org.codehaus.wadi.replication.manager.ReplicationManager;
 
 /**
  * We receive a RelocationRequest and pass a RelocationImmoter down the
@@ -38,17 +40,28 @@ import org.codehaus.wadi.location.session.MoveSMToIM;
  */
 class RelocationImmoter implements Immoter {
     private final Dispatcher dispatcher;
-    private final long inactiveTime;
     protected final MovePMToSM pmToSm;
+    private final ReplicationManager replicationManager;
+    private final long inactiveTime;
+
     protected boolean sessionFound;
     protected boolean successfulRelocation;
+    protected Motable motableToRelocate;
 
     public RelocationImmoter(Dispatcher dispatcher,
-            Envelope message,
             MovePMToSM request,
+            ReplicationManager replicationManager,
             long inactiveTime) {
+        if (null == dispatcher) {
+            throw new IllegalArgumentException("dispatcher is required");
+        } else if (null == request) {
+            throw new IllegalArgumentException("request is required");
+        } else if (null == replicationManager) {
+            throw new IllegalArgumentException("replicationManager is required");
+        }
         this.dispatcher = dispatcher;
         this.pmToSm = request;
+        this.replicationManager = replicationManager;
         this.inactiveTime = inactiveTime;
     }
 
@@ -62,6 +75,7 @@ class RelocationImmoter implements Immoter {
     }
     
     public boolean contextualise(Invocation invocation, String id, Motable immotable) throws InvocationException {
+        motableToRelocate = immotable;
         return true;
     }
 
@@ -72,6 +86,10 @@ class RelocationImmoter implements Immoter {
     public boolean isSuccessfulRelocation() {
         return successfulRelocation;
     }
+    
+    public Motable getMotableToRelocate() {
+        return motableToRelocate;
+    }
 
     class PMToIMEmotable extends AbstractMotable {
 
@@ -81,22 +99,26 @@ class RelocationImmoter implements Immoter {
 
         public void setBodyAsByteArray(byte[] bytes) throws Exception {
             Motable immotable = new SimpleMotable();
+            String name = getAbstractMotableMemento().getName();
             immotable.init(memento.getCreationTime(),
                 memento.getLastAccessedTime(),
                 memento.getMaxInactiveInterval(),
-                getAbstractMotableMemento().getName());
+                name);
             immotable.setBodyAsByteArray(bytes);
 
-            Envelope reply = dispatcher.createEnvelope();
-            reply.setPayload(new MoveSMToIM(immotable));
-            EnvelopeHelper.setAsReply(reply);
-            
             Peer imPeer = pmToSm.getIMPeer();
+            ReplicaInfo replicaInfo = replicationManager.releaseReplicaInfo(name, imPeer);
+            
+            Envelope reply = dispatcher.createEnvelope();
+            reply.setPayload(new MoveSMToIM(immotable, replicaInfo));
+            EnvelopeHelper.setAsReply(reply);
 
             // send on state from StateMaster to InvocationMaster...
             Envelope ackFromIM = dispatcher.exchangeSend(imPeer.getAddress(), reply, inactiveTime, pmToSm.getIMCorrelationId());
             if (null != ackFromIM) {
                 successfulRelocation = true;
+            } else {
+                replicationManager.insertReplicaInfo(name, replicaInfo);
             }
         }
 

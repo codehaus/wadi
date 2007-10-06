@@ -15,6 +15,11 @@
  */
 package org.codehaus.wadi.replication.manager.basic;
 
+import java.util.Collections;
+import java.util.Set;
+
+import org.codehaus.wadi.group.Peer;
+import org.codehaus.wadi.replication.common.ReplicaInfo;
 import org.codehaus.wadi.replication.manager.InternalReplicationManagerException;
 import org.codehaus.wadi.replication.manager.ReplicationKeyAlreadyExistsException;
 import org.codehaus.wadi.replication.manager.ReplicationKeyNotFoundException;
@@ -26,21 +31,21 @@ import org.codehaus.wadi.replication.manager.ReplicationManager;
  */
 public class NoOpReplicationManager implements ReplicationManager {
 
+    public ReplicaInfo releaseReplicaInfo(Object key, Peer newPrimary) throws ReplicationKeyNotFoundException {
+        return null;
+    }
+
+    public void insertReplicaInfo(Object key, ReplicaInfo replicaInfo) throws ReplicationKeyAlreadyExistsException {
+    }
+    
     public Object retrieveReplica(Object key) throws ReplicationKeyNotFoundException, InternalReplicationManagerException {
         return null;
     }
     
-    public void acquirePrimary(Object key, Object tmp) {
-    }
-
     public void create(Object key, Object tmp) throws ReplicationKeyAlreadyExistsException, InternalReplicationManagerException {
     }
 
     public void destroy(Object key) {
-    }
-
-    public boolean releasePrimary(Object key) {
-        return false;
     }
 
     public void update(Object key, Object tmp) throws ReplicationKeyNotFoundException, InternalReplicationManagerException {
@@ -52,4 +57,9 @@ public class NoOpReplicationManager implements ReplicationManager {
     public void stop() throws Exception {
     }
 
+    @SuppressWarnings("unchecked")
+    public Set<Object> getManagedReplicaInfoKeys() {
+        return Collections.EMPTY_SET;
+    }
+    
 }
