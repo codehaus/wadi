@@ -59,13 +59,6 @@ public class PartitionInfo implements Serializable {
         return null != owner;
     }
     
-    public void setOwner(Peer owner) {
-        if (null == owner) {
-            throw new IllegalStateException("No owner is defined");
-        }
-        this.owner = owner;
-    }
-    
     public Peer getOwner() {
         if (null == owner) {
             throw new IllegalStateException("No owner is defined");
