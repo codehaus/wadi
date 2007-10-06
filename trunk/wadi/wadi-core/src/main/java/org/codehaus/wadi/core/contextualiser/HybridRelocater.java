@@ -39,6 +39,8 @@ import org.codehaus.wadi.location.session.MoveIMToSM;
 import org.codehaus.wadi.location.session.MovePMToIM;
 import org.codehaus.wadi.location.session.MovePMToIMInvocation;
 import org.codehaus.wadi.location.session.MoveSMToIM;
+import org.codehaus.wadi.replication.common.ReplicaInfo;
+import org.codehaus.wadi.replication.manager.ReplicationManager;
 import org.codehaus.wadi.servicespace.ServiceSpace;
 
 /**
@@ -53,14 +55,20 @@ public class HybridRelocater implements Relocater {
 	private final Dispatcher dispatcher;
     private final LocalPeer localPeer;
 	private final PartitionManager partitionManager;
+	private final ReplicationManager replicationManager;
 
-    public HybridRelocater(ServiceSpace serviceSpace, PartitionManager partitionManager) {
+    public HybridRelocater(ServiceSpace serviceSpace,
+            PartitionManager partitionManager,
+            ReplicationManager replicationManager) {
         if (null == serviceSpace) {
             throw new IllegalArgumentException("serviceSpace is required");
         } else if (null == partitionManager) {
             throw new IllegalArgumentException("partitionManager is required");
+        } else if (null == replicationManager) {
+            throw new IllegalArgumentException("replicationManager is required");
         }
         this.partitionManager = partitionManager;
+        this.replicationManager = replicationManager;
 
         dispatcher = serviceSpace.getDispatcher();
         localPeer = dispatcher.getCluster().getLocalPeer();
@@ -143,6 +151,10 @@ public class HybridRelocater implements Relocater {
             } catch (MessageExchangeException e) {
                 log.warn("Session migration has not been acknowledged. SM has disappeared.", e);
             }
+            
+            ReplicaInfo replicaInfo = req.getReplicaInfo();
+            replicaInfo.setPayload(immotable);
+            replicationManager.insertReplicaInfo(name, replicaInfo);
             
             return immoter.contextualise(invocation, name, immotable);
         }

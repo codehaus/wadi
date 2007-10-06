@@ -29,6 +29,7 @@ public abstract class AbstractTestRelocation extends AbstractTwoNodesTest {
 
     public void testSuccessfulSessionRelocation() throws Exception {
         Session session = red.getManager().create(null);
+        session.onEndProcessing();
 
         session = executeTestSuccessfulRelocation(session);
         

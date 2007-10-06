@@ -16,14 +16,12 @@
 package org.codehaus.wadi.replication.manager.basic;
 
 import org.codehaus.wadi.group.Peer;
-import org.codehaus.wadi.replication.manager.ReplicationManager;
 import org.codehaus.wadi.replication.storage.ReplicaStorage;
 import org.codehaus.wadi.servicespace.InvocationMetaData;
 import org.codehaus.wadi.servicespace.ServiceProxy;
 import org.codehaus.wadi.servicespace.ServiceProxyFactory;
 import org.codehaus.wadi.servicespace.ServiceSpace;
 import org.codehaus.wadi.servicespace.replyaccessor.DoNotReplyWithNull;
-import org.codehaus.wadi.servicespace.resultcombiner.FirstSuccessThenFailureCombiner;
 
 /**
  * 
@@ -39,15 +37,6 @@ public class BasicProxyFactory implements ProxyFactory {
             throw new IllegalArgumentException("serviceSpace is required");
         }
         this.serviceSpace = serviceSpace;
-    }
-
-    public ReplicationManager newReplicationManagerProxy() {
-        ServiceProxyFactory repManagerProxyFactory = serviceSpace.getServiceProxyFactory(ReplicationManager.NAME, 
-            new Class[] {ReplicationManager.class});
-        InvocationMetaData invocationMetaData = repManagerProxyFactory.getInvocationMetaData();
-        invocationMetaData.setClusterAggregation(true);
-        invocationMetaData.setInvocationResultCombiner(FirstSuccessThenFailureCombiner.COMBINER);
-        return (ReplicationManager) repManagerProxyFactory.getProxy();
     }
 
     public ServiceProxyFactory newReplicaStorageServiceProxyFactory() {

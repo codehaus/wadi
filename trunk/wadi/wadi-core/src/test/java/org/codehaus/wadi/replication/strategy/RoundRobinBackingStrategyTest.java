@@ -77,6 +77,34 @@ public class RoundRobinBackingStrategyTest extends RMockTestCase {
         assertSecondaries(new Peer[] {peer4, peer1}, actualSecondaries);
     }
     
+    public void testSwapWhenNewPrimaryWasSecondary() throws Exception {
+        strategy.addSecondaries(new Peer[] {peer1, peer2, peer3});
+        
+        Peer[] newSecondaries = strategy.reElectSecondariesForSwap("key", peer1, new Peer[] {peer1, peer2});
+        assertSecondaries(new Peer[] {localPeer, peer2}, newSecondaries);
+    }
+    
+    public void testSwapWhenNewPrimaryWasNotSecondaryAndEnoughReplica() throws Exception {
+        strategy.addSecondaries(new Peer[] {peer1, peer2, peer3});
+        
+        Peer[] newSecondaries = strategy.reElectSecondariesForSwap("key", peer1, new Peer[] {peer2, peer3});
+        assertSecondaries(new Peer[] {peer2, peer3}, newSecondaries);
+    }
+    
+    public void testSwapWhenNewPrimaryWasNotSecondaryAndNotEnoughReplica() throws Exception {
+        strategy.addSecondaries(new Peer[] {peer1, peer2, peer3});
+        
+        Peer[] newSecondaries = strategy.reElectSecondariesForSwap("key", peer1, new Peer[] {peer2});
+        assertSecondaries(new Peer[] {peer2, localPeer}, newSecondaries);
+    }
+    
+    public void testSwapWhenNewPrimaryWasSecondaryAndNotEnoughReplica() throws Exception {
+        strategy.addSecondaries(new Peer[] {peer1, peer2, peer3});
+        
+        Peer[] newSecondaries = strategy.reElectSecondariesForSwap("key", peer1, new Peer[] {peer1});
+        assertSecondaries(new Peer[] {localPeer}, newSecondaries);
+    }
+    
     private void assertSecondaries(Peer[] expectedPeers, Peer[] actualPeers) {
         assertEquals(new HashSet(Arrays.asList(expectedPeers)), new HashSet(Arrays.asList(actualPeers)));
     }

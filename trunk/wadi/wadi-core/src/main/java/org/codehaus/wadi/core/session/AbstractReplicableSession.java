@@ -17,7 +17,6 @@
 package org.codehaus.wadi.core.session;
 
 import org.codehaus.wadi.core.manager.Manager;
-import org.codehaus.wadi.core.motable.RehydrationException;
 import org.codehaus.wadi.core.util.Streamer;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
 
@@ -40,19 +39,6 @@ public abstract class AbstractReplicableSession extends DistributableSession {
             throw new IllegalArgumentException("replicationManager is required");
         }
         this.replicationManager = replicationManager;
-    }
-
-    public synchronized void rehydrate(long creationTime,
-        long lastAccessedTime,
-        int maxInactiveInterval,
-        String name,
-        byte[] body) throws RehydrationException {
-        super.rehydrate(creationTime,
-            lastAccessedTime,
-            maxInactiveInterval,
-            name,
-            body);
-        replicationManager.acquirePrimary(getName(), this);
     }
 
     public synchronized void onEndProcessing() {

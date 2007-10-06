@@ -26,11 +26,14 @@ import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.MessageExchangeException;
+import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.location.partitionmanager.Partition;
 import org.codehaus.wadi.location.partitionmanager.PartitionManager;
 import org.codehaus.wadi.location.session.MoveIMToPM;
 import org.codehaus.wadi.location.session.MoveIMToSM;
 import org.codehaus.wadi.location.session.MoveSMToIM;
+import org.codehaus.wadi.replication.common.ReplicaInfo;
+import org.codehaus.wadi.replication.manager.ReplicationManager;
 import org.codehaus.wadi.servicespace.ServiceSpace;
 
 import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
@@ -47,7 +50,7 @@ import com.agical.rmock.extension.junit.RMockTestCase;
 public class HybridRelocaterTest extends RMockTestCase {
 
     private ServiceSpace serviceSpace;
-    private PartitionManager manager;
+    private PartitionManager partitionManager;
     private Invocation invocation;
     private long exclusiveSessionLockWaitTime;
     private Immoter immoter;
@@ -55,6 +58,7 @@ public class HybridRelocaterTest extends RMockTestCase {
     private Cluster cluster;
     private LocalPeer localPeer;
     private String key;
+    private ReplicationManager replicationManager;
 
     protected void setUp() throws Exception {
         serviceSpace = (ServiceSpace) mock(ServiceSpace.class);
@@ -65,7 +69,8 @@ public class HybridRelocaterTest extends RMockTestCase {
         localPeer = cluster.getLocalPeer();
         modify().multiplicity(expect.atLeast(0));
         
-        manager = (PartitionManager) mock(PartitionManager.class);
+        partitionManager = (PartitionManager) mock(PartitionManager.class);
+        replicationManager = (ReplicationManager) mock(ReplicationManager.class);
         
         invocation = (Invocation) mock(Invocation.class);
         invocation.getExclusiveSessionLockWaitTime();
@@ -83,12 +88,14 @@ public class HybridRelocaterTest extends RMockTestCase {
         
         Motable relocatedMotable = (Motable) mock(Motable.class);
         
-        Partition partition = manager.getPartition(key);
+        Partition partition = partitionManager.getPartition(key);
         recordPartitionExchange(shuttingDown, relocatable, partition);
         Envelope envelope = (Envelope) mock(Envelope.class);
         modify().returnValue(envelope);
         envelope.getPayload();
-        modify().returnValue(new MoveSMToIM(relocatedMotable));
+        
+        ReplicaInfo replicaInfo = (ReplicaInfo) intercept(ReplicaInfo.class, new Object[] {localPeer, new Peer[0], relocatedMotable}, "ReplicaInfo");
+        modify().returnValue(new MoveSMToIM(relocatedMotable, replicaInfo));
 
         immoter.newMotable(relocatedMotable);
         Session relocatedSession = (Session) mock(Session.class);
@@ -109,6 +116,9 @@ public class HybridRelocaterTest extends RMockTestCase {
         immoter.immote(relocatedMotable, relocatedSession);
         modify().returnValue(true);
         
+        replicaInfo.setPayload(relocatedSession);
+        replicationManager.insertReplicaInfo(key, replicaInfo);
+        
         immoter.contextualise(invocation, key, relocatedSession);
         modify().returnValue(true);
 
@@ -116,7 +126,7 @@ public class HybridRelocaterTest extends RMockTestCase {
         
         startVerification();
         
-        HybridRelocater relocater = new HybridRelocater(serviceSpace, manager);
+        HybridRelocater relocater = new HybridRelocater(serviceSpace, partitionManager, replicationManager);
         boolean relocated = relocater.relocate(invocation, key, immoter, shuttingDown);
         assertTrue(relocated);
     }
@@ -125,15 +135,15 @@ public class HybridRelocaterTest extends RMockTestCase {
         boolean shuttingDown = false;
         boolean relocatable = true;
         
-        Partition partition = manager.getPartition(key);
+        Partition partition = partitionManager.getPartition(key);
         recordPartitionExchange(shuttingDown, relocatable, partition);
         Envelope envelope = (Envelope) mock(Envelope.class);
         modify().returnValue(envelope);
         envelope.getPayload();
-        modify().returnValue(new MoveSMToIM(null));
+        modify().returnValue(new MoveSMToIM());
         startVerification();
         
-        HybridRelocater relocater = new HybridRelocater(serviceSpace, manager);
+        HybridRelocater relocater = new HybridRelocater(serviceSpace, partitionManager, replicationManager);
         boolean relocated = relocater.relocate(invocation, key, immoter, shuttingDown);
         assertFalse(relocated);
     }
@@ -142,7 +152,7 @@ public class HybridRelocaterTest extends RMockTestCase {
         boolean shuttingDown = false;
         boolean relocatable = true;
         
-        Partition partition = manager.getPartition(key);
+        Partition partition = partitionManager.getPartition(key);
         recordPartitionExchange(shuttingDown, relocatable, partition);
         Envelope envelope = (Envelope) mock(Envelope.class);
         modify().returnValue(envelope);
@@ -151,7 +161,7 @@ public class HybridRelocaterTest extends RMockTestCase {
 
         startVerification();
         
-        HybridRelocater relocater = new HybridRelocater(serviceSpace, manager);
+        HybridRelocater relocater = new HybridRelocater(serviceSpace, partitionManager, replicationManager);
         try {
             relocater.relocate(invocation, key, immoter, shuttingDown);
             fail();

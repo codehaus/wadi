@@ -85,6 +85,28 @@ public class RoundRobinBackingStrategy implements BackingStrategy {
         return electSecondaries(key);
     }
 
+    public Peer[] reElectSecondariesForSwap(Object key, Peer newPrimary, Peer[] secondaries) {
+        Peer[] newSecondaries = secondaries;
+        
+        boolean newPrimaryWasSecondary = false;
+        for (int i = 0; i < newSecondaries.length; i++) {
+            if (newSecondaries[i].equals(newPrimary)) {
+                newSecondaries[i] = localPeer;
+                newPrimaryWasSecondary = true;
+                break;
+            }
+        }
+        
+        if (!newPrimaryWasSecondary && newSecondaries.length < nbReplica) {
+            Peer[] tmpNewSecondaries = new Peer[newSecondaries.length + 1];
+            System.arraycopy(newSecondaries, 0, tmpNewSecondaries, 0, newSecondaries.length);
+            tmpNewSecondaries[newSecondaries.length] = localPeer;
+            newSecondaries = tmpNewSecondaries;
+        }
+        
+        return newSecondaries;
+    }
+    
     public void addSecondaries(Peer[] newSecondaries) {
         synchronized (secondaries) {
             for (int i = 0; i < newSecondaries.length; i++) {

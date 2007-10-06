@@ -109,6 +109,7 @@ public class StackContext {
     protected StateManager stateManager;
     protected Timer timer;
     protected ReplicationManager replicationManager;
+    protected ReplicaStorage replicaStorage;
     protected SessionFactory sessionFactory;
     protected ClusteredManager manager;
     protected ConcurrentMotableMap memoryMap;
@@ -176,11 +177,13 @@ public class StackContext {
         Streamer streamer = newStreamer();
         
         ObjectStateHandler objectStateManager = newObjectStateHandler(streamer);
-        repManagerFactory = newReplicationManagerFactory(objectStateManager);
-        replicationManager = newReplicationManager();
         
         repStorageFactory = newReplicaStorageFactory(objectStateManager);
+        replicaStorage = repStorageFactory.factory(serviceSpace);
         
+        repManagerFactory = newReplicationManagerFactory(objectStateManager);
+        replicationManager = newReplicationManager();
+
         sessionFactory = newSessionFactory(streamer);
         objectStateManager.setObjectFactory(sessionFactory);
         
@@ -247,7 +250,7 @@ public class StackContext {
         if (disableReplication) {
             return new NoOpReplicationManagerFactory();
         }
-        return new SyncReplicationManagerFactory(objectStateManager);
+        return new SyncReplicationManagerFactory(objectStateManager, replicaStorage);
     }
 
     protected void registerStackExplorer(ContextualiserStackExplorer stackExplorer) throws ServiceAlreadyRegisteredException {
@@ -284,8 +287,6 @@ public class StackContext {
     }
 
     protected void registerReplicaStorage() throws ServiceAlreadyRegisteredException {
-        ReplicaStorage replicaStorage = repStorageFactory.factory(serviceSpace);
-        
         ServiceRegistry serviceRegistry = serviceSpace.getServiceRegistry();
         serviceRegistry.register(ReplicaStorage.NAME, replicaStorage);
     }
@@ -303,6 +304,7 @@ public class StackContext {
     protected void registerMovePMToSMEndPoint(Contextualiser contextualiser) throws ServiceAlreadyRegisteredException {
         MovePMToSMEndPoint movePMToSMEndPoint = new MovePMToSMEndPoint(serviceSpace, 
             contextualiser, 
+            replicationManager,
             simplePartitionManagerTiming.getSessionRelocationIMToSMAckWaitTime());
 
         ServiceRegistry serviceRegistry = serviceSpace.getServiceRegistry();
@@ -395,7 +397,7 @@ public class StackContext {
 
     protected Contextualiser newClusteredContextualiser(Contextualiser contextualiser) {
         return new ClusterContextualiser(contextualiser, 
-                new HybridRelocater(serviceSpace, partitionManager),
+                new HybridRelocater(serviceSpace, partitionManager, replicationManager),
                 partitionManager, 
                 stateManager, 
                 new SynchronizedBoolean(false));

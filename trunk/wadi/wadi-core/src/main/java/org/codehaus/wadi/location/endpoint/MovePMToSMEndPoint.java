@@ -29,6 +29,7 @@ import org.codehaus.wadi.group.impl.ServiceEndpointBuilder;
 import org.codehaus.wadi.location.session.MovePMToSM;
 import org.codehaus.wadi.location.session.MoveSMToIM;
 import org.codehaus.wadi.location.session.MoveSMToPM;
+import org.codehaus.wadi.replication.manager.ReplicationManager;
 import org.codehaus.wadi.servicespace.ServiceName;
 import org.codehaus.wadi.servicespace.ServiceSpace;
 
@@ -46,17 +47,21 @@ public class MovePMToSMEndPoint implements Lifecycle, MovePMToSMEndPointMessageL
     private final Contextualiser contextualiser;
     private final long sessionRelocationIMToSMAckWaitTime;
     private final ServiceEndpointBuilder endpointBuilder;
-
+    private final ReplicationManager replicationManager;
 
     public MovePMToSMEndPoint(ServiceSpace serviceSpace,
             Contextualiser contextualiser,
+            ReplicationManager replicationManager,
             long sessionRelocationIMToSMAckWaitTime) {
         if (null == serviceSpace) {
             throw new IllegalArgumentException("serviceSpace is required");
         } else if (null == contextualiser) {
             throw new IllegalArgumentException("contextualiser is required");
+        } else if (null == replicationManager) {
+            throw new IllegalArgumentException("replicationManager is required");
         }
         this.contextualiser = contextualiser;
+        this.replicationManager = replicationManager;
         this.sessionRelocationIMToSMAckWaitTime = sessionRelocationIMToSMAckWaitTime;
 
         dispatcher = serviceSpace.getDispatcher();
@@ -77,8 +82,8 @@ public class MovePMToSMEndPoint implements Lifecycle, MovePMToSMEndPointMessageL
         Object key = request.getKey();
         try {
             RelocationImmoter promoter = new RelocationImmoter(dispatcher,
-                    message,
                     request,
+                    replicationManager,
                     sessionRelocationIMToSMAckWaitTime);
             
             Invocation invocation = new BasicInvocation((String) key, request.getExclusiveSessionLockWaitTime());
@@ -88,7 +93,7 @@ public class MovePMToSMEndPoint implements Lifecycle, MovePMToSMEndPointMessageL
             if (!successfulRelocation && !promoter.isSessionFound()) {
                 log.warn("Motable [" + key + "] has just been destroyed");
                 // send on null state from StateMaster to InvocationMaster...
-                replyToInvocationMaster(request, new MoveSMToIM(false));
+                replyToInvocationMaster(request, new MoveSMToIM());
             }
         } catch (MotableBusyException e) {
             sessionBuzy = true;
