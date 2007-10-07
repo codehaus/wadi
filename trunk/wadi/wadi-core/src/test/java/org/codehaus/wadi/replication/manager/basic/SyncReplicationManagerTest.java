@@ -28,6 +28,7 @@ import org.codehaus.wadi.group.vm.VMLocalPeer;
 import org.codehaus.wadi.group.vm.VMPeer;
 import org.codehaus.wadi.replication.common.ReplicaInfo;
 import org.codehaus.wadi.replication.common.ReplicaStorageInfo;
+import org.codehaus.wadi.replication.manager.ReplicationKeyAlreadyExistsException;
 import org.codehaus.wadi.replication.manager.ReplicationKeyNotFoundException;
 import org.codehaus.wadi.replication.storage.ReplicaStorage;
 import org.codehaus.wadi.replication.strategy.BackingStrategy;
@@ -110,7 +111,7 @@ public class SyncReplicationManagerTest extends RMockTestCase {
         endSection();
         startVerification();
         
-        SyncReplicationManager manager = newBasicReplicationManager();
+        SyncReplicationManager manager = newReplicationManager();
         manager.start();
     }
     
@@ -123,7 +124,7 @@ public class SyncReplicationManagerTest extends RMockTestCase {
         endSection();
         startVerification();
         
-        newBasicReplicationManager();
+        newReplicationManager();
         
         receiveEvent(peer3, LifecycleState.AVAILABLE);
         receiveEvent(peer4, LifecycleState.STARTED);
@@ -144,7 +145,7 @@ public class SyncReplicationManagerTest extends RMockTestCase {
         
         startVerification();
         
-        SyncReplicationManager manager = newBasicReplicationManager();
+        SyncReplicationManager manager = newReplicationManager();
         manager.create(key, instance);
         assertTrue(manager.getManagedReplicaInfoKeys().contains(key));
     }
@@ -171,7 +172,7 @@ public class SyncReplicationManagerTest extends RMockTestCase {
         
         startVerification();
         
-        SyncReplicationManager manager = newBasicReplicationManager();
+        SyncReplicationManager manager = newReplicationManager();
         manager.update(key, newInstance);
         assertTrue(manager.getManagedReplicaInfoKeys().contains(key));
     }
@@ -184,7 +185,7 @@ public class SyncReplicationManagerTest extends RMockTestCase {
 
         startVerification();
         
-        SyncReplicationManager manager = newBasicReplicationManager();
+        SyncReplicationManager manager = newReplicationManager();
         manager.destroy(key);
         assertFalse(manager.getManagedReplicaInfoKeys().contains(key));
     }
@@ -196,7 +197,7 @@ public class SyncReplicationManagerTest extends RMockTestCase {
         
         startVerification();
         
-        SyncReplicationManager manager = newBasicReplicationManager();
+        SyncReplicationManager manager = newReplicationManager();
         Object retrieveReplica = manager.retrieveReplica(key);
         assertNull(retrieveReplica);
     }
@@ -217,7 +218,7 @@ public class SyncReplicationManagerTest extends RMockTestCase {
         modify().returnValue(new Peer[] {peer4});
         startVerification();
         
-        SyncReplicationManager manager = newBasicReplicationManager();
+        SyncReplicationManager manager = newReplicationManager();
         Object retrieveReplica = manager.retrieveReplica(key);
         assertSame(instance, retrieveReplica);
     }
@@ -252,7 +253,7 @@ public class SyncReplicationManagerTest extends RMockTestCase {
         
         startVerification();
         
-        SyncReplicationManager manager = newBasicReplicationManager();
+        SyncReplicationManager manager = newReplicationManager();
         manager.releaseReplicaInfo(key, peer3);
     }
     
@@ -268,14 +269,14 @@ public class SyncReplicationManagerTest extends RMockTestCase {
         
         startVerification();
         
-        SyncReplicationManager manager = newBasicReplicationManager();
+        SyncReplicationManager manager = newReplicationManager();
         manager.releaseReplicaInfo(key, peer3);
     }
     
     public void testReleaseUnknownReplicaInfoFails() throws Exception {
         startVerification();
         
-        SyncReplicationManager manager = newBasicReplicationManager();
+        SyncReplicationManager manager = newReplicationManager();
         try {
             manager.releaseReplicaInfo("key", localPeer);
             fail();
@@ -283,7 +284,36 @@ public class SyncReplicationManagerTest extends RMockTestCase {
         }
     }
     
-    protected SyncReplicationManager newBasicReplicationManager() {
+    public void testInsertReplicaInfo() throws Exception {
+        Object key = new Object();
+        ReplicaInfo replicaInfo = new ReplicaInfo(localPeer, new Peer[0], new Object());
+        
+        localReplicaStorage.mergeDestroyIfExist(key);
+        
+        startVerification();
+        
+        SyncReplicationManager manager = newReplicationManager();
+        manager.insertReplicaInfo(key, replicaInfo);
+        
+        assertTrue(keyToReplicaInfo.containsKey(key));
+    }
+    
+    public void testInsertReplicaInfoForExistingKeyFails() throws Exception {
+        Object key = new Object();
+        ReplicaInfo replicaInfo = new ReplicaInfo(localPeer, new Peer[0], new Object());
+        keyToReplicaInfo.put(key, replicaInfo);
+        
+        startVerification();
+        
+        SyncReplicationManager manager = newReplicationManager();
+        try {
+            manager.insertReplicaInfo(key, replicaInfo);
+            fail();
+        } catch (ReplicationKeyAlreadyExistsException e) {
+        }
+    }
+    
+    protected SyncReplicationManager newReplicationManager() {
         return new SyncReplicationManager(serviceSpace,
             stateHandler,
             backingStrategy,
