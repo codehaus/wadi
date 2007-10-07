@@ -82,7 +82,7 @@ public class HybridRelocaterTest extends RMockTestCase {
         key = "key";
     }
     
-    public void testSuccessfulRelocation() throws Exception {
+    public void testSuccessfulRelocationWithReplicaInfo() throws Exception {
         boolean shuttingDown = false;
         boolean relocatable = true;
         
@@ -131,6 +131,51 @@ public class HybridRelocaterTest extends RMockTestCase {
         assertTrue(relocated);
     }
 
+    public void testSuccessfulRelocationWithoutReplicaInfo() throws Exception {
+        boolean shuttingDown = false;
+        boolean relocatable = true;
+        
+        Motable relocatedMotable = (Motable) mock(Motable.class);
+        
+        Partition partition = partitionManager.getPartition(key);
+        recordPartitionExchange(shuttingDown, relocatable, partition);
+        Envelope envelope = (Envelope) mock(Envelope.class);
+        modify().returnValue(envelope);
+        envelope.getPayload();
+        
+        modify().returnValue(new MoveSMToIM(relocatedMotable, null));
+        
+        immoter.newMotable(relocatedMotable);
+        Session relocatedSession = (Session) mock(Session.class);
+        modify().returnValue(relocatedSession);
+        
+        recordRehydration(key, relocatedMotable, relocatedSession);
+        
+        recordReplyToSM(envelope, true);
+        
+        ReadWriteLock rwLock = relocatedSession.getReadWriteLock();
+        modify().multiplicity(expect.from(2));
+        
+        Sync readLock = rwLock.readLock();
+        modify().multiplicity(expect.from(2));
+        
+        readLock.acquire();
+        
+        immoter.immote(relocatedMotable, relocatedSession);
+        modify().returnValue(true);
+        
+        immoter.contextualise(invocation, key, relocatedSession);
+        modify().returnValue(true);
+        
+        readLock.release();
+        
+        startVerification();
+        
+        HybridRelocater relocater = new HybridRelocater(serviceSpace, partitionManager, replicationManager);
+        boolean relocated = relocater.relocate(invocation, key, immoter, shuttingDown);
+        assertTrue(relocated);
+    }
+    
     public void testRelocatedSessionIsNull() throws Exception {
         boolean shuttingDown = false;
         boolean relocatable = true;

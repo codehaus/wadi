@@ -153,8 +153,10 @@ public class HybridRelocater implements Relocater {
             }
             
             ReplicaInfo replicaInfo = req.getReplicaInfo();
-            replicaInfo.setPayload(immotable);
-            replicationManager.insertReplicaInfo(name, replicaInfo);
+            if (null != replicaInfo) {
+                replicaInfo.setPayload(immotable);
+                replicationManager.insertReplicaInfo(name, replicaInfo);
+            }
             
             return immoter.contextualise(invocation, name, immotable);
         }
