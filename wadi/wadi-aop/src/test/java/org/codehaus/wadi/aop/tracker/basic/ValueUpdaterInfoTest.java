@@ -28,14 +28,17 @@ import com.agical.rmock.extension.junit.RMockTestCase;
 public class ValueUpdaterInfoTest extends RMockTestCase {
 
     private ValueUpdater valueUpdater;
+    private InstanceAndTrackerReplacer replacer;
 
     @Override
     protected void setUp() throws Exception {
+        replacer = new CompoundReplacer();
+
         valueUpdater = (ValueUpdater) mock(ValueUpdater.class);    
     }
     
     public void testInstanceIdCanBeSetOnce() throws Exception {
-        ValueUpdaterInfo updaterInfo = new ValueUpdaterInfo(valueUpdater, new Object[0]);
+        ValueUpdaterInfo updaterInfo = new ValueUpdaterInfo(replacer, valueUpdater, new Object[0]);
         updaterInfo.setInstanceId("instanceId");
         try {
             updaterInfo.setInstanceId("instanceId");
@@ -51,7 +54,7 @@ public class ValueUpdaterInfoTest extends RMockTestCase {
         startVerification();
         
         String param0 = "test";
-        ValueUpdaterInfo updaterInfo = new ValueUpdaterInfo(valueUpdater, new Object[] {param0, stateMarker});
+        ValueUpdaterInfo updaterInfo = new ValueUpdaterInfo(replacer, valueUpdater, new Object[] {param0, stateMarker});
         updaterInfo.setInstanceId("instanceId");
         updaterInfo = updaterInfo.snapshotForSerialization();
         
@@ -76,7 +79,7 @@ public class ValueUpdaterInfoTest extends RMockTestCase {
         
         startVerification();
         
-        ValueUpdaterInfo updaterInfo = new ValueUpdaterInfo(valueUpdater, new Object[] {stateMarker});
+        ValueUpdaterInfo updaterInfo = new ValueUpdaterInfo(replacer, valueUpdater, new Object[] {stateMarker});
         updaterInfo.setInstanceId(instanceId);
         updaterInfo = updaterInfo.snapshotForSerialization();
         updaterInfo.execute(instanceRegistry);

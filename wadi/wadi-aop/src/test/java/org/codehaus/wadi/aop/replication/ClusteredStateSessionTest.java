@@ -23,6 +23,8 @@ import org.codehaus.wadi.aop.tracker.InstanceIdFactory;
 import org.codehaus.wadi.aop.tracker.basic.BasicInstanceIdFactory;
 import org.codehaus.wadi.aop.tracker.basic.BasicInstanceRegistry;
 import org.codehaus.wadi.aop.tracker.basic.BasicInstanceTrackerFactory;
+import org.codehaus.wadi.aop.tracker.basic.CompoundReplacer;
+import org.codehaus.wadi.aop.tracker.basic.InstanceAndTrackerReplacer;
 import org.codehaus.wadi.core.manager.Manager;
 import org.codehaus.wadi.core.motable.SimpleMotable;
 import org.codehaus.wadi.core.session.ValueFactory;
@@ -49,8 +51,10 @@ public class ClusteredStateSessionTest extends RMockTestCase {
 
     @Override
     protected void setUp() throws Exception {
+        InstanceAndTrackerReplacer replacer = new CompoundReplacer();
+        
         ClusteredStateAspectUtil.resetInstanceTrackerFactory();
-        ClusteredStateAspectUtil.setInstanceTrackerFactory(new BasicInstanceTrackerFactory());
+        ClusteredStateAspectUtil.setInstanceTrackerFactory(new BasicInstanceTrackerFactory(replacer));
 
         valueFactory = (ValueFactory) mock(ValueFactory.class);
         manager = (Manager) mock(Manager.class);

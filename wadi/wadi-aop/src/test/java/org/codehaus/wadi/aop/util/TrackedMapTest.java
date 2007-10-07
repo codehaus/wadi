@@ -25,6 +25,8 @@ import org.codehaus.wadi.aop.tracker.InstanceRegistry;
 import org.codehaus.wadi.aop.tracker.basic.BasicInstanceIdFactory;
 import org.codehaus.wadi.aop.tracker.basic.BasicInstanceRegistry;
 import org.codehaus.wadi.aop.tracker.basic.BasicInstanceTrackerFactory;
+import org.codehaus.wadi.aop.tracker.basic.CompoundReplacer;
+import org.codehaus.wadi.aop.tracker.basic.InstanceAndTrackerReplacer;
 import org.codehaus.wadi.core.util.SimpleStreamer;
 
 import com.agical.rmock.extension.junit.RMockTestCase;
@@ -42,9 +44,11 @@ public class TrackedMapTest extends RMockTestCase {
 
     @Override
     protected void setUp() throws Exception {
+        InstanceAndTrackerReplacer replacer = new CompoundReplacer();
+        
         instanceIdFactory = new BasicInstanceIdFactory("");
         ClusteredStateAspectUtil.resetInstanceTrackerFactory();
-        ClusteredStateAspectUtil.setInstanceTrackerFactory(new BasicInstanceTrackerFactory());
+        ClusteredStateAspectUtil.setInstanceTrackerFactory(new BasicInstanceTrackerFactory(replacer));
         
         trackedMap = new TrackedMap();
         trackedMap.setDelegate(new HashMap());

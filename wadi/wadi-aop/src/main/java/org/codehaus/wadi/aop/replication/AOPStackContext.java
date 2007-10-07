@@ -19,6 +19,8 @@ import org.codehaus.wadi.aop.aspectj.ClusteredStateAspectUtil;
 import org.codehaus.wadi.aop.tracker.basic.BasicInstanceIdFactory;
 import org.codehaus.wadi.aop.tracker.basic.BasicInstanceRegistry;
 import org.codehaus.wadi.aop.tracker.basic.BasicInstanceTrackerFactory;
+import org.codehaus.wadi.aop.tracker.basic.CompoundReplacer;
+import org.codehaus.wadi.aop.tracker.basic.InstanceAndTrackerReplacer;
 import org.codehaus.wadi.core.assembler.StackContext;
 import org.codehaus.wadi.core.session.SessionFactory;
 import org.codehaus.wadi.core.session.ValueFactory;
@@ -37,6 +39,7 @@ import org.codehaus.wadi.servicespace.ServiceSpaceName;
  */
 public class AOPStackContext extends StackContext {
 
+    private InstanceAndTrackerReplacer replacer;
     private BasicInstanceIdFactory instanceIdFactory;
     private BasicInstanceRegistry instanceRegistry;
 
@@ -58,7 +61,9 @@ public class AOPStackContext extends StackContext {
     
     @Override
     public void build() throws ServiceAlreadyRegisteredException {
-        ClusteredStateAspectUtil.setInstanceTrackerFactory(new BasicInstanceTrackerFactory());
+        replacer = new CompoundReplacer();
+        
+        ClusteredStateAspectUtil.setInstanceTrackerFactory(new BasicInstanceTrackerFactory(replacer));
         
         instanceIdFactory = new BasicInstanceIdFactory(underlyingDispatcher.getCluster().getLocalPeer().getName());
         instanceRegistry = new BasicInstanceRegistry();

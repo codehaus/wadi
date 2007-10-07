@@ -28,18 +28,19 @@ import org.codehaus.wadi.aop.tracker.InstanceTracker;
  */
 public class CompoundReplacer implements InstanceAndTrackerReplacer {
 
-    protected final List<InstanceAndTrackerReplacer> instanceToTrackers;
+    protected final InstanceAndTrackerReplacer[] instanceToTrackers;
     
     public CompoundReplacer() {
-        instanceToTrackers = new ArrayList<InstanceAndTrackerReplacer>();
-        initReplacers();
+        List<InstanceAndTrackerReplacer> trackers = new ArrayList<InstanceAndTrackerReplacer>();
+        initReplacers(trackers);
+        instanceToTrackers = trackers.toArray(new InstanceAndTrackerReplacer[0]);
     }
 
-    protected void initReplacers() {
-        instanceToTrackers.add(new ClusteredStateMarkerReplacer());
-        instanceToTrackers.add(new ArrayReplacer(this));
-        instanceToTrackers.add(new CollectionReplacer(this));
-        instanceToTrackers.add(new MapReplacer(this));
+    protected void initReplacers(List<InstanceAndTrackerReplacer> trackers) {
+        trackers.add(new ClusteredStateMarkerReplacer());
+        trackers.add(new ArrayReplacer(this));
+        trackers.add(new CollectionReplacer(this));
+        trackers.add(new MapReplacer(this));
     }
     
     public boolean canProcess(Object instance) {

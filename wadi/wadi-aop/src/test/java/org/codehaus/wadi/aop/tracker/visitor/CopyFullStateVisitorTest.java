@@ -25,7 +25,9 @@ import org.codehaus.wadi.aop.tracker.InstanceTracker;
 import org.codehaus.wadi.aop.tracker.InstanceTrackerVisitor;
 import org.codehaus.wadi.aop.tracker.NoOpInstanceTrackerVisitor;
 import org.codehaus.wadi.aop.tracker.VisitorContext;
+import org.codehaus.wadi.aop.tracker.basic.CompoundReplacer;
 import org.codehaus.wadi.aop.tracker.basic.ConstructorInfo;
+import org.codehaus.wadi.aop.tracker.basic.InstanceAndTrackerReplacer;
 import org.codehaus.wadi.aop.tracker.basic.ValueUpdaterInfo;
 import org.codehaus.wadi.aop.tracker.visitor.CopyStateVisitor.CopyStateVisitorContext;
 
@@ -40,9 +42,12 @@ public class CopyFullStateVisitorTest extends RMockTestCase {
     private InstanceTrackerVisitor setInstanceIdVisitor;
     private CopyFullStateVisitor visitor;
     private InstanceTracker instanceTracker;
+    private InstanceAndTrackerReplacer replacer;
 
     @Override
     protected void setUp() throws Exception {
+        replacer = new CompoundReplacer();
+        
         setInstanceIdVisitor = (InstanceTrackerVisitor) mock(InstanceTrackerVisitor.class);
         
         visitor = new CopyFullStateVisitor(setInstanceIdVisitor);
@@ -56,7 +61,7 @@ public class CopyFullStateVisitorTest extends RMockTestCase {
         
         instanceTracker.retrieveInstantiationValueUpdaterInfos();
         modify().returnValue(Collections.singletonList(
-            new ValueUpdaterInfo(new ConstructorInfo(ArrayList.class.getDeclaredConstructor()), new Object[0])));
+            new ValueUpdaterInfo(replacer, new ConstructorInfo(ArrayList.class.getDeclaredConstructor()), new Object[0])));
         
         instanceTracker.visit(NoOpInstanceTrackerVisitor.SINGLETON, null);
         modify().args(is.AS_RECORDED, is.NOT_NULL);
