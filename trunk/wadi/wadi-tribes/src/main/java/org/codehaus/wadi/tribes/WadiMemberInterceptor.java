@@ -47,7 +47,7 @@ public class WadiMemberInterceptor extends ChannelInterceptorBase {
 
     public void memberAdded(Member member) { 
         memberNotification = false;
-        log.info("memberAdded local:"+getLocalMember(false).getName()+" added:"+member.getName());
+        log.info("memberAdded:"+member.getName());
         TribesPeer peer = wrap(member);
         super.memberAdded(peer);
     }
@@ -81,7 +81,7 @@ public class WadiMemberInterceptor extends ChannelInterceptorBase {
 
     
     public void memberDisappeared(Member member) { 
-        log.info("memberDisappeared local:"+getLocalMember(false).getName()+" added:"+member.getName());
+        log.info("memberDisappeared:"+member.getName());
         TribesPeer peer = wrap(member);
         super.memberDisappeared(peer);
     }
