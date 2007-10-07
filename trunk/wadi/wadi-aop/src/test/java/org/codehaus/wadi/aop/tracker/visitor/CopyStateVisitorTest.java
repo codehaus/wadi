@@ -23,7 +23,9 @@ import java.util.List;
 import org.codehaus.wadi.aop.tracker.InstanceTracker;
 import org.codehaus.wadi.aop.tracker.InstanceTrackerVisitor;
 import org.codehaus.wadi.aop.tracker.VisitorContext;
+import org.codehaus.wadi.aop.tracker.basic.CompoundReplacer;
 import org.codehaus.wadi.aop.tracker.basic.ConstructorInfo;
+import org.codehaus.wadi.aop.tracker.basic.InstanceAndTrackerReplacer;
 import org.codehaus.wadi.aop.tracker.basic.ValueUpdaterInfo;
 import org.codehaus.wadi.aop.tracker.visitor.CopyStateVisitor.CopyStateVisitorContext;
 
@@ -39,9 +41,12 @@ public class CopyStateVisitorTest extends RMockTestCase {
     private InstanceTrackerVisitor resetTrackingVisitor;
     private CopyStateVisitor visitor;
     private InstanceTracker instanceTracker;
+    private InstanceAndTrackerReplacer replacer;
 
     @Override
     protected void setUp() throws Exception {
+        replacer = new CompoundReplacer();
+        
         setInstanceIdVisitor = (InstanceTrackerVisitor) mock(InstanceTrackerVisitor.class);
         resetTrackingVisitor = (InstanceTrackerVisitor) mock(InstanceTrackerVisitor.class);
         
@@ -55,7 +60,7 @@ public class CopyStateVisitorTest extends RMockTestCase {
         instanceTracker.visit(setInstanceIdVisitor, setInstanceId);
         
         ConstructorInfo constructorInfo = new ConstructorInfo(CopyStateVisitorTest.class.getDeclaredConstructor());
-        ValueUpdaterInfo valueUpdaterInfo = new ValueUpdaterInfo(constructorInfo, new Object[0]);
+        ValueUpdaterInfo valueUpdaterInfo = new ValueUpdaterInfo(replacer, constructorInfo, new Object[0]);
         List<ValueUpdaterInfo> valueUpdaterInfos = Collections.singletonList(valueUpdaterInfo);
         instanceTracker.retrieveValueUpdaterInfos();
         modify().returnValue(valueUpdaterInfos);

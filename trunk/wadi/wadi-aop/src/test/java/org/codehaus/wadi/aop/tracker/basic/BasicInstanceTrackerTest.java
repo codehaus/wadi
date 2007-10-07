@@ -39,16 +39,17 @@ public class BasicInstanceTrackerTest extends RMockTestCase {
 
     @Override
     protected void setUp() throws Exception {
+        InstanceAndTrackerReplacer replacer = new CompoundReplacer();
         trackerField = BasicBean.class.getDeclaredField("tracker");
         
         stateMarkerParent = (ClusteredStateMarker) mock(ClusteredStateMarker.class);
-        instanceTrackerParent = new BasicInstanceTracker(stateMarkerParent);
+        instanceTrackerParent = new BasicInstanceTracker(replacer, stateMarkerParent);
         instanceTrackerParent.setInstanceId("instanceTrackerParent");
         stateMarkerParent.$wadiGetTracker();
         modify().multiplicity(expect.from(0)).returnValue(instanceTrackerParent);
         
         stateMarkerChild = (ClusteredStateMarker) mock(ClusteredStateMarker.class);
-        instanceTrackerChild = new BasicInstanceTracker(stateMarkerChild);
+        instanceTrackerChild = new BasicInstanceTracker(replacer, stateMarkerChild);
         instanceTrackerChild.setInstanceId("instanceTrackerChild");
         stateMarkerChild.$wadiGetTracker();
         modify().multiplicity(expect.from(0)).returnValue(instanceTrackerChild);

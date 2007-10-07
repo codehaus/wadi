@@ -38,15 +38,19 @@ import org.codehaus.wadi.aop.tracker.visitor.AbstractVisitor;
  * @version $Revision: 1538 $
  */
 public class BasicInstanceTracker implements InstanceTracker {
+    private final InstanceAndTrackerReplacer replacer;
     private transient final ClusteredStateMarker stateMarker;
     private transient final Map<Long, ValueUpdaterInfo> indexToValueUpdaterInfo;
     private transient final Map<Field, ValueUpdaterInfo> fieldToValueUpdaterInfo;
     private String instanceId;
     
-    public BasicInstanceTracker(ClusteredStateMarker stateMarker) {
-        if (null == stateMarker) {
+    public BasicInstanceTracker(InstanceAndTrackerReplacer replacer, ClusteredStateMarker stateMarker) {
+        if (null == replacer) {
+            throw new IllegalArgumentException("replacer is required");
+        } else if (null == stateMarker) {
             throw new IllegalArgumentException("stateMarker is required");
         }
+        this.replacer = replacer;
         this.stateMarker = stateMarker;
         
         indexToValueUpdaterInfo = new HashMap<Long, ValueUpdaterInfo>();
@@ -96,25 +100,25 @@ public class BasicInstanceTracker implements InstanceTracker {
     }
     
     public void track(long index, Constructor constructor, Object[] parameters) {
-        ValueUpdaterInfo valueUpdaterInfo = new ValueUpdaterInfo(new ConstructorInfo(constructor), parameters);
+        ValueUpdaterInfo valueUpdaterInfo = new ValueUpdaterInfo(replacer, new ConstructorInfo(constructor), parameters);
         valueUpdaterInfo.setInstanceId(instanceId);
         indexToValueUpdaterInfo.put(new Long(index), valueUpdaterInfo);
     }
 
     public void track(long index, Field field, Object value) {
-        ValueUpdaterInfo valueUpdaterInfo = new ValueUpdaterInfo(new FieldInfo(field), new Object[] {value});
+        ValueUpdaterInfo valueUpdaterInfo = new ValueUpdaterInfo(replacer, new FieldInfo(field), new Object[] {value});
         valueUpdaterInfo.setInstanceId(instanceId);
         indexToValueUpdaterInfo.put(new Long(index), valueUpdaterInfo);
     }
 
     public void track(long index, Method method, Object[] parameters) {
-        ValueUpdaterInfo valueUpdaterInfo = new ValueUpdaterInfo(new MethodInfo(method), parameters);
+        ValueUpdaterInfo valueUpdaterInfo = new ValueUpdaterInfo(replacer, new MethodInfo(method), parameters);
         valueUpdaterInfo.setInstanceId(instanceId);
         indexToValueUpdaterInfo.put(new Long(index), valueUpdaterInfo);
     }
     
     public void recordFieldUpdate(Field field, Object value) {
-        ValueUpdaterInfo valueUpdaterInfo = new ValueUpdaterInfo(new FieldInfo(field), new Object[] {value});
+        ValueUpdaterInfo valueUpdaterInfo = new ValueUpdaterInfo(replacer, new FieldInfo(field), new Object[] {value});
         valueUpdaterInfo.setInstanceId(instanceId);
         fieldToValueUpdaterInfo.put(field, valueUpdaterInfo);
     }
@@ -178,7 +182,7 @@ public class BasicInstanceTracker implements InstanceTracker {
         } catch (Exception e) {
             throw new InstanceTrackerException(e);
         }
-        ValueUpdaterInfo constructorInfo = new ValueUpdaterInfo(new ConstructorInfo(constructor), new Object[0]);
+        ValueUpdaterInfo constructorInfo = new ValueUpdaterInfo(replacer, new ConstructorInfo(constructor), new Object[0]);
         constructorInfo.setInstanceId(instanceId);
         valueUpdaterInfos.add(constructorInfo);
 

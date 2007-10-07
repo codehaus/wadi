@@ -26,8 +26,17 @@ import org.codehaus.wadi.aop.tracker.InstanceTrackerFactory;
  */
 public class BasicInstanceTrackerFactory implements InstanceTrackerFactory {
     
+    private final InstanceAndTrackerReplacer replacer;
+
+    public BasicInstanceTrackerFactory(InstanceAndTrackerReplacer replacer) {
+        if (null == replacer) {
+            throw new IllegalArgumentException("replacer is required");
+        }
+        this.replacer = replacer;
+    }
+
     public InstanceTracker newInstanceTracker(ClusteredStateMarker stateMarker) {
-        return new BasicInstanceTracker(stateMarker);
+        return new BasicInstanceTracker(replacer, stateMarker);
     }
     
 }

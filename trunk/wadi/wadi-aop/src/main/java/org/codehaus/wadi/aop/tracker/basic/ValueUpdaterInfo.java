@@ -28,9 +28,9 @@ import org.codehaus.wadi.aop.tracker.InstanceTracker;
  * @version $Revision: 1538 $
  */
 public class ValueUpdaterInfo implements Serializable {
+    private final InstanceAndTrackerReplacer replacer;
     protected final ValueUpdater valueUpdater;
     protected final Object[] parameters;
-    private final InstanceAndTrackerReplacer replacer;
     protected String instanceId;
     
     public static void applyTo(InstanceRegistry instanceRegistry, List<ValueUpdaterInfo> valueUpdaterInfos) {
@@ -39,16 +39,17 @@ public class ValueUpdaterInfo implements Serializable {
         }
     }
 
-    public ValueUpdaterInfo(ValueUpdater valueUpdater, Object[] parameters) {
-        if (null == valueUpdater) {
+    public ValueUpdaterInfo(InstanceAndTrackerReplacer replacer, ValueUpdater valueUpdater, Object[] parameters) {
+        if (null == replacer) {
+            throw new IllegalArgumentException("replacer is required");
+        } else if (null == valueUpdater) {
             throw new IllegalArgumentException("valueUpdater is required");
         } else if (null == parameters) {
             throw new IllegalArgumentException("parameters is required");
         }
+        this.replacer = replacer;
         this.valueUpdater = valueUpdater;
         this.parameters = parameters;
-        
-        replacer = new CompoundReplacer();
     }
     
     protected ValueUpdaterInfo(ValueUpdaterInfo prototype) {
