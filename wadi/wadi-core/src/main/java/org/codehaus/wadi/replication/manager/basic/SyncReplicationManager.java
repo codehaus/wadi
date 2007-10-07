@@ -213,8 +213,6 @@ public class SyncReplicationManager implements ReplicationManager {
             keyToReplicaInfo.put(key, replicaInfo);
         }
         localReplicaStorage.mergeDestroyIfExist(key);
-        
-        reOrganizeSecondaries(key, replicaInfo);
     }
 
     public Set<Object> getManagedReplicaInfoKeys() {
