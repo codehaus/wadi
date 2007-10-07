@@ -93,6 +93,11 @@ public class BasicPartitionBalancerSingletonService implements PartitionBalancer
         }
     }
 
+    @Override
+    public String toString() {
+        return "PartitionManager for ServiceSpace [" + serviceSpace.getServiceSpaceName() + "]";
+    }
+    
     protected void scheduleRebalancing() {
         long retryDelay = 500;
         log.warn("Will retry rebalancing in [" + retryDelay + "] ms");
