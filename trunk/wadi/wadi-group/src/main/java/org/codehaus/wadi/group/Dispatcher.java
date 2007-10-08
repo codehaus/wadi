@@ -63,14 +63,14 @@ public interface Dispatcher extends EnvelopeListener {
      * 
      * @param target
      *            The Address of the Peer to which this message is to be sent
-     * @param sourceCorrelationId
-     *            The correlationId which will be used to match a response on
+     * @param quipu
+     *            The quipu which will be used to match a response on
      *            the source Peer
      * @param pojo
      *            The object to be sent in the Message
      * @throws MessageExchangeException
      */
-    void send(Address target, String sourceCorrelationId, Serializable pojo) throws MessageExchangeException;
+    void send(Address target, Quipu quipu, Serializable pojo) throws MessageExchangeException;
     
     /**
      * send a Serializable 'pojo' to a 'target' Address, with the Message's
@@ -83,14 +83,14 @@ public interface Dispatcher extends EnvelopeListener {
      *            The Address of the Peer to which the reply should be sent
      * @param target
      *            The Address of the Peer to which this message is to be sent
-     * @param sourceCorrelationId
+     * @param quipu
      *            The correlationId which will be used to match a response on
      *            the source Peer
      * @param pojo
      *            The object to be sent in the Message
      * @throws MessageExchangeException
      */
-    void send(Address source, Address target, String sourceCorrelationId, Serializable pojo) throws MessageExchangeException;
+    void send(Address source, Address target, Quipu quipu, Serializable pojo) throws MessageExchangeException;
 
     /**
      * Send a Serializable 'pojo' to 'target' Address - sync - and wait for a
@@ -128,27 +128,6 @@ public interface Dispatcher extends EnvelopeListener {
      * @throws MessageExchangeException
      */
     Envelope exchangeSend(Address target, Serializable pojo, long timeout, String targetCorrelationId) throws MessageExchangeException;
-
-    /**
-     * Send a Serializable 'pojo' to a 'target' Address - sync - and wait for a
-     * reply. This message will be accompanied by a 'sourceCorrelationId' which
-     * will be used to match a reply at the source end. This allows explicit
-     * control of the 'sourceCorrelationId', which would normally be dynamically
-     * allocated.
-     * 
-     * @param target
-     *            The address to which we are sending the message
-     * @param sourceCorrelationId
-     *            Explicitly identifies this message so that it may receive a
-     *            reply.
-     * @param pojo
-     *            The object that we wish to send
-     * @param timeout
-     *            The length of time that we are willing to wait for a reply
-     * @return a response in the form of a Message
-     * @throws MessageExchangeException
-     */
-    Envelope exchangeSend(Address target, String sourceCorrelationId, Serializable pojo, long timeout) throws MessageExchangeException;
 
     Envelope exchangeSend(Address target, Envelope envelope, long timeout) throws MessageExchangeException;
 

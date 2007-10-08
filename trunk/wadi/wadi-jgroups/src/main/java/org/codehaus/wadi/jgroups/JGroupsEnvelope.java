@@ -23,6 +23,7 @@ import java.util.Map;
 
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Envelope;
+import org.codehaus.wadi.group.Quipu;
 
 /**
  * A WADI Message mapped onto JGroups
@@ -39,6 +40,7 @@ public class JGroupsEnvelope implements Envelope, Serializable {
     protected String _targetCorrelationId;
     protected Serializable _payload;
     private final Map properties = new HashMap();
+    private transient Quipu quipu;
 
     public String getTargetCorrelationId() {
         return _targetCorrelationId;
@@ -94,6 +96,15 @@ public class JGroupsEnvelope implements Envelope, Serializable {
 
     public void setProperty(String key, Object value) {
         properties.put(key, value);
+    }
+
+    public Quipu getQuipu() {
+        return quipu;
+    }
+
+    public void setQuipu(Quipu quipu) {
+        this.quipu = quipu;
+        _sourceCorrelationId = quipu.getCorrelationId();
     }
 
 }

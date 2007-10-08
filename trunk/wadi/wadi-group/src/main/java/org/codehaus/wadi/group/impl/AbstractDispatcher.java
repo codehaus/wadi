@@ -31,6 +31,7 @@ import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.EnvelopeInterceptor;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.Quipu;
+import org.codehaus.wadi.group.QuipuException;
 import org.codehaus.wadi.group.ServiceEndpoint;
 
 import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
@@ -162,6 +163,8 @@ public abstract class AbstractDispatcher implements Dispatcher {
                     _log.debug("no response to request within timeout ("+timeout+" millis)");
                 } catch (InterruptedException e) {
                     _log.debug("waiting for response - interruption ignored");
+                } catch (QuipuException e) {
+                    throw new MessageExchangeException(e);
                 }
             } while (Thread.interrupted());
         } finally {
@@ -206,24 +209,24 @@ public abstract class AbstractDispatcher implements Dispatcher {
         }
     }
 	
-    public void send(Address target, String sourceCorrelationId, Serializable pojo) throws MessageExchangeException {
+    public void send(Address target, Quipu quipu, Serializable pojo) throws MessageExchangeException {
         try {
             Envelope envelope = createEnvelope();
             envelope.setReplyTo(getCluster().getLocalPeer().getAddress());
             envelope.setAddress(target);
             envelope.setPayload(pojo);
-            envelope.setSourceCorrelationId(sourceCorrelationId);
+            envelope.setQuipu(quipu);
             send(target, envelope);
         } catch (Exception e) {
             _log.error("problem sending " + pojo, e);
         }
     }
 
-    public void send(Address source, Address target, String sourceCorrelationId, Serializable pojo) throws MessageExchangeException {
+    public void send(Address source, Address target, Quipu quipu, Serializable pojo) throws MessageExchangeException {
         Envelope envelope = createEnvelope();
         envelope.setReplyTo(source);
         envelope.setAddress(target);
-        envelope.setSourceCorrelationId(sourceCorrelationId);
+        envelope.setQuipu(quipu);
         envelope.setPayload(pojo);
         send(target, envelope);
 	}
@@ -251,27 +254,16 @@ public abstract class AbstractDispatcher implements Dispatcher {
 	    Address from=getCluster().getLocalPeer().getAddress();
 	    envelope.setReplyTo(from);
 	    envelope.setAddress(target);
-	    Quipu rv= newRendezVous(1);
-	    envelope.setSourceCorrelationId(rv.getCorrelationId());
+
+	    Quipu rv = newRendezVous(1);
+	    envelope.setQuipu(rv);
+	    
 	    if (targetCorrelationId!=null) {
 	        envelope.setTargetCorrelationId(targetCorrelationId);
         }
-	    if (_log.isTraceEnabled()) {
-            _log.trace("exchangeSend [" + envelope + "]");
-        }
+
 	    send(target, envelope);
 	    return attemptRendezVous(rv, timeout);
-	}
-	
-	public Envelope exchangeSend(Address target, String sourceCorrelationId, Serializable pojo, long timeout) {
-		Quipu rv = null;
-        rv = setRendezVous(sourceCorrelationId, 1);
-        try {
-            send(getCluster().getLocalPeer().getAddress(), target, sourceCorrelationId, pojo);
-            return attemptRendezVous(rv, timeout);
-        } catch (MessageExchangeException e) {
-            return null;
-        }
 	}
 	
 	public void reply(Address from, Address to, String incomingCorrelationId, Serializable body)

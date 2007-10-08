@@ -36,8 +36,6 @@ public interface Envelope extends Serializable {
 
     String getSourceCorrelationId();
 
-    void setSourceCorrelationId(String correlationId);
-
     Address getReplyTo();
 
     void setReplyTo(Address replyTo);
@@ -49,4 +47,8 @@ public interface Envelope extends Serializable {
     void setPayload(Serializable payload);
 
     Serializable getPayload();
+
+    Quipu getQuipu();
+    
+    void setQuipu(Quipu quipu);
 }

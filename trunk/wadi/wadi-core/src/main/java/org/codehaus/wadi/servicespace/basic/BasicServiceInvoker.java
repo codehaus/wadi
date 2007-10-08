@@ -76,7 +76,7 @@ public class BasicServiceInvoker implements ServiceInvoker {
         Quipu quipu = null;
         if (!metaData.isOneWay()) {
             quipu = dispatcher.newRendezVous(targetPeers.length);
-            envelope.setSourceCorrelationId(quipu.getCorrelationId());
+            envelope.setQuipu(quipu);
         }
 
         Collection messages;
@@ -151,16 +151,15 @@ public class BasicServiceInvoker implements ServiceInvoker {
         return (InvocationResult) replyMessage.getPayload();
     }
 
-    protected InvocationResult invokeOnClusterWithAggregation(Envelope message,
+    protected InvocationResult invokeOnClusterWithAggregation(Envelope envelope,
             InvocationMetaData metaData,
             Address target) {
-        int nbPeer = dispatcher.getCluster().getPeerCount();
-        Quipu quipu = dispatcher.newRendezVous(nbPeer);
-        message.setSourceCorrelationId(quipu.getCorrelationId());
+        Quipu quipu = dispatcher.newRendezVous(dispatcher.getCluster().getPeerCount());
+        envelope.setQuipu(quipu);
         
         Collection messages;
         try {
-            dispatcher.send(target, message);
+            dispatcher.send(target, envelope);
             
             messages = dispatcher.attemptMultiRendezVous(quipu, metaData.getTimeout());
         } catch (MessageExchangeException e) {

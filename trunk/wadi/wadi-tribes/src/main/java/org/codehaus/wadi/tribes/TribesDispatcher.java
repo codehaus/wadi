@@ -7,13 +7,16 @@ import java.util.Collections;
 import org.apache.catalina.tribes.Channel;
 import org.apache.catalina.tribes.ChannelException;
 import org.apache.catalina.tribes.ChannelListener;
+import org.apache.catalina.tribes.ErrorHandler;
 import org.apache.catalina.tribes.Member;
+import org.apache.catalina.tribes.UniqueId;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.EndPoint;
 import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.PeerInfo;
+import org.codehaus.wadi.group.Quipu;
 import org.codehaus.wadi.group.impl.AbstractDispatcher;
 
 public class TribesDispatcher extends AbstractDispatcher implements ChannelListener {
@@ -28,7 +31,6 @@ public class TribesDispatcher extends AbstractDispatcher implements ChannelListe
         if (null == staticMembers) {
             throw new IllegalArgumentException("staticMembers is required");
         }
-        //todo, create some sort of config file
         byte[] domain = getBytes(clusterName);
         this.staticMembers = staticMembers;
         
@@ -60,7 +62,7 @@ public class TribesDispatcher extends AbstractDispatcher implements ChannelListe
         return ((TribesPeer)address).getName();
     }
 
-    protected void doSend(Address target, Envelope envelope) throws MessageExchangeException {
+    protected void doSend(Address target, final Envelope envelope) throws MessageExchangeException {
         Member[] peers;
         if (target instanceof TribesClusterAddress) {
             TribesClusterAddress clusterAddress = (TribesClusterAddress) target;
@@ -69,8 +71,19 @@ public class TribesDispatcher extends AbstractDispatcher implements ChannelListe
             peers = new Member[] { (TribesPeer) target };
         }
         try {
-            cluster.channel.send(peers, envelope, Channel.SEND_OPTIONS_ASYNCHRONOUS);
-        }catch ( ChannelException x ) {
+            cluster.channel.send(peers, envelope, Channel.SEND_OPTIONS_ASYNCHRONOUS, new ErrorHandler() {
+                public void handleCompletion(UniqueId id) {
+                }
+
+                public void handleError(ChannelException x, UniqueId id) {
+                    Quipu quipu = envelope.getQuipu();
+                    if (null == quipu) {
+                        return;
+                    }
+                    quipu.putException(x);
+                }
+            });
+        } catch ( ChannelException x ) {
             throw new MessageExchangeException(x);
         }
     }

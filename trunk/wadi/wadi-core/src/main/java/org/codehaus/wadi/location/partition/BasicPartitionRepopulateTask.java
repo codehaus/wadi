@@ -25,6 +25,7 @@ import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.Quipu;
+import org.codehaus.wadi.group.QuipuException;
 import org.codehaus.wadi.location.partitionmanager.local.LocalPartition;
 
 /**
@@ -56,6 +57,8 @@ public class BasicPartitionRepopulateTask implements PartitionRepopulateTask {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new PartitionRepopulationException(e);
+        } catch (QuipuException e) {
+            throw new PartitionRepopulationException(e);
         }
         
         Collection results = rv.getResults();
@@ -78,7 +81,7 @@ public class BasicPartitionRepopulateTask implements PartitionRepopulateTask {
         Quipu rv = dispatcher.newRendezVous(dispatcher.getCluster().getPeerCount());
         dispatcher.send(localPeer.getAddress(), 
                 dispatcher.getCluster().getAddress(), 
-                rv.getCorrelationId(),
+                rv,
                 repopulateRequest);
         return rv;
     }
