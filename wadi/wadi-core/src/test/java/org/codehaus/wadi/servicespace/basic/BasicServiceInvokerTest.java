@@ -259,8 +259,7 @@ public class BasicServiceInvokerTest extends RMockTestCase {
         dispatcher.newRendezVous(nbTargets);
         Quipu quipu = new Quipu(nbTargets, "1");
         modify().returnValue(quipu);
-        
-        envelope.setSourceCorrelationId(quipu.getCorrelationId());
+        envelope.setQuipu(quipu);
         return quipu;
     }
 

@@ -86,7 +86,7 @@ public class BasicPartitionRepopulateTaskTest extends RMockTestCase {
         envelopePeer3.getPayload();
         modify().returnValue(newResponse("peer3", peer3));
 
-        dispatcher.send(localPeerAddress, clusterAddress, quipu.getCorrelationId(), null);
+        dispatcher.send(localPeerAddress, clusterAddress, quipu, null);
         modify().args(new Expression[] {is.AS_RECORDED,  is.AS_RECORDED, is.AS_RECORDED, new AbstractExpression() {
 
             public void describeWith(ExpressionDescriber expressionDescriber) throws IOException {
@@ -127,7 +127,7 @@ public class BasicPartitionRepopulateTaskTest extends RMockTestCase {
         final Quipu quipu = new Quipu(2, "corrId");
         modify().returnValue(quipu);
 
-        dispatcher.send(localPeerAddress, clusterAddress, quipu.getCorrelationId(), null);
+        dispatcher.send(localPeerAddress, clusterAddress, quipu, null);
         modify().args(new Expression[] {is.AS_RECORDED,  is.AS_RECORDED, is.AS_RECORDED, is.ANYTHING});
 
         startVerification();

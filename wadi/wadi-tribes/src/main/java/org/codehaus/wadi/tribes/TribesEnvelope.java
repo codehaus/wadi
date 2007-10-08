@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Envelope;
+import org.codehaus.wadi.group.Quipu;
 
 /**
  * <p>Title: </p>
@@ -27,6 +28,7 @@ public class TribesEnvelope implements Envelope, Serializable {
     protected String sourceCorrId;
     protected String targetCorrId;
     private final Map properties = new HashMap();
+    private transient Quipu quipu;
     
     public TribesEnvelope() {
     }
@@ -143,9 +145,18 @@ public class TribesEnvelope implements Envelope, Serializable {
         properties.put(key, value);
     }
     
+    public Quipu getQuipu() {
+        return quipu;
+    }
+    
+    public void setQuipu(Quipu quipu) {
+        this.quipu = quipu;
+        sourceCorrId = quipu.getCorrelationId();
+    }
+    
     @Override
     public String toString() {
         return "Message: to [" + address + "]; replyTo [" + replyto + "]; payload [" + payload + "]";
     }
-    
+
 }

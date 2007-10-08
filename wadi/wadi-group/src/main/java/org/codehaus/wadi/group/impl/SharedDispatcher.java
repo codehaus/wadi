@@ -70,10 +70,6 @@ public class SharedDispatcher implements Dispatcher {
         return _delegate.exchangeSend(target, pojo, timeout, targetCorrelationId);
     }
 
-    public Envelope exchangeSend(Address target, String sourceCorrelationId, Serializable pojo, long timeout) throws MessageExchangeException {
-        return _delegate.exchangeSend(target, sourceCorrelationId, pojo, timeout);
-    }
-
     public Cluster getCluster() {
         return _delegate.getCluster();
     }
@@ -102,12 +98,12 @@ public class SharedDispatcher implements Dispatcher {
         _delegate.send(target, pojo);
     }
 
-    public void send(Address target, String sourceCorrelationId, Serializable pojo) throws MessageExchangeException {
-        _delegate.send(target, sourceCorrelationId, pojo);
+    public void send(Address target, Quipu quipu, Serializable pojo) throws MessageExchangeException {
+        _delegate.send(target, quipu, pojo);
     }
 
-    public void send(Address source, Address target, String sourceCorrelationId, Serializable pojo) throws MessageExchangeException {
-        _delegate.send(source, target, sourceCorrelationId, pojo);
+    public void send(Address source, Address target, Quipu quipu, Serializable pojo) throws MessageExchangeException {
+        _delegate.send(source, target, quipu, pojo);
     }
 
     public void start() throws MessageExchangeException {

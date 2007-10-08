@@ -36,6 +36,7 @@ public class Quipu extends WaitableInt {
 
     protected final Collection _results = new ArrayList();
     protected final String correlationId;
+    protected Exception exception;
 
     public Quipu(int numLlammas, String correlationId) {
         super(numLlammas);
@@ -45,26 +46,26 @@ public class Quipu extends WaitableInt {
         this.correlationId = correlationId;
     }
 
-    public boolean waitFor(long timeout) throws InterruptedException {
+    public boolean waitFor(long timeout) throws InterruptedException, QuipuException {
         long end = System.currentTimeMillis() + timeout;
         long now = 0;
         synchronized (lock_) {
-            while (!(value_ == 0) && (now = System.currentTimeMillis()) < end) {
+            while (0 != value_ && (now = System.currentTimeMillis()) < end) {
+                if (null != exception) {
+                    throw new QuipuException(exception);
+                }
                 lock_.wait(end - now);
             }
-            return value_ == 0;
+            return 0 == value_;
         }
     }
 
     public void putResult(Object result) {
         synchronized (lock_) {
-            if (value_ == 0) {
+            if (0 == value_) {
                 return;
             }
             _results.add(result);
-            if (_log.isTraceEnabled()) {
-                _log.trace("result arrived: " + result);
-            }
             decrement();
         }
     }
@@ -79,8 +80,15 @@ public class Quipu extends WaitableInt {
         return correlationId;
     }
     
+    public void putException(Exception exception) {
+        synchronized (lock_) {
+            this.exception = exception;
+            lock_.notifyAll();
+        }
+    }
+    
     public String toString() {
         return "Quipu [" + correlationId + "]; results [" + _results + "]";
     }
-    
+
 }

@@ -22,6 +22,7 @@ import java.util.Map;
 
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Envelope;
+import org.codehaus.wadi.group.Quipu;
 
 /**
  * 
@@ -34,6 +35,7 @@ public class VMEnvelope implements Envelope {
     private String targetCorrelationId;
     private String sourceCorrelationId;
     private Map properties;
+    private transient Quipu quipu;
 
     public VMEnvelope() {
         properties = new HashMap();
@@ -100,6 +102,15 @@ public class VMEnvelope implements Envelope {
         properties.put(key, value);
     }
 
+    public Quipu getQuipu() {
+        return quipu;
+    }
+    
+    public void setQuipu(Quipu quipu) {
+        this.quipu = quipu;
+        sourceCorrelationId = quipu.getCorrelationId();
+    }
+    
     public String toString() {
         return "Envelope: payload=[" + payload + "], targetCorrelationId [" + targetCorrelationId + 
             "], sourceCorrelationId [" + sourceCorrelationId + "";

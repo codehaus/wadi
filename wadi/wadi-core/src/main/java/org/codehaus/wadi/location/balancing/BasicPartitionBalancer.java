@@ -79,7 +79,7 @@ public class BasicPartitionBalancer implements PartitionBalancer {
         
         for (Iterator iter = peers.iterator(); iter.hasNext();) {
             Peer peer = (Peer) iter.next();
-            dispatcher.send(peer.getAddress(), quipu.getCorrelationId(), new RetrieveBalancingInfoEvent());
+            dispatcher.send(peer.getAddress(), quipu, new RetrieveBalancingInfoEvent());
         }
 
         Collection results = dispatcher.attemptMultiRendezVous(quipu, 5000);

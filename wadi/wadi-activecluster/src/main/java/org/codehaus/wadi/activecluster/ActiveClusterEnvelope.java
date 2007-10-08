@@ -25,6 +25,7 @@ import javax.jms.ObjectMessage;
 
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Envelope;
+import org.codehaus.wadi.group.Quipu;
 
 /**
  * 
@@ -41,6 +42,7 @@ class ActiveClusterEnvelope implements Envelope {
 	protected String _sourceCorrelationId;
 	protected String _targetCorrelationId;
 	private final Map properties;
+	protected transient Quipu quipu;
 
 	public ActiveClusterEnvelope(ActiveClusterCluster cluster, ObjectMessage message) throws JMSException {
 	    PayloadInfo payloadInfo = (PayloadInfo) message.getObject();
@@ -117,6 +119,15 @@ class ActiveClusterEnvelope implements Envelope {
 		properties.put(key, value);
 	}
 
+    public Quipu getQuipu() {
+        return quipu;
+    }
+
+    public void setQuipu(Quipu quipu) {
+        this.quipu = quipu;
+        _sourceCorrelationId = quipu.getCorrelationId();
+    }
+
 	private static class PayloadInfo implements Serializable {
 		private final Map properties;
 		private final Serializable payload;
@@ -131,4 +142,5 @@ class ActiveClusterEnvelope implements Envelope {
         }
 		
 	}
+
 }
