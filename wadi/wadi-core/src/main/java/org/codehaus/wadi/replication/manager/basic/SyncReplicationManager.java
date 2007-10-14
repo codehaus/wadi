@@ -196,8 +196,7 @@ public class SyncReplicationManager implements ReplicationManager {
         
         for (int i = 0; i < secondaries.length; i++) {
             if (secondaries[i].equals(localPeer)) {
-                byte[] fullState = stateHandler.extractFullState(key, replicaInfo.getPayload());
-                localReplicaStorage.insert(key, new ReplicaStorageInfo(replicaInfo, fullState));
+                localReplicaStorage.insert(key, replicaInfo);
                 break;
             }
         }

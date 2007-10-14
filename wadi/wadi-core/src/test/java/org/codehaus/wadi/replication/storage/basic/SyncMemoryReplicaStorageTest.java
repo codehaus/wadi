@@ -49,6 +49,13 @@ public class SyncMemoryReplicaStorageTest extends RMockTestCase {
         replicaInfo = new ReplicaInfo(node1, new Peer[] {node2}, new Object());
         serializedState = new byte[0];
     }
+  
+    public void testInsert() throws Exception {
+        objectStateManager.initState(key, replicaInfo.getPayload());
+        startVerification();
+        
+        storage.insert(key, replicaInfo);
+    }
     
     public void testMergeCreate() {
         objectStateManager.restoreFromFullState(key, serializedState);

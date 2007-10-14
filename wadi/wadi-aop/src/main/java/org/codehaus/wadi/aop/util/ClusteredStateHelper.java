@@ -17,7 +17,6 @@ package org.codehaus.wadi.aop.util;
 
 import java.io.ByteArrayInputStream;
 import java.io.ObjectInput;
-import java.util.List;
 
 import org.codehaus.wadi.aop.ClusteredStateMarker;
 import org.codehaus.wadi.aop.tracker.InstanceIdFactory;
@@ -27,6 +26,7 @@ import org.codehaus.wadi.aop.tracker.VisitorContext;
 import org.codehaus.wadi.aop.tracker.basic.ValueUpdaterInfo;
 import org.codehaus.wadi.aop.tracker.visitor.CopyFullStateVisitor;
 import org.codehaus.wadi.aop.tracker.visitor.CopyStateVisitor;
+import org.codehaus.wadi.aop.tracker.visitor.RegisterTrackingVisitor;
 import org.codehaus.wadi.aop.tracker.visitor.ResetTrackingVisitor;
 import org.codehaus.wadi.aop.tracker.visitor.SetInstanceIdVisitor;
 import org.codehaus.wadi.aop.tracker.visitor.UnregisterTrackingVisitor;
@@ -52,6 +52,10 @@ public final class ClusteredStateHelper {
         visit(opaque, new UnregisterTrackingVisitor(instanceRegistry), true);
     }
 
+    public static void registerTracker(InstanceRegistry instanceRegistry, Object opaque) {
+        visit(opaque, new RegisterTrackingVisitor(instanceRegistry), true);
+    }
+    
     public static byte[] serializeFully(InstanceIdFactory instanceIdFactory, Object opaque) {
         CopyFullStateVisitor visitor = new CopyFullStateVisitor(new SetInstanceIdVisitor(instanceIdFactory));
         CopyStateVisitorContext context = (CopyStateVisitorContext) visit(opaque, visitor, false);
@@ -96,5 +100,5 @@ public final class ClusteredStateHelper {
         }
         return (ClusteredStateMarker) opaque;
     }
-    
+
 }

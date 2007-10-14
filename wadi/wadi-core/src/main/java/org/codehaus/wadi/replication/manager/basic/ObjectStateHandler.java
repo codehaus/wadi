@@ -36,4 +36,6 @@ public interface ObjectStateHandler {
     void setObjectFactory(Object factory);
 
     void discardState(Object key, Object payload);
+
+    void initState(Object key, Object payload);
 }
