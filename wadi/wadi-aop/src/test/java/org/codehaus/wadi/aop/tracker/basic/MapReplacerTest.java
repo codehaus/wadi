@@ -37,6 +37,10 @@ public class MapReplacerTest extends AbstractReplacerTest {
         assertTrue(replacer.canProcess(new HashMap()));
     }
     
+    public void testCannotProcessNull() throws Exception {
+        assertFalse(replacer.canProcess(null));
+    }
+    
     public void testReplaceWithTracker() throws Exception {
         startVerification();
         

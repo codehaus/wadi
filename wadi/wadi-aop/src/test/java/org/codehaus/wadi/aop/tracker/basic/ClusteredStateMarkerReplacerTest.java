@@ -34,6 +34,10 @@ public class ClusteredStateMarkerReplacerTest extends AbstractReplacerTest {
         assertTrue(replacer.canProcess(stateMarker));
     }
     
+    public void testCannotProcessNull() throws Exception {
+        assertFalse(replacer.canProcess(null));
+    }
+    
     public void testReplaceWithTracker() throws Exception {
         startVerification();
         

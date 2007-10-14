@@ -15,9 +15,11 @@
  */
 package org.codehaus.wadi.aop.tracker.basic;
 
-import java.io.Serializable;
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.codehaus.wadi.aop.tracker.InstanceRegistry;
@@ -27,16 +29,20 @@ import org.codehaus.wadi.aop.tracker.InstanceTracker;
  * 
  * @version $Revision: 1538 $
  */
-public class ValueUpdaterInfo implements Serializable {
-    private final InstanceAndTrackerReplacer replacer;
-    protected final ValueUpdater valueUpdater;
-    protected final Object[] parameters;
+public class ValueUpdaterInfo implements Externalizable {
+    private InstanceAndTrackerReplacer replacer;
+    protected ValueUpdater valueUpdater;
+    protected Object[] parameters;
+    protected Object[] parametersReplacedWithTrackers;
     protected String instanceId;
     
-    public static void applyTo(InstanceRegistry instanceRegistry, List<ValueUpdaterInfo> valueUpdaterInfos) {
+    public static void applyTo(InstanceRegistry instanceRegistry, ValueUpdaterInfo[] valueUpdaterInfos) {
         for (ValueUpdaterInfo valueUpdaterInfo : valueUpdaterInfos) {
             valueUpdaterInfo.execute(instanceRegistry);
         }
+    }
+
+    public ValueUpdaterInfo() {
     }
 
     public ValueUpdaterInfo(InstanceAndTrackerReplacer replacer, ValueUpdater valueUpdater, Object[] parameters) {
@@ -62,8 +68,13 @@ public class ValueUpdaterInfo implements Serializable {
         valueUpdater = prototype.valueUpdater;
         instanceId = prototype.instanceId;
         replacer = prototype.replacer;
-        
-        parameters = (Object[]) replacer.replaceWithTracker(prototype.parameters, new HashSet<InstanceTracker>());
+        parameters = null;
+        if (null != prototype.parametersReplacedWithTrackers) {
+            parametersReplacedWithTrackers = prototype.parametersReplacedWithTrackers;
+        } else {
+            parametersReplacedWithTrackers = 
+                (Object[]) replacer.replaceWithTracker(prototype.parameters, new HashSet<InstanceTracker>());
+        }
     }
     
     public String getInstanceId() {
@@ -79,16 +90,27 @@ public class ValueUpdaterInfo implements Serializable {
 
     public Set<InstanceTracker> getInstanceTrackers() {
         Set<InstanceTracker> trackers = new HashSet<InstanceTracker>();
-        replacer.replaceWithTracker(parameters, trackers);
+        parametersReplacedWithTrackers = (Object[]) replacer.replaceWithTracker(parameters, trackers);
         return trackers;
     }
     
+    public Object[] getParametersReplacedWithTrackers() {
+        if (null == parametersReplacedWithTrackers) {
+            throw new IllegalStateException("parametersReplacedWithTrackers not set.");
+        }
+        return parametersReplacedWithTrackers;
+    }
+
     public Object[] getParameters() {
+        if (null == parameters) {
+            throw new IllegalStateException("parameters not set. This is a snapshotForSerialization instance.");
+        }
         return parameters;
     }
     
     public void execute(InstanceRegistry instanceRegistry) {
-        Object[] newParameters =  (Object[]) replacer.replaceWithInstance(instanceRegistry, parameters);
+        Object[] newParameters =
+            (Object[]) replacer.replaceWithInstance(instanceRegistry, parametersReplacedWithTrackers);
         valueUpdater.executeWithParameters(instanceRegistry, instanceId, newParameters);
     }
 
@@ -96,9 +118,23 @@ public class ValueUpdaterInfo implements Serializable {
         return new ValueUpdaterInfo(this);
     }
 
+    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+        replacer = (InstanceAndTrackerReplacer) in.readObject();
+        valueUpdater = (ValueUpdater) in.readObject();
+        parametersReplacedWithTrackers = (Object[]) in.readObject();
+        instanceId = in.readUTF();
+    }
+    
+    public void writeExternal(ObjectOutput out) throws IOException {
+        out.writeObject(replacer);
+        out.writeObject(valueUpdater);
+        out.writeObject(parametersReplacedWithTrackers);
+        out.writeUTF(instanceId);
+    }
+    
     @Override
     public String toString() {
         return "ValueUpdaterInfo for [" + instanceId + "]; " + valueUpdater;
     }
-    
+
 }

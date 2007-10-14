@@ -16,7 +16,6 @@
 package org.codehaus.wadi.aop.tracker.basic;
 
 import java.lang.reflect.Field;
-import java.util.List;
 
 import org.codehaus.wadi.aop.ClusteredStateMarker;
 import org.codehaus.wadi.aop.tracker.InstanceTrackerVisitor;
@@ -79,8 +78,8 @@ public class BasicInstanceTrackerTest extends RMockTestCase {
         instanceTrackerChild.track(2, trackerField, stateMarkerParent);
         instanceTrackerChild.recordFieldUpdate(trackerField, stateMarkerParent);
         
-        List<ValueUpdaterInfo> valueUpdaterInfos = instanceTrackerParent.retrieveValueUpdaterInfos();
-        assertEquals(2, valueUpdaterInfos.size());
+        ValueUpdaterInfo[] valueUpdaterInfos = instanceTrackerParent.retrieveValueUpdaterInfos();
+        assertEquals(2, valueUpdaterInfos.length);
     }
     
     private static class BasicBean {

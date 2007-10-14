@@ -15,8 +15,9 @@
  */
 package org.codehaus.wadi.aop.tracker.basic;
 
-import java.io.InvalidClassException;
-import java.io.ObjectStreamException;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.lang.reflect.Method;
 
 import org.codehaus.wadi.aop.tracker.InstanceRegistry;
@@ -27,10 +28,13 @@ import org.codehaus.wadi.aop.tracker.InstanceTrackerException;
  * @version $Revision: 1538 $
  */
 public class MethodInfo implements ValueUpdater {
-    private final Class declaringType;
-    private final String name;
-    private final Class[] parameterTypes;
-    private transient final Method method;
+    private Class declaringType;
+    private String name;
+    private Class[] parameterTypes;
+    private transient Method method;
+
+    public MethodInfo() {
+    }
     
     public MethodInfo(Method method) {
         if (null == method) {
@@ -53,16 +57,25 @@ public class MethodInfo implements ValueUpdater {
         }
     }
     
-    private Object readResolve() throws ObjectStreamException {
-        Method method;
+    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+        declaringType = (Class) in.readObject();
+        name = in.readUTF();
+        parameterTypes = (Class[]) in.readObject();
+
         try {
             method = declaringType.getDeclaredMethod(name, parameterTypes);
         } catch (Exception e) {
-            throw (InvalidClassException) new InvalidClassException("See nested").initCause(e);
+            throw (IOException) new IOException("See nested").initCause(e);
         }
-        return new MethodInfo(method);    
+        method.setAccessible(true);
     }
-    
+
+    public void writeExternal(ObjectOutput out) throws IOException {
+        out.writeObject(declaringType);
+        out.writeUTF(name);
+        out.writeObject(parameterTypes);
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (!(obj instanceof MethodInfo)) {

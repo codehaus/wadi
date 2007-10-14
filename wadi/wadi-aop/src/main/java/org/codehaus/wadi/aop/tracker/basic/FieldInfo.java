@@ -15,8 +15,9 @@
  */
 package org.codehaus.wadi.aop.tracker.basic;
 
-import java.io.InvalidClassException;
-import java.io.ObjectStreamException;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.lang.reflect.Field;
 
 import org.codehaus.wadi.aop.ClusteredStateMarker;
@@ -28,9 +29,12 @@ import org.codehaus.wadi.aop.tracker.InstanceTrackerException;
  * @version $Revision: 1538 $
  */
 public class FieldInfo implements ValueUpdater {
-    private final Class declaringType;
-    private final String name;
-    private transient final Field field;
+    private Class declaringType;
+    private String name;
+    private transient Field field;
+
+    public FieldInfo() {
+    }
     
     public FieldInfo(Field field) {
         if (null == field) {
@@ -53,16 +57,23 @@ public class FieldInfo implements ValueUpdater {
         instance.$wadiGetTracker().recordFieldUpdate(field, parameters[0]);
     }
     
-    private Object readResolve() throws ObjectStreamException {
-        Field field;
+    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+        declaringType = (Class) in.readObject();
+        name = in.readUTF();
+
         try {
             field = declaringType.getDeclaredField(name);
         } catch (Exception e) {
-            throw (InvalidClassException) new InvalidClassException("See nested").initCause(e);
+            throw (IOException) new IOException("See nested").initCause(e);
         }
-        return new FieldInfo(field);    
+        field.setAccessible(true);
     }
-    
+
+    public void writeExternal(ObjectOutput out) throws IOException {
+        out.writeObject(declaringType);
+        out.writeUTF(name);
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (!(obj instanceof FieldInfo)) {

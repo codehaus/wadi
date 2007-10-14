@@ -27,7 +27,7 @@ public class ArrayReplacer extends AbstractReplacer {
     }
 
     public boolean canProcess(Object instance) {
-        return instance.getClass().isArray();
+        return null != instance && instance.getClass().isArray();
     }
 
     protected Object replace(Object instance, Replacer replacer) {

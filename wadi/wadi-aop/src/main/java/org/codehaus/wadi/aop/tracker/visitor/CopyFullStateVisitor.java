@@ -15,8 +15,6 @@
  */
 package org.codehaus.wadi.aop.tracker.visitor;
 
-import java.util.List;
-
 import org.codehaus.wadi.aop.tracker.InstanceTracker;
 import org.codehaus.wadi.aop.tracker.InstanceTrackerVisitor;
 import org.codehaus.wadi.aop.tracker.NoOpInstanceTrackerVisitor;
@@ -32,7 +30,7 @@ public class CopyFullStateVisitor extends CopyStateVisitor {
         super(setInstanceIdVisitor, NoOpInstanceTrackerVisitor.SINGLETON);
     }
 
-    protected List<ValueUpdaterInfo> buildValueUpdaterInfos(InstanceTracker instanceTracker) {
+    protected ValueUpdaterInfo[] buildValueUpdaterInfos(InstanceTracker instanceTracker) {
         return instanceTracker.retrieveInstantiationValueUpdaterInfos();
     }
 
