@@ -60,8 +60,10 @@ public class CopyFullStateVisitorTest extends RMockTestCase {
         instanceTracker.visit(setInstanceIdVisitor, setInstanceId);
         
         instanceTracker.retrieveInstantiationValueUpdaterInfos();
-        modify().returnValue(Collections.singletonList(
-            new ValueUpdaterInfo(replacer, new ConstructorInfo(ArrayList.class.getDeclaredConstructor()), new Object[0])));
+        ConstructorInfo constructorInfo = new ConstructorInfo(ArrayList.class.getDeclaredConstructor());
+        ValueUpdaterInfo valueUpdaterInfo = new ValueUpdaterInfo(replacer, constructorInfo, new Object[0]);
+        valueUpdaterInfo.setInstanceId("instanceId");
+        modify().returnValue(new ValueUpdaterInfo[] {valueUpdaterInfo});
         
         instanceTracker.visit(NoOpInstanceTrackerVisitor.SINGLETON, null);
         modify().args(is.AS_RECORDED, is.NOT_NULL);
@@ -75,8 +77,8 @@ public class CopyFullStateVisitorTest extends RMockTestCase {
         
         ByteArrayInputStream memIn = new ByteArrayInputStream(serializedValueUpdaterInfos);
         ObjectInputStream in = new ObjectInputStream(memIn);
-        List<ValueUpdaterInfo> actualValueUpdaterInfos = (List<ValueUpdaterInfo>) in.readObject();
-        assertEquals(1, actualValueUpdaterInfos.size());
+        ValueUpdaterInfo[] actualValueUpdaterInfos = (ValueUpdaterInfo[]) in.readObject();
+        assertEquals(1, actualValueUpdaterInfos.length);
     }
 
 }
