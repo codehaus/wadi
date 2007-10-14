@@ -234,19 +234,14 @@ public class SyncReplicationManagerTest extends RMockTestCase {
         final Peer[] newSecondaries = new Peer[] {localPeer};
         modify().returnValue(newSecondaries);
         
-        stateHandler.extractFullState(key, instance);
-        final byte[] fullState = new byte[0];
-        modify().returnValue(fullState);
-        
         localReplicaStorage.insert(key, null);
         modify().args(is.AS_RECORDED, new AbstractExpression() {
             public void describeWith(ExpressionDescriber arg0) throws IOException {
             }
 
             public boolean passes(Object arg0) {
-                ReplicaStorageInfo storageInfo = (ReplicaStorageInfo) arg0;
-                assertSame(fullState, storageInfo.getSerializedPayload());
-                assertSame(newSecondaries, storageInfo.getReplicaInfo().getSecondaries());
+                ReplicaInfo replicaInfo = (ReplicaInfo) arg0;
+                assertSame(newSecondaries, replicaInfo.getSecondaries());
                 return true;
             }
         });

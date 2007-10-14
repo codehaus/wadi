@@ -55,17 +55,16 @@ public class SyncMemoryReplicaStorage implements ReplicaStorage {
         }
     }
     
-    public void insert(Object key, ReplicaStorageInfo insertStorageInfo) throws ReplicaKeyAlreadyExistsException {
+    public void insert(Object key, ReplicaInfo replicaInfo) throws ReplicaKeyAlreadyExistsException {
         synchronized (keyToStorageInfo) {
             if (keyToStorageInfo.containsKey(key)) {
                 throw new ReplicaKeyAlreadyExistsException(key);
                 
             }
-            keyToStorageInfo.put(key, insertStorageInfo);
+            keyToStorageInfo.put(key, new ReplicaStorageInfo(replicaInfo, new byte[0]));
         }
         
-        Object payload = objectStateHandler.restoreFromFullState(key, insertStorageInfo.getSerializedPayload());
-        insertStorageInfo.getReplicaInfo().setPayload(payload);
+        objectStateHandler.initState(key, replicaInfo.getPayload());
     }
     
     public void mergeCreate(Object key, ReplicaStorageInfo createStorageInfo) throws ReplicaKeyAlreadyExistsException {
