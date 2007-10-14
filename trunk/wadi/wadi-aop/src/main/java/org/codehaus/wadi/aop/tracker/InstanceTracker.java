@@ -19,7 +19,6 @@ import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.List;
 
 import org.codehaus.wadi.aop.ClusteredStateMarker;
 import org.codehaus.wadi.aop.tracker.basic.ValueUpdaterInfo;
@@ -37,9 +36,9 @@ public interface InstanceTracker extends Serializable {
     
     void visit(InstanceTrackerVisitor visitor, VisitorContext context);
 
-    List<ValueUpdaterInfo> retrieveInstantiationValueUpdaterInfos();
+    ValueUpdaterInfo[] retrieveInstantiationValueUpdaterInfos();
     
-    List<ValueUpdaterInfo> retrieveValueUpdaterInfos();
+    ValueUpdaterInfo[] retrieveValueUpdaterInfos();
 
     void track(long index, Constructor constructor, Object[] parameters);
     

@@ -123,16 +123,16 @@ public class BasicInstanceTracker implements InstanceTracker {
         fieldToValueUpdaterInfo.put(field, valueUpdaterInfo);
     }
     
-    public List<ValueUpdaterInfo> retrieveInstantiationValueUpdaterInfos() {
+    public ValueUpdaterInfo[] retrieveInstantiationValueUpdaterInfos() {
         ensureInstanceIdIsSet();
         
         IdentityHashMap<InstanceTracker, Boolean> visitedTracker = new IdentityHashMap<InstanceTracker, Boolean>();
         List<ValueUpdaterInfo> valueUpdaterInfos = new ArrayList<ValueUpdaterInfo>();
         addValueUpdaterInfoTo(visitedTracker, valueUpdaterInfos);
-        return valueUpdaterInfos;
+        return valueUpdaterInfos.toArray(new ValueUpdaterInfo[valueUpdaterInfos.size()]);
     }
 
-    public List<ValueUpdaterInfo> retrieveValueUpdaterInfos() {
+    public ValueUpdaterInfo[] retrieveValueUpdaterInfos() {
         ensureInstanceIdIsSet();
 
         final SortedMap<Long, ValueUpdaterInfo> overallToValueUpdaterInfo = new TreeMap<Long, ValueUpdaterInfo>();
@@ -147,7 +147,7 @@ public class BasicInstanceTracker implements InstanceTracker {
             }
         };
         visit(visitor, visitor.newContext());
-        return new ArrayList<ValueUpdaterInfo>(overallToValueUpdaterInfo.values());
+        return overallToValueUpdaterInfo.values().toArray(new ValueUpdaterInfo[overallToValueUpdaterInfo.size()]);
     }
 
     public void resetTracking() {

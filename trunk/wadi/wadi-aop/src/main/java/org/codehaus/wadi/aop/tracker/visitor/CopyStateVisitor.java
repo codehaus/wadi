@@ -63,7 +63,7 @@ public class CopyStateVisitor extends AbstractVisitor {
     }
 
     protected void serializeValueUpdaterInfos(CopyStateVisitorContext copyContext, InstanceTracker instanceTracker) {
-        List<ValueUpdaterInfo> valueUpdaterInfos = buildValueUpdaterInfos(instanceTracker);
+        ValueUpdaterInfo[] valueUpdaterInfos = buildValueUpdaterInfos(instanceTracker);
         
         ByteArrayOutputStream memOut = new ByteArrayOutputStream();
         try {
@@ -76,7 +76,7 @@ public class CopyStateVisitor extends AbstractVisitor {
         copyContext.serializedValueUpdaterInfos = memOut.toByteArray();
     }
 
-    protected List<ValueUpdaterInfo> buildValueUpdaterInfos(InstanceTracker instanceTracker) {
+    protected ValueUpdaterInfo[] buildValueUpdaterInfos(InstanceTracker instanceTracker) {
         return instanceTracker.retrieveValueUpdaterInfos();
     }
     

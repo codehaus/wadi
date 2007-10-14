@@ -15,8 +15,9 @@
  */
 package org.codehaus.wadi.aop.tracker.basic;
 
-import java.io.InvalidClassException;
-import java.io.ObjectStreamException;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.lang.reflect.Constructor;
 
 import org.codehaus.wadi.aop.ClusteredStateMarker;
@@ -28,9 +29,12 @@ import org.codehaus.wadi.aop.tracker.InstanceTrackerException;
  * @version $Revision: 1538 $
  */
 public class ConstructorInfo implements ValueUpdater {
-    private final Class declaringType;
-    private final Class[] parameterTypes;
-    private final transient Constructor constructor;
+    private Class declaringType;
+    private Class[] parameterTypes;
+    private transient Constructor constructor;
+    
+    public ConstructorInfo() {
+    }
     
     public ConstructorInfo(Constructor constructor) {
         if (null == constructor) {
@@ -54,14 +58,21 @@ public class ConstructorInfo implements ValueUpdater {
         instanceRegistry.registerInstance(instanceId, instance);
     }
     
-    private Object readResolve() throws ObjectStreamException {
-        Constructor constructor;
+    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+        declaringType = (Class) in.readObject();
+        parameterTypes = (Class[]) in.readObject();
+
         try {
             constructor = declaringType.getDeclaredConstructor(parameterTypes);
         } catch (Exception e) {
-            throw (InvalidClassException) new InvalidClassException("See nested").initCause(e);
+            throw (IOException) new IOException("See nested").initCause(e);
         }
-        return new ConstructorInfo(constructor);    
+        constructor.setAccessible(true);
+    }
+    
+    public void writeExternal(ObjectOutput out) throws IOException {
+        out.writeObject(declaringType);
+        out.writeObject(parameterTypes);
     }
     
     @Override

@@ -34,6 +34,10 @@ public class ArrayReplacerTest extends AbstractReplacerTest {
         assertTrue(replacer.canProcess(new Object[] {"value", stateMarker}));
     }
     
+    public void testCannotProcessNull() throws Exception {
+        assertFalse(replacer.canProcess(null));
+    }
+    
     public void testReplaceWithTracker() throws Exception {
         startVerification();
         

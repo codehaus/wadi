@@ -37,6 +37,10 @@ public class CollectionReplacerTest extends AbstractReplacerTest {
     public void testCanProcessClusteredStateMarker() throws Exception {
         assertTrue(replacer.canProcess(Arrays.asList(new Object[] {"value", stateMarker})));
     }
+
+    public void testCannotProcessNull() throws Exception {
+        assertFalse(replacer.canProcess(null));
+    }
     
     public void testReplaceWithTracker() throws Exception {
         startVerification();
