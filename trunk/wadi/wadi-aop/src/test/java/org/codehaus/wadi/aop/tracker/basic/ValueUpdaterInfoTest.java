@@ -15,6 +15,8 @@
  */
 package org.codehaus.wadi.aop.tracker.basic;
 
+import java.util.Set;
+
 import org.codehaus.wadi.aop.ClusteredStateMarker;
 import org.codehaus.wadi.aop.tracker.InstanceRegistry;
 import org.codehaus.wadi.aop.tracker.InstanceTracker;
@@ -55,10 +57,11 @@ public class ValueUpdaterInfoTest extends RMockTestCase {
         
         String param0 = "test";
         ValueUpdaterInfo updaterInfo = new ValueUpdaterInfo(replacer, valueUpdater, new Object[] {param0, stateMarker});
-        updaterInfo.setInstanceId("instanceId");
-        updaterInfo = updaterInfo.snapshotForSerialization();
-        
-        Object[] newParameters = updaterInfo.getParameters();
+        Set<InstanceTracker> instanceTrackers = updaterInfo.getInstanceTrackers();
+        assertEquals(1, instanceTrackers.size());
+        assertTrue(instanceTrackers.contains(instanceTracker));
+
+        Object[] newParameters = updaterInfo.getParametersReplacedWithTrackers();
         assertSame(param0, newParameters[0]);
         assertSame(instanceTracker, newParameters[1]);
     }

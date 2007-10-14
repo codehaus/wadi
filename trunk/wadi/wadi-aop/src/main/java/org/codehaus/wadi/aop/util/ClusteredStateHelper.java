@@ -79,10 +79,10 @@ public final class ClusteredStateHelper {
 
     public static void deserialize(InstanceRegistry instanceRegistry, Streamer streamer, byte[] serialized) {
         ByteArrayInputStream memIn = new ByteArrayInputStream(serialized);
-        List<ValueUpdaterInfo> valueUpdaterInfos;
+        ValueUpdaterInfo[] valueUpdaterInfos;
         try {
             ObjectInput in = streamer.getInputStream(memIn);
-            valueUpdaterInfos = (List<ValueUpdaterInfo>) in.readObject();
+            valueUpdaterInfos = (ValueUpdaterInfo[]) in.readObject();
         } catch (Exception e) {
             throw new WADIRuntimeException(e);
         }

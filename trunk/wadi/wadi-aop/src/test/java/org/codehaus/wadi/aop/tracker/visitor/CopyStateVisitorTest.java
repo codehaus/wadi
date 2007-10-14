@@ -17,8 +17,6 @@ package org.codehaus.wadi.aop.tracker.visitor;
 
 import java.io.ByteArrayInputStream;
 import java.io.ObjectInputStream;
-import java.util.Collections;
-import java.util.List;
 
 import org.codehaus.wadi.aop.tracker.InstanceTracker;
 import org.codehaus.wadi.aop.tracker.InstanceTrackerVisitor;
@@ -61,9 +59,9 @@ public class CopyStateVisitorTest extends RMockTestCase {
         
         ConstructorInfo constructorInfo = new ConstructorInfo(CopyStateVisitorTest.class.getDeclaredConstructor());
         ValueUpdaterInfo valueUpdaterInfo = new ValueUpdaterInfo(replacer, constructorInfo, new Object[0]);
-        List<ValueUpdaterInfo> valueUpdaterInfos = Collections.singletonList(valueUpdaterInfo);
+        valueUpdaterInfo.setInstanceId("instanceId");
         instanceTracker.retrieveValueUpdaterInfos();
-        modify().returnValue(valueUpdaterInfos);
+        modify().returnValue(new ValueUpdaterInfo[] {valueUpdaterInfo});
         
         VisitorContext resetTrackingContext = resetTrackingVisitor.newContext();
         instanceTracker.visit(resetTrackingVisitor, resetTrackingContext);
@@ -77,8 +75,8 @@ public class CopyStateVisitorTest extends RMockTestCase {
         
         ByteArrayInputStream memIn = new ByteArrayInputStream(serializedValueUpdaterInfos);
         ObjectInputStream in = new ObjectInputStream(memIn);
-        List<ValueUpdaterInfo> actualValueUpdaterInfos = (List<ValueUpdaterInfo>) in.readObject();
-        assertEquals(1, actualValueUpdaterInfos.size());
+        ValueUpdaterInfo[] actualValueUpdaterInfos = (ValueUpdaterInfo[]) in.readObject();
+        assertEquals(1, actualValueUpdaterInfos.length);
     }
     
 }
