@@ -18,6 +18,9 @@ package org.codehaus.wadi.aop.tracker.basic;
 import java.lang.reflect.Field;
 
 import org.codehaus.wadi.aop.ClusteredStateMarker;
+import org.codehaus.wadi.aop.reflect.ClassIndexer;
+import org.codehaus.wadi.aop.reflect.ClassIndexerRegistry;
+import org.codehaus.wadi.aop.reflect.jdk.JDKClassIndexerRegistry;
 import org.codehaus.wadi.aop.tracker.InstanceTrackerVisitor;
 import org.codehaus.wadi.aop.tracker.VisitorContext;
 import org.codehaus.wadi.aop.tracker.visitor.BaseVisitorContext;
@@ -41,14 +44,18 @@ public class BasicInstanceTrackerTest extends RMockTestCase {
         InstanceAndTrackerReplacer replacer = new CompoundReplacer();
         trackerField = BasicBean.class.getDeclaredField("tracker");
         
+        ClassIndexerRegistry classIndexerRegistry = new JDKClassIndexerRegistry();
+        classIndexerRegistry.index(BasicBean.class);
+        ClassIndexer classIndexer = classIndexerRegistry.getClassIndexer(BasicBean.class);
+        
         stateMarkerParent = (ClusteredStateMarker) mock(ClusteredStateMarker.class);
-        instanceTrackerParent = new BasicInstanceTracker(replacer, stateMarkerParent);
+        instanceTrackerParent = new BasicInstanceTracker(replacer, classIndexer, stateMarkerParent);
         instanceTrackerParent.setInstanceId("instanceTrackerParent");
         stateMarkerParent.$wadiGetTracker();
         modify().multiplicity(expect.from(0)).returnValue(instanceTrackerParent);
         
         stateMarkerChild = (ClusteredStateMarker) mock(ClusteredStateMarker.class);
-        instanceTrackerChild = new BasicInstanceTracker(replacer, stateMarkerChild);
+        instanceTrackerChild = new BasicInstanceTracker(replacer, classIndexer, stateMarkerChild);
         instanceTrackerChild.setInstanceId("instanceTrackerChild");
         stateMarkerChild.$wadiGetTracker();
         modify().multiplicity(expect.from(0)).returnValue(instanceTrackerChild);

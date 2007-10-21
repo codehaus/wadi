@@ -19,10 +19,13 @@ import java.io.Serializable;
 
 import org.codehaus.wadi.aop.annotation.ClusteredState;
 import org.codehaus.wadi.aop.aspectj.ClusteredStateAspectUtil;
+import org.codehaus.wadi.aop.reflect.ClassIndexerRegistry;
+import org.codehaus.wadi.aop.reflect.jdk.JDKClassIndexerRegistry;
 import org.codehaus.wadi.aop.tracker.InstanceIdFactory;
 import org.codehaus.wadi.aop.tracker.basic.BasicInstanceIdFactory;
 import org.codehaus.wadi.aop.tracker.basic.BasicInstanceRegistry;
 import org.codehaus.wadi.aop.tracker.basic.BasicInstanceTrackerFactory;
+import org.codehaus.wadi.aop.tracker.basic.BasicWireMarshaller;
 import org.codehaus.wadi.aop.tracker.basic.CompoundReplacer;
 import org.codehaus.wadi.aop.tracker.basic.InstanceAndTrackerReplacer;
 import org.codehaus.wadi.core.manager.Manager;
@@ -52,9 +55,10 @@ public class ClusteredStateSessionTest extends RMockTestCase {
     @Override
     protected void setUp() throws Exception {
         InstanceAndTrackerReplacer replacer = new CompoundReplacer();
+        ClassIndexerRegistry indexerRegistry = new JDKClassIndexerRegistry();
         
         ClusteredStateAspectUtil.resetInstanceTrackerFactory();
-        ClusteredStateAspectUtil.setInstanceTrackerFactory(new BasicInstanceTrackerFactory(replacer));
+        ClusteredStateAspectUtil.setInstanceTrackerFactory(new BasicInstanceTrackerFactory(replacer, indexerRegistry));
 
         valueFactory = (ValueFactory) mock(ValueFactory.class);
         manager = (Manager) mock(Manager.class);
@@ -62,25 +66,30 @@ public class ClusteredStateSessionTest extends RMockTestCase {
         replicationManager = (ReplicationManager) mock(ReplicationManager.class);
         
         InstanceIdFactory instanceIdFactory = new BasicInstanceIdFactory("prefix");
+
+        serverStateHandler = new DeltaStateHandler(streamer,
+            new BasicWireMarshaller(streamer, indexerRegistry, replacer),
+            instanceIdFactory,
+            new BasicInstanceRegistry());
+
+        clientStateHandler = new DeltaStateHandler(streamer,
+            new BasicWireMarshaller(streamer, indexerRegistry, replacer),
+            instanceIdFactory,
+            new BasicInstanceRegistry());
+
         sessionFactory = new ClusteredStateSessionFactory(
             new ClusteredStateAttributesFactory(valueFactory),
             streamer,
             replicationManager,
-            instanceIdFactory);
+            serverStateHandler);
         sessionFactory.setManager(manager);
+
+        serverStateHandler.setObjectFactory(sessionFactory);
+        clientStateHandler.setObjectFactory(sessionFactory);
         
         session = sessionFactory.create();
         session.init(1, 2, 3, "name");
         
-        clientStateHandler = new DeltaStateHandler(streamer,
-            instanceIdFactory,
-            new BasicInstanceRegistry());
-        clientStateHandler.setObjectFactory(sessionFactory);
-        
-        serverStateHandler = new DeltaStateHandler(streamer,
-            instanceIdFactory,
-            new BasicInstanceRegistry());
-        serverStateHandler.setObjectFactory(sessionFactory);
     }
     
     public void testEmotionFollowedByImotionRestoreSession() throws Exception {

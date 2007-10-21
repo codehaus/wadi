@@ -118,6 +118,7 @@ public class StackContext {
     private SessionMonitor sessionMonitor;
     private ReplicationManagerFactory repManagerFactory;
     private ReplicaStorageFactory repStorageFactory;
+    protected ObjectStateHandler stateHandler;
 
     public StackContext(ServiceSpaceName serviceSpaceName, Dispatcher underlyingDispatcher) {
         this(serviceSpaceName, underlyingDispatcher, 30 * 60);
@@ -176,16 +177,16 @@ public class StackContext {
         
         Streamer streamer = newStreamer();
         
-        ObjectStateHandler objectStateManager = newObjectStateHandler(streamer);
+        stateHandler = newObjectStateHandler(streamer);
         
-        repStorageFactory = newReplicaStorageFactory(objectStateManager);
+        repStorageFactory = newReplicaStorageFactory();
         replicaStorage = repStorageFactory.factory(serviceSpace);
         
-        repManagerFactory = newReplicationManagerFactory(objectStateManager);
+        repManagerFactory = newReplicationManagerFactory();
         replicationManager = newReplicationManager();
 
         sessionFactory = newSessionFactory(streamer);
-        objectStateManager.setObjectFactory(sessionFactory);
+        stateHandler.setObjectFactory(sessionFactory);
         
         ContextualiserStackExplorer stackExplorer = new ContextualiserStackExplorer();
         
@@ -242,15 +243,15 @@ public class StackContext {
         return new SessionStateHandler(streamer);
     }
 
-    protected ReplicaStorageFactory newReplicaStorageFactory(ObjectStateHandler objectStateManager) {
-        return new SyncMemoryReplicaStorageFactory(objectStateManager);
+    protected ReplicaStorageFactory newReplicaStorageFactory() {
+        return new SyncMemoryReplicaStorageFactory(stateHandler);
     }
 
-    protected ReplicationManagerFactory newReplicationManagerFactory(ObjectStateHandler objectStateManager) {
+    protected ReplicationManagerFactory newReplicationManagerFactory() {
         if (disableReplication) {
             return new NoOpReplicationManagerFactory();
         }
-        return new SyncReplicationManagerFactory(objectStateManager, replicaStorage);
+        return new SyncReplicationManagerFactory(stateHandler, replicaStorage);
     }
 
     protected void registerStackExplorer(ContextualiserStackExplorer stackExplorer) throws ServiceAlreadyRegisteredException {

@@ -18,6 +18,8 @@ package org.codehaus.wadi.aop.tracker.basic;
 import java.util.Set;
 
 import org.codehaus.wadi.aop.ClusteredStateMarker;
+import org.codehaus.wadi.aop.reflect.ClassIndexer;
+import org.codehaus.wadi.aop.reflect.MemberUpdater;
 import org.codehaus.wadi.aop.tracker.InstanceRegistry;
 import org.codehaus.wadi.aop.tracker.InstanceTracker;
 
@@ -29,18 +31,15 @@ import com.agical.rmock.extension.junit.RMockTestCase;
  */
 public class ValueUpdaterInfoTest extends RMockTestCase {
 
-    private ValueUpdater valueUpdater;
     private InstanceAndTrackerReplacer replacer;
 
     @Override
     protected void setUp() throws Exception {
         replacer = new CompoundReplacer();
-
-        valueUpdater = (ValueUpdater) mock(ValueUpdater.class);    
     }
     
     public void testInstanceIdCanBeSetOnce() throws Exception {
-        ValueUpdaterInfo updaterInfo = new ValueUpdaterInfo(replacer, valueUpdater, new Object[0]);
+        ValueUpdaterInfo updaterInfo = new ValueUpdaterInfo(replacer, 1, new Object[0]);
         updaterInfo.setInstanceId("instanceId");
         try {
             updaterInfo.setInstanceId("instanceId");
@@ -56,7 +55,7 @@ public class ValueUpdaterInfoTest extends RMockTestCase {
         startVerification();
         
         String param0 = "test";
-        ValueUpdaterInfo updaterInfo = new ValueUpdaterInfo(replacer, valueUpdater, new Object[] {param0, stateMarker});
+        ValueUpdaterInfo updaterInfo = new ValueUpdaterInfo(replacer, 1, new Object[] {param0, stateMarker});
         Set<InstanceTracker> instanceTrackers = updaterInfo.getInstanceTrackers();
         assertEquals(1, instanceTrackers.size());
         assertTrue(instanceTrackers.contains(instanceTracker));
@@ -67,22 +66,28 @@ public class ValueUpdaterInfoTest extends RMockTestCase {
     }
 
     public void testInstanceTrackerIsReplacedByItsInstanceUponExecution() throws Exception {
+        String instanceId = "instanceId";
+        int memberIndex = 1;
+
         ClusteredStateMarker stateMarker = (ClusteredStateMarker) mock(ClusteredStateMarker.class);
         InstanceTracker instanceTracker = stateMarker.$wadiGetTracker();
-        String instanceId = "instanceId";
         instanceTracker.getInstanceId();
         modify().returnValue(instanceId);
         
+        ClusteredStateMarker newStateMarker = (ClusteredStateMarker) mock(ClusteredStateMarker.class);
         InstanceRegistry instanceRegistry = (InstanceRegistry) mock(InstanceRegistry.class);
         instanceRegistry.getInstance(instanceId);
-        ClusteredStateMarker newStateMarker = (ClusteredStateMarker) mock(ClusteredStateMarker.class);
-        modify().returnValue(newStateMarker);
+        modify().multiplicity(expect.from(0)).returnValue(newStateMarker);
+        InstanceTracker newInstanceTracker = newStateMarker.$wadiGetTracker();
+        ClassIndexer classIndexer = newInstanceTracker.getClassIndexer();
         
+        MemberUpdater memberUpdater = classIndexer.getMemberUpdater(memberIndex);
+        ValueUpdater valueUpdater = memberUpdater.getValueUpdater();
         valueUpdater.executeWithParameters(instanceRegistry, instanceId, new Object[] {newStateMarker});
         
         startVerification();
         
-        ValueUpdaterInfo updaterInfo = new ValueUpdaterInfo(replacer, valueUpdater, new Object[] {stateMarker});
+        ValueUpdaterInfo updaterInfo = new ValueUpdaterInfo(replacer, memberIndex, new Object[] {stateMarker});
         updaterInfo.setInstanceId(instanceId);
         updaterInfo = updaterInfo.snapshotForSerialization();
         updaterInfo.execute(instanceRegistry);

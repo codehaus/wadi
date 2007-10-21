@@ -20,6 +20,7 @@ import java.io.Externalizable;
 import org.codehaus.wadi.aop.tracker.InstanceIdFactory;
 import org.codehaus.wadi.aop.tracker.InstanceRegistry;
 import org.codehaus.wadi.aop.tracker.basic.BasicInstanceRegistry;
+import org.codehaus.wadi.aop.tracker.basic.WireMarshaller;
 import org.codehaus.wadi.aop.util.ClusteredStateHelper;
 import org.codehaus.wadi.core.WADIRuntimeException;
 import org.codehaus.wadi.core.util.Streamer;
@@ -32,32 +33,37 @@ import org.codehaus.wadi.replication.manager.basic.SessionStateHandler;
  * @version $Revision: 1538 $
  */
 public class DeltaStateHandler extends SessionStateHandler {
+    private final WireMarshaller marshaller;
     private final InstanceIdFactory instanceIdFactory;
     private final InstanceRegistry instanceRegistry;
 
     public DeltaStateHandler(Streamer streamer,
+            WireMarshaller marshaller,
             InstanceIdFactory instanceIdFactory,
             InstanceRegistry instanceRegistry) {
         super(streamer);
         if (null == instanceIdFactory) {
             throw new IllegalArgumentException("instanceIdFactory is required");
+        } else if (null == marshaller) {
+            throw new IllegalArgumentException("marshaller is required");
         } else if (null == instanceRegistry) {
             throw new IllegalArgumentException("instanceRegistry is required");
         }
         this.instanceIdFactory = instanceIdFactory;
+        this.marshaller = marshaller;
         this.instanceRegistry = instanceRegistry;
     }
 
     @Override
     protected Externalizable newExtractFullStateExternalizable(Object key, Object target) {
         ClusteredStateSessionMemento memento = extractMemento(target);
-        return new FullStateExternalizable(instanceIdFactory, memento);
+        return new FullStateExternalizable(instanceIdFactory, marshaller, memento);
     }
     
     @Override
     protected Externalizable newExtractUpdatedStateExternalizable(Object key, Object target) {
         ClusteredStateSessionMemento memento = extractMemento(target);
-        return new UpdatedStateExternalizable(instanceIdFactory, memento);
+        return new UpdatedStateExternalizable(instanceIdFactory, marshaller, memento);
     }
     
     @Override
@@ -92,7 +98,7 @@ public class DeltaStateHandler extends SessionStateHandler {
     }
     
     protected Object restore(byte[] state, InstanceRegistry instanceRegistry) {
-        RestoreStateExternalizable externalizable = new RestoreStateExternalizable(streamer, instanceRegistry);
+        RestoreStateExternalizable externalizable = new RestoreStateExternalizable(instanceRegistry, marshaller);
         try {
             Utils.setContent(externalizable, state, streamer);
         } catch (Exception e) {

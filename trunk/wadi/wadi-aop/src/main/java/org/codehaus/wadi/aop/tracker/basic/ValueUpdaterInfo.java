@@ -22,6 +22,10 @@ import java.io.ObjectOutput;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.codehaus.wadi.aop.ClusteredStateMarker;
+import org.codehaus.wadi.aop.reflect.ClassIndexer;
+import org.codehaus.wadi.aop.reflect.ClassIndexerRegistry;
+import org.codehaus.wadi.aop.reflect.MemberUpdater;
 import org.codehaus.wadi.aop.tracker.InstanceRegistry;
 import org.codehaus.wadi.aop.tracker.InstanceTracker;
 
@@ -30,8 +34,11 @@ import org.codehaus.wadi.aop.tracker.InstanceTracker;
  * @version $Revision: 1538 $
  */
 public class ValueUpdaterInfo implements Externalizable {
-    private InstanceAndTrackerReplacer replacer;
-    protected ValueUpdater valueUpdater;
+    private final InstanceAndTrackerReplacer replacer;
+    private final ClassIndexerRegistry classIndexerRegistry;
+
+    private Class targetClass;
+    private int memberUpdaterIndex;
     protected Object[] parameters;
     protected Object[] parametersReplacedWithTrackers;
     protected String instanceId;
@@ -42,20 +49,46 @@ public class ValueUpdaterInfo implements Externalizable {
         }
     }
 
-    public ValueUpdaterInfo() {
-    }
-
-    public ValueUpdaterInfo(InstanceAndTrackerReplacer replacer, ValueUpdater valueUpdater, Object[] parameters) {
+    public ValueUpdaterInfo(InstanceAndTrackerReplacer replacer, ClassIndexerRegistry classIndexerRegistry) {
         if (null == replacer) {
             throw new IllegalArgumentException("replacer is required");
-        } else if (null == valueUpdater) {
-            throw new IllegalArgumentException("valueUpdater is required");
+        } else if (null == classIndexerRegistry) {
+            throw new IllegalArgumentException("classIndexerRegistry is required");
+        }
+        this.replacer = replacer;
+        this.classIndexerRegistry = classIndexerRegistry;
+    }
+
+    public ValueUpdaterInfo(InstanceAndTrackerReplacer replacer, int memberUpdaterIndex, Object[] parameters) {
+        if (null == replacer) {
+            throw new IllegalArgumentException("replacer is required");
         } else if (null == parameters) {
             throw new IllegalArgumentException("parameters is required");
         }
         this.replacer = replacer;
-        this.valueUpdater = valueUpdater;
+        this.memberUpdaterIndex = memberUpdaterIndex;
         this.parameters = parameters;
+        
+        classIndexerRegistry = null;
+    }
+
+    public ValueUpdaterInfo(InstanceAndTrackerReplacer replacer,
+            Class targetClass,
+            int memberUpdaterIndex,
+            Object[] parameters) {
+        if (null == replacer) {
+            throw new IllegalArgumentException("replacer is required");
+        } else if (null == targetClass) {
+            throw new IllegalArgumentException("targetClass is required");
+        } else if (null == parameters) {
+            throw new IllegalArgumentException("parameters is required");
+        }
+        this.replacer = replacer;
+        this.targetClass = targetClass;
+        this.memberUpdaterIndex = memberUpdaterIndex;
+        this.parameters = parameters;
+        
+        classIndexerRegistry = null;
     }
     
     protected ValueUpdaterInfo(ValueUpdaterInfo prototype) {
@@ -65,7 +98,7 @@ public class ValueUpdaterInfo implements Externalizable {
             throw new IllegalArgumentException("prototype does not have an instanceId");
         }
         
-        valueUpdater = prototype.valueUpdater;
+        memberUpdaterIndex = prototype.memberUpdaterIndex;
         instanceId = prototype.instanceId;
         replacer = prototype.replacer;
         parameters = null;
@@ -75,6 +108,8 @@ public class ValueUpdaterInfo implements Externalizable {
             parametersReplacedWithTrackers = 
                 (Object[]) replacer.replaceWithTracker(prototype.parameters, new HashSet<InstanceTracker>());
         }
+        
+        classIndexerRegistry = null;
     }
     
     public String getInstanceId() {
@@ -111,30 +146,51 @@ public class ValueUpdaterInfo implements Externalizable {
     public void execute(InstanceRegistry instanceRegistry) {
         Object[] newParameters =
             (Object[]) replacer.replaceWithInstance(instanceRegistry, parametersReplacedWithTrackers);
+
+        ClassIndexer classIndexer;
+        if (null != targetClass) {
+            classIndexer = classIndexerRegistry.getClassIndexer(targetClass);
+        } else {
+            ClusteredStateMarker instance = (ClusteredStateMarker) instanceRegistry.getInstance(instanceId);
+            classIndexer = instance.$wadiGetTracker().getClassIndexer();
+        }
+
+        MemberUpdater memberUpdater = classIndexer.getMemberUpdater(memberUpdaterIndex);
+        ValueUpdater valueUpdater = memberUpdater.getValueUpdater();
         valueUpdater.executeWithParameters(instanceRegistry, instanceId, newParameters);
     }
-
+    
     public ValueUpdaterInfo snapshotForSerialization() {
         return new ValueUpdaterInfo(this);
     }
 
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-        replacer = (InstanceAndTrackerReplacer) in.readObject();
-        valueUpdater = (ValueUpdater) in.readObject();
+        boolean constructor = in.readBoolean();
+        if (constructor) {
+            targetClass = (Class) in.readObject();
+        }
+        
+        memberUpdaterIndex = in.readInt();
         parametersReplacedWithTrackers = (Object[]) in.readObject();
         instanceId = in.readUTF();
     }
     
     public void writeExternal(ObjectOutput out) throws IOException {
-        out.writeObject(replacer);
-        out.writeObject(valueUpdater);
+        if (null != targetClass) {
+            out.writeBoolean(true);
+            out.writeObject(targetClass);
+        } else {
+            out.writeBoolean(false);
+        }
+        
+        out.writeInt(memberUpdaterIndex);
         out.writeObject(parametersReplacedWithTrackers);
         out.writeUTF(instanceId);
     }
     
     @Override
     public String toString() {
-        return "ValueUpdaterInfo for [" + instanceId + "]; " + valueUpdater;
+        return "ValueUpdaterInfo for [" + instanceId + "]; Index [" + memberUpdaterIndex + "]";
     }
 
 }

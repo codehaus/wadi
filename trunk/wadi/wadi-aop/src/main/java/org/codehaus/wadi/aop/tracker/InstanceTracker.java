@@ -21,6 +21,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
 import org.codehaus.wadi.aop.ClusteredStateMarker;
+import org.codehaus.wadi.aop.reflect.ClassIndexer;
 import org.codehaus.wadi.aop.tracker.basic.ValueUpdaterInfo;
 
 /**
@@ -49,4 +50,6 @@ public interface InstanceTracker extends Serializable {
     void recordFieldUpdate(Field field, Object value);
 
     void resetTracking();
+    
+    ClassIndexer getClassIndexer();
 }

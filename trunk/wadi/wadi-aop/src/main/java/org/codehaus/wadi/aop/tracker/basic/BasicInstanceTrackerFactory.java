@@ -16,6 +16,8 @@
 package org.codehaus.wadi.aop.tracker.basic;
 
 import org.codehaus.wadi.aop.ClusteredStateMarker;
+import org.codehaus.wadi.aop.reflect.ClassIndexer;
+import org.codehaus.wadi.aop.reflect.ClassIndexerRegistry;
 import org.codehaus.wadi.aop.tracker.InstanceTracker;
 import org.codehaus.wadi.aop.tracker.InstanceTrackerFactory;
 
@@ -27,16 +29,29 @@ import org.codehaus.wadi.aop.tracker.InstanceTrackerFactory;
 public class BasicInstanceTrackerFactory implements InstanceTrackerFactory {
     
     private final InstanceAndTrackerReplacer replacer;
+    private final ClassIndexerRegistry registry;
 
-    public BasicInstanceTrackerFactory(InstanceAndTrackerReplacer replacer) {
+    public BasicInstanceTrackerFactory(InstanceAndTrackerReplacer replacer, ClassIndexerRegistry registry) {
         if (null == replacer) {
             throw new IllegalArgumentException("replacer is required");
+        } else if (null == registry) {
+            throw new IllegalArgumentException("registry is required");
         }
         this.replacer = replacer;
+        this.registry = registry;
+    }
+
+    public void prepareTrackerForClass(Class clazz) {
+        registry.index(clazz);
     }
 
     public InstanceTracker newInstanceTracker(ClusteredStateMarker stateMarker) {
-        return new BasicInstanceTracker(replacer, stateMarker);
+        Class targetClass = stateMarker.$wadiGetInstanceClass();
+        
+        registry.index(targetClass);
+        
+        ClassIndexer classIndexer = registry.getClassIndexer(targetClass);
+        return new BasicInstanceTracker(replacer, classIndexer, stateMarker);
     }
     
 }

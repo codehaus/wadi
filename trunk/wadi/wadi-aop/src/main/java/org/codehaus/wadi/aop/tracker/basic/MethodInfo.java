@@ -15,11 +15,7 @@
  */
 package org.codehaus.wadi.aop.tracker.basic;
 
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.lang.reflect.Method;
-
+import org.codehaus.wadi.aop.reflect.MemberUpdater;
 import org.codehaus.wadi.aop.tracker.InstanceRegistry;
 import org.codehaus.wadi.aop.tracker.InstanceTrackerException;
 
@@ -28,71 +24,22 @@ import org.codehaus.wadi.aop.tracker.InstanceTrackerException;
  * @version $Revision: 1538 $
  */
 public class MethodInfo implements ValueUpdater {
-    private Class declaringType;
-    private String name;
-    private Class[] parameterTypes;
-    private transient Method method;
+    private final MemberUpdater memberUpdater;
 
-    public MethodInfo() {
-    }
-    
-    public MethodInfo(Method method) {
-        if (null == method) {
-            throw new IllegalArgumentException("method is required");
+    public MethodInfo(MemberUpdater memberUpdater) {
+        if (null == memberUpdater) {
+            throw new IllegalArgumentException("memberUpdater is required");
         }
-        this.method = method;
-        method.setAccessible(true);
-        
-        declaringType = method.getDeclaringClass();
-        name = method.getName();
-        parameterTypes = method.getParameterTypes();
+        this.memberUpdater = memberUpdater;
     }
     
     public void executeWithParameters(InstanceRegistry instanceRegistry, String instanceId, Object[] parameters) {
         Object instance = instanceRegistry.getInstance(instanceId);
         try {
-            method.invoke(instance, parameters);
+            memberUpdater.executeWithParameters(instance, parameters);
         } catch (Exception e) {
             throw new InstanceTrackerException(e);
         }
     }
     
-    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-        declaringType = (Class) in.readObject();
-        name = in.readUTF();
-        parameterTypes = (Class[]) in.readObject();
-
-        try {
-            method = declaringType.getDeclaredMethod(name, parameterTypes);
-        } catch (Exception e) {
-            throw (IOException) new IOException("See nested").initCause(e);
-        }
-        method.setAccessible(true);
-    }
-
-    public void writeExternal(ObjectOutput out) throws IOException {
-        out.writeObject(declaringType);
-        out.writeUTF(name);
-        out.writeObject(parameterTypes);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (!(obj instanceof MethodInfo)) {
-            return false;
-        }
-        MethodInfo other = (MethodInfo) obj;
-        return method.equals(other.method);
-    }
-    
-    @Override
-    public int hashCode() {
-        return method.hashCode();
-    }
-    
-    @Override
-    public String toString() {
-        return method.toString();
-    }
-
 }

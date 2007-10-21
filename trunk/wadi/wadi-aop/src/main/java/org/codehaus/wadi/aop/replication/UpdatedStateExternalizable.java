@@ -16,6 +16,7 @@
 package org.codehaus.wadi.aop.replication;
 
 import org.codehaus.wadi.aop.tracker.InstanceIdFactory;
+import org.codehaus.wadi.aop.tracker.basic.WireMarshaller;
 import org.codehaus.wadi.aop.util.ClusteredStateHelper;
 
 /**
@@ -24,12 +25,14 @@ import org.codehaus.wadi.aop.util.ClusteredStateHelper;
  */
 public class UpdatedStateExternalizable extends FullStateExternalizable {
 
-    public UpdatedStateExternalizable(InstanceIdFactory instanceIdFactory, ClusteredStateSessionMemento memento) {
-        super(instanceIdFactory, memento);
+    public UpdatedStateExternalizable(InstanceIdFactory instanceIdFactory,
+            WireMarshaller marshaller,
+            ClusteredStateSessionMemento memento) {
+        super(instanceIdFactory, marshaller, memento);
     }
 
     protected byte[] serialize() {
-        return ClusteredStateHelper.serialize(instanceIdFactory, memento);
+        return ClusteredStateHelper.serialize(instanceIdFactory, marshaller, memento);
     }
     
 }

@@ -15,12 +15,10 @@
  */
 package org.codehaus.wadi.aop.tracker.basic;
 
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import java.lang.reflect.Field;
 
 import org.codehaus.wadi.aop.ClusteredStateMarker;
+import org.codehaus.wadi.aop.reflect.MemberUpdater;
 import org.codehaus.wadi.aop.tracker.InstanceRegistry;
 import org.codehaus.wadi.aop.tracker.InstanceTrackerException;
 
@@ -29,68 +27,25 @@ import org.codehaus.wadi.aop.tracker.InstanceTrackerException;
  * @version $Revision: 1538 $
  */
 public class FieldInfo implements ValueUpdater {
-    private Class declaringType;
-    private String name;
-    private transient Field field;
+    private final MemberUpdater memberUpdater;
 
-    public FieldInfo() {
+    public FieldInfo(MemberUpdater memberUpdater) {
+        if (null == memberUpdater) {
+            throw new IllegalArgumentException("fimemberUpdatereld is required");
+        }
+        this.memberUpdater = memberUpdater;
     }
     
-    public FieldInfo(Field field) {
-        if (null == field) {
-            throw new IllegalArgumentException("field is required");
-        }
-        this.field = field;
-        field.setAccessible(true);
-        
-        declaringType = field.getDeclaringClass();
-        name = field.getName();
-    }
-
     public void executeWithParameters(InstanceRegistry instanceRegistry, String instanceId, Object[] parameters) {
         ClusteredStateMarker instance = (ClusteredStateMarker) instanceRegistry.getInstance(instanceId);
         try {
-            field.set(instance, parameters[0]);
+            memberUpdater.executeWithParameters(instance, parameters);
         } catch (Exception e) {
             throw new InstanceTrackerException(e);
         }
+        
+        Field field = (Field) memberUpdater.getMember();
         instance.$wadiGetTracker().recordFieldUpdate(field, parameters[0]);
     }
     
-    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-        declaringType = (Class) in.readObject();
-        name = in.readUTF();
-
-        try {
-            field = declaringType.getDeclaredField(name);
-        } catch (Exception e) {
-            throw (IOException) new IOException("See nested").initCause(e);
-        }
-        field.setAccessible(true);
-    }
-
-    public void writeExternal(ObjectOutput out) throws IOException {
-        out.writeObject(declaringType);
-        out.writeUTF(name);
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (!(obj instanceof FieldInfo)) {
-            return false;
-        }
-        FieldInfo other = (FieldInfo) obj;
-        return field.equals(other.field);
-    }
-    
-    @Override
-    public int hashCode() {
-        return field.hashCode();
-    }
-    
-    @Override
-    public String toString() {
-        return field.toString();
-    }
-
 }

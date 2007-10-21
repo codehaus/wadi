@@ -22,8 +22,8 @@ import java.io.ObjectOutput;
 
 import org.codehaus.wadi.aop.tracker.InstanceRegistry;
 import org.codehaus.wadi.aop.tracker.basic.InFlyInstanceRegistry;
+import org.codehaus.wadi.aop.tracker.basic.WireMarshaller;
 import org.codehaus.wadi.aop.util.ClusteredStateHelper;
-import org.codehaus.wadi.core.util.Streamer;
 
 
 /**
@@ -31,18 +31,18 @@ import org.codehaus.wadi.core.util.Streamer;
  * @version $Revision: 1538 $
  */
 public class RestoreStateExternalizable implements Externalizable {
-    private final Streamer streamer;
     private final InstanceRegistry instanceRegistry;
+    private final WireMarshaller marshaller;
     private ClusteredStateSessionMemento memento;
 
-    public RestoreStateExternalizable(Streamer streamer, InstanceRegistry instanceRegistry) {
-        if (null == streamer) {
-            throw new IllegalArgumentException("streamer is required");
-        } else if (null == instanceRegistry) {
+    public RestoreStateExternalizable(InstanceRegistry instanceRegistry, WireMarshaller marshaller) {
+        if (null == instanceRegistry) {
             throw new IllegalArgumentException("instanceRegistry is required");
+        } else if (null == marshaller) {
+            throw new IllegalArgumentException("marshaller is required");
         }
-        this.streamer = streamer;
         this.instanceRegistry = instanceRegistry;
+        this.marshaller = marshaller;
     }
 
     public void writeExternal(ObjectOutput out) throws IOException {
@@ -55,7 +55,7 @@ public class RestoreStateExternalizable implements Externalizable {
         in.readFully(serInstTracker);
         
         InFlyInstanceRegistry inFlyInstanceRegistry = new InFlyInstanceRegistry(instanceRegistry);
-        ClusteredStateHelper.deserialize(inFlyInstanceRegistry, streamer, serInstTracker);
+        ClusteredStateHelper.deserialize(inFlyInstanceRegistry, marshaller, serInstTracker);
         inFlyInstanceRegistry.merge();
         
         String instanceId = in.readUTF();

@@ -20,13 +20,17 @@ import java.util.Map;
 
 import org.codehaus.wadi.aop.ClusteredStateMarker;
 import org.codehaus.wadi.aop.aspectj.ClusteredStateAspectUtil;
+import org.codehaus.wadi.aop.reflect.ClassIndexerRegistry;
+import org.codehaus.wadi.aop.reflect.jdk.JDKClassIndexerRegistry;
 import org.codehaus.wadi.aop.tracker.InstanceIdFactory;
 import org.codehaus.wadi.aop.tracker.InstanceRegistry;
 import org.codehaus.wadi.aop.tracker.basic.BasicInstanceIdFactory;
 import org.codehaus.wadi.aop.tracker.basic.BasicInstanceRegistry;
 import org.codehaus.wadi.aop.tracker.basic.BasicInstanceTrackerFactory;
+import org.codehaus.wadi.aop.tracker.basic.BasicWireMarshaller;
 import org.codehaus.wadi.aop.tracker.basic.CompoundReplacer;
 import org.codehaus.wadi.aop.tracker.basic.InstanceAndTrackerReplacer;
+import org.codehaus.wadi.aop.tracker.basic.WireMarshaller;
 import org.codehaus.wadi.core.util.SimpleStreamer;
 
 import com.agical.rmock.extension.junit.RMockTestCase;
@@ -41,24 +45,28 @@ public class TrackedMapTest extends RMockTestCase {
     private InstanceRegistry instanceRegistry;
     private TrackedMap trackedMap;
     private TrackedMap replicatedMap;
+    private WireMarshaller marshaller;
 
     @Override
     protected void setUp() throws Exception {
         InstanceAndTrackerReplacer replacer = new CompoundReplacer();
+        ClassIndexerRegistry registry = new JDKClassIndexerRegistry();
         
+        SimpleStreamer streamer = new SimpleStreamer();
+        marshaller = new BasicWireMarshaller(streamer, registry, replacer);
         instanceIdFactory = new BasicInstanceIdFactory("");
         ClusteredStateAspectUtil.resetInstanceTrackerFactory();
-        ClusteredStateAspectUtil.setInstanceTrackerFactory(new BasicInstanceTrackerFactory(replacer));
+        ClusteredStateAspectUtil.setInstanceTrackerFactory(new BasicInstanceTrackerFactory(replacer, registry));
         
         trackedMap = new TrackedMap();
         trackedMap.setDelegate(new HashMap());
         
-        byte[] serializeFully = ClusteredStateHelper.serializeFully(instanceIdFactory, trackedMap);
+        byte[] serializeFully = ClusteredStateHelper.serializeFully(instanceIdFactory, marshaller, trackedMap);
         ClusteredStateHelper.resetTracker(trackedMap);
         ClusteredStateMarker stateMarker = ClusteredStateHelper.castAndEnsureType(trackedMap);
         
         instanceRegistry = new BasicInstanceRegistry();
-        ClusteredStateHelper.deserialize(instanceRegistry, new SimpleStreamer(), serializeFully);
+        ClusteredStateHelper.deserialize(instanceRegistry, marshaller, serializeFully);
         
         replicatedMap = (TrackedMap) instanceRegistry.getInstance(stateMarker.$wadiGetTracker().getInstanceId());
     }
@@ -105,17 +113,15 @@ public class TrackedMapTest extends RMockTestCase {
         
         trackedMap.clear();
         
-        byte[] serialize = ClusteredStateHelper.serialize(instanceIdFactory, trackedMap);
-        ClusteredStateHelper.deserialize(instanceRegistry, new SimpleStreamer(), serialize);
+        serializeAndUnserialize();
         
         assertTrue(replicatedMap.isEmpty());
     }
-    
+
     public void testPutIsTracked() throws Exception {
         trackedMap.put("key", "value");
         
-        byte[] serialize = ClusteredStateHelper.serialize(instanceIdFactory, trackedMap);
-        ClusteredStateHelper.deserialize(instanceRegistry, new SimpleStreamer(), serialize);
+        serializeAndUnserialize();
         
         assertEquals(trackedMap, replicatedMap);
     }
@@ -126,8 +132,7 @@ public class TrackedMapTest extends RMockTestCase {
         all.put("key2", "value");
         trackedMap.putAll(all);
         
-        byte[] serialize = ClusteredStateHelper.serialize(instanceIdFactory, trackedMap);
-        ClusteredStateHelper.deserialize(instanceRegistry, new SimpleStreamer(), serialize);
+        serializeAndUnserialize();
         
         assertEquals(trackedMap, replicatedMap);
     }
@@ -137,8 +142,7 @@ public class TrackedMapTest extends RMockTestCase {
 
         trackedMap.remove("key");
 
-        byte[] serialize = ClusteredStateHelper.serialize(instanceIdFactory, trackedMap);
-        ClusteredStateHelper.deserialize(instanceRegistry, new SimpleStreamer(), serialize);
+        serializeAndUnserialize();
         
         assertTrue(replicatedMap.isEmpty());
     }
@@ -146,10 +150,14 @@ public class TrackedMapTest extends RMockTestCase {
     protected void executePut() throws Exception {
         trackedMap.put("key", "value");
         
-        byte[] serialize = ClusteredStateHelper.serialize(instanceIdFactory, trackedMap);
-        ClusteredStateHelper.deserialize(instanceRegistry, new SimpleStreamer(), serialize);
+        serializeAndUnserialize();
         
         assertEquals(trackedMap, replicatedMap);
     }
 
+    private void serializeAndUnserialize() {
+        byte[] serialize = ClusteredStateHelper.serialize(instanceIdFactory, marshaller, trackedMap);
+        ClusteredStateHelper.deserialize(instanceRegistry, marshaller, serialize);
+    }
+    
 }
