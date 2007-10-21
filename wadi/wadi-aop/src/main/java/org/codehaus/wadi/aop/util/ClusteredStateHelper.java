@@ -15,15 +15,13 @@
  */
 package org.codehaus.wadi.aop.util;
 
-import java.io.ByteArrayInputStream;
-import java.io.ObjectInput;
-
 import org.codehaus.wadi.aop.ClusteredStateMarker;
 import org.codehaus.wadi.aop.tracker.InstanceIdFactory;
 import org.codehaus.wadi.aop.tracker.InstanceRegistry;
 import org.codehaus.wadi.aop.tracker.InstanceTrackerVisitor;
 import org.codehaus.wadi.aop.tracker.VisitorContext;
 import org.codehaus.wadi.aop.tracker.basic.ValueUpdaterInfo;
+import org.codehaus.wadi.aop.tracker.basic.WireMarshaller;
 import org.codehaus.wadi.aop.tracker.visitor.CopyFullStateVisitor;
 import org.codehaus.wadi.aop.tracker.visitor.CopyStateVisitor;
 import org.codehaus.wadi.aop.tracker.visitor.RegisterTrackingVisitor;
@@ -31,8 +29,6 @@ import org.codehaus.wadi.aop.tracker.visitor.ResetTrackingVisitor;
 import org.codehaus.wadi.aop.tracker.visitor.SetInstanceIdVisitor;
 import org.codehaus.wadi.aop.tracker.visitor.UnregisterTrackingVisitor;
 import org.codehaus.wadi.aop.tracker.visitor.CopyStateVisitor.CopyStateVisitorContext;
-import org.codehaus.wadi.core.WADIRuntimeException;
-import org.codehaus.wadi.core.util.Streamer;
 
 
 /**
@@ -56,14 +52,15 @@ public final class ClusteredStateHelper {
         visit(opaque, new RegisterTrackingVisitor(instanceRegistry), true);
     }
     
-    public static byte[] serializeFully(InstanceIdFactory instanceIdFactory, Object opaque) {
-        CopyFullStateVisitor visitor = new CopyFullStateVisitor(new SetInstanceIdVisitor(instanceIdFactory));
+    public static byte[] serializeFully(InstanceIdFactory instanceIdFactory, WireMarshaller marshaller, Object opaque) {
+        CopyFullStateVisitor visitor = new CopyFullStateVisitor(marshaller, new SetInstanceIdVisitor(instanceIdFactory));
         CopyStateVisitorContext context = (CopyStateVisitorContext) visit(opaque, visitor, false);
         return context.getSerializedValueUpdaterInfos();
     }
 
-    public static byte[] serialize(InstanceIdFactory instanceIdFactory, Object opaque) {
-        CopyStateVisitor visitor = new CopyStateVisitor(new SetInstanceIdVisitor(instanceIdFactory),
+    public static byte[] serialize(InstanceIdFactory instanceIdFactory, WireMarshaller marshaller, Object opaque) {
+        CopyStateVisitor visitor = new CopyStateVisitor(marshaller,
+            new SetInstanceIdVisitor(instanceIdFactory),
             ResetTrackingVisitor.SINGLETON);
         CopyStateVisitorContext context = (CopyStateVisitorContext) visit(opaque, visitor, false);
         return context.getSerializedValueUpdaterInfos();
@@ -81,15 +78,8 @@ public final class ClusteredStateHelper {
         return context;
     }
 
-    public static void deserialize(InstanceRegistry instanceRegistry, Streamer streamer, byte[] serialized) {
-        ByteArrayInputStream memIn = new ByteArrayInputStream(serialized);
-        ValueUpdaterInfo[] valueUpdaterInfos;
-        try {
-            ObjectInput in = streamer.getInputStream(memIn);
-            valueUpdaterInfos = (ValueUpdaterInfo[]) in.readObject();
-        } catch (Exception e) {
-            throw new WADIRuntimeException(e);
-        }
+    public static void deserialize(InstanceRegistry instanceRegistry, WireMarshaller marshaller, byte[] serialized) {
+        ValueUpdaterInfo[] valueUpdaterInfos = marshaller.unmarshall(serialized);
         ValueUpdaterInfo.applyTo(instanceRegistry, valueUpdaterInfos);
     }
     

@@ -15,11 +15,11 @@
  */
 package org.codehaus.wadi.aop.replication;
 
-import org.codehaus.wadi.aop.tracker.InstanceIdFactory;
 import org.codehaus.wadi.core.manager.Manager;
 import org.codehaus.wadi.core.session.SessionFactory;
 import org.codehaus.wadi.core.util.Streamer;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
+import org.codehaus.wadi.replication.manager.basic.ObjectStateHandler;
 
 /**
  * 
@@ -30,26 +30,26 @@ public class ClusteredStateSessionFactory implements SessionFactory {
     private final ClusteredStateAttributesFactory attributesFactory;
     private final Streamer streamer;
     private final ReplicationManager replicationManager;
-    private final InstanceIdFactory instanceIdFactory;
+    private final ObjectStateHandler stateHandler;
     private Manager manager;
     
     public ClusteredStateSessionFactory(ClusteredStateAttributesFactory attributesFactory,
             Streamer streamer,
             ReplicationManager replicationManager,
-            InstanceIdFactory instanceIdFactory) {
+            ObjectStateHandler stateHandler) {
         if (null == attributesFactory) {
             throw new IllegalArgumentException("attributesFactory is required");
         } else if (null == streamer) {
             throw new IllegalArgumentException("streamer is required");
         } else if (null == replicationManager) {
             throw new IllegalArgumentException("replicationManager is required");
-        } else if (null == instanceIdFactory) {
-            throw new IllegalArgumentException("instanceIdFactory is required");
+        } else if (null == stateHandler) {
+            throw new IllegalArgumentException("stateHandler is required");
         }
         this.attributesFactory = attributesFactory;
         this.streamer = streamer;
         this.replicationManager = replicationManager;
-        this.instanceIdFactory = instanceIdFactory;
+        this.stateHandler = stateHandler;
     }
 
     public ClusteredStateSession create() {
@@ -57,7 +57,7 @@ public class ClusteredStateSessionFactory implements SessionFactory {
             manager,
             streamer,
             replicationManager,
-            instanceIdFactory);
+            stateHandler);
     }
 
     public void setManager(Manager manager) {

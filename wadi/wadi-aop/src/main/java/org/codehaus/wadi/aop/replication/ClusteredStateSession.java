@@ -15,37 +15,33 @@
  */
 package org.codehaus.wadi.aop.replication;
 
-import java.io.Externalizable;
 import java.io.IOException;
 
-import org.codehaus.wadi.aop.tracker.InstanceIdFactory;
-import org.codehaus.wadi.aop.tracker.basic.BasicInstanceRegistry;
 import org.codehaus.wadi.aop.util.ClusteredStateHelper;
-import org.codehaus.wadi.core.WADIRuntimeException;
 import org.codehaus.wadi.core.eviction.SimpleEvictableMemento;
 import org.codehaus.wadi.core.manager.Manager;
 import org.codehaus.wadi.core.session.AbstractReplicableSession;
 import org.codehaus.wadi.core.util.Streamer;
-import org.codehaus.wadi.core.util.Utils;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
+import org.codehaus.wadi.replication.manager.basic.ObjectStateHandler;
 
 /**
  * 
  * @version $Revision: 1538 $
  */
 public class ClusteredStateSession extends AbstractReplicableSession {
-    private final InstanceIdFactory instanceIdFactory;
+    private final ObjectStateHandler stateHandler;
     
     public ClusteredStateSession(ClusteredStateAttributes attributes,
             Manager manager,
             Streamer streamer,
             ReplicationManager replicationManager,
-            InstanceIdFactory instanceIdFactory) {
+            ObjectStateHandler stateHandler) {
         super(attributes, manager, streamer, replicationManager);
-        if (null == instanceIdFactory) {
-            throw new IllegalArgumentException("instanceIdFactory is required");
+        if (null == stateHandler) {
+            throw new IllegalArgumentException("stateHandler is required");
         }
-        this.instanceIdFactory = instanceIdFactory;
+        this.stateHandler = stateHandler;
     }
 
     @Override
@@ -59,21 +55,15 @@ public class ClusteredStateSession extends AbstractReplicableSession {
     
     @Override
     public synchronized byte[] getBodyAsByteArray() throws Exception {
-        Externalizable externalizable = new FullStateExternalizable(instanceIdFactory, 
-            (ClusteredStateSessionMemento) memento);
-        return Utils.getContent(externalizable, streamer);
+        return stateHandler.extractFullState(getName(), this);
     }
     
     @Override
     public synchronized void setBodyAsByteArray(byte[] bytes) throws IOException, ClassNotFoundException {
-        RestoreStateExternalizable externalizable = new RestoreStateExternalizable(streamer, new BasicInstanceRegistry());
-        try {
-            Utils.setContent(externalizable, bytes, streamer);
-        } catch (Exception e) {
-            throw new WADIRuntimeException(e);
-        }
-        ClusteredStateSessionMemento clusteredMemento = externalizable.getMemento();
-        clusteredMemento.onRestore();
+        ClusteredStateSession session =
+            (ClusteredStateSession) stateHandler.restoreFromFullStateTransient(getName(), bytes);
+        ClusteredStateSessionMemento clusteredMemento =
+            (ClusteredStateSessionMemento) session.getDistributableSessionMemento();
 
         attributes.setMemento(clusteredMemento.getAttributesMemento());
 

@@ -44,6 +44,8 @@ public class AbstractReplacerTest extends RMockTestCase {
     protected void setUp() throws Exception {
         tracker = (InstanceTracker) mock(InstanceTracker.class);
         InstanceTrackerFactory trackerFactory = new InstanceTrackerFactory() {
+            public void prepareTrackerForClass(Class clazz) {
+            }
             public InstanceTracker newInstanceTracker(ClusteredStateMarker stateMarker) {
                 return tracker;
             }    

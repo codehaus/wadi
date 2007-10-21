@@ -19,12 +19,16 @@ import java.io.Serializable;
 
 import org.codehaus.wadi.aop.annotation.ClusteredState;
 import org.codehaus.wadi.aop.aspectj.ClusteredStateAspectUtil;
+import org.codehaus.wadi.aop.reflect.ClassIndexerRegistry;
+import org.codehaus.wadi.aop.reflect.jdk.JDKClassIndexerRegistry;
 import org.codehaus.wadi.aop.tracker.InstanceIdFactory;
 import org.codehaus.wadi.aop.tracker.InstanceRegistry;
 import org.codehaus.wadi.aop.tracker.basic.BasicInstanceRegistry;
 import org.codehaus.wadi.aop.tracker.basic.BasicInstanceTrackerFactory;
+import org.codehaus.wadi.aop.tracker.basic.BasicWireMarshaller;
 import org.codehaus.wadi.aop.tracker.basic.CompoundReplacer;
 import org.codehaus.wadi.aop.tracker.basic.InstanceAndTrackerReplacer;
+import org.codehaus.wadi.aop.tracker.basic.WireMarshaller;
 import org.codehaus.wadi.core.util.SimpleStreamer;
 
 import com.agical.rmock.extension.junit.RMockTestCase;
@@ -35,20 +39,23 @@ import com.agical.rmock.extension.junit.RMockTestCase;
  */
 public class ClusteredStateHelperTest extends RMockTestCase {
 
+    private WireMarshaller marshaller;
     private InstanceIdFactory instanceIdFactory;
     private InstanceRegistry instanceRegistry;
-    private SimpleStreamer streamer;
 
     @Override
     protected void setUp() throws Exception {
         InstanceAndTrackerReplacer replacer = new CompoundReplacer();
-        
+        ClassIndexerRegistry registry = new JDKClassIndexerRegistry();
+
+        SimpleStreamer streamer = new SimpleStreamer();
+        marshaller = new BasicWireMarshaller(streamer, registry, replacer);
+
         instanceIdFactory = (InstanceIdFactory) mock(InstanceIdFactory.class);
         instanceRegistry = new BasicInstanceRegistry();
         
         ClusteredStateAspectUtil.resetInstanceTrackerFactory();
-        ClusteredStateAspectUtil.setInstanceTrackerFactory(new BasicInstanceTrackerFactory(replacer));
-        streamer = new SimpleStreamer();
+        ClusteredStateAspectUtil.setInstanceTrackerFactory(new BasicInstanceTrackerFactory(replacer, registry));
     }
     
     public void testFullSerialization() throws Exception {
@@ -63,8 +70,8 @@ public class ClusteredStateHelperTest extends RMockTestCase {
         b.field = 1234;
         b.a = a;
         
-        byte[] serialized = ClusteredStateHelper.serializeFully(instanceIdFactory, a);
-        ClusteredStateHelper.deserialize(instanceRegistry, streamer, serialized);
+        byte[] serialized = ClusteredStateHelper.serializeFully(instanceIdFactory, marshaller, a);
+        ClusteredStateHelper.deserialize(instanceRegistry, marshaller, serialized);
         
         assertInstances(a, b, instanceRegistry);
     }
@@ -81,16 +88,16 @@ public class ClusteredStateHelperTest extends RMockTestCase {
         b.field = 1234;
         b.a = a;
         
-        byte[] serialized = ClusteredStateHelper.serializeFully(instanceIdFactory, a);
+        byte[] serialized = ClusteredStateHelper.serializeFully(instanceIdFactory, marshaller, a);
         ClusteredStateHelper.resetTracker(a);
         
-        ClusteredStateHelper.deserialize(instanceRegistry, streamer, serialized);
+        ClusteredStateHelper.deserialize(instanceRegistry, marshaller, serialized);
 
         a.field = 1234;
         b.field = 12345;
         
-        serialized = ClusteredStateHelper.serialize(instanceIdFactory, a);
-        ClusteredStateHelper.deserialize(instanceRegistry, streamer, serialized);
+        serialized = ClusteredStateHelper.serialize(instanceIdFactory, marshaller, a);
+        ClusteredStateHelper.deserialize(instanceRegistry, marshaller, serialized);
         
         assertInstances(a, b, instanceRegistry);
     }

@@ -23,5 +23,7 @@ import org.codehaus.wadi.aop.ClusteredStateMarker;
  * @version $Revision: 1538 $
  */
 public interface InstanceTrackerFactory {
+    void prepareTrackerForClass(Class clazz);
+    
     InstanceTracker newInstanceTracker(ClusteredStateMarker stateMarker);
 }

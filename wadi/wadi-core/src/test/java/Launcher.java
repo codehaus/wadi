@@ -33,7 +33,6 @@ import org.codehaus.wadi.group.vm.VMBroker;
 import org.codehaus.wadi.group.vm.VMDispatcher;
 import org.codehaus.wadi.replication.manager.ReplicationManagerFactory;
 import org.codehaus.wadi.replication.manager.basic.NoOpReplicationManagerFactory;
-import org.codehaus.wadi.replication.manager.basic.ObjectStateHandler;
 import org.codehaus.wadi.replication.strategy.RoundRobinBackingStrategyFactory;
 import org.codehaus.wadi.servicespace.ServiceSpaceName;
 
@@ -142,7 +141,7 @@ public class Launcher {
                 1000 * 60 * 60 * 24,
                 new RoundRobinBackingStrategyFactory(1)) {
             @Override
-            protected ReplicationManagerFactory newReplicationManagerFactory(ObjectStateHandler objectStateManager) {
+            protected ReplicationManagerFactory newReplicationManagerFactory() {
                 return new NoOpReplicationManagerFactory();
             }
             protected Router newRouter() {

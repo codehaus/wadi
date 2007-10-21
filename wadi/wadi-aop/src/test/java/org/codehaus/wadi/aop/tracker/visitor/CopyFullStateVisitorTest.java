@@ -15,20 +15,14 @@
  */
 package org.codehaus.wadi.aop.tracker.visitor;
 
-import java.io.ByteArrayInputStream;
-import java.io.ObjectInputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import org.codehaus.wadi.aop.tracker.InstanceTracker;
 import org.codehaus.wadi.aop.tracker.InstanceTrackerVisitor;
 import org.codehaus.wadi.aop.tracker.NoOpInstanceTrackerVisitor;
 import org.codehaus.wadi.aop.tracker.VisitorContext;
 import org.codehaus.wadi.aop.tracker.basic.CompoundReplacer;
-import org.codehaus.wadi.aop.tracker.basic.ConstructorInfo;
 import org.codehaus.wadi.aop.tracker.basic.InstanceAndTrackerReplacer;
 import org.codehaus.wadi.aop.tracker.basic.ValueUpdaterInfo;
+import org.codehaus.wadi.aop.tracker.basic.WireMarshaller;
 import org.codehaus.wadi.aop.tracker.visitor.CopyStateVisitor.CopyStateVisitorContext;
 
 import com.agical.rmock.extension.junit.RMockTestCase;
@@ -39,18 +33,17 @@ import com.agical.rmock.extension.junit.RMockTestCase;
  */
 public class CopyFullStateVisitorTest extends RMockTestCase {
 
+    private WireMarshaller marshaller;
     private InstanceTrackerVisitor setInstanceIdVisitor;
     private CopyFullStateVisitor visitor;
     private InstanceTracker instanceTracker;
-    private InstanceAndTrackerReplacer replacer;
 
     @Override
     protected void setUp() throws Exception {
-        replacer = new CompoundReplacer();
-        
+        marshaller = (WireMarshaller) mock(WireMarshaller.class);
         setInstanceIdVisitor = (InstanceTrackerVisitor) mock(InstanceTrackerVisitor.class);
         
-        visitor = new CopyFullStateVisitor(setInstanceIdVisitor);
+        visitor = new CopyFullStateVisitor(marshaller, setInstanceIdVisitor);
         
         instanceTracker = (InstanceTracker) mock(InstanceTracker.class);
     }
@@ -60,10 +53,12 @@ public class CopyFullStateVisitorTest extends RMockTestCase {
         instanceTracker.visit(setInstanceIdVisitor, setInstanceId);
         
         instanceTracker.retrieveInstantiationValueUpdaterInfos();
-        ConstructorInfo constructorInfo = new ConstructorInfo(ArrayList.class.getDeclaredConstructor());
-        ValueUpdaterInfo valueUpdaterInfo = new ValueUpdaterInfo(replacer, constructorInfo, new Object[0]);
-        valueUpdaterInfo.setInstanceId("instanceId");
-        modify().returnValue(new ValueUpdaterInfo[] {valueUpdaterInfo});
+        ValueUpdaterInfo[] valueUpdaterInfos = new ValueUpdaterInfo[0];
+        modify().returnValue(valueUpdaterInfos);
+        
+        marshaller.marshall(valueUpdaterInfos);
+        byte[] marshalled = new byte[0];
+        modify().returnValue(marshalled);
         
         instanceTracker.visit(NoOpInstanceTrackerVisitor.SINGLETON, null);
         modify().args(is.AS_RECORDED, is.NOT_NULL);
@@ -74,11 +69,7 @@ public class CopyFullStateVisitorTest extends RMockTestCase {
         visitor.visit(instanceTracker, context);
         
         byte[] serializedValueUpdaterInfos = context.getSerializedValueUpdaterInfos();
-        
-        ByteArrayInputStream memIn = new ByteArrayInputStream(serializedValueUpdaterInfos);
-        ObjectInputStream in = new ObjectInputStream(memIn);
-        ValueUpdaterInfo[] actualValueUpdaterInfos = (ValueUpdaterInfo[]) in.readObject();
-        assertEquals(1, actualValueUpdaterInfos.length);
+        assertSame(marshalled, serializedValueUpdaterInfos);
     }
 
 }

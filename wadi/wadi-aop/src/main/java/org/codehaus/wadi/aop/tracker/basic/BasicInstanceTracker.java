@@ -27,6 +27,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.codehaus.wadi.aop.ClusteredStateMarker;
+import org.codehaus.wadi.aop.reflect.ClassIndexer;
 import org.codehaus.wadi.aop.tracker.InstanceTracker;
 import org.codehaus.wadi.aop.tracker.InstanceTrackerException;
 import org.codehaus.wadi.aop.tracker.InstanceTrackerVisitor;
@@ -38,19 +39,25 @@ import org.codehaus.wadi.aop.tracker.visitor.AbstractVisitor;
  * @version $Revision: 1538 $
  */
 public class BasicInstanceTracker implements InstanceTracker {
-    private final InstanceAndTrackerReplacer replacer;
+    private transient final InstanceAndTrackerReplacer replacer;
+    private transient final ClassIndexer classIndexer;
     private transient final ClusteredStateMarker stateMarker;
     private transient final Map<Long, ValueUpdaterInfo> indexToValueUpdaterInfo;
     private transient final Map<Field, ValueUpdaterInfo> fieldToValueUpdaterInfo;
     private String instanceId;
     
-    public BasicInstanceTracker(InstanceAndTrackerReplacer replacer, ClusteredStateMarker stateMarker) {
+    public BasicInstanceTracker(InstanceAndTrackerReplacer replacer,
+            ClassIndexer classIndexer,
+            ClusteredStateMarker stateMarker) {
         if (null == replacer) {
             throw new IllegalArgumentException("replacer is required");
+        } else if (null == classIndexer) {
+            throw new IllegalArgumentException("classIndexer is required");
         } else if (null == stateMarker) {
             throw new IllegalArgumentException("stateMarker is required");
         }
         this.replacer = replacer;
+        this.classIndexer = classIndexer;
         this.stateMarker = stateMarker;
         
         indexToValueUpdaterInfo = new HashMap<Long, ValueUpdaterInfo>();
@@ -100,25 +107,30 @@ public class BasicInstanceTracker implements InstanceTracker {
     }
     
     public void track(long index, Constructor constructor, Object[] parameters) {
-        ValueUpdaterInfo valueUpdaterInfo = new ValueUpdaterInfo(replacer, new ConstructorInfo(constructor), parameters);
+        int memberIndex = classIndexer.getIndex(constructor);
+        Class targetClass = stateMarker.$wadiGetInstanceClass();
+        ValueUpdaterInfo valueUpdaterInfo = new ValueUpdaterInfo(replacer, targetClass, memberIndex, parameters);
         valueUpdaterInfo.setInstanceId(instanceId);
         indexToValueUpdaterInfo.put(new Long(index), valueUpdaterInfo);
     }
 
     public void track(long index, Field field, Object value) {
-        ValueUpdaterInfo valueUpdaterInfo = new ValueUpdaterInfo(replacer, new FieldInfo(field), new Object[] {value});
+        int memberIndex = classIndexer.getIndex(field);
+        ValueUpdaterInfo valueUpdaterInfo = new ValueUpdaterInfo(replacer, memberIndex, new Object[] {value});
         valueUpdaterInfo.setInstanceId(instanceId);
         indexToValueUpdaterInfo.put(new Long(index), valueUpdaterInfo);
     }
 
     public void track(long index, Method method, Object[] parameters) {
-        ValueUpdaterInfo valueUpdaterInfo = new ValueUpdaterInfo(replacer, new MethodInfo(method), parameters);
+        int memberIndex = classIndexer.getIndex(method);
+        ValueUpdaterInfo valueUpdaterInfo = new ValueUpdaterInfo(replacer, memberIndex, parameters);
         valueUpdaterInfo.setInstanceId(instanceId);
         indexToValueUpdaterInfo.put(new Long(index), valueUpdaterInfo);
     }
     
     public void recordFieldUpdate(Field field, Object value) {
-        ValueUpdaterInfo valueUpdaterInfo = new ValueUpdaterInfo(replacer, new FieldInfo(field), new Object[] {value});
+        int memberIndex = classIndexer.getIndex(field);
+        ValueUpdaterInfo valueUpdaterInfo = new ValueUpdaterInfo(replacer, memberIndex, new Object[] {value});
         valueUpdaterInfo.setInstanceId(instanceId);
         fieldToValueUpdaterInfo.put(field, valueUpdaterInfo);
     }
@@ -153,6 +165,10 @@ public class BasicInstanceTracker implements InstanceTracker {
     public void resetTracking() {
         indexToValueUpdaterInfo.clear();
     }
+    
+    public ClassIndexer getClassIndexer() {
+        return classIndexer;
+    }
 
     protected void visitFieldValueUpdaterInfos(VisitAction action) {
         for (ValueUpdaterInfo valueUpdaterInfo : fieldToValueUpdaterInfo.values()) {
@@ -176,13 +192,15 @@ public class BasicInstanceTracker implements InstanceTracker {
         }
         visitedTracker.put(this, Boolean.TRUE);
         
+        Class targetClass = stateMarker.$wadiGetInstanceClass();
         Constructor constructor;
         try {
-            constructor = stateMarker.$wadiGetInstanceClass().getDeclaredConstructor();
+            constructor = targetClass.getDeclaredConstructor();
         } catch (Exception e) {
             throw new InstanceTrackerException(e);
         }
-        ValueUpdaterInfo constructorInfo = new ValueUpdaterInfo(replacer, new ConstructorInfo(constructor), new Object[0]);
+        int memberIndex = classIndexer.getIndex(constructor);
+        ValueUpdaterInfo constructorInfo = new ValueUpdaterInfo(replacer, targetClass, memberIndex, new Object[0]);
         constructorInfo.setInstanceId(instanceId);
         valueUpdaterInfos.add(constructorInfo);
 

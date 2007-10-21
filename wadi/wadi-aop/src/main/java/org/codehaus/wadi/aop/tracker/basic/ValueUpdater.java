@@ -15,8 +15,6 @@
  */
 package org.codehaus.wadi.aop.tracker.basic;
 
-import java.io.Externalizable;
-
 import org.codehaus.wadi.aop.tracker.InstanceRegistry;
 import org.codehaus.wadi.aop.tracker.InstanceTrackerException;
 
@@ -24,7 +22,7 @@ import org.codehaus.wadi.aop.tracker.InstanceTrackerException;
  * 
  * @version $Revision: 1538 $
  */
-public interface ValueUpdater extends Externalizable {
+public interface ValueUpdater {
     void executeWithParameters(InstanceRegistry instanceRegistry, String instanceId, Object[] parameters)
             throws InstanceTrackerException;
 }

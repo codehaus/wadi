@@ -22,6 +22,7 @@ import java.io.ObjectOutput;
 
 import org.codehaus.wadi.aop.ClusteredStateMarker;
 import org.codehaus.wadi.aop.tracker.InstanceIdFactory;
+import org.codehaus.wadi.aop.tracker.basic.WireMarshaller;
 import org.codehaus.wadi.aop.util.ClusteredStateHelper;
 
 /**
@@ -30,15 +31,21 @@ import org.codehaus.wadi.aop.util.ClusteredStateHelper;
  */
 public class FullStateExternalizable implements Externalizable {
     protected final InstanceIdFactory instanceIdFactory;
+    protected final WireMarshaller marshaller;
     protected final ClusteredStateSessionMemento memento;
     
-    public FullStateExternalizable(InstanceIdFactory instanceIdFactory, ClusteredStateSessionMemento memento) {
+    public FullStateExternalizable(InstanceIdFactory instanceIdFactory,
+            WireMarshaller marshaller,
+            ClusteredStateSessionMemento memento) {
         if (null == instanceIdFactory) {
             throw new IllegalArgumentException("instanceIdFactory is required");
+        } else if (null == marshaller) {
+            throw new IllegalArgumentException("marshaller is required");
         } else if (null == memento) {
             throw new IllegalArgumentException("memento is required");
         }
         this.instanceIdFactory = instanceIdFactory;
+        this.marshaller = marshaller;
         this.memento = memento;
     }
 
@@ -56,7 +63,7 @@ public class FullStateExternalizable implements Externalizable {
     }
 
     protected byte[] serialize() {
-        return ClusteredStateHelper.serializeFully(instanceIdFactory, memento);
+        return ClusteredStateHelper.serializeFully(instanceIdFactory, marshaller, memento);
     }
     
 }

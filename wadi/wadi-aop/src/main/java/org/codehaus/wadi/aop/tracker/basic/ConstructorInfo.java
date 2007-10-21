@@ -15,12 +15,8 @@
  */
 package org.codehaus.wadi.aop.tracker.basic;
 
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.lang.reflect.Constructor;
-
 import org.codehaus.wadi.aop.ClusteredStateMarker;
+import org.codehaus.wadi.aop.reflect.MemberUpdater;
 import org.codehaus.wadi.aop.tracker.InstanceRegistry;
 import org.codehaus.wadi.aop.tracker.InstanceTrackerException;
 
@@ -29,28 +25,19 @@ import org.codehaus.wadi.aop.tracker.InstanceTrackerException;
  * @version $Revision: 1538 $
  */
 public class ConstructorInfo implements ValueUpdater {
-    private Class declaringType;
-    private Class[] parameterTypes;
-    private transient Constructor constructor;
+    private final MemberUpdater memberUpdater;
     
-    public ConstructorInfo() {
-    }
-    
-    public ConstructorInfo(Constructor constructor) {
-        if (null == constructor) {
-            throw new IllegalArgumentException("constructor is required");
+    public ConstructorInfo(MemberUpdater memberUpdater) {
+        if (null == memberUpdater) {
+            throw new IllegalArgumentException("memberUpdater is required");
         }
-        this.constructor = constructor;
-        constructor.setAccessible(true);
-        
-        declaringType = constructor.getDeclaringClass();
-        parameterTypes = constructor.getParameterTypes();
+        this.memberUpdater = memberUpdater;
     }
     
     public void executeWithParameters(InstanceRegistry instanceRegistry, String instanceId, Object[] parameters) {
         ClusteredStateMarker instance;
         try {
-            instance = (ClusteredStateMarker) constructor.newInstance(parameters);
+            instance = (ClusteredStateMarker) memberUpdater.executeWithParameters(null, parameters);
         } catch (Exception e) {
             throw new InstanceTrackerException(e);
         }
@@ -58,40 +45,4 @@ public class ConstructorInfo implements ValueUpdater {
         instanceRegistry.registerInstance(instanceId, instance);
     }
     
-    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-        declaringType = (Class) in.readObject();
-        parameterTypes = (Class[]) in.readObject();
-
-        try {
-            constructor = declaringType.getDeclaredConstructor(parameterTypes);
-        } catch (Exception e) {
-            throw (IOException) new IOException("See nested").initCause(e);
-        }
-        constructor.setAccessible(true);
-    }
-    
-    public void writeExternal(ObjectOutput out) throws IOException {
-        out.writeObject(declaringType);
-        out.writeObject(parameterTypes);
-    }
-    
-    @Override
-    public boolean equals(Object obj) {
-        if (!(obj instanceof ConstructorInfo)) {
-            return false;
-        }
-        ConstructorInfo other = (ConstructorInfo) obj;
-        return constructor.equals(other.constructor);
-    }
-    
-    @Override
-    public int hashCode() {
-        return constructor.hashCode();
-    }
-    
-    @Override
-    public String toString() {
-        return constructor.toString();
-    }
-
 }

@@ -60,6 +60,13 @@ public aspect ClusteredStateAspect {
     pointcut targetAnnotatedWithClusteredState(ClusteredState clusteredState, ClusteredStateMarker stateMarker):
         @target(clusteredState) && target(stateMarker); 
 
+    // Track static initialization of ITD types
+    after() :
+        staticinitialization(ClusteredStateMarker+) {
+        Class type = thisJoinPoint.getSignature().getDeclaringType();
+        trackerFactory.prepareTrackerForClass(type);
+    }
+  
     // Track instance construction
     pointcut instanceConstruction(ClusteredStateMarker stateMarker):
         execution(ClusteredStateMarker+.new(..)) && target(stateMarker);

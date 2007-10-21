@@ -15,11 +15,7 @@
  */
 package org.codehaus.wadi.aop.tracker.basic;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-
+import org.codehaus.wadi.aop.reflect.MemberUpdater;
 import org.codehaus.wadi.aop.tracker.InstanceRegistry;
 
 import com.agical.rmock.extension.junit.RMockTestCase;
@@ -32,44 +28,29 @@ public class MethodInfoTest extends RMockTestCase {
 
     private MethodInfo methodInfo;
     private InstanceRegistry instanceRegistry;
+    private MemberUpdater memberUpdater;
 
     @Override
     protected void setUp() throws Exception {
+        memberUpdater = (MemberUpdater) mock(MemberUpdater.class);
         instanceRegistry = (InstanceRegistry) mock(InstanceRegistry.class);
-        methodInfo = new MethodInfo(DummyClass.class.getDeclaredMethod("setTest", new Class[] {int.class}));
-    }
-    
-    public void testSerialization() throws Exception {
-        ByteArrayOutputStream memOut = new ByteArrayOutputStream();
-        ObjectOutputStream out = new ObjectOutputStream(memOut);
-        out.writeObject(methodInfo);
-        out.close();
-        
-        ByteArrayInputStream memIn = new ByteArrayInputStream(memOut.toByteArray());
-        ObjectInputStream in = new ObjectInputStream(memIn);
-        MethodInfo serializedMethodInfo = (MethodInfo) in.readObject();
-        assertEquals(serializedMethodInfo, methodInfo);
+        methodInfo = new MethodInfo(memberUpdater);
     }
     
     public void testExecuteWithParameters() throws Exception {
         int testValue = 123;
         String instanceId = "instanceId";
+        Object instance = new Object();
+        Object[] parameters = new Object[] {new Integer(testValue)};
+        
         instanceRegistry.getInstance(instanceId);
-        DummyClass instance = new DummyClass();
         modify().returnValue(instance);
+
+        memberUpdater.executeWithParameters(instance, parameters);
+        
         startVerification();
         
-        methodInfo.executeWithParameters(instanceRegistry, instanceId, new Object[] {new Integer(testValue)});
-        assertEquals(testValue, instance.test);
-    }
-    
-    public static class DummyClass {
-        private int test;
-        
-        public void setTest(int test) {
-            this.test = test;
-        }
-
+        methodInfo.executeWithParameters(instanceRegistry, instanceId, parameters);
     }
     
 }

@@ -16,11 +16,16 @@
 package org.codehaus.wadi.aop.replication;
 
 import org.codehaus.wadi.aop.aspectj.ClusteredStateAspectUtil;
+import org.codehaus.wadi.aop.reflect.ClassIndexerRegistry;
+import org.codehaus.wadi.aop.reflect.jdk.JDKClassIndexerRegistry;
+import org.codehaus.wadi.aop.tracker.InstanceTrackerFactory;
 import org.codehaus.wadi.aop.tracker.basic.BasicInstanceIdFactory;
 import org.codehaus.wadi.aop.tracker.basic.BasicInstanceRegistry;
 import org.codehaus.wadi.aop.tracker.basic.BasicInstanceTrackerFactory;
+import org.codehaus.wadi.aop.tracker.basic.BasicWireMarshaller;
 import org.codehaus.wadi.aop.tracker.basic.CompoundReplacer;
 import org.codehaus.wadi.aop.tracker.basic.InstanceAndTrackerReplacer;
+import org.codehaus.wadi.aop.tracker.basic.WireMarshaller;
 import org.codehaus.wadi.core.assembler.StackContext;
 import org.codehaus.wadi.core.session.SessionFactory;
 import org.codehaus.wadi.core.session.ValueFactory;
@@ -42,6 +47,7 @@ public class AOPStackContext extends StackContext {
     private InstanceAndTrackerReplacer replacer;
     private BasicInstanceIdFactory instanceIdFactory;
     private BasicInstanceRegistry instanceRegistry;
+    private ClassIndexerRegistry classIndexerRegistry;
 
     public AOPStackContext(ClassLoader cl,
         ServiceSpaceName serviceSpaceName,
@@ -62,18 +68,29 @@ public class AOPStackContext extends StackContext {
     @Override
     public void build() throws ServiceAlreadyRegisteredException {
         replacer = new CompoundReplacer();
-        
-        ClusteredStateAspectUtil.setInstanceTrackerFactory(new BasicInstanceTrackerFactory(replacer));
+        classIndexerRegistry = newClassIndexerRegistry();
+
+        InstanceTrackerFactory instanceTrackerFactory = newInstanceTrackerFactory();
+        ClusteredStateAspectUtil.setInstanceTrackerFactory(instanceTrackerFactory);
         
         instanceIdFactory = new BasicInstanceIdFactory(underlyingDispatcher.getCluster().getLocalPeer().getName());
         instanceRegistry = new BasicInstanceRegistry();
         
         super.build();
     }
+
+    protected BasicInstanceTrackerFactory newInstanceTrackerFactory() {
+        return new BasicInstanceTrackerFactory(replacer, classIndexerRegistry);
+    }
     
+    protected ClassIndexerRegistry newClassIndexerRegistry() {
+        return new JDKClassIndexerRegistry();
+    }
+
     @Override
     protected ObjectStateHandler newObjectStateHandler(Streamer streamer) {
-        return new DeltaStateHandler(streamer, instanceIdFactory, instanceRegistry);
+        WireMarshaller marshaller = new BasicWireMarshaller(streamer, classIndexerRegistry, replacer);
+        return new DeltaStateHandler(streamer, marshaller, instanceIdFactory, instanceRegistry);
     }
 
     @Override
@@ -84,7 +101,7 @@ public class AOPStackContext extends StackContext {
                 new ClusteredStateAttributesFactory(valueFactory),
                 streamer,
                 replicationManager,
-                instanceIdFactory);
+                stateHandler);
     }
     
 }

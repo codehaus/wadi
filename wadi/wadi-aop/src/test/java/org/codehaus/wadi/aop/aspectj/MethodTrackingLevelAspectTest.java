@@ -42,6 +42,8 @@ public class MethodTrackingLevelAspectTest extends RMockTestCase {
         instanceTracker = (InstanceTracker) mock(InstanceTracker.class);
         
         InstanceTrackerFactory trackerFactory = new InstanceTrackerFactory() {
+            public void prepareTrackerForClass(Class clazz) {
+            }
             public InstanceTracker newInstanceTracker(ClusteredStateMarker stateMarker) {
                 return instanceTracker;
             }    

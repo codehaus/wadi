@@ -19,6 +19,7 @@ import org.codehaus.wadi.aop.tracker.InstanceTracker;
 import org.codehaus.wadi.aop.tracker.InstanceTrackerVisitor;
 import org.codehaus.wadi.aop.tracker.NoOpInstanceTrackerVisitor;
 import org.codehaus.wadi.aop.tracker.basic.ValueUpdaterInfo;
+import org.codehaus.wadi.aop.tracker.basic.WireMarshaller;
 
 /**
  * 
@@ -26,8 +27,8 @@ import org.codehaus.wadi.aop.tracker.basic.ValueUpdaterInfo;
  */
 public class CopyFullStateVisitor extends CopyStateVisitor {
     
-    public CopyFullStateVisitor(InstanceTrackerVisitor setInstanceIdVisitor) {
-        super(setInstanceIdVisitor, NoOpInstanceTrackerVisitor.SINGLETON);
+    public CopyFullStateVisitor(WireMarshaller wireMarshaller, InstanceTrackerVisitor setInstanceIdVisitor) {
+        super(wireMarshaller, setInstanceIdVisitor, NoOpInstanceTrackerVisitor.SINGLETON);
     }
 
     protected ValueUpdaterInfo[] buildValueUpdaterInfos(InstanceTracker instanceTracker) {

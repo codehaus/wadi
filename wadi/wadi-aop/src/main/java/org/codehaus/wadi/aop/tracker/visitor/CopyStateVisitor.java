@@ -15,15 +15,11 @@
  */
 package org.codehaus.wadi.aop.tracker.visitor;
 
-import java.io.ByteArrayOutputStream;
-import java.io.ObjectOutputStream;
-import java.util.List;
-
 import org.codehaus.wadi.aop.tracker.InstanceTracker;
-import org.codehaus.wadi.aop.tracker.InstanceTrackerException;
 import org.codehaus.wadi.aop.tracker.InstanceTrackerVisitor;
 import org.codehaus.wadi.aop.tracker.VisitorContext;
 import org.codehaus.wadi.aop.tracker.basic.ValueUpdaterInfo;
+import org.codehaus.wadi.aop.tracker.basic.WireMarshaller;
 
 /**
  * 
@@ -31,15 +27,21 @@ import org.codehaus.wadi.aop.tracker.basic.ValueUpdaterInfo;
  */
 public class CopyStateVisitor extends AbstractVisitor {
     
+    private final WireMarshaller wireMarshaller;
     private final InstanceTrackerVisitor setInstanceIdVisitor;
     private final InstanceTrackerVisitor resetTrackingVisitor;
     
-    public CopyStateVisitor(InstanceTrackerVisitor setInstanceIdVisitor, InstanceTrackerVisitor resetTrackingVisitor) {
-        if (null == setInstanceIdVisitor) {
+    public CopyStateVisitor(WireMarshaller wireMarshaller,
+            InstanceTrackerVisitor setInstanceIdVisitor,
+            InstanceTrackerVisitor resetTrackingVisitor) {
+        if (null == wireMarshaller) {
+            throw new IllegalArgumentException("wireMarshaller is required");
+        } else if (null == setInstanceIdVisitor) {
             throw new IllegalArgumentException("setInstanceIdVisitor is required");
         } else if (null == resetTrackingVisitor) {
             throw new IllegalArgumentException("resetTrackingVisitor is required");
         }
+        this.wireMarshaller = wireMarshaller;
         this.setInstanceIdVisitor = setInstanceIdVisitor;
         this.resetTrackingVisitor = resetTrackingVisitor;
     }
@@ -64,16 +66,7 @@ public class CopyStateVisitor extends AbstractVisitor {
 
     protected void serializeValueUpdaterInfos(CopyStateVisitorContext copyContext, InstanceTracker instanceTracker) {
         ValueUpdaterInfo[] valueUpdaterInfos = buildValueUpdaterInfos(instanceTracker);
-        
-        ByteArrayOutputStream memOut = new ByteArrayOutputStream();
-        try {
-            ObjectOutputStream out = new ObjectOutputStream(memOut);
-            out.writeObject(valueUpdaterInfos);
-            out.close();
-        } catch (Exception e) {
-            throw new InstanceTrackerException(e);
-        }
-        copyContext.serializedValueUpdaterInfos = memOut.toByteArray();
+        copyContext.serializedValueUpdaterInfos = wireMarshaller.marshall(valueUpdaterInfos);
     }
 
     protected ValueUpdaterInfo[] buildValueUpdaterInfos(InstanceTracker instanceTracker) {
