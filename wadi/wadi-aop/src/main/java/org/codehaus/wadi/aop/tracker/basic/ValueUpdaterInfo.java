@@ -41,6 +41,7 @@ public class ValueUpdaterInfo implements Externalizable {
     private int memberUpdaterIndex;
     protected Object[] parameters;
     protected Object[] parametersReplacedWithTrackers;
+    protected Set<InstanceTracker> instanceTrackers;
     protected String instanceId;
     
     public static void applyTo(InstanceRegistry instanceRegistry, ValueUpdaterInfo[] valueUpdaterInfos) {
@@ -124,9 +125,12 @@ public class ValueUpdaterInfo implements Externalizable {
     }
 
     public Set<InstanceTracker> getInstanceTrackers() {
-        Set<InstanceTracker> trackers = new HashSet<InstanceTracker>();
-        parametersReplacedWithTrackers = (Object[]) replacer.replaceWithTracker(parameters, trackers);
-        return trackers;
+        if (null != instanceTrackers) {
+            return instanceTrackers;
+        }
+        instanceTrackers = new HashSet<InstanceTracker>();
+        parametersReplacedWithTrackers = (Object[]) replacer.replaceWithTracker(parameters, instanceTrackers);
+        return instanceTrackers;
     }
     
     public Object[] getParametersReplacedWithTrackers() {
