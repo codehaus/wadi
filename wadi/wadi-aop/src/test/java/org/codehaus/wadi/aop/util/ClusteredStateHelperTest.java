@@ -20,6 +20,7 @@ import java.io.Serializable;
 import org.codehaus.wadi.aop.annotation.ClusteredState;
 import org.codehaus.wadi.aop.aspectj.ClusteredStateAspectUtil;
 import org.codehaus.wadi.aop.reflect.ClassIndexerRegistry;
+import org.codehaus.wadi.aop.reflect.clusteredstate.ClusteredStateMemberFilter;
 import org.codehaus.wadi.aop.reflect.jdk.JDKClassIndexerRegistry;
 import org.codehaus.wadi.aop.tracker.InstanceIdFactory;
 import org.codehaus.wadi.aop.tracker.InstanceRegistry;
@@ -46,7 +47,7 @@ public class ClusteredStateHelperTest extends RMockTestCase {
     @Override
     protected void setUp() throws Exception {
         InstanceAndTrackerReplacer replacer = new CompoundReplacer();
-        ClassIndexerRegistry registry = new JDKClassIndexerRegistry();
+        ClassIndexerRegistry registry = new JDKClassIndexerRegistry(new ClusteredStateMemberFilter());
 
         SimpleStreamer streamer = new SimpleStreamer();
         marshaller = new BasicWireMarshaller(streamer, registry, replacer);

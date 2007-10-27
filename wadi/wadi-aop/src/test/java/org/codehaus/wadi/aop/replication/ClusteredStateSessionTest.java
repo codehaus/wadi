@@ -20,6 +20,7 @@ import java.io.Serializable;
 import org.codehaus.wadi.aop.annotation.ClusteredState;
 import org.codehaus.wadi.aop.aspectj.ClusteredStateAspectUtil;
 import org.codehaus.wadi.aop.reflect.ClassIndexerRegistry;
+import org.codehaus.wadi.aop.reflect.clusteredstate.ClusteredStateMemberFilter;
 import org.codehaus.wadi.aop.reflect.jdk.JDKClassIndexerRegistry;
 import org.codehaus.wadi.aop.tracker.InstanceIdFactory;
 import org.codehaus.wadi.aop.tracker.basic.BasicInstanceIdFactory;
@@ -55,7 +56,7 @@ public class ClusteredStateSessionTest extends RMockTestCase {
     @Override
     protected void setUp() throws Exception {
         InstanceAndTrackerReplacer replacer = new CompoundReplacer();
-        ClassIndexerRegistry indexerRegistry = new JDKClassIndexerRegistry();
+        ClassIndexerRegistry indexerRegistry = new JDKClassIndexerRegistry(new ClusteredStateMemberFilter());
         
         ClusteredStateAspectUtil.resetInstanceTrackerFactory();
         ClusteredStateAspectUtil.setInstanceTrackerFactory(new BasicInstanceTrackerFactory(replacer, indexerRegistry));

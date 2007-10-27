@@ -19,6 +19,7 @@ import junit.framework.TestCase;
 
 import org.codehaus.wadi.aop.reflect.ClassIndexer;
 import org.codehaus.wadi.aop.reflect.MemberUpdater;
+import org.codehaus.wadi.aop.reflect.base.DeclaredMemberFilter;
 
 /**
  * 
@@ -27,49 +28,38 @@ import org.codehaus.wadi.aop.reflect.MemberUpdater;
 public class JDKClassIndexerRegistryTest extends TestCase {
 
     public void testIndex() throws Exception {
-        JDKClassIndexerRegistry registry = new JDKClassIndexerRegistry();
+        JDKClassIndexerRegistry registry = new JDKClassIndexerRegistry(new DeclaredMemberFilter());
         registry.index(DummyClass.class);
         
         ClassIndexer classIndexer = registry.getClassIndexer(DummyClass.class);
         
         MemberUpdater memberUpdater = classIndexer.getMemberUpdater(0);
-        assertEquals(memberUpdater.getMember(), DummyClass.class.getDeclaredConstructor());
+        assertEquals(memberUpdater.getIndex(), 0);
+        assertEquals(DummyClass.class.getDeclaredConstructor(), memberUpdater.getMember());
+        Object instance = memberUpdater.executeWithParameters(null, null);
+        assertTrue(instance instanceof DummyClass);
+        DummyClass dummyInstance = (DummyClass) instance;
         
-        memberUpdater = classIndexer.getMemberUpdater(1);
-        assertEquals(memberUpdater.getIndex(), 1);
-        assertEquals(memberUpdater.getMember(), DummyClass.class.getDeclaredConstructor(String.class));
-
-        memberUpdater = classIndexer.getMemberUpdater(2);
-        assertEquals(memberUpdater.getIndex(), 2);
-        assertEquals(memberUpdater.getMember(), DummyClass.class.getDeclaredMethod("test1"));
-
         memberUpdater = classIndexer.getMemberUpdater(3);
         assertEquals(memberUpdater.getIndex(), 3);
-        assertEquals(memberUpdater.getMember(), DummyClass.class.getDeclaredMethod("test2"));
+        assertEquals(DummyClass.class.getDeclaredMethod("test"), memberUpdater.getMember());
+        memberUpdater.executeWithParameters(dummyInstance, null);
+        assertTrue(dummyInstance.testExecuted);
 
         memberUpdater = classIndexer.getMemberUpdater(4);
         assertEquals(memberUpdater.getIndex(), 4);
-        assertEquals(memberUpdater.getMember(), DummyClass.class.getDeclaredField("name1"));
-        
-        memberUpdater = classIndexer.getMemberUpdater(5);
-        assertEquals(memberUpdater.getIndex(), 5);
-        assertEquals(memberUpdater.getMember(), DummyClass.class.getDeclaredField("name2"));
+        assertEquals(DummyClass.class.getDeclaredField("name"), memberUpdater.getMember());
+        memberUpdater.executeWithParameters(dummyInstance, new Object[] {"test"});
+        assertEquals("test", dummyInstance.name);
     }
     
-    private static class DummyClass {
-        private String name1;
-        private String name2;
-        
-        public DummyClass() {
-        }
-        
-        public DummyClass(String string) {
-        }
-        
-        public void test1() {
+    public static class DummyClass {
+        private String name;
+        private boolean testExecuted;
+
+        public void test() {
+            testExecuted =true;
         }
 
-        public void test2() {
-        }
     }
 }

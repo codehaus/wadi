@@ -19,6 +19,9 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.aspectj.lang.Signature;
 import org.aspectj.lang.reflect.ConstructorSignature;
 import org.aspectj.lang.reflect.FieldSignature;
@@ -36,7 +39,7 @@ import org.codehaus.wadi.aop.tracker.InstanceTrackerFactory;
  * @version $Revision: 1538 $
  */
 public aspect ClusteredStateAspect {
-
+    
     // ITD
     declare parents:
         (@ClusteredState *) implements ClusteredStateMarker;
@@ -45,6 +48,7 @@ public aspect ClusteredStateAspect {
     public static long index = 0;
     
     private transient InstanceTracker ClusteredStateMarker.tracker;
+    private static Map<Signature, Field> signatureToFieldCache = new HashMap<Signature, Field>();
 
     public InstanceTracker ClusteredStateMarker.$wadiGetTracker() {
         return tracker;
@@ -64,6 +68,9 @@ public aspect ClusteredStateAspect {
     after() :
         staticinitialization(ClusteredStateMarker+) {
         Class type = thisJoinPoint.getSignature().getDeclaringType();
+        if (null == trackerFactory) {
+            throw new IllegalStateException("trackerFactory not set.");
+        }
         trackerFactory.prepareTrackerForClass(type);
     }
   
@@ -73,12 +80,19 @@ public aspect ClusteredStateAspect {
 
     before(ClusteredStateMarker stateMarker):
         instanceConstruction(stateMarker) {
-        stateMarker.tracker =  trackerFactory.newInstanceTracker(stateMarker);
-        
         Signature signature = thisJoinPointStaticPart.getSignature();
         Constructor constructor = ((ConstructorSignature) signature).getConstructor();
+        
+        if (null == trackerFactory) {
+            throw new IllegalStateException("trackerFactory not set.");
+        }
+        if (null == stateMarker.tracker) {
+            stateMarker.tracker =  trackerFactory.newInstanceTracker(stateMarker);
+        }
 
-        stateMarker.tracker.track(nextIndex(), constructor, thisJoinPoint.getArgs());
+        if (constructor.getDeclaringClass().equals(stateMarker.getClass())) {
+            stateMarker.tracker.track(nextIndex(), constructor, thisJoinPoint.getArgs());
+        }
     }
     
     // Track field updates
@@ -95,6 +109,9 @@ public aspect ClusteredStateAspect {
         setTrackedField(clusteredState, stateMarker, value)  && !cflow(withinClusteredStateAspectAdviceExecution()) {
         Signature signature = thisJoinPointStaticPart.getSignature();
         Field field = ((FieldSignature) signature).getField();
+        if (null == field) {
+            field = deriveField(stateMarker, signature);
+        }
         
         stateMarker.tracker.track(nextIndex(), field, value);
     }
@@ -105,8 +122,35 @@ public aspect ClusteredStateAspect {
         args(value) {
         Signature signature = thisJoinPointStaticPart.getSignature();
         Field field = ((FieldSignature) signature).getField();
+        if (null == field) {
+            field = deriveField(stateMarker, signature);
+        }
 
         stateMarker.tracker.recordFieldUpdate(field, value);
+    }
+
+    private Field deriveField(ClusteredStateMarker stateMarker, Signature signature) {
+        Field field;
+        synchronized (signatureToFieldCache) {
+            field = signatureToFieldCache.get(signature);
+        }
+        if (null != field) {
+            return field;
+        }
+        Class declaringType = signature.getDeclaringType().getSuperclass();
+        while (null != declaringType && null == field) {
+            try {
+                field = declaringType.getDeclaredField(signature.getName());
+            } catch (Exception e) {
+            }
+        }
+        if (null == field) {
+            throw new AssertionError("Cannot identify updated Field. Signature [" + signature + "].");
+        }
+        synchronized (signatureToFieldCache) {
+            signatureToFieldCache.put(signature, field);
+        }
+        return field;
     }
     
     // Track method executions
