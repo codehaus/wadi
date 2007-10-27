@@ -17,6 +17,9 @@ package org.codehaus.wadi.servicespace.basic;
 
 import java.io.IOException;
 
+import org.codehaus.wadi.core.reflect.ClassIndexer;
+import org.codehaus.wadi.core.reflect.base.DeclaredMemberFilter;
+import org.codehaus.wadi.core.reflect.jdk.JDKClassIndexerRegistry;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.vm.VMPeer;
 import org.codehaus.wadi.servicespace.InvocationInfo;
@@ -41,6 +44,7 @@ public class CGLIBServiceProxyFactoryTest extends RMockTestCase {
     private Class[] interfaces;
     private CGLIBServiceProxyFactory proxyFactory;
     private ServiceInvoker serviceInvoker;
+    private JDKClassIndexerRegistry classIndexerRegistry;
 
     protected void setUp() throws Exception {
         name = new ServiceName("name");
@@ -51,17 +55,17 @@ public class CGLIBServiceProxyFactoryTest extends RMockTestCase {
     public void testProxyInterfaces() {
         startVerification();
         
-        proxyFactory = new CGLIBServiceProxyFactory(name, interfaces, serviceInvoker);
+        proxyFactory = newFactory();
         Object proxy = proxyFactory.getProxy();
         assertTrue(proxy instanceof ServiceInterface1);
         assertTrue(proxy instanceof ServiceInterface2);
         assertTrue(proxy instanceof ServiceProxy);
     }
-    
+
     public void testServiceProxy() {
         startVerification();
         
-        proxyFactory = new CGLIBServiceProxyFactory(name, interfaces, serviceInvoker);
+        proxyFactory = newFactory();
         ServiceProxy serviceProxy = (ServiceProxy) proxyFactory.getProxy();
         assertSame(interfaces, serviceProxy.getInterfaces());
         assertSame(name, serviceProxy.getTargetServiceName());
@@ -72,7 +76,7 @@ public class CGLIBServiceProxyFactoryTest extends RMockTestCase {
         VMPeer peer1 = new VMPeer("peer1", null);
         VMPeer peer2 = new VMPeer("peer2", null);
         
-        proxyFactory = new CGLIBServiceProxyFactory(name, interfaces, serviceInvoker);
+        proxyFactory = newFactory();
         final InvocationMetaData invocationMetaData = proxyFactory.getInvocationMetaData();
         invocationMetaData.setOneWay(true);
         invocationMetaData.setInvocationResultCombiner(resultCombiner);
@@ -87,11 +91,17 @@ public class CGLIBServiceProxyFactoryTest extends RMockTestCase {
 
             public boolean passes(Object object) {
                 InvocationInfo invocationInfo = (InvocationInfo) object;
-                assertEquals("sayHello", invocationInfo.getMethodName());
+                assertEquals(ServiceInterface1.class, invocationInfo.getTargetClass());
                 assertEquals(1, invocationInfo.getParams().length);
+                ClassIndexer classIndexer = classIndexerRegistry.getClassIndexer(ServiceInterface1.class);
+                int memberUpdaterIndex = -1;
+                try {
+                    memberUpdaterIndex = classIndexer.getIndex(ServiceInterface1.class.getDeclaredMethod("sayHello", String.class));
+                } catch (Exception e) {
+                    fail();
+                }
+                assertEquals(memberUpdaterIndex, invocationInfo.getMemberUpdaterIndex());
                 assertEquals("Hello", invocationInfo.getParams()[0]);
-                assertEquals(1, invocationInfo.getParamTypes().length);
-                assertEquals(String.class, invocationInfo.getParamTypes()[0]);
                 InvocationMetaData metaData = invocationInfo.getMetaData();
                 assertEquals(invocationMetaData.isOneWay(), metaData.isOneWay());
                 assertSame(invocationMetaData.getInvocationResultCombiner(), metaData.getInvocationResultCombiner());
@@ -114,7 +124,7 @@ public class CGLIBServiceProxyFactoryTest extends RMockTestCase {
     }
 
     public void testOneWayInvocation() {
-        proxyFactory = new CGLIBServiceProxyFactory(name, interfaces, serviceInvoker);
+        proxyFactory = newFactory();
         InvocationMetaData invocationMetaData = proxyFactory.getInvocationMetaData();
         invocationMetaData.setOneWay(true);
         
@@ -132,7 +142,7 @@ public class CGLIBServiceProxyFactoryTest extends RMockTestCase {
     }
 
     public void testRequestReplyInvocation() {
-        proxyFactory = new CGLIBServiceProxyFactory(name, interfaces, serviceInvoker);
+        proxyFactory = newFactory();
         
         serviceInvoker.invoke(null);
         modify().args(is.NOT_NULL);
@@ -150,7 +160,7 @@ public class CGLIBServiceProxyFactoryTest extends RMockTestCase {
 
 
     public void testThrowDeclaredException() {
-        proxyFactory = new CGLIBServiceProxyFactory(name, interfaces, serviceInvoker);
+        proxyFactory = newFactory();
         
         serviceInvoker.invoke(null);
         modify().args(is.NOT_NULL);
@@ -172,7 +182,7 @@ public class CGLIBServiceProxyFactoryTest extends RMockTestCase {
     }
 
     public void testThrowUndeclaredException() {
-        proxyFactory = new CGLIBServiceProxyFactory(name, interfaces, serviceInvoker);
+        proxyFactory = newFactory();
         
         serviceInvoker.invoke(null);
         modify().args(is.NOT_NULL);
@@ -191,6 +201,14 @@ public class CGLIBServiceProxyFactoryTest extends RMockTestCase {
         } catch (ServiceInvocationException e) {
             assertSame(invocationResult.getThrowable(), e.getCause());
         }
+    }
+    
+    private CGLIBServiceProxyFactory newFactory() {
+        classIndexerRegistry = new JDKClassIndexerRegistry(new DeclaredMemberFilter());
+        return new CGLIBServiceProxyFactory(name,
+            classIndexerRegistry,
+            interfaces,
+            serviceInvoker);
     }
     
     public interface ServiceInterface1 {

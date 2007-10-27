@@ -17,10 +17,14 @@ package org.codehaus.wadi.servicespace.basic;
 
 import java.io.IOException;
 
+import org.codehaus.wadi.core.reflect.ClassIndexer;
+import org.codehaus.wadi.core.reflect.ClassIndexerRegistry;
+import org.codehaus.wadi.core.reflect.MemberUpdater;
+import org.codehaus.wadi.core.reflect.MemberUpdaterException;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Envelope;
-import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.EnvelopeListener;
+import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.servicespace.InvocationInfo;
 import org.codehaus.wadi.servicespace.InvocationMetaData;
 import org.codehaus.wadi.servicespace.InvocationResult;
@@ -43,6 +47,7 @@ public class ServiceInvocationListenerTest extends RMockTestCase {
     private EnvelopeListener next;
     private ServiceName serviceName;
     private Dispatcher dispatcher;
+    private ClassIndexerRegistry classIndexerRegistry;
 
     protected void setUp() throws Exception {
         serviceSpace = (ServiceSpace) mock(ServiceSpace.class);
@@ -50,70 +55,72 @@ public class ServiceInvocationListenerTest extends RMockTestCase {
         serviceRegistry = serviceSpace.getServiceRegistry();
         next = (EnvelopeListener) mock(EnvelopeListener.class);
         serviceName = new ServiceName("name");
+
+        classIndexerRegistry = (ClassIndexerRegistry) mock(ClassIndexerRegistry.class);
     }
-    
+
     public void testNotServiceMessage() {
         Envelope envelope = (Envelope) mock(Envelope.class);
-        
+
         beginSection(s.ordered("Check if service message and dispatch to next"));
         EnvelopeServiceHelper.getServiceName(envelope);
         next.onEnvelope(envelope);
         endSection();
-        
+
         startVerification();
-        
-        ServiceInvocationListener invocationListener = new ServiceInvocationListener(serviceSpace, next);
+
+        ServiceInvocationListener invocationListener = newListener();
         invocationListener.onEnvelope(envelope);
     }
 
     public void testOneWayServiceMessage() throws Exception {
         ServiceInterface service = (ServiceInterface) mock(ServiceInterface.class);
         Envelope envelope = (Envelope) mock(Envelope.class);
-        
+
         beginSection(s.ordered("Process one-way message"));
         recordOneWayProcessing(service, envelope, true);
         endSection();
-        
+
         startVerification();
-        
-        ServiceInvocationListener invocationListener = new ServiceInvocationListener(serviceSpace, next);
+
+        ServiceInvocationListener invocationListener = newListener();
         invocationListener.onEnvelope(envelope);
     }
 
     public void testRequestReplyServiceMessage() throws Exception {
         ServiceInterface service = (ServiceInterface) mock(ServiceInterface.class);
         Envelope envelope = (Envelope) mock(Envelope.class);
-        
+
         beginSection(s.ordered("Process request-reply message"));
         recordOneWayProcessing(service, envelope, false);
         recordSuccessfulReply(envelope);
         endSection();
-        
+
         startVerification();
-        
-        ServiceInvocationListener invocationListener = new ServiceInvocationListener(serviceSpace, next);
+
+        ServiceInvocationListener invocationListener = newListener();
         invocationListener.onEnvelope(envelope);
     }
 
     public void testServiceMethodThrowException() throws Exception {
         ServiceInterface service = (ServiceInterface) mock(ServiceInterface.class);
         Envelope envelope = (Envelope) mock(Envelope.class);
-        
+
         beginSection(s.ordered("Process one-way message"));
         recordOneWayProcessing(service, envelope, false);
         recordExceptionReply(envelope);
         endSection();
-        
+
         startVerification();
-        
-        ServiceInvocationListener invocationListener = new ServiceInvocationListener(serviceSpace, next);
+
+        ServiceInvocationListener invocationListener = newListener();
         invocationListener.onEnvelope(envelope);
     }
-    
+
     private void recordSuccessfulReply(Envelope envelope) throws MessageExchangeException {
         final String sayHelloResult = "sayHelloResult";
         modify().returnValue(sayHelloResult);
-        
+
         Envelope reply = dispatcher.createEnvelope();
         EnvelopeServiceHelper.tagAsServiceReply(reply);
         reply.setPayload(null);
@@ -128,21 +135,20 @@ public class ServiceInvocationListenerTest extends RMockTestCase {
                 assertSame(sayHelloResult, result.getResult());
                 return true;
             }
-            
+
         });
-        
+
         dispatcher.reply(envelope, reply);
     }
 
     private void recordExceptionReply(Envelope envelope) throws MessageExchangeException {
-        final Exception exception = new Exception();
+        final MemberUpdaterException exception = new MemberUpdaterException("test");
         modify().throwException(exception);
-        
+
         Envelope reply = dispatcher.createEnvelope();
         EnvelopeServiceHelper.tagAsServiceReply(reply);
         reply.setPayload(null);
         modify().args(new AbstractExpression() {
-
             public void describeWith(ExpressionDescriber expressionDescriber) throws IOException {
             }
 
@@ -152,9 +158,8 @@ public class ServiceInvocationListenerTest extends RMockTestCase {
                 assertSame(exception, result.getThrowable());
                 return true;
             }
-            
         });
-        
+
         dispatcher.reply(envelope, reply);
     }
 
@@ -166,17 +171,28 @@ public class ServiceInvocationListenerTest extends RMockTestCase {
         String helloString = "hello";
         InvocationMetaData invocationMetaData = new InvocationMetaData();
         invocationMetaData.setOneWay(oneWay);
-        modify().returnValue(new InvocationInfo("sayHello", new Class[] {String.class}, new Object[] {helloString},
-                invocationMetaData));
+        int memberUpdaterIndex = 123;
+        Object[] parameters = new Object[] { helloString };
+        modify().returnValue(new InvocationInfo(ServiceInterface.class,
+            memberUpdaterIndex,
+            parameters,
+            invocationMetaData));
 
         serviceRegistry.getStartedService(serviceName);
         modify().returnValue(service);
 
-        service.sayHello(helloString);
+        ClassIndexer classIndexer = classIndexerRegistry.getClassIndexer(ServiceInterface.class);
+        MemberUpdater memberUpdater = classIndexer.getMemberUpdater(memberUpdaterIndex);
+        
+        memberUpdater.executeWithParameters(service, parameters);
+    }
+
+    private ServiceInvocationListener newListener() {
+        return new ServiceInvocationListener(serviceSpace, classIndexerRegistry, next);
     }
 
     public interface ServiceInterface {
         String sayHello(String value) throws Exception;
     }
-    
+
 }

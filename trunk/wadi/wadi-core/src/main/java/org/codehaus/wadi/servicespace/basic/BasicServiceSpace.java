@@ -25,6 +25,7 @@ import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.core.Lifecycle;
+import org.codehaus.wadi.core.reflect.ClassIndexerRegistry;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.ClusterListener;
@@ -67,13 +68,20 @@ public class BasicServiceSpace implements ServiceSpace, Lifecycle {
     private final ServiceEndpoint serviceSpaceRVEndPoint;
     private final ClusterListener underlyingClusterListener;
     private final ServiceSpaceEnvelopeHelper envelopeHelper;
+    private final ClassIndexerRegistry serviceClassIndexerRegistry;
 
-    public BasicServiceSpace(ServiceSpaceName name, Dispatcher underlyingDispatcher) {
+    public BasicServiceSpace(ServiceSpaceName name,
+            Dispatcher underlyingDispatcher,
+            ClassIndexerRegistry serviceClassIndexerRegistry) {
         if (null == name) {
             throw new IllegalArgumentException("name is required");
         } else if (null == underlyingDispatcher) {
             throw new IllegalArgumentException("underlyingDispatcher is required");
+        } else if (null == serviceClassIndexerRegistry) {
+            throw new IllegalArgumentException("serviceClassIndexerRegistry is required");
         }
+        this.serviceClassIndexerRegistry = serviceClassIndexerRegistry;
+
         monitors = new ArrayList<ServiceMonitor>();
         hostingPeers = new HashSet<Peer>();
         listeners = new CopyOnWriteArrayList();
@@ -83,12 +91,13 @@ public class BasicServiceSpace implements ServiceSpace, Lifecycle {
         this.dispatcher = newDispatcher();
 
         localPeer = dispatcher.getCluster().getLocalPeer();
+        
         serviceRegistry = newServiceRegistry();
         
         underlyingClusterListener = new UnderlyingClusterListener();
         
         EnvelopeListener messageListener = dispatcher; 
-        messageListener = new ServiceInvocationListener(this, messageListener);
+        messageListener = new ServiceInvocationListener(this, serviceClassIndexerRegistry, messageListener);
         messageListener = new ServiceResponseListener(this, messageListener);
         serviceSpaceEndpoint = new ServiceSpaceEndpoint(this, messageListener);
         
@@ -96,7 +105,7 @@ public class BasicServiceSpace implements ServiceSpace, Lifecycle {
         serviceSpaceRVEndPoint = new RendezVousEndPoint(this);
         envelopeHelper = new ServiceSpaceEnvelopeHelper(this);
     }
-    
+
     public LocalPeer getLocalPeer() {
         return localPeer;
     }
@@ -193,7 +202,10 @@ public class BasicServiceSpace implements ServiceSpace, Lifecycle {
     }
     
     public ServiceProxyFactory getServiceProxyFactory(ServiceName serviceName, Class[] interfaces) {
-        return new CGLIBServiceProxyFactory(serviceName, interfaces, new BasicServiceInvoker(this, serviceName));
+        return new CGLIBServiceProxyFactory(serviceName,
+            serviceClassIndexerRegistry,
+            interfaces,
+            new BasicServiceInvoker(this, serviceName));
     }
 
     public Dispatcher getUnderlyingDispatcher() {

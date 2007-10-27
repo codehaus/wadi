@@ -22,7 +22,7 @@ package org.codehaus.wadi.core.reflect;
  * @version $Revision: 1538 $
  */
 public interface ClassIndexerRegistry {
-    void index(Class clazz);
+    ClassIndexer index(Class clazz);
     
     ClassIndexer getClassIndexer(Class clazz) throws ClassNotIndexedException;
 }

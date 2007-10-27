@@ -37,6 +37,9 @@ import org.codehaus.wadi.core.manager.Manager;
 import org.codehaus.wadi.core.manager.Router;
 import org.codehaus.wadi.core.manager.SessionMonitor;
 import org.codehaus.wadi.core.manager.TomcatSessionIdFactory;
+import org.codehaus.wadi.core.reflect.ClassIndexerRegistry;
+import org.codehaus.wadi.core.reflect.base.DeclaredMemberFilter;
+import org.codehaus.wadi.core.reflect.jdk.JDKClassIndexerRegistry;
 import org.codehaus.wadi.core.session.AtomicallyReplicableSessionFactory;
 import org.codehaus.wadi.core.session.BasicValueHelperRegistry;
 import org.codehaus.wadi.core.session.DistributableAttributesFactory;
@@ -168,7 +171,10 @@ public class StackContext {
     public void build() throws ServiceAlreadyRegisteredException {
         simplePartitionManagerTiming = new SimplePartitionManagerTiming();
         timer = new Timer();
-        serviceSpace = new BasicServiceSpace(serviceSpaceName, underlyingDispatcher);
+        
+        ClassIndexerRegistry serviceClassIndexerRegistry = newServiceClassIndexerRegistry();
+        
+        serviceSpace = new BasicServiceSpace(serviceSpaceName, underlyingDispatcher, serviceClassIndexerRegistry);
         sessionMonitor = newSessionMonitor();
         partitionMapper = newPartitionMapper();
         partitionManager = newPartitionManager();
@@ -233,6 +239,10 @@ public class StackContext {
         registerStateManager();
         registerClusteredManager(manager);
         // End of implementation note.
+    }
+
+    protected ClassIndexerRegistry newServiceClassIndexerRegistry() {
+        return new JDKClassIndexerRegistry(new DeclaredMemberFilter());
     }
 
     protected OswegoConcurrentMotableMap newConcurrentMap() {
