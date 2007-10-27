@@ -20,9 +20,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-import org.codehaus.wadi.aop.reflect.ClassIndexerRegistry;
 import org.codehaus.wadi.aop.tracker.InstanceTrackerException;
 import org.codehaus.wadi.core.WADIRuntimeException;
+import org.codehaus.wadi.core.reflect.ClassIndexerRegistry;
 import org.codehaus.wadi.core.util.Streamer;
 
 /**

@@ -18,9 +18,9 @@ package org.codehaus.wadi.aop.tracker.basic;
 import java.lang.reflect.Field;
 
 import org.codehaus.wadi.aop.ClusteredStateMarker;
-import org.codehaus.wadi.aop.reflect.MemberUpdater;
 import org.codehaus.wadi.aop.tracker.InstanceRegistry;
 import org.codehaus.wadi.aop.tracker.InstanceTrackerException;
+import org.codehaus.wadi.core.reflect.MemberUpdater;
 
 /**
  * 

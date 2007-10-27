@@ -19,15 +19,19 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Member;
+import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.codehaus.wadi.aop.ClusteredStateMarker;
-import org.codehaus.wadi.aop.reflect.ClassIndexer;
-import org.codehaus.wadi.aop.reflect.ClassIndexerRegistry;
-import org.codehaus.wadi.aop.reflect.MemberUpdater;
 import org.codehaus.wadi.aop.tracker.InstanceRegistry;
 import org.codehaus.wadi.aop.tracker.InstanceTracker;
+import org.codehaus.wadi.core.reflect.ClassIndexer;
+import org.codehaus.wadi.core.reflect.ClassIndexerRegistry;
+import org.codehaus.wadi.core.reflect.MemberUpdater;
 
 /**
  * 
@@ -160,8 +164,20 @@ public class ValueUpdaterInfo implements Externalizable {
         }
 
         MemberUpdater memberUpdater = classIndexer.getMemberUpdater(memberUpdaterIndex);
-        ValueUpdater valueUpdater = memberUpdater.getValueUpdater();
+        ValueUpdater valueUpdater = newValueUpdater(memberUpdater);
         valueUpdater.executeWithParameters(instanceRegistry, instanceId, newParameters);
+    }
+
+    protected ValueUpdater newValueUpdater(MemberUpdater memberUpdater) throws AssertionError {
+        Member member = memberUpdater.getMember();
+        if (member instanceof Constructor) {
+            return new ConstructorInfo(memberUpdater);
+        } else if (member instanceof Method) {
+            return new MethodInfo(memberUpdater);
+        } else if (member instanceof Field) {
+            return new FieldInfo(memberUpdater);
+        }
+        throw new AssertionError(memberUpdater);
     }
     
     public ValueUpdaterInfo snapshotForSerialization() {

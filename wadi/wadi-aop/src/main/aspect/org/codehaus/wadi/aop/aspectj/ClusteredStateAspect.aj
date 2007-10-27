@@ -22,6 +22,9 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.aspectj.lang.Signature;
 import org.aspectj.lang.reflect.ConstructorSignature;
 import org.aspectj.lang.reflect.FieldSignature;
@@ -39,6 +42,7 @@ import org.codehaus.wadi.aop.tracker.InstanceTrackerFactory;
  * @version $Revision: 1538 $
  */
 public aspect ClusteredStateAspect {
+    private static final Log log = LogFactory.getLog(ClusteredStateAspect.class);
     
     // ITD
     declare parents:
@@ -69,7 +73,8 @@ public aspect ClusteredStateAspect {
         staticinitialization(ClusteredStateMarker+) {
         Class type = thisJoinPoint.getSignature().getDeclaringType();
         if (null == trackerFactory) {
-            throw new IllegalStateException("trackerFactory not set.");
+            log.warn("trackerFactory is not set. Class [" + type + "] will not be indexed.");
+            return;
         }
         trackerFactory.prepareTrackerForClass(type);
     }

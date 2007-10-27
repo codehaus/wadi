@@ -27,12 +27,12 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.codehaus.wadi.aop.ClusteredStateMarker;
-import org.codehaus.wadi.aop.reflect.ClassIndexer;
 import org.codehaus.wadi.aop.tracker.InstanceTracker;
 import org.codehaus.wadi.aop.tracker.InstanceTrackerException;
 import org.codehaus.wadi.aop.tracker.InstanceTrackerVisitor;
 import org.codehaus.wadi.aop.tracker.VisitorContext;
 import org.codehaus.wadi.aop.tracker.visitor.AbstractVisitor;
+import org.codehaus.wadi.core.reflect.ClassIndexer;
 
 /**
  * 
