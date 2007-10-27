@@ -44,6 +44,16 @@
 	    <li>Pluggable in-memory replication strategies for HA state</li>
 	  </ul>
 
+      <p>
+	WADI AOP:
+      </p>
+	  <ul>
+	    <li>An AOP extension providing the fine-grained replication of
+            state, i.e. object instances: thanks to AOP technic, field updates 
+            and method executions are tracked and replayed on state replicas. 
+            </li>
+	  </ul>
+
 	<p>
 	  WADI Web:
 	</p>
