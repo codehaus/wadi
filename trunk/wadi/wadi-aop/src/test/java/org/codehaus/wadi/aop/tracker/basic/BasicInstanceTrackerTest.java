@@ -18,8 +18,11 @@ package org.codehaus.wadi.aop.tracker.basic;
 import java.lang.reflect.Field;
 
 import org.codehaus.wadi.aop.ClusteredStateMarker;
+import org.codehaus.wadi.aop.annotation.ClusteredState;
+import org.codehaus.wadi.aop.aspectj.AspectTestUtil;
 import org.codehaus.wadi.aop.reflect.ClassIndexer;
 import org.codehaus.wadi.aop.reflect.ClassIndexerRegistry;
+import org.codehaus.wadi.aop.reflect.clusteredstate.ClusteredStateMemberFilter;
 import org.codehaus.wadi.aop.reflect.jdk.JDKClassIndexerRegistry;
 import org.codehaus.wadi.aop.tracker.InstanceTrackerVisitor;
 import org.codehaus.wadi.aop.tracker.VisitorContext;
@@ -41,12 +44,14 @@ public class BasicInstanceTrackerTest extends RMockTestCase {
 
     @Override
     protected void setUp() throws Exception {
-        InstanceAndTrackerReplacer replacer = new CompoundReplacer();
-        trackerField = BasicBean.class.getDeclaredField("tracker");
-        
-        ClassIndexerRegistry classIndexerRegistry = new JDKClassIndexerRegistry();
+        AspectTestUtil.setUpInstanceTrackerFactory(null);
+
+        ClassIndexerRegistry classIndexerRegistry = new JDKClassIndexerRegistry(new ClusteredStateMemberFilter());
         classIndexerRegistry.index(BasicBean.class);
         ClassIndexer classIndexer = classIndexerRegistry.getClassIndexer(BasicBean.class);
+
+        InstanceAndTrackerReplacer replacer = new CompoundReplacer();
+        trackerField = BasicBean.class.getDeclaredField("tracker");
         
         stateMarkerParent = (ClusteredStateMarker) mock(ClusteredStateMarker.class);
         instanceTrackerParent = new BasicInstanceTracker(replacer, classIndexer, stateMarkerParent);
@@ -89,6 +94,7 @@ public class BasicInstanceTrackerTest extends RMockTestCase {
         assertEquals(2, valueUpdaterInfos.length);
     }
     
+    @ClusteredState
     private static class BasicBean {
         private Object tracker;
     }

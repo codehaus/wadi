@@ -18,13 +18,14 @@ package org.codehaus.wadi.aop.reflect.base;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.codehaus.wadi.aop.reflect.ClassIndexer;
 import org.codehaus.wadi.aop.reflect.ClassIndexerRegistry;
 import org.codehaus.wadi.aop.reflect.ClassNotIndexedException;
+import org.codehaus.wadi.aop.reflect.MemberUpdater;
+
 
 
 
@@ -34,9 +35,15 @@ import org.codehaus.wadi.aop.reflect.ClassNotIndexedException;
  */
 public abstract class AbstractClassIndexerRegistry implements ClassIndexerRegistry {
 
+    private final MemberFilter memberFilter;
     private final Map<Class, ClassIndexer> classToIndexer;
     
-    public AbstractClassIndexerRegistry() {
+    public AbstractClassIndexerRegistry(MemberFilter memberFilter) {
+        if (null == memberFilter) {
+            throw new IllegalArgumentException("memberFilter is required");
+        }
+        this.memberFilter = memberFilter;
+
         classToIndexer = new HashMap<Class, ClassIndexer>();
     }
     
@@ -67,30 +74,42 @@ public abstract class AbstractClassIndexerRegistry implements ClassIndexerRegist
     }
 
     protected ClassIndexer createIndexer(Class clazz) {
-        // TODO inheritence.
-        Constructor[] constructors = identifyConstructor(clazz);
-        Method[] methods = identifyMethods(clazz);
-        Field[] fields = identifyFields(clazz);
+        Constructor[] constructors = memberFilter.filterConstructor(clazz);
+        Method[] methods = memberFilter.filterMethods(clazz);
+        Field[] fields = memberFilter.filterFields(clazz);
         return createIndexer(constructors, methods, fields);
     }
 
-    protected Field[] identifyFields(Class clazz) {
-        Field[] fields = clazz.getDeclaredFields();
-        Arrays.sort(fields, new FieldComparator());
-        return fields;
+    protected ClassIndexer createIndexer(Constructor[] constructors, Method[] methods, Field[] fields) {
+        MemberUpdater[] updaters = new MemberUpdater[constructors.length + methods.length + fields.length];
+        
+        for (int i = 0; i < constructors.length; i++) {
+            Constructor constructor = constructors[i];
+            updaters[i] = newMemberUpdater(i, constructor);
+        }
+        
+        for (int i = 0; i < methods.length; i++) {
+            int index = constructors.length +  i;
+            Method method = methods[i];
+            updaters[index] = newMemberUpdater(index, method);
+        }
+        
+        for (int i = 0; i < fields.length; i++) {
+            int index = constructors.length +  methods.length + i;
+            Field field = fields[i];
+            updaters[index] = newMemberUpdater(index, field);
+        }
+        
+        return newClassIndexer(updaters);
     }
 
-    protected Method[] identifyMethods(Class clazz) {
-        Method[] methods = clazz.getDeclaredMethods();
-        Arrays.sort(methods, new MethodComparator());
-        return methods;
+    protected ClassIndexer newClassIndexer(MemberUpdater[] updaters) {
+        return new BasicClassIndexer(updaters);
     }
 
-    protected Constructor[] identifyConstructor(Class clazz) {
-        Constructor[] constructors = clazz.getDeclaredConstructors();
-        Arrays.sort(constructors, new ConstructorComparator());
-        return constructors;
-    }
+    protected abstract MemberUpdater newMemberUpdater(int index, Constructor constructor);
 
-    protected abstract ClassIndexer createIndexer(Constructor[] constructors, Method[] methods, Field[] fields);
+    protected abstract  MemberUpdater newMemberUpdater(int index, Method method);
+    
+    protected abstract MemberUpdater newMemberUpdater(int index, Field field);
 }

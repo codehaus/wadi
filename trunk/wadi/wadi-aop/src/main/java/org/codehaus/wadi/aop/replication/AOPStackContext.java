@@ -17,6 +17,7 @@ package org.codehaus.wadi.aop.replication;
 
 import org.codehaus.wadi.aop.aspectj.ClusteredStateAspectUtil;
 import org.codehaus.wadi.aop.reflect.ClassIndexerRegistry;
+import org.codehaus.wadi.aop.reflect.clusteredstate.ClusteredStateMemberFilter;
 import org.codehaus.wadi.aop.reflect.jdk.JDKClassIndexerRegistry;
 import org.codehaus.wadi.aop.tracker.InstanceTrackerFactory;
 import org.codehaus.wadi.aop.tracker.basic.BasicInstanceIdFactory;
@@ -84,7 +85,7 @@ public class AOPStackContext extends StackContext {
     }
     
     protected ClassIndexerRegistry newClassIndexerRegistry() {
-        return new JDKClassIndexerRegistry();
+        return new JDKClassIndexerRegistry(new ClusteredStateMemberFilter());
     }
 
     @Override

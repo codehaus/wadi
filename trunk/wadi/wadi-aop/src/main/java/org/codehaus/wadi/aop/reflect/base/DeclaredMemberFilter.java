@@ -13,39 +13,28 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package org.codehaus.wadi.aop.reflect.jdk;
+package org.codehaus.wadi.aop.reflect.base;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
-import org.codehaus.wadi.aop.reflect.base.AbstractClassIndexerRegistry;
-import org.codehaus.wadi.aop.reflect.base.MemberFilter;
-
-
 /**
  * 
  * @version $Revision: 1538 $
  */
-public class JDKClassIndexerRegistry extends AbstractClassIndexerRegistry {
+public class DeclaredMemberFilter implements MemberFilter {
 
-    public JDKClassIndexerRegistry(MemberFilter memberFilter) {
-        super(memberFilter);
+    public Constructor[] filterConstructor(Class clazz) {
+        return clazz.getDeclaredConstructors();
     }
 
-    @Override
-    protected FieldUpdater newMemberUpdater(int index, Field field) {
-        return new FieldUpdater(index, field);
+    public Field[] filterFields(Class clazz) {
+        return clazz.getDeclaredFields();
     }
 
-    @Override
-    protected MethodUpdater newMemberUpdater(int index, Method method) {
-        return new MethodUpdater(index, method);
-    }
-
-    @Override
-    protected ConstructorUpdater newMemberUpdater(int index, Constructor constructor) {
-        return new ConstructorUpdater(index, constructor);
+    public Method[] filterMethods(Class clazz) {
+        return clazz.getDeclaredMethods();
     }
 
 }

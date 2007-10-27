@@ -15,16 +15,14 @@
  */
 package org.codehaus.wadi.aop.reflect.base;
 
-import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
 import org.codehaus.wadi.aop.reflect.ClassIndexer;
 import org.codehaus.wadi.aop.reflect.ClassNotIndexedException;
+import org.codehaus.wadi.aop.reflect.MemberUpdater;
 
-import com.agical.rmock.core.describe.ExpressionDescriber;
-import com.agical.rmock.core.match.operator.AbstractExpression;
 import com.agical.rmock.extension.junit.RMockTestCase;
 
 /**
@@ -34,63 +32,16 @@ import com.agical.rmock.extension.junit.RMockTestCase;
 public class AbstractClassIndexerRegistryTest extends RMockTestCase {
 
     private AbstractClassIndexerRegistry registry;
+    private MemberFilter memberFilter;
 
     @Override
     protected void setUp() throws Exception {
-        registry = (AbstractClassIndexerRegistry) intercept(AbstractClassIndexerRegistry.class, "id");
-    }
+        memberFilter = (MemberFilter) mock(MemberFilter.class);
 
-    public void testIndex() throws Exception {
-        registry.createIndexer(null, null, null);
-        modify().args(new AbstractExpression() {
-            public void describeWith(ExpressionDescriber arg0) throws IOException {
-            }
-            public boolean passes(Object arg0) {
-                Constructor[] constructors = (Constructor[]) arg0;
-                assertEquals(1, constructors.length);
-                return true;
-            }
-        }, new AbstractExpression() {
-            public void describeWith(ExpressionDescriber arg0) throws IOException {
-            }
-            public boolean passes(Object arg0) {
-                Method[] methods = (Method[]) arg0;
-                assertEquals(1, methods.length);
-                return true;
-            }
-        }, new AbstractExpression() {
-            public void describeWith(ExpressionDescriber arg0) throws IOException {
-            }
-            public boolean passes(Object arg0) {
-                Field[] fields = (Field[]) arg0;
-                assertEquals(1, fields.length);
-                return true;
-            }
-        });
-        
-        startVerification();
-        
-        registry.index(DummyClass.class);
-        registry.index(DummyClass.class);
-    }
-    
-    public void testIndexIsCached() throws Exception {
-        registry.createIndexer(null, null, null);
-        modify().args(is.ANYTHING, is.ANYTHING, is.ANYTHING);
-        startVerification();
-        
-        registry.index(DummyClass.class);
-        registry.index(DummyClass.class);
-    }
-
-    public void testGetClassIndexer() throws Exception {
-        ClassIndexer classIndexer = (ClassIndexer) mock(ClassIndexer.class);
-        registry.createIndexer(null, null, null);
-        modify().args(is.ANYTHING, is.ANYTHING, is.ANYTHING).returnValue(classIndexer);
-        startVerification();
-        
-        registry.index(DummyClass.class);
-        assertSame(classIndexer, registry.getClassIndexer(DummyClass.class));
+        registry = 
+            (AbstractClassIndexerRegistry) intercept(AbstractClassIndexerRegistry.class,
+                new Object[] { memberFilter },
+            "registry");
     }
 
     public void testGetNotIndexClassFails() throws Exception {
@@ -103,14 +54,55 @@ public class AbstractClassIndexerRegistryTest extends RMockTestCase {
         }
     }
     
+    public void testIndex() throws Exception {
+        memberFilter.filterConstructor(DummyClass.class);
+        Constructor constructor = DummyClass.class.getDeclaredConstructor();
+        modify().returnValue(new Constructor[] {constructor});
+        
+        memberFilter.filterMethods(DummyClass.class);
+        Method method = DummyClass.class.getDeclaredMethod("test");
+        modify().returnValue(new Method[] {method});
+        
+        memberFilter.filterFields(DummyClass.class);
+        Field field = DummyClass.class.getDeclaredField("name");
+        modify().returnValue(new Field[] {field});
+        
+        MemberUpdater constructorUpdater = registry.newMemberUpdater(0, constructor);
+        constructorUpdater.getMember();
+        modify().returnValue(constructor);
+        MemberUpdater methodUpdater = registry.newMemberUpdater(1, method);
+        methodUpdater.getMember();
+        modify().returnValue(method);
+        MemberUpdater fieldUpdater = registry.newMemberUpdater(2, field);
+        fieldUpdater.getMember();
+        modify().returnValue(field);
+        
+        startVerification();
+        
+        registry.index(DummyClass.class);
+        registry.index(DummyClass.class);
+        
+        ClassIndexer classIndexer = registry.getClassIndexer(DummyClass.class);
+        
+        MemberUpdater memberUpdater = classIndexer.getMemberUpdater(0);
+        assertEquals(constructorUpdater, memberUpdater);
+        
+        memberUpdater = classIndexer.getMemberUpdater(1);
+        assertEquals(methodUpdater, memberUpdater);
+
+        memberUpdater = classIndexer.getMemberUpdater(2);
+        assertEquals(fieldUpdater, memberUpdater);
+    }
+    
     private static class DummyClass {
-        private String name1;
+        private String name;
         
         public DummyClass() {
         }
         
-        public void name1() {
+        public void test() {
         }
+
     }
-    
+
 }

@@ -17,11 +17,9 @@ package org.codehaus.wadi.aop.aspectj;
 
 import java.lang.reflect.Field;
 
-import org.codehaus.wadi.aop.ClusteredStateMarker;
 import org.codehaus.wadi.aop.annotation.ClusteredState;
 import org.codehaus.wadi.aop.annotation.TrackingLevel;
 import org.codehaus.wadi.aop.tracker.InstanceTracker;
-import org.codehaus.wadi.aop.tracker.InstanceTrackerFactory;
 
 import com.agical.rmock.extension.junit.RMockTestCase;
 
@@ -37,21 +35,13 @@ public class FieldTrackingLevelAspectTest extends RMockTestCase {
     protected void setUp() throws Exception {
         instanceTracker = (InstanceTracker) mock(InstanceTracker.class);
         
-        InstanceTrackerFactory trackerFactory = new InstanceTrackerFactory() {
-            public void prepareTrackerForClass(Class clazz) {
-            }
-            public InstanceTracker newInstanceTracker(ClusteredStateMarker stateMarker) {
-                return instanceTracker;
-            }    
-        };
-        ClusteredStateAspectUtil.resetInstanceTrackerFactory();
-        ClusteredStateAspectUtil.setInstanceTrackerFactory(trackerFactory);
-        
-        instanceTracker.track(0, FieldLevelTrackingClass.class.getConstructor(new Class[0]), null);
-        modify().args(is.ANYTHING, is.AS_RECORDED, is.ANYTHING);
+        AspectTestUtil.setUpInstanceTrackerFactory(instanceTracker);
     }
     
     public void testSetTrackedField() throws Exception {
+        instanceTracker.track(0, FieldLevelTrackingClass.class.getConstructor(new Class[0]), null);
+        modify().args(is.AS_RECORDED, is.AS_RECORDED, is.ANYTHING);
+
         Field testField = FieldLevelTrackingClass.class.getDeclaredField("test");
         Integer fieldValue = new Integer(1);
         instanceTracker.track(1, testField, fieldValue);
@@ -64,17 +54,48 @@ public class FieldTrackingLevelAspectTest extends RMockTestCase {
     }
 
     public void testSetTransientField() throws Exception {
+        instanceTracker.track(0, FieldLevelTrackingClass.class.getConstructor(new Class[0]), null);
+        modify().args(is.AS_RECORDED, is.AS_RECORDED, is.ANYTHING);
         startVerification();
         
         FieldLevelTrackingClass instance = new FieldLevelTrackingClass();
         instance.transientTest = 1;
     }
     
+    public void testInheritanceOfTrackedField() throws Exception {
+        instanceTracker.track(0, SubClass.class.getConstructor(new Class[0]), null);
+        modify().args(is.AS_RECORDED, is.AS_RECORDED, is.ANYTHING);
+
+        Field test2Field = SubClass.class.getDeclaredField("test2");
+        Integer fieldValue = new Integer(1);
+        instanceTracker.track(1, test2Field, fieldValue);
+        instanceTracker.recordFieldUpdate(test2Field, fieldValue);
+        
+        Field testField = FieldLevelTrackingClass.class.getDeclaredField("test");
+        instanceTracker.track(2, testField, fieldValue);
+        instanceTracker.recordFieldUpdate(testField, fieldValue);
+
+        startVerification();
+        
+        SubClass instance = new SubClass();
+        instance.test2 = 1;
+        instance.test = 1;
+
+        instance.transientTest = 2;
+        instance.transientTest2 = 2;
+    }
+
     @ClusteredState(trackingLevel=TrackingLevel.FIELD)
     public static class FieldLevelTrackingClass {
         protected int test;
         
         protected transient int transientTest;
     }
-    
+
+    public static class SubClass extends FieldLevelTrackingClass {
+        protected int test2;
+        
+        protected transient int transientTest2;
+    }
+
 }

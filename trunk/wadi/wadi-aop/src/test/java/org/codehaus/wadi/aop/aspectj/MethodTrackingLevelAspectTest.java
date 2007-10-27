@@ -18,12 +18,10 @@ package org.codehaus.wadi.aop.aspectj;
 import java.io.IOException;
 import java.lang.reflect.Method;
 
-import org.codehaus.wadi.aop.ClusteredStateMarker;
 import org.codehaus.wadi.aop.annotation.ClusteredState;
 import org.codehaus.wadi.aop.annotation.TrackedMethod;
 import org.codehaus.wadi.aop.annotation.TrackingLevel;
 import org.codehaus.wadi.aop.tracker.InstanceTracker;
-import org.codehaus.wadi.aop.tracker.InstanceTrackerFactory;
 
 import com.agical.rmock.core.describe.ExpressionDescriber;
 import com.agical.rmock.core.match.operator.AbstractExpression;
@@ -41,18 +39,8 @@ public class MethodTrackingLevelAspectTest extends RMockTestCase {
     protected void setUp() throws Exception {
         instanceTracker = (InstanceTracker) mock(InstanceTracker.class);
         
-        InstanceTrackerFactory trackerFactory = new InstanceTrackerFactory() {
-            public void prepareTrackerForClass(Class clazz) {
-            }
-            public InstanceTracker newInstanceTracker(ClusteredStateMarker stateMarker) {
-                return instanceTracker;
-            }    
-        };
-        ClusteredStateAspectUtil.resetInstanceTrackerFactory();
-        ClusteredStateAspectUtil.setInstanceTrackerFactory(trackerFactory);
-        
-        instanceTracker.track(0, MethodLevelTrackingClass.class.getConstructor(new Class[0]), null);
-        modify().args(is.ANYTHING, is.AS_RECORDED, is.ANYTHING);
+        AspectTestUtil.setUpInstanceTrackerFactory(instanceTracker);
+
         instanceTracker.recordFieldUpdate(MethodLevelTrackingClass.class.getDeclaredField("childMethod"), null);
         modify().args(is.AS_RECORDED, is.ANYTHING);
         instanceTracker.recordFieldUpdate(MethodLevelTrackingClass.class.getDeclaredField("childField"), null);
@@ -64,8 +52,14 @@ public class MethodTrackingLevelAspectTest extends RMockTestCase {
         instanceTracker.track(0, ChildFieldLevelTrackingClass.class.getConstructor(new Class[0]), null);
         modify().args(is.ANYTHING, is.AS_RECORDED, is.ANYTHING);
     }
+
+    private void recordMethodLevelTrackingClassInstantiation() throws NoSuchMethodException {
+        instanceTracker.track(0, MethodLevelTrackingClass.class.getConstructor(new Class[0]), null);
+        modify().args(is.ANYTHING, is.AS_RECORDED, is.ANYTHING);
+    }
     
     public void testExecuteTrackedMethod() throws Exception {
+        recordMethodLevelTrackingClassInstantiation();
         instanceTracker.track(1,
             MethodLevelTrackingClass.class.getDeclaredMethod("test", new Class[] { int.class }),
             null);
@@ -91,7 +85,39 @@ public class MethodTrackingLevelAspectTest extends RMockTestCase {
         assertEquals(246, result);
     }
     
+    public void testExecuteSubClassTrackedMethod() throws Exception {
+        instanceTracker.track(0, SubClass.class.getConstructor(new Class[0]), null);
+        modify().args(is.ANYTHING, is.AS_RECORDED, is.ANYTHING);
+
+        instanceTracker.track(1, SubClass.class.getDeclaredMethod("invokeSubMethod", new Class[0]), null);
+        modify().args(is.ANYTHING, is.AS_RECORDED, is.ANYTHING);
+        
+        startVerification();
+        
+        SubClass instance = new SubClass();
+        instance.invokeSubMethod();
+    }
+    
+    public void testExecuteSubClassTrackedMethodOverridingParentTrackedMethod() throws Exception {
+        Integer fieldValue = new Integer(123);
+
+        instanceTracker.track(0, SubClass.class.getConstructor(new Class[0]), null);
+        modify().args(is.ANYTHING, is.AS_RECORDED, is.ANYTHING);
+
+        instanceTracker.track(1, SubClass.class.getDeclaredMethod("test", new Class[] {int.class}), null);
+        modify().args(is.ANYTHING, is.AS_RECORDED, is.ANYTHING);
+        
+        instanceTracker.recordFieldUpdate(MethodLevelTrackingClass.class.getDeclaredField("test"), fieldValue);
+
+        startVerification();
+        
+        SubClass instance = new SubClass();
+        instance.test(fieldValue);
+    }
+    
     public void testExecuteStandardMethod() throws Exception {
+        recordMethodLevelTrackingClassInstantiation();
+
         Integer fieldValue = new Integer(123);
         instanceTracker.recordFieldUpdate(MethodLevelTrackingClass.class.getDeclaredField("test"), fieldValue);
         startVerification();
@@ -101,6 +127,8 @@ public class MethodTrackingLevelAspectTest extends RMockTestCase {
     }
     
     public void testMethodInvokeMethodAndOnlyRootMethodIsActuallyTracked() throws Exception {
+        recordMethodLevelTrackingClassInstantiation();
+        
         instanceTracker.track(1, (Method) null, null);
         modify().args(is.ANYTHING, is.ANYTHING, is.ANYTHING);
         
@@ -114,6 +142,8 @@ public class MethodTrackingLevelAspectTest extends RMockTestCase {
     }
     
     public void testMethodSetFieldAndOnlyRootMethodIsActuallyTracked() throws Exception {
+        recordMethodLevelTrackingClassInstantiation();
+        
         instanceTracker.track(1, (Method) null, null);
         modify().args(is.ANYTHING ,is.ANYTHING, is.ANYTHING);
         
@@ -127,6 +157,8 @@ public class MethodTrackingLevelAspectTest extends RMockTestCase {
     }
     
     public void testMethodThrowExceptionIsNotTracked() throws Exception {
+        recordMethodLevelTrackingClassInstantiation();
+        
         startVerification();
         
         MethodLevelTrackingClass instance = new MethodLevelTrackingClass();
@@ -183,5 +215,18 @@ public class MethodTrackingLevelAspectTest extends RMockTestCase {
     public static class ChildFieldLevelTrackingClass {
         private int test;
     }
-    
+
+    public static class SubClass extends MethodLevelTrackingClass {
+        protected int test2;
+        
+        @TrackedMethod
+        protected void invokeSubMethod() {
+        }
+        
+        @TrackedMethod
+        protected int test(int test) {
+            return super.test(test);
+        }
+    }
+
 }

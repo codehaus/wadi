@@ -65,15 +65,13 @@ public abstract class AbstractServiceCommand implements Command {
     }
 
     protected Object getService(ServiceSpace currServiceSpace) {
-        Object service;
         try {
-            service = currServiceSpace.getServiceRegistry().getStartedService(serviceName);
+            return currServiceSpace.getServiceRegistry().getStartedService(serviceName);
         } catch (ServiceNotFoundException e) {
             return null;
         } catch (ServiceNotAvailableException e) {
             return null;
         }
-        return service;
     }
     
     protected abstract Object execute(LocalPeer localPeer, ServiceSpace serviceSpace, Object service);

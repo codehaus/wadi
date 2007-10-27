@@ -17,12 +17,10 @@ package org.codehaus.wadi.aop.aspectj;
 
 import java.lang.reflect.Field;
 
-import org.codehaus.wadi.aop.ClusteredStateMarker;
 import org.codehaus.wadi.aop.annotation.ClusteredState;
 import org.codehaus.wadi.aop.annotation.TrackedMethod;
 import org.codehaus.wadi.aop.annotation.TrackingLevel;
 import org.codehaus.wadi.aop.tracker.InstanceTracker;
-import org.codehaus.wadi.aop.tracker.InstanceTrackerFactory;
 
 import com.agical.rmock.extension.junit.RMockTestCase;
 
@@ -38,15 +36,7 @@ public class MixedTrackingLevelAspectTest extends RMockTestCase {
     protected void setUp() throws Exception {
         instanceTracker = (InstanceTracker) mock(InstanceTracker.class);
         
-        InstanceTrackerFactory trackerFactory = new InstanceTrackerFactory() {
-            public void prepareTrackerForClass(Class clazz) {
-            }
-            public InstanceTracker newInstanceTracker(ClusteredStateMarker stateMarker) {
-                return instanceTracker;
-            }    
-        };
-        ClusteredStateAspectUtil.resetInstanceTrackerFactory();
-        ClusteredStateAspectUtil.setInstanceTrackerFactory(trackerFactory);
+        AspectTestUtil.setUpInstanceTrackerFactory(instanceTracker);
         
         instanceTracker.track(0, MixedLevelTrackingClass.class.getConstructor(new Class[0]), null);
         modify().args(is.ANYTHING, is.AS_RECORDED, is.ANYTHING);
