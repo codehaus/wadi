@@ -20,9 +20,7 @@ import java.util.Map;
 
 import org.codehaus.wadi.aop.ClusteredStateMarker;
 import org.codehaus.wadi.aop.aspectj.ClusteredStateAspectUtil;
-import org.codehaus.wadi.aop.reflect.ClassIndexerRegistry;
-import org.codehaus.wadi.aop.reflect.clusteredstate.ClusteredStateMemberFilter;
-import org.codehaus.wadi.aop.reflect.jdk.JDKClassIndexerRegistry;
+import org.codehaus.wadi.aop.reflect.ClusteredStateMemberFilter;
 import org.codehaus.wadi.aop.tracker.InstanceIdFactory;
 import org.codehaus.wadi.aop.tracker.InstanceRegistry;
 import org.codehaus.wadi.aop.tracker.basic.BasicInstanceIdFactory;
@@ -32,6 +30,8 @@ import org.codehaus.wadi.aop.tracker.basic.BasicWireMarshaller;
 import org.codehaus.wadi.aop.tracker.basic.CompoundReplacer;
 import org.codehaus.wadi.aop.tracker.basic.InstanceAndTrackerReplacer;
 import org.codehaus.wadi.aop.tracker.basic.WireMarshaller;
+import org.codehaus.wadi.core.reflect.ClassIndexerRegistry;
+import org.codehaus.wadi.core.reflect.jdk.JDKClassIndexerRegistry;
 import org.codehaus.wadi.core.util.SimpleStreamer;
 
 import com.agical.rmock.extension.junit.RMockTestCase;

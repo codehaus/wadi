@@ -20,13 +20,13 @@ import java.lang.reflect.Field;
 import org.codehaus.wadi.aop.ClusteredStateMarker;
 import org.codehaus.wadi.aop.annotation.ClusteredState;
 import org.codehaus.wadi.aop.aspectj.AspectTestUtil;
-import org.codehaus.wadi.aop.reflect.ClassIndexer;
-import org.codehaus.wadi.aop.reflect.ClassIndexerRegistry;
-import org.codehaus.wadi.aop.reflect.clusteredstate.ClusteredStateMemberFilter;
-import org.codehaus.wadi.aop.reflect.jdk.JDKClassIndexerRegistry;
+import org.codehaus.wadi.aop.reflect.ClusteredStateMemberFilter;
 import org.codehaus.wadi.aop.tracker.InstanceTrackerVisitor;
 import org.codehaus.wadi.aop.tracker.VisitorContext;
 import org.codehaus.wadi.aop.tracker.visitor.BaseVisitorContext;
+import org.codehaus.wadi.core.reflect.ClassIndexer;
+import org.codehaus.wadi.core.reflect.ClassIndexerRegistry;
+import org.codehaus.wadi.core.reflect.jdk.JDKClassIndexerRegistry;
 
 import com.agical.rmock.extension.junit.RMockTestCase;
 

@@ -16,10 +16,10 @@
 package org.codehaus.wadi.aop.tracker.basic;
 
 import org.codehaus.wadi.aop.ClusteredStateMarker;
-import org.codehaus.wadi.aop.reflect.ClassIndexer;
-import org.codehaus.wadi.aop.reflect.ClassIndexerRegistry;
 import org.codehaus.wadi.aop.tracker.InstanceTracker;
 import org.codehaus.wadi.aop.tracker.InstanceTrackerFactory;
+import org.codehaus.wadi.core.reflect.ClassIndexer;
+import org.codehaus.wadi.core.reflect.ClassIndexerRegistry;
 
 
 /**

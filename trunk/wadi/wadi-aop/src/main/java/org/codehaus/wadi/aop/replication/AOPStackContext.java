@@ -16,9 +16,7 @@
 package org.codehaus.wadi.aop.replication;
 
 import org.codehaus.wadi.aop.aspectj.ClusteredStateAspectUtil;
-import org.codehaus.wadi.aop.reflect.ClassIndexerRegistry;
-import org.codehaus.wadi.aop.reflect.clusteredstate.ClusteredStateMemberFilter;
-import org.codehaus.wadi.aop.reflect.jdk.JDKClassIndexerRegistry;
+import org.codehaus.wadi.aop.reflect.ClusteredStateMemberFilter;
 import org.codehaus.wadi.aop.tracker.InstanceTrackerFactory;
 import org.codehaus.wadi.aop.tracker.basic.BasicInstanceIdFactory;
 import org.codehaus.wadi.aop.tracker.basic.BasicInstanceRegistry;
@@ -28,6 +26,8 @@ import org.codehaus.wadi.aop.tracker.basic.CompoundReplacer;
 import org.codehaus.wadi.aop.tracker.basic.InstanceAndTrackerReplacer;
 import org.codehaus.wadi.aop.tracker.basic.WireMarshaller;
 import org.codehaus.wadi.core.assembler.StackContext;
+import org.codehaus.wadi.core.reflect.ClassIndexerRegistry;
+import org.codehaus.wadi.core.reflect.jdk.JDKClassIndexerRegistry;
 import org.codehaus.wadi.core.session.SessionFactory;
 import org.codehaus.wadi.core.session.ValueFactory;
 import org.codehaus.wadi.core.session.ValueHelperRegistry;

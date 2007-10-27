@@ -1,6 +1,6 @@
 package org.codehaus.wadi.aop.tracker.basic;
 
-import org.codehaus.wadi.aop.reflect.ClassIndexerRegistry;
+import org.codehaus.wadi.core.reflect.ClassIndexerRegistry;
 import org.codehaus.wadi.core.util.SimpleStreamer;
 import org.codehaus.wadi.core.util.Streamer;
 
