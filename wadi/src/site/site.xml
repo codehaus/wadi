@@ -15,7 +15,7 @@
     <links>
       <item name="User List" href="mailto:user@wadi.codehaus.org"/>
       <item name="Dev List" href="mailto:dev@wadi.codehaus.org"/>
-      <item name="Wiki" href="http://docs.codehaus.org/pages/listpages-dirview.action?key=WADI"/>
+      <item name="Wiki" href="http://docs.codehaus.org/display/WADI/Home"/>
       <item name="Issue Tracker" href="http://jira.codehaus.org/browse/WADI"/>
     </links>
 
@@ -26,7 +26,7 @@
       <item name="Documentation" href="./documentation/index.html"/>
 -->
       <item name="FAQ" href="./faq.html"/>
-      <item name="Wiki" href="http://docs.codehaus.org/pages/listpages-dirview.action?key=WADI"/>
+      <item name="Wiki" href="http://docs.codehaus.org/display/WADI/Home"/>
       <item name="User List" href="mailto:user@wadi.codehaus.org"/>
       <item name="How To Help" href="./help.html"/>
       <item name="Release Repository" href="http://repository.codehaus.org/org/codehaus/wadi/"/>
