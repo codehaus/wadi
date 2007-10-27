@@ -58,19 +58,20 @@ public abstract class AbstractClassIndexerRegistry implements ClassIndexerRegist
         return classIndexer;
     }
 
-    public void index(Class clazz) {
+    public ClassIndexer index(Class clazz) {
         ClassIndexer classIndexer;
         synchronized (classToIndexer) {
             classIndexer = classToIndexer.get(clazz);
         }
         if (null != classIndexer) {
-            return;
+            return classIndexer;
         }
         
         classIndexer = createIndexer(clazz);
         synchronized (classToIndexer) {
             classToIndexer.put(clazz, classIndexer);    
         }
+        return classIndexer;
     }
 
     protected ClassIndexer createIndexer(Class clazz) {

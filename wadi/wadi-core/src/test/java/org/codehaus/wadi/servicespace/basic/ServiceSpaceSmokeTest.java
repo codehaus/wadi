@@ -23,6 +23,8 @@ import java.util.Set;
 import junit.framework.TestCase;
 
 import org.codehaus.wadi.core.Lifecycle;
+import org.codehaus.wadi.core.reflect.base.DeclaredMemberFilter;
+import org.codehaus.wadi.core.reflect.jdk.JDKClassIndexerRegistry;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.vm.VMBroker;
 import org.codehaus.wadi.group.vm.VMDispatcher;
@@ -52,14 +54,18 @@ public class ServiceSpaceSmokeTest extends TestCase {
 
         Lifecycle service2 = new MockService();
         
-        BasicServiceSpace space1OnDisp1 = new BasicServiceSpace(serviceSpace1Name, dispatcher1);
+        BasicServiceSpace space1OnDisp1 = new BasicServiceSpace(serviceSpace1Name,
+            dispatcher1,
+            new JDKClassIndexerRegistry(new DeclaredMemberFilter()));
         ServiceName service1Name = new ServiceName("service1");
         space1OnDisp1.getServiceRegistry().register(service1Name, service1);
         space1OnDisp1.start();
         EventTracker spaceTrackerOnDisp1 = new EventTracker();
         space1OnDisp1.addServiceSpaceListener(spaceTrackerOnDisp1);
         
-        BasicServiceSpace space1OnDisp2 = new BasicServiceSpace(serviceSpace1Name, dispatcher2);
+        BasicServiceSpace space1OnDisp2 = new BasicServiceSpace(serviceSpace1Name,
+            dispatcher2,
+            new JDKClassIndexerRegistry(new DeclaredMemberFilter()));
         space1OnDisp2.getServiceRegistry().register(new ServiceName("service2"), service2);
         
         ServiceMonitor service1Monitor = space1OnDisp2.getServiceMonitor(service1Name);

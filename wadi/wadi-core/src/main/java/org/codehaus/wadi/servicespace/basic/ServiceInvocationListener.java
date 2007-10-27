@@ -15,15 +15,16 @@
  */
 package org.codehaus.wadi.servicespace.basic;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.core.reflect.ClassIndexer;
+import org.codehaus.wadi.core.reflect.ClassIndexerRegistry;
+import org.codehaus.wadi.core.reflect.MemberUpdater;
+import org.codehaus.wadi.core.reflect.MemberUpdaterException;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Envelope;
-import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.EnvelopeListener;
+import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.servicespace.InvocationInfo;
 import org.codehaus.wadi.servicespace.InvocationMetaData;
 import org.codehaus.wadi.servicespace.InvocationResult;
@@ -43,14 +44,20 @@ public class ServiceInvocationListener implements EnvelopeListener {
     private final Dispatcher dispatcher;
     private final ServiceRegistry serviceRegistry;
     private final EnvelopeListener next;
+    private final ClassIndexerRegistry classIndexerRegistry;
     
-    public ServiceInvocationListener(ServiceSpace serviceSpace, EnvelopeListener next) {
+    public ServiceInvocationListener(ServiceSpace serviceSpace,
+            ClassIndexerRegistry classIndexerRegistry,
+            EnvelopeListener next) {
         if (null == serviceSpace) {
             throw new IllegalArgumentException("serviceSpace is required");
+        } else if (null == classIndexerRegistry) {
+            throw new IllegalArgumentException("classIndexerRegistry is required");
         } else if (null == next) {
             throw new IllegalArgumentException("next is required");
         }
         this.serviceSpace = serviceSpace;
+        this.classIndexerRegistry = classIndexerRegistry;
         this.next = next;
         
         dispatcher = serviceSpace.getDispatcher();
@@ -90,14 +97,14 @@ public class ServiceInvocationListener implements EnvelopeListener {
     }
 
     protected InvocationResult invokeServiceMethod(Object service, InvocationInfo invMetaData) {
+        ClassIndexer classIndexer = classIndexerRegistry.getClassIndexer(invMetaData.getTargetClass());
+        MemberUpdater memberUpdater = classIndexer.getMemberUpdater(invMetaData.getMemberUpdaterIndex());
+        
         InvocationResult result;
         try {
-            Method method = service.getClass().getMethod(invMetaData.getMethodName(), invMetaData.getParamTypes());
-            Object object = method.invoke(service, invMetaData.getParams());
+            Object object = memberUpdater.executeWithParameters(service, invMetaData.getParams());
             result = new InvocationResult(object);
-        } catch (InvocationTargetException e) {
-            result = new InvocationResult(e.getCause());
-        } catch (Exception e) {
+        } catch (MemberUpdaterException e) {
             result = new InvocationResult(e);
         }
         return result;

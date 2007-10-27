@@ -18,6 +18,8 @@ package org.codehaus.wadi.servicespace.basic;
 import java.util.Collections;
 import java.util.Set;
 
+import org.codehaus.wadi.core.reflect.base.DeclaredMemberFilter;
+import org.codehaus.wadi.core.reflect.jdk.JDKClassIndexerRegistry;
 import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.ClusterListener;
 import org.codehaus.wadi.group.Dispatcher;
@@ -401,7 +403,7 @@ public class BasicServiceSpaceTest extends AbstractServiceSpaceTestCase {
     private class SwapMockBasicServiceSpace extends BasicServiceSpace {
 
         public SwapMockBasicServiceSpace(ServiceSpaceName name, Dispatcher underlyingDispatcher) {
-            super(name, underlyingDispatcher);
+            super(name, underlyingDispatcher, new JDKClassIndexerRegistry(new DeclaredMemberFilter()));
         }
 
         protected Dispatcher newDispatcher() {

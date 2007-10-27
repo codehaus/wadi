@@ -88,7 +88,7 @@ public class BasicServiceInvokerTest extends RMockTestCase {
         resultCombiner = (InvocationResultCombiner) mock(InvocationResultCombiner.class);
         
         metaData = new InvocationMetaData();
-        invocInfo = new InvocationInfo("name", new Class[0], new Object[0], metaData);
+        invocInfo = new InvocationInfo(String.class, 1, new Object[0], metaData);
     }
     
     public void testOneWayInvoke() throws Exception {

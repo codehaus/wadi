@@ -17,6 +17,8 @@ package org.codehaus.wadi.servicespace.basic;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 
 import net.sf.cglib.proxy.Callback;
 import net.sf.cglib.proxy.CallbackFilter;
@@ -27,6 +29,8 @@ import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
 import net.sf.cglib.reflect.FastClass;
 
+import org.codehaus.wadi.core.reflect.ClassIndexer;
+import org.codehaus.wadi.core.reflect.ClassIndexerRegistry;
 import org.codehaus.wadi.servicespace.InvocationInfo;
 import org.codehaus.wadi.servicespace.InvocationMetaData;
 import org.codehaus.wadi.servicespace.InvocationResult;
@@ -47,8 +51,12 @@ public class CGLIBServiceProxyFactory implements ServiceProxyFactory {
     private final Class proxyType;
     private final FastClass fastClass;
     private final InvocationMetaData metaData = new InvocationMetaData();
+    private final Map<Class, ClassIndexer> classToClassIndexer;
 
-    public CGLIBServiceProxyFactory(ServiceName targetServiceName, Class[] interfaces, ServiceInvoker invoker) {
+    public CGLIBServiceProxyFactory(ServiceName targetServiceName,
+            ClassIndexerRegistry indexerRegistry,
+            Class[] interfaces,
+            ServiceInvoker invoker) {
         if (null == targetServiceName) {
             throw new IllegalArgumentException("targetServiceName is required");
         } else if (null == interfaces || isNotInterfaces(interfaces)) {
@@ -59,6 +67,13 @@ public class CGLIBServiceProxyFactory implements ServiceProxyFactory {
         this.targetServiceName = targetServiceName;
         this.interfaces = interfaces;
         this.invoker = invoker;
+        
+        classToClassIndexer = new HashMap<Class, ClassIndexer>();
+        for (int i = 0; i < interfaces.length; i++) {
+            Class interfaceClazz = interfaces[i];
+            ClassIndexer classIndexer = indexerRegistry.index(interfaceClazz);
+            classToClassIndexer.put(interfaceClazz, classIndexer);
+        }
         
         proxyType = createProxyType(interfaces);
         fastClass = FastClass.create(proxyType);
@@ -95,7 +110,7 @@ public class CGLIBServiceProxyFactory implements ServiceProxyFactory {
         }
     }
     
-    private Class createProxyType(Class[] interfaces) {
+    protected Class createProxyType(Class[] interfaces) {
         Enhancer enhancer = new Enhancer();
         enhancer.setSuperclass(Object.class);
         Class[] newInterfaces = new Class[interfaces.length + 1];
@@ -166,9 +181,15 @@ public class CGLIBServiceProxyFactory implements ServiceProxyFactory {
         }
 
         public Object intercept(Object object, Method method, Object[] args, MethodProxy proxy) throws Throwable {
+            Class targetClass = method.getDeclaringClass();
+            ClassIndexer classIndexer = classToClassIndexer.get(targetClass);
+            if (null == classIndexer) {
+                throw new AssertionError("Cannot find ClassIndexer for [" + method + "]");
+            }
+            int memberUpdaterIndex = classIndexer.getIndex(method);
+
             InvocationMetaData invocationMetaData = serviceProxy.getInvocationMetaData();
-            InvocationInfo invocationInfo =
-                new InvocationInfo(method.getName(), method.getParameterTypes(), args, invocationMetaData);
+            InvocationInfo invocationInfo = new InvocationInfo(targetClass, memberUpdaterIndex, args, invocationMetaData);
             InvocationResult result = serviceInvoker.invoke(invocationInfo);
             if (invocationMetaData.isOneWay()) {
                 return null;

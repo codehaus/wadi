@@ -29,37 +29,35 @@ import org.codehaus.wadi.group.MessageExchangeException;
 public class InvocationInfo implements Serializable {
     private static final Log log = LogFactory.getLog(InvocationInfo.class);
     
-    private final String methodName;
-    private final Class[] paramTypes;
+    private final Class targetClass;
+    private final int memberUpdaterIndex;
     private final Object[] params;
     private final InvocationMetaData metaData;
 
-    public InvocationInfo(String methodName, Class[] paramTypes, Object[] params, InvocationMetaData metaData) {
-        if (null == methodName) {
-            throw new IllegalArgumentException("methodName is required");
-        } else if (null == paramTypes) {
-            throw new IllegalArgumentException("paramTypes is required");
+    public InvocationInfo(Class targetClass, int memberUpdaterIndex, Object[] params, InvocationMetaData metaData) {
+        if (null == targetClass) {
+            throw new IllegalArgumentException("targetClass is required");
         } else if (null == params) {
             throw new IllegalArgumentException("params is required");
         } else if (null == metaData) {
             throw new IllegalArgumentException("metaData is required");
         }
-        this.methodName = methodName;
-        this.paramTypes = paramTypes;
+        this.targetClass = targetClass;
+        this.memberUpdaterIndex = memberUpdaterIndex;
         this.params = params;
         this.metaData = metaData;
     }
 
-    public String getMethodName() {
-        return methodName;
+    public Class getTargetClass() {
+        return targetClass;
+    }
+
+    public int getMemberUpdaterIndex() {
+        return memberUpdaterIndex;
     }
 
     public Object[] getParams() {
         return params;
-    }
-
-    public Class[] getParamTypes() {
-        return paramTypes;
     }
 
     public InvocationMetaData getMetaData() {
@@ -79,7 +77,8 @@ public class InvocationInfo implements Serializable {
     }
 
     public String toString() {
-        return "InvocationInfo method [" + methodName + "]; parameters [" + params + "]; metaData [" + metaData + "]";
+        return "InvocationInfo Class [" + targetClass + "]. index [" + memberUpdaterIndex
+            + "]; parameters [" + params + "]; metaData [" + metaData + "]";
     }
-    
+
 }

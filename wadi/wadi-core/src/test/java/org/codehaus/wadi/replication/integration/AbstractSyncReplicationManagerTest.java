@@ -19,6 +19,8 @@ import java.net.URI;
 import java.util.Iterator;
 
 import org.codehaus.wadi.core.manager.Manager;
+import org.codehaus.wadi.core.reflect.base.DeclaredMemberFilter;
+import org.codehaus.wadi.core.reflect.jdk.JDKClassIndexerRegistry;
 import org.codehaus.wadi.core.session.BasicValueHelperRegistry;
 import org.codehaus.wadi.core.session.DistributableAttributesFactory;
 import org.codehaus.wadi.core.session.DistributableSessionFactory;
@@ -197,7 +199,9 @@ public abstract class AbstractSyncReplicationManagerTest extends RMockTestCase {
         Dispatcher dispatcher = createDispatcher(CLUSTER_NAME, nodeName, 5000L);
         dispatcher.start();
         
-        return new BasicServiceSpace(new ServiceSpaceName(new URI("name")), dispatcher);
+        return new BasicServiceSpace(new ServiceSpaceName(new URI("name")),
+            dispatcher,
+            new JDKClassIndexerRegistry(new DeclaredMemberFilter()));
     }
 
     protected abstract Dispatcher createDispatcher(String clusterName, String nodeName, long timeout) throws Exception;
