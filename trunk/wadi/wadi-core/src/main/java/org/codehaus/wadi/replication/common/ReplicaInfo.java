@@ -15,7 +15,10 @@
  */
 package org.codehaus.wadi.replication.common;
 
-import java.io.Serializable;
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 
 import org.codehaus.wadi.group.Peer;
 
@@ -23,7 +26,7 @@ import org.codehaus.wadi.group.Peer;
  * 
  * @version $Revision$
  */
-public class ReplicaInfo implements Serializable {
+public class ReplicaInfo implements Externalizable {
     private static final long serialVersionUID = 1554455972740137174L;
 
     private Peer primary;
@@ -31,6 +34,9 @@ public class ReplicaInfo implements Serializable {
     private transient Object payload;
     private int version;
 
+    public ReplicaInfo() {
+    }
+    
     public ReplicaInfo(Peer primary, Peer[] secondaries, Object payload) {
         if (null == primary) {
             throw new IllegalArgumentException("primary is required");
@@ -100,6 +106,25 @@ public class ReplicaInfo implements Serializable {
         }
         buffer.append("; version [" + version + "]");
         return buffer.toString();
+    }
+
+    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+        primary = (Peer) in.readObject();
+        int length = in.readInt();
+        secondaries = new Peer[length];
+        for (int i = 0; i < length; i++) {
+            secondaries[i] = (Peer) in.readObject();
+        }
+        version = in.readInt();
+    }
+
+    public void writeExternal(ObjectOutput out) throws IOException {
+        out.writeObject(primary);
+        out.writeInt(secondaries.length);
+        for (Peer secondary : secondaries) {
+            out.writeObject(secondary);
+        }
+        out.writeInt(version);
     }
 
 }

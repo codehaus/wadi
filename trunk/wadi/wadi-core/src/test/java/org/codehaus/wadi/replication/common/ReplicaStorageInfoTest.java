@@ -27,54 +27,33 @@ import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.PeerInfo;
 
-public class ReplicaInfoTest extends TestCase {
+public class ReplicaStorageInfoTest extends TestCase {
     private static final Peer peer1 = new MockPeer("PEER1");
     private static final Peer peer2 = new MockPeer("PEER2");
-    private static final Peer peer3 = new MockPeer("PEER3");
     
-    public void testUpdateSecondaries() throws Exception {
-        Object replica = new Object();
-        Peer[] secondaries = new Peer[] {peer2};
-        ReplicaInfo info = new ReplicaInfo(peer1, secondaries, replica);
-        assertEquals(0, info.getVersion());
-        
-        secondaries = new Peer[] {peer3};
-        info.updateSecondaries(secondaries);
-        assertEquals(1, info.getVersion());
-    }
-    
-    public void testCreateWithPrototype() {
-        Object payload = new Object();
-        Peer primary = peer1;
-        Peer[] secondaries = new Peer[] {peer2};
-        ReplicaInfo info = new ReplicaInfo(primary, secondaries, payload);
-        assertEquals(0, info.getVersion());
-        
-        primary = peer2;
-        secondaries = new Peer[] {peer3};
-        info = new ReplicaInfo(info, primary, secondaries);
-        assertSame(primary, info.getPrimary());
-        assertSame(secondaries, info.getSecondaries());
-        assertSame(payload, info.getPayload());
-        assertEquals(1, info.getVersion());
-    }
-
     public void testExternalizable() throws Exception {
         ReplicaInfo info = new ReplicaInfo(peer1, new Peer[] {peer2}, new Object());
         info.increaseVersion();
         
+        ReplicaStorageInfo storageInfo = new ReplicaStorageInfo(info, new byte[] {1, 2});
+        
         ByteArrayOutputStream memOut = new ByteArrayOutputStream();
         ObjectOutputStream out = new ObjectOutputStream(memOut);
-        out.writeObject(info);
+        out.writeObject(storageInfo);
         out.close();
         
         ByteArrayInputStream memIn = new ByteArrayInputStream(memOut.toByteArray());
         ObjectInputStream in = new ObjectInputStream(memIn);
-        ReplicaInfo newInfo = (ReplicaInfo) in.readObject();
+        ReplicaStorageInfo newStorageInfo = (ReplicaStorageInfo) in.readObject();
+        ReplicaInfo newInfo = newStorageInfo.getReplicaInfo();
         assertEquals(peer1.getName(), newInfo.getPrimary().getName());
         assertEquals(1, newInfo.getSecondaries().length);
         assertEquals(peer2.getName(), newInfo.getSecondaries()[0].getName());
         assertEquals(info.getVersion(), newInfo.getVersion());
+        
+        assertEquals(2, newStorageInfo.getSerializedPayload().length);
+        assertEquals(1, newStorageInfo.getSerializedPayload()[0]);
+        assertEquals(2, newStorageInfo.getSerializedPayload()[1]);
     }
     
     private static class MockPeer implements Peer, Serializable {

@@ -15,7 +15,13 @@
  */
 package org.codehaus.wadi.servicespace;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
 import org.codehaus.wadi.group.Peer;
+import org.codehaus.wadi.servicespace.replyaccessor.DoNotReplyWithNull;
 
 import com.agical.rmock.extension.junit.RMockTestCase;
 
@@ -51,6 +57,27 @@ public class InvocationMetaDataTest extends RMockTestCase {
         assertSame(replyRequiredAssessor, copy.getReplyAssessor());
         assertSame(peers, copy.getTargets());
         assertEquals(timeout, copy.getTimeout());
+    }
+
+    public void testExternalizable() throws Exception {
+        InvocationMetaData invocationMetaData = new InvocationMetaData();
+        invocationMetaData.setOneWay(true);
+        invocationMetaData.setClusterAggregation(true);
+        invocationMetaData.setIgnoreMessageExchangeExceptionOnSend(true);
+        invocationMetaData.setReplyAssessor(DoNotReplyWithNull.ASSESSOR);
+        
+        ByteArrayOutputStream memOut = new ByteArrayOutputStream();
+        ObjectOutputStream out = new ObjectOutputStream(memOut);
+        out.writeObject(invocationMetaData);
+        out.close();
+        
+        ByteArrayInputStream memIn = new ByteArrayInputStream(memOut.toByteArray());
+        ObjectInputStream in = new ObjectInputStream(memIn);
+        InvocationMetaData newInvocationMetaData = (InvocationMetaData) in.readObject();
+        assertTrue(newInvocationMetaData.isOneWay());
+        assertFalse(newInvocationMetaData.isClusterAggregation());
+        assertFalse(newInvocationMetaData.isIgnoreMessageExchangeExceptionOnSend());
+        assertEquals(DoNotReplyWithNull.ASSESSOR, newInvocationMetaData.getReplyAssessor());
     }
     
 }

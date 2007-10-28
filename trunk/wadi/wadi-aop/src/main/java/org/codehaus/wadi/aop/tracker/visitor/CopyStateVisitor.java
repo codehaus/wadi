@@ -28,8 +28,8 @@ import org.codehaus.wadi.aop.tracker.basic.WireMarshaller;
 public class CopyStateVisitor extends AbstractVisitor {
     
     private final WireMarshaller wireMarshaller;
-    private final InstanceTrackerVisitor setInstanceIdVisitor;
-    private final InstanceTrackerVisitor resetTrackingVisitor;
+    protected final InstanceTrackerVisitor setInstanceIdVisitor;
+    protected final InstanceTrackerVisitor resetTrackingVisitor;
     
     public CopyStateVisitor(WireMarshaller wireMarshaller,
             InstanceTrackerVisitor setInstanceIdVisitor,
@@ -56,12 +56,7 @@ public class CopyStateVisitor extends AbstractVisitor {
                     + CopyStateVisitorContext.class.getName() + "]");
         }
         CopyStateVisitorContext copyContext = (CopyStateVisitorContext) context;
-        
-        instanceTracker.visit(setInstanceIdVisitor, setInstanceIdVisitor.newContext());
-
         serializeValueUpdaterInfos(copyContext, instanceTracker);
-        
-        instanceTracker.visit(resetTrackingVisitor, resetTrackingVisitor.newContext());
     }
 
     protected void serializeValueUpdaterInfos(CopyStateVisitorContext copyContext, InstanceTracker instanceTracker) {
@@ -70,7 +65,7 @@ public class CopyStateVisitor extends AbstractVisitor {
     }
 
     protected ValueUpdaterInfo[] buildValueUpdaterInfos(InstanceTracker instanceTracker) {
-        return instanceTracker.retrieveValueUpdaterInfos();
+        return instanceTracker.retrieveValueUpdaterInfos(setInstanceIdVisitor, resetTrackingVisitor);
     }
     
     public static class CopyStateVisitorContext extends BaseVisitorContext {

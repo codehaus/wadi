@@ -17,7 +17,6 @@ package org.codehaus.wadi.aop.tracker.visitor;
 
 import org.codehaus.wadi.aop.tracker.InstanceTracker;
 import org.codehaus.wadi.aop.tracker.InstanceTrackerVisitor;
-import org.codehaus.wadi.aop.tracker.VisitorContext;
 import org.codehaus.wadi.aop.tracker.basic.ValueUpdaterInfo;
 import org.codehaus.wadi.aop.tracker.basic.WireMarshaller;
 import org.codehaus.wadi.aop.tracker.visitor.CopyStateVisitor.CopyStateVisitorContext;
@@ -48,20 +47,13 @@ public class CopyStateVisitorTest extends RMockTestCase {
     }
     
     public void testSuccessfullCopy() throws Exception {
-        VisitorContext setInstanceId = setInstanceIdVisitor.newContext();
-        instanceTracker.visit(setInstanceIdVisitor, setInstanceId);
-        
-        instanceTracker.retrieveValueUpdaterInfos();
+        instanceTracker.retrieveValueUpdaterInfos(setInstanceIdVisitor, resetTrackingVisitor);
         ValueUpdaterInfo[] valueUpdaterInfos = new ValueUpdaterInfo[0];
         modify().returnValue(valueUpdaterInfos);
 
         marshaller.marshall(valueUpdaterInfos);
         byte[] marshalled = new byte[0];
         modify().returnValue(marshalled);
-        
-        VisitorContext resetTrackingContext = resetTrackingVisitor.newContext();
-        instanceTracker.visit(resetTrackingVisitor, resetTrackingContext);
-        
         startVerification();
         
         CopyStateVisitorContext context = visitor.newContext();

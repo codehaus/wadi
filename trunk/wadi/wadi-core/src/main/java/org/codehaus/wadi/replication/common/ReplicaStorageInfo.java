@@ -15,17 +15,23 @@
  */
 package org.codehaus.wadi.replication.common;
 
-import java.io.Serializable;
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 
 /**
  * 
  * @version $Revision: 2340 $
  */
-public class ReplicaStorageInfo implements Serializable {
+public class ReplicaStorageInfo implements Externalizable {
 
-    private final ReplicaInfo replicaInfo;
-    private final byte[] serializedPayload;
+    private ReplicaInfo replicaInfo;
+    private byte[] serializedPayload;
 
+    public ReplicaStorageInfo() {
+    }
+    
     public ReplicaStorageInfo(ReplicaInfo replicaInfo, byte[] serializedPayload) {
         if (null == replicaInfo) {
             throw new IllegalArgumentException("replicaInfo is required");
@@ -46,6 +52,19 @@ public class ReplicaStorageInfo implements Serializable {
 
     public int getVersion() {
         return replicaInfo.getVersion();
+    }
+
+    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+        replicaInfo = (ReplicaInfo) in.readObject();
+        int length = in.readInt();
+        serializedPayload = new byte[length];
+        in.readFully(serializedPayload);
+    }
+
+    public void writeExternal(ObjectOutput out) throws IOException {
+        out.writeObject(replicaInfo);
+        out.writeInt(serializedPayload.length);
+        out.write(serializedPayload);
     }
 
 }

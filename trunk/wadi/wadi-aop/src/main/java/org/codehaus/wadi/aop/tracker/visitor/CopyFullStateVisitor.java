@@ -32,7 +32,7 @@ public class CopyFullStateVisitor extends CopyStateVisitor {
     }
 
     protected ValueUpdaterInfo[] buildValueUpdaterInfos(InstanceTracker instanceTracker) {
-        return instanceTracker.retrieveInstantiationValueUpdaterInfos();
+        return instanceTracker.retrieveInstantiationValueUpdaterInfos(setInstanceIdVisitor, resetTrackingVisitor);
     }
 
 }
