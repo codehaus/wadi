@@ -39,7 +39,7 @@ public class MethodUpdater extends AbstractMemberUpdater {
         try {
             return ((Method) member).invoke(target, parameters);
         } catch (Exception e) {
-            throw new MemberUpdaterException(e);
+            throw new MemberUpdaterException("Target [" + target + "]; Method [" + member + "]", e);
         }
     }
 
