@@ -1,0 +1,21 @@
+<project name="wadi-tomcat55">
+
+  <bannerLeft>
+    <name>WADI</name>
+    <src>../images/wadi.gif</src>
+    <href>http://wadi.codehaus.org</href>
+  </bannerLeft>
+
+  <body>
+    <links>
+      <item name="Tomcat 5.5.x" href="http://tomcat.apache.org/tomcat-5.5-doc"/>
+    </links>
+
+    <menu name="WADI">
+      <item name="WADI" href="../index.html"/>
+    </menu>
+
+    ${reports}
+
+  </body>
+</project>
