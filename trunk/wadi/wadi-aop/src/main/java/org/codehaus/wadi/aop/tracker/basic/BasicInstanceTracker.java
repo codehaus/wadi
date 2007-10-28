@@ -196,6 +196,7 @@ public class BasicInstanceTracker implements InstanceTracker {
             return;
         }
         visitedTracker.put(this, Boolean.TRUE);
+
         preVisitor.visit(this, null);
         
         Class targetClass = stateMarker.$wadiGetInstanceClass();
@@ -214,9 +215,7 @@ public class BasicInstanceTracker implements InstanceTracker {
 
         VisitAction action = new VisitAction() {
             public void visit(BasicInstanceTracker nestedInstanceTracker) {
-                preVisitor.visit(nestedInstanceTracker, null);
                 nestedInstanceTracker.addValueUpdaterInfoTo(visitedTracker, valueUpdaterInfos, preVisitor, postVisitor);
-                postVisitor.visit(nestedInstanceTracker, null);
             }  
             public void visit(ValueUpdaterInfo valueUpdaterInfo) {
                 valueUpdaterInfo = valueUpdaterInfo.snapshotForSerialization();
