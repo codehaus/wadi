@@ -135,27 +135,30 @@ public class BasicInstanceTracker implements InstanceTracker {
         fieldToValueUpdaterInfo.put(field, valueUpdaterInfo);
     }
     
-    public ValueUpdaterInfo[] retrieveInstantiationValueUpdaterInfos() {
-        ensureInstanceIdIsSet();
-        
+    public ValueUpdaterInfo[] retrieveInstantiationValueUpdaterInfos(InstanceTrackerVisitor preVisitor,
+        InstanceTrackerVisitor postVisitor) {
         IdentityHashMap<InstanceTracker, Boolean> visitedTracker = new IdentityHashMap<InstanceTracker, Boolean>();
         List<ValueUpdaterInfo> valueUpdaterInfos = new ArrayList<ValueUpdaterInfo>();
-        addValueUpdaterInfoTo(visitedTracker, valueUpdaterInfos);
+        addValueUpdaterInfoTo(visitedTracker, valueUpdaterInfos, preVisitor, postVisitor);
         return valueUpdaterInfos.toArray(new ValueUpdaterInfo[valueUpdaterInfos.size()]);
     }
 
-    public ValueUpdaterInfo[] retrieveValueUpdaterInfos() {
-        ensureInstanceIdIsSet();
+    public ValueUpdaterInfo[] retrieveValueUpdaterInfos(final InstanceTrackerVisitor preVisitor,
+        final InstanceTrackerVisitor postVisitor) {
 
         final SortedMap<Long, ValueUpdaterInfo> overallToValueUpdaterInfo = new TreeMap<Long, ValueUpdaterInfo>();
         InstanceTrackerVisitor visitor = new AbstractVisitor() {
             public void visit(InstanceTracker instanceTracker, VisitorContext context) {
+                preVisitor.visit(instanceTracker, null);
+                
                 BasicInstanceTracker nestedTracker = (BasicInstanceTracker) instanceTracker;
                 for (Map.Entry<Long, ValueUpdaterInfo> entry : nestedTracker.indexToValueUpdaterInfo.entrySet()) {
                     ValueUpdaterInfo valueUpdaterInfo = entry.getValue();
                     valueUpdaterInfo = valueUpdaterInfo.snapshotForSerialization();
                     overallToValueUpdaterInfo.put(entry.getKey(), valueUpdaterInfo);
                 }
+                
+                preVisitor.visit(instanceTracker, null);
             }
         };
         visit(visitor, visitor.newContext());
@@ -186,11 +189,14 @@ public class BasicInstanceTracker implements InstanceTracker {
     }
 
     protected void addValueUpdaterInfoTo(final IdentityHashMap<InstanceTracker, Boolean> visitedTracker,
-        final List<ValueUpdaterInfo> valueUpdaterInfos) {
+        final List<ValueUpdaterInfo> valueUpdaterInfos,
+        final InstanceTrackerVisitor preVisitor,
+        final InstanceTrackerVisitor postVisitor) {
         if (visitedTracker.containsKey(this)) {
             return;
         }
         visitedTracker.put(this, Boolean.TRUE);
+        preVisitor.visit(this, null);
         
         Class targetClass = stateMarker.$wadiGetInstanceClass();
         Constructor constructor;
@@ -204,9 +210,13 @@ public class BasicInstanceTracker implements InstanceTracker {
         constructorInfo.setInstanceId(instanceId);
         valueUpdaterInfos.add(constructorInfo);
 
+        postVisitor.visit(this, null);
+
         VisitAction action = new VisitAction() {
             public void visit(BasicInstanceTracker nestedInstanceTracker) {
-                nestedInstanceTracker.addValueUpdaterInfoTo(visitedTracker, valueUpdaterInfos);
+                preVisitor.visit(nestedInstanceTracker, null);
+                nestedInstanceTracker.addValueUpdaterInfoTo(visitedTracker, valueUpdaterInfos, preVisitor, postVisitor);
+                postVisitor.visit(nestedInstanceTracker, null);
             }  
             public void visit(ValueUpdaterInfo valueUpdaterInfo) {
                 valueUpdaterInfo = valueUpdaterInfo.snapshotForSerialization();

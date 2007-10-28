@@ -15,7 +15,10 @@
  */
 package org.codehaus.wadi.servicespace;
 
-import java.io.Serializable;
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.servicespace.replyaccessor.TwoWay;
@@ -26,14 +29,14 @@ import org.codehaus.wadi.servicespace.resultcombiner.FirstSuccessThenFailureComb
  * 
  * @version $Revision: 1538 $
  */
-public class InvocationMetaData implements Serializable {
+public class InvocationMetaData implements Externalizable {
     private static final long DEFAULT_TIMEOUT = 2000;
     
     private transient Peer[] targets;
     private transient long timeout = DEFAULT_TIMEOUT;
     private boolean oneWay;
-    private boolean ignoreMessageExchangeExceptionOnSend;
-    private boolean clusterAggregation;
+    private transient boolean ignoreMessageExchangeExceptionOnSend;
+    private transient boolean clusterAggregation;
     private ReplyRequiredAssessor replyAssessor = TwoWay.ASSESSOR;
     private transient InvocationResultCombiner invocationResultCombiner = FirstSuccessThenFailureCombiner.COMBINER;
 
@@ -127,6 +130,16 @@ public class InvocationMetaData implements Serializable {
 
     public void setClusterAggregation(boolean clusterAggregation) {
         this.clusterAggregation = clusterAggregation;
+    }
+
+    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+        oneWay = in.readBoolean();
+        replyAssessor = (ReplyRequiredAssessor) in.readObject();
+    }
+
+    public void writeExternal(ObjectOutput out) throws IOException {
+        out.writeBoolean(oneWay);
+        out.writeObject(replyAssessor);
     }
     
 }

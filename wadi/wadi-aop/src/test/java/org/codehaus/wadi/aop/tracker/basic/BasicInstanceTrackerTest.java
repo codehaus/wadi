@@ -22,6 +22,7 @@ import org.codehaus.wadi.aop.annotation.ClusteredState;
 import org.codehaus.wadi.aop.aspectj.AspectTestUtil;
 import org.codehaus.wadi.aop.reflect.ClusteredStateMemberFilter;
 import org.codehaus.wadi.aop.tracker.InstanceTrackerVisitor;
+import org.codehaus.wadi.aop.tracker.NoOpInstanceTrackerVisitor;
 import org.codehaus.wadi.aop.tracker.VisitorContext;
 import org.codehaus.wadi.aop.tracker.visitor.BaseVisitorContext;
 import org.codehaus.wadi.core.reflect.ClassIndexer;
@@ -89,8 +90,10 @@ public class BasicInstanceTrackerTest extends RMockTestCase {
 
         instanceTrackerChild.track(2, trackerField, stateMarkerParent);
         instanceTrackerChild.recordFieldUpdate(trackerField, stateMarkerParent);
-        
-        ValueUpdaterInfo[] valueUpdaterInfos = instanceTrackerParent.retrieveValueUpdaterInfos();
+
+        ValueUpdaterInfo[] valueUpdaterInfos = instanceTrackerParent.retrieveValueUpdaterInfos(
+            NoOpInstanceTrackerVisitor.SINGLETON,
+            NoOpInstanceTrackerVisitor.SINGLETON);
         assertEquals(2, valueUpdaterInfos.length);
     }
     

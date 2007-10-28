@@ -37,9 +37,9 @@ public interface InstanceTracker extends Serializable {
     
     void visit(InstanceTrackerVisitor visitor, VisitorContext context);
 
-    ValueUpdaterInfo[] retrieveInstantiationValueUpdaterInfos();
+    ValueUpdaterInfo[] retrieveInstantiationValueUpdaterInfos(InstanceTrackerVisitor preVisitor, InstanceTrackerVisitor postVisitor);
     
-    ValueUpdaterInfo[] retrieveValueUpdaterInfos();
+    ValueUpdaterInfo[] retrieveValueUpdaterInfos(InstanceTrackerVisitor preVisitor, InstanceTrackerVisitor postVisitor);
 
     void track(long index, Constructor constructor, Object[] parameters);
     

@@ -15,7 +15,10 @@
  */
 package org.codehaus.wadi.servicespace;
 
-import java.io.Serializable;
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -26,14 +29,17 @@ import org.codehaus.wadi.group.MessageExchangeException;
  * 
  * @version $Revision: 1538 $
  */
-public class InvocationInfo implements Serializable {
+public class InvocationInfo implements Externalizable {
     private static final Log log = LogFactory.getLog(InvocationInfo.class);
-    
-    private final Class targetClass;
-    private final int memberUpdaterIndex;
-    private final Object[] params;
-    private final InvocationMetaData metaData;
 
+    private Class targetClass;
+    private int memberUpdaterIndex;
+    private Object[] params;
+    private InvocationMetaData metaData;
+
+    public InvocationInfo() {
+    }
+    
     public InvocationInfo(Class targetClass, int memberUpdaterIndex, Object[] params, InvocationMetaData metaData) {
         if (null == targetClass) {
             throw new IllegalArgumentException("targetClass is required");
@@ -76,9 +82,23 @@ public class InvocationInfo implements Serializable {
         }
     }
 
-    public String toString() {
-        return "InvocationInfo Class [" + targetClass + "]. index [" + memberUpdaterIndex
-            + "]; parameters [" + params + "]; metaData [" + metaData + "]";
+    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+        targetClass = (Class) in.readObject();
+        memberUpdaterIndex = in.readInt();
+        params = (Object[]) in.readObject();
+        metaData = (InvocationMetaData) in.readObject();
     }
 
+    public void writeExternal(ObjectOutput out) throws IOException {
+        out.writeObject(targetClass);
+        out.writeInt(memberUpdaterIndex);
+        out.writeObject(params);
+        out.writeObject(metaData);
+    }
+
+    public String toString() {
+        return "InvocationInfo Class [" + targetClass + "]. index [" + memberUpdaterIndex
+        + "]; parameters [" + params + "]; metaData [" + metaData + "]";
+    }
+    
 }

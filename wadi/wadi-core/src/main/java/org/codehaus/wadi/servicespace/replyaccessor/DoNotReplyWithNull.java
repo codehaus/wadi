@@ -15,6 +15,8 @@
  */
 package org.codehaus.wadi.servicespace.replyaccessor;
 
+import java.io.ObjectStreamException;
+
 import org.codehaus.wadi.servicespace.InvocationResult;
 import org.codehaus.wadi.servicespace.ReplyRequiredAssessor;
 
@@ -30,6 +32,10 @@ public class DoNotReplyWithNull implements ReplyRequiredAssessor {
             return result.getResult() != null;
         }
         return true;
+    }
+    
+    public Object readResolve() throws ObjectStreamException {
+        return ASSESSOR;
     }
     
 }
