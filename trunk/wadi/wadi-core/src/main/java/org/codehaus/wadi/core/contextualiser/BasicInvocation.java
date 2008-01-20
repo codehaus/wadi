@@ -133,4 +133,8 @@ public class BasicInvocation implements Invocation {
         this.doNotExecuteOnEndProcessing = doNotExecuteOnEndProcessing;
     }
 
+    public InvocationContext newContext(Session context) {
+        return new BasicInvocationContext(this);
+    }
+
 }

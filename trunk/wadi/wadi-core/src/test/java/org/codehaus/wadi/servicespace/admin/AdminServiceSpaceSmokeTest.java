@@ -23,9 +23,7 @@ import java.util.Set;
 import junit.framework.TestCase;
 
 import org.codehaus.wadi.core.assembler.StackContext;
-import org.codehaus.wadi.core.contextualiser.BasicInvocationContextFactory;
 import org.codehaus.wadi.core.contextualiser.Contextualiser;
-import org.codehaus.wadi.core.contextualiser.InvocationContextFactory;
 import org.codehaus.wadi.core.manager.Manager;
 import org.codehaus.wadi.core.reflect.base.DeclaredMemberFilter;
 import org.codehaus.wadi.core.reflect.jdk.JDKClassIndexerRegistry;
@@ -134,9 +132,6 @@ public class AdminServiceSpaceSmokeTest extends TestCase {
 
     private StackContext newStackContext(VMDispatcher dispatcher, String spaceName) throws Exception {
         StackContext context = new StackContext(new ServiceSpaceName(new URI(spaceName)), dispatcher) {
-            protected InvocationContextFactory newInvocationContextFactory() {
-                return new BasicInvocationContextFactory();
-            }
             protected Contextualiser newReplicaAwareContextualiser(Contextualiser next) {
                 return next;
             }

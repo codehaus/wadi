@@ -21,8 +21,6 @@ import junit.framework.TestCase;
 
 import org.codehaus.wadi.core.ConcurrentMotableMap;
 import org.codehaus.wadi.core.assembler.StackContext;
-import org.codehaus.wadi.core.contextualiser.BasicInvocationContextFactory;
-import org.codehaus.wadi.core.contextualiser.InvocationContextFactory;
 import org.codehaus.wadi.core.contextualiser.InvocationException;
 import org.codehaus.wadi.core.contextualiser.ThrowExceptionIfNoSessionInvocation;
 import org.codehaus.wadi.core.manager.DummyRouter;
@@ -109,9 +107,6 @@ public abstract class AbstractReplicationContextualiserTest extends TestCase {
         dispatcher.start();
         
         StackContext stackContext = new StackContext(new ServiceSpaceName(new URI("name")), dispatcher) {
-            protected InvocationContextFactory newInvocationContextFactory() {
-                return new BasicInvocationContextFactory();
-            }
             protected Router newRouter() {
                 return new DummyRouter();
             }

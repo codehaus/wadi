@@ -24,7 +24,6 @@ import org.codehaus.wadi.core.contextualiser.Contextualiser;
 import org.codehaus.wadi.core.contextualiser.DummyContextualiser;
 import org.codehaus.wadi.core.contextualiser.HashingCollapser;
 import org.codehaus.wadi.core.contextualiser.HybridRelocater;
-import org.codehaus.wadi.core.contextualiser.InvocationContextFactory;
 import org.codehaus.wadi.core.contextualiser.MemoryContextualiser;
 import org.codehaus.wadi.core.contextualiser.SerialContextualiser;
 import org.codehaus.wadi.core.contextualiser.SharedStoreContextualiser;
@@ -69,10 +68,10 @@ import org.codehaus.wadi.location.statemanager.StateManager;
 import org.codehaus.wadi.replication.contextualiser.ReplicaAwareContextualiser;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
 import org.codehaus.wadi.replication.manager.ReplicationManagerFactory;
-import org.codehaus.wadi.replication.manager.basic.SyncReplicationManagerFactory;
 import org.codehaus.wadi.replication.manager.basic.NoOpReplicationManagerFactory;
 import org.codehaus.wadi.replication.manager.basic.ObjectStateHandler;
 import org.codehaus.wadi.replication.manager.basic.SessionStateHandler;
+import org.codehaus.wadi.replication.manager.basic.SyncReplicationManagerFactory;
 import org.codehaus.wadi.replication.storage.ReplicaStorage;
 import org.codehaus.wadi.replication.storage.ReplicaStorageFactory;
 import org.codehaus.wadi.replication.storage.memory.SyncMemoryReplicaStorageFactory;
@@ -85,7 +84,6 @@ import org.codehaus.wadi.servicespace.ServiceSpaceName;
 import org.codehaus.wadi.servicespace.SingletonServiceHolder;
 import org.codehaus.wadi.servicespace.admin.commands.ContextualiserStackExplorer;
 import org.codehaus.wadi.servicespace.basic.BasicServiceSpace;
-import org.codehaus.wadi.web.impl.BasicHttpInvocationContextFactory;
 import org.codehaus.wadi.web.impl.JkRouter;
 import org.codehaus.wadi.web.impl.StandardHttpProxy;
 
@@ -223,7 +221,6 @@ public class StackContext {
                         memoryMap,
                         router,
                         sessionMonitor,
-                        newInvocationContextFactory(),
                         new StandardHttpProxy("jsessionid"));
         manager.init(new DummyManagerConfig());
 
@@ -277,10 +274,6 @@ public class StackContext {
     protected void registerPartitionManager() throws ServiceAlreadyRegisteredException {
         ServiceRegistry serviceRegistry = serviceSpace.getServiceRegistry();
         serviceRegistry.register(PartitionManager.NAME, partitionManager);
-    }
-
-    protected InvocationContextFactory newInvocationContextFactory() {
-        return new BasicHttpInvocationContextFactory();
     }
 
     protected SessionMonitor newSessionMonitor() {
@@ -395,15 +388,13 @@ public class StackContext {
     
     protected Contextualiser newMemoryContextualiser(Contextualiser next, ConcurrentMotableMap mmap) {
         Evicter mevicter = new AbsoluteEvicter(sweepInterval, true, sessionTimeout);
-        InvocationContextFactory invocationContextFactory = newInvocationContextFactory();
-        return newMemoryContextualiser(next, mmap, mevicter, invocationContextFactory);
+        return newMemoryContextualiser(next, mmap, mevicter);
     }
 
     protected MemoryContextualiser newMemoryContextualiser(Contextualiser next,
             ConcurrentMotableMap mmap,
-            Evicter mevicter,
-            InvocationContextFactory invocationContextFactory) {
-        return new MemoryContextualiser(next, mevicter, mmap, sessionFactory, invocationContextFactory, sessionMonitor);
+            Evicter mevicter) {
+        return new MemoryContextualiser(next, mevicter, mmap, sessionFactory, sessionMonitor);
     }
 
     protected Contextualiser newClusteredContextualiser(Contextualiser contextualiser) {

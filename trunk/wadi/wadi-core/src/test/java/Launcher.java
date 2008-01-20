@@ -19,10 +19,8 @@ import java.util.List;
 
 import org.codehaus.wadi.core.assembler.StackContext;
 import org.codehaus.wadi.core.contextualiser.BasicInvocation;
-import org.codehaus.wadi.core.contextualiser.BasicInvocationContextFactory;
 import org.codehaus.wadi.core.contextualiser.Invocation;
 import org.codehaus.wadi.core.contextualiser.InvocationContext;
-import org.codehaus.wadi.core.contextualiser.InvocationContextFactory;
 import org.codehaus.wadi.core.contextualiser.InvocationException;
 import org.codehaus.wadi.core.manager.DummyRouter;
 import org.codehaus.wadi.core.manager.Manager;
@@ -146,10 +144,6 @@ public class Launcher {
             }
             protected Router newRouter() {
                 return new DummyRouter();
-            }
-            @Override
-            protected InvocationContextFactory newInvocationContextFactory() {
-                return new BasicInvocationContextFactory();
             }
         };
         stackContext.build();

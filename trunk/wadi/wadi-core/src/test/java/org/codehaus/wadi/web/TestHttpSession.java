@@ -55,7 +55,6 @@ import org.codehaus.wadi.core.session.ValueFactory;
 import org.codehaus.wadi.core.util.SimpleStreamer;
 import org.codehaus.wadi.location.statemanager.StateManager;
 import org.codehaus.wadi.replication.manager.basic.NoOpReplicationManager;
-import org.codehaus.wadi.web.impl.BasicHttpInvocationContextFactory;
 import org.codehaus.wadi.web.impl.StandardSessionWrapperFactory;
 
 import com.agical.rmock.extension.junit.RMockTestCase;
@@ -119,8 +118,7 @@ public class TestHttpSession extends RMockTestCase {
             contextualiser,
             motableMap,
             router,
-            sessionMonitor,
-            new BasicHttpInvocationContextFactory());
+            sessionMonitor);
     protected DummyManagerConfig _standardConfig = new DummyManagerConfig();
     private WADIHttpSessionListener wadiHttpSessionListener;
 

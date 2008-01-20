@@ -17,7 +17,6 @@ package org.codehaus.wadi.core.manager;
 
 import org.codehaus.wadi.core.ConcurrentMotableMap;
 import org.codehaus.wadi.core.contextualiser.Contextualiser;
-import org.codehaus.wadi.core.contextualiser.InvocationContextFactory;
 import org.codehaus.wadi.core.contextualiser.InvocationProxy;
 import org.codehaus.wadi.core.session.Session;
 import org.codehaus.wadi.core.session.SessionFactory;
@@ -42,7 +41,6 @@ public class ClusteredManagerTest extends RMockTestCase {
         ConcurrentMotableMap sessionMap = (ConcurrentMotableMap) mock(ConcurrentMotableMap.class);
         Router router = (Router) mock(Router.class);
         SessionMonitor sessionMonitor = (SessionMonitor) mock(SessionMonitor.class);
-        InvocationContextFactory invocationContextFactory = (InvocationContextFactory) mock(InvocationContextFactory.class);
         InvocationProxy proxy = (InvocationProxy) mock(InvocationProxy.class);
         Session session = (Session) mock(Session.class);
         String name = "name";
@@ -64,7 +62,6 @@ public class ClusteredManagerTest extends RMockTestCase {
                 sessionMap,
                 router,
                 sessionMonitor,
-                invocationContextFactory,
                 proxy);
         manager.destroy(session);
     }
