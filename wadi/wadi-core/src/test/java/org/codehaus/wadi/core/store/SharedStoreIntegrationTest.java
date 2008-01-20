@@ -22,9 +22,7 @@ import junit.framework.TestCase;
 import org.apache.derby.jdbc.EmbeddedDataSource;
 import org.codehaus.wadi.core.ConcurrentMotableMap;
 import org.codehaus.wadi.core.assembler.StackContext;
-import org.codehaus.wadi.core.contextualiser.BasicInvocationContextFactory;
 import org.codehaus.wadi.core.contextualiser.InvocationContext;
-import org.codehaus.wadi.core.contextualiser.InvocationContextFactory;
 import org.codehaus.wadi.core.contextualiser.InvocationException;
 import org.codehaus.wadi.core.contextualiser.ThrowExceptionIfNoSessionInvocation;
 import org.codehaus.wadi.core.manager.Manager;
@@ -94,11 +92,7 @@ public class SharedStoreIntegrationTest extends TestCase {
     private StackContext newStackContext(String dispatcherName, VMBroker cluster, final Store store) throws Exception {
         VMDispatcher dispatcher = new VMDispatcher(cluster, dispatcherName, null);
         dispatcher.start();
-        StackContext stackContext = new StackContext(new ServiceSpaceName(new URI("Space")), dispatcher) {
-            protected InvocationContextFactory newInvocationContextFactory() {
-                return new BasicInvocationContextFactory();
-            }
-        };
+        StackContext stackContext = new StackContext(new ServiceSpaceName(new URI("Space")), dispatcher);
         stackContext.setSharedStore(store);
         stackContext.build();
         return stackContext;

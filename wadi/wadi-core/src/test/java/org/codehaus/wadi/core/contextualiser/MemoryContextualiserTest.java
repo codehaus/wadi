@@ -37,7 +37,6 @@ public class MemoryContextualiserTest extends RMockTestCase {
         Evicter evicter = (Evicter) mock(Evicter.class);
         ConcurrentMotableMap map = (ConcurrentMotableMap) mock(ConcurrentMotableMap.class);
         SessionFactory sessionFactory = (SessionFactory) mock(SessionFactory.class);
-        InvocationContextFactory contextFactory = (InvocationContextFactory) mock(InvocationContextFactory.class);
         SessionMonitor sessionMonitor = (SessionMonitor) mock(SessionMonitor.class);
         
         Motable motable = (Motable) mock(Motable.class);
@@ -60,7 +59,6 @@ public class MemoryContextualiserTest extends RMockTestCase {
                 evicter,
                 map,
                 sessionFactory,
-                contextFactory,
                 sessionMonitor);
         
         Immoter immoter = contextualiser.getDemoter(name, motable);

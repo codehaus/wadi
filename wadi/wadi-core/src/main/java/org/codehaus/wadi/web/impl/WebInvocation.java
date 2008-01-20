@@ -176,5 +176,9 @@ public class WebInvocation implements Invocation {
     public void setDoNotExecuteOnEndProcessing(boolean doNotExecuteOnEndProcessing) {
         this.doNotExecuteOnEndProcessing = doNotExecuteOnEndProcessing;
     }
+
+    public InvocationContext newContext(Session context) {
+        return new BasicHttpInvocationContext(this);
+    }
     
 }

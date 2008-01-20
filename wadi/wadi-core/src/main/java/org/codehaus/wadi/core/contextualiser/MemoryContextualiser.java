@@ -37,25 +37,20 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
 	private final SessionFactory sessionFactory;
     private final Immoter _immoter;
     private final Emoter _emoter;
-    private final InvocationContextFactory invocationContextFactory;
     private final SessionMonitor sessionMonitor;
 
 	public MemoryContextualiser(Contextualiser next,
             Evicter evicter,
             ConcurrentMotableMap map,
             SessionFactory sessionFactory,
-            InvocationContextFactory invocationContextFactory,
             SessionMonitor sessionMonitor) {
 		super(next, evicter, map);
         if (null == sessionFactory) {
             throw new IllegalArgumentException("sessionFactory is required");
-        } else if (null == invocationContextFactory) {
-            throw new IllegalArgumentException("invocationContextFactory is required");
         } else if (null == sessionMonitor) {
             throw new IllegalArgumentException("sessionMonitor is required");
         }
         this.sessionFactory = sessionFactory;
-        this.invocationContextFactory = invocationContextFactory;
         this.sessionMonitor = sessionMonitor;
         
         _immoter = new MemoryImmoter(map);
@@ -68,8 +63,8 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
         if (invocation.isProxiedInvocation()) {
             invocation.invoke();
         } else {
-            InvocationContext wrapper = invocationContextFactory.create(invocation, (Session) motable);
-            invocation.invoke(wrapper);
+            InvocationContext context = invocation.newContext((Session) motable);
+            invocation.invoke(context);
         }
         return true;
     }

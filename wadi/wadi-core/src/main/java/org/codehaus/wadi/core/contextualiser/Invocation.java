@@ -99,4 +99,6 @@ public interface Invocation {
     boolean isErrorIfSessionNotAcquired();
 
     long getExclusiveSessionLockWaitTime();
+    
+    InvocationContext newContext(Session context);
 }

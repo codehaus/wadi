@@ -19,8 +19,6 @@ package org.codehaus.wadi.test;
 import java.net.URI;
 
 import org.codehaus.wadi.core.assembler.StackContext;
-import org.codehaus.wadi.core.contextualiser.BasicInvocationContextFactory;
-import org.codehaus.wadi.core.contextualiser.InvocationContextFactory;
 import org.codehaus.wadi.core.manager.DummyRouter;
 import org.codehaus.wadi.core.manager.Manager;
 import org.codehaus.wadi.core.manager.Router;
@@ -34,9 +32,6 @@ public class MyStack {
 
     public MyStack(Dispatcher dispatcher) throws Exception {
         StackContext stackContext = new StackContext(new ServiceSpaceName(new URI("Space")), dispatcher) {
-            protected InvocationContextFactory newInvocationContextFactory() {
-                return new BasicInvocationContextFactory();
-            }
             protected Router newRouter() {
                 return new DummyRouter();
             }

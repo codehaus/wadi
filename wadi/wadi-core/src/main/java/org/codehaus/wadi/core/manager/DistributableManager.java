@@ -18,7 +18,6 @@ package org.codehaus.wadi.core.manager;
 
 import org.codehaus.wadi.core.ConcurrentMotableMap;
 import org.codehaus.wadi.core.contextualiser.Contextualiser;
-import org.codehaus.wadi.core.contextualiser.InvocationContextFactory;
 import org.codehaus.wadi.core.session.SessionFactory;
 
 /**
@@ -32,15 +31,13 @@ public class DistributableManager extends StandardManager {
             Contextualiser contextualiser,
             ConcurrentMotableMap map,
             Router router,
-            SessionMonitor sessionMonitor,
-            InvocationContextFactory invocationContextFactory) {
+            SessionMonitor sessionMonitor) {
         super(sessionFactory,
                 sessionIdFactory,
                 contextualiser,
                 map,
                 router,
-                sessionMonitor,
-                invocationContextFactory);
+                sessionMonitor);
     }
 
 }

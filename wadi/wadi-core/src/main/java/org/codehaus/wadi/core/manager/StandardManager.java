@@ -24,7 +24,6 @@ import org.codehaus.wadi.core.WADIRuntimeException;
 import org.codehaus.wadi.core.contextualiser.Contextualiser;
 import org.codehaus.wadi.core.contextualiser.Invocation;
 import org.codehaus.wadi.core.contextualiser.InvocationContext;
-import org.codehaus.wadi.core.contextualiser.InvocationContextFactory;
 import org.codehaus.wadi.core.contextualiser.InvocationException;
 import org.codehaus.wadi.core.session.Session;
 import org.codehaus.wadi.core.session.SessionFactory;
@@ -46,7 +45,6 @@ public class StandardManager implements Lifecycle, Manager {
     private final Router router;
     private final SynchronizedBoolean acceptingSessions = new SynchronizedBoolean(true);
     private final SessionMonitor sessionMonitor;
-    private final InvocationContextFactory invocationContextFactory;
     private ManagerConfig config;
     private int maxInactiveInterval = 30 * 60;
 
@@ -55,8 +53,7 @@ public class StandardManager implements Lifecycle, Manager {
             Contextualiser contextualiser,
             ConcurrentMotableMap motableMap,
             Router router,
-            SessionMonitor sessionMonitor,
-            InvocationContextFactory invocationContextFactory) {
+            SessionMonitor sessionMonitor) {
         if (null == sessionFactory) {
             throw new IllegalArgumentException("sessionFactory is required");
         } else if (null == sessionIdFactory) {
@@ -69,8 +66,6 @@ public class StandardManager implements Lifecycle, Manager {
             throw new IllegalArgumentException("router is required");
         } else if (null == sessionMonitor) {
             throw new IllegalArgumentException("sessionMonitor is required");
-        } else if (null == invocationContextFactory) {
-            throw new IllegalArgumentException("invocationContextFactory is required");
         }
         this.sessionFactory = sessionFactory;
         this.sessionIdFactory = sessionIdFactory;
@@ -78,7 +73,6 @@ public class StandardManager implements Lifecycle, Manager {
         this.motableMap = motableMap;
         this.router = router;
         this.sessionMonitor = sessionMonitor;
-        this.invocationContextFactory = invocationContextFactory;
         
         sessionFactory.setManager(this);
     }
@@ -174,7 +168,7 @@ public class StandardManager implements Lifecycle, Manager {
         }
 
         // no session yet - but may initiate one...
-        InvocationContext context = invocationContextFactory.create(invocation, null);
+        InvocationContext context = invocation.newContext(null);
         invocation.invoke(context);
         return true;
     }
