@@ -7,6 +7,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.catalina.tribes.Member;
 import org.apache.catalina.tribes.UniqueId;
@@ -16,16 +18,7 @@ import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.PeerInfo;
 
 /**
- * <p>Title: </p>
- *
- * <p>Description: </p>
- *
- * <p>Copyright: Copyright (c) 2006</p>
- *
- * <p>Company: </p>
- *
- * @author not attributable
- * @version 1.0
+ * @version $Revision: 2308 $
  */
 public class TribesPeer implements Member, LocalPeer, Address {
     
@@ -56,6 +49,7 @@ public class TribesPeer implements Member, LocalPeer, Address {
     private final String name;
     private final PeerInfo peerInfo;
     private final UniqueId uniqueId;
+    private final Map<Object, Object> localStateMap;
     
     public TribesPeer(MemberImpl mbr) {
         if (null == mbr) {
@@ -63,6 +57,8 @@ public class TribesPeer implements Member, LocalPeer, Address {
         }
         this.member = mbr;
         this.uniqueId = new UniqueId(mbr.getUniqueId());
+        
+        localStateMap = new HashMap<Object, Object>();
         
         TribesPeerInfo tribesPeerInfo = getTribesPeerInfo(mbr.getPayload());
         
@@ -180,6 +176,10 @@ public class TribesPeer implements Member, LocalPeer, Address {
         return member.getCommand();
     }
     
+    public Map<Object, Object> getLocalStateMap() {
+        return localStateMap;
+    }
+
     public int hashCode() {
         return uniqueId.hashCode();
     }
@@ -214,5 +214,5 @@ public class TribesPeer implements Member, LocalPeer, Address {
             this.peerInfo = peerInfo;
         }
     }
-    
+
 }
