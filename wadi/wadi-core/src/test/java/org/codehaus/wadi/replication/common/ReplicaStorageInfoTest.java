@@ -20,6 +20,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.Map;
 
 import junit.framework.TestCase;
 
@@ -72,6 +73,10 @@ public class ReplicaStorageInfoTest extends TestCase {
         }
 
         public PeerInfo getPeerInfo() {
+            return null;
+        }
+        
+        public Map<Object, Object> getLocalStateMap() {
             return null;
         }
         

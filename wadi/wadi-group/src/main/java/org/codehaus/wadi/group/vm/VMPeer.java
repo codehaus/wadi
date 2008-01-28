@@ -34,11 +34,14 @@ public class VMPeer implements Peer, Serializable {
     protected final String name;
     protected final Address address;
     private final PeerInfo peerInfo;
+    private final Map<Object, Object> localStateMap;
     
     public VMPeer(String name, EndPoint endPoint) {
         this.name = name;
         address = new VMAddress(this);
         peerInfo = new PeerInfo(endPoint);
+        
+        localStateMap = new HashMap<Object, Object>();
     }
     
     public PeerInfo getPeerInfo() {
@@ -53,6 +56,10 @@ public class VMPeer implements Peer, Serializable {
         return name;
     }
     
+    public Map<Object, Object> getLocalStateMap() {
+        return localStateMap;
+    }
+
     public boolean equals(Object obj) {
         if (false == obj instanceof VMPeer) {
             return false;
@@ -69,4 +76,5 @@ public class VMPeer implements Peer, Serializable {
     public String toString() {
         return "Node=[" + name + "]";
     }
+
 }

@@ -19,6 +19,7 @@ package org.codehaus.wadi.core.session;
 import java.io.IOException;
 import java.io.NotSerializableException;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -36,6 +37,7 @@ import org.codehaus.wadi.core.motable.AbstractMotable;
 public class StandardSession extends AbstractMotable implements Session {
     protected final Manager manager;
     protected final StandardAttributes attributes;
+    protected final Map<Object, Object> localStateMap;
 
     public StandardSession(StandardAttributes attributes, Manager manager) {
         if (null == attributes) {
@@ -45,6 +47,8 @@ public class StandardSession extends AbstractMotable implements Session {
         }
         this.manager = manager;
         this.attributes = attributes;
+        
+        localStateMap = new HashMap<Object, Object>();
         
         getStandardSessionMemento().setAttributesMemento(attributes.getMemento());
     }
@@ -100,6 +104,10 @@ public class StandardSession extends AbstractMotable implements Session {
         return new StateMap();
     }
     
+    public Map<Object, Object> getLocalStateMap() {
+        return localStateMap;
+    }
+
     protected void onAddSate(Object key, Object oldValue, Object newValue) {
     }
 

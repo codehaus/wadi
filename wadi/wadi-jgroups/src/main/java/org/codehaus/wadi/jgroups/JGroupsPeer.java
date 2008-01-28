@@ -17,6 +17,8 @@
 package org.codehaus.wadi.jgroups;
 
 import java.io.ObjectStreamException;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.EndPoint;
@@ -29,6 +31,7 @@ public class JGroupsPeer implements Peer, Address, Comparable {
     protected final String name;
     private final PeerInfo peerInfo;
     protected org.jgroups.Address _jgAddress;
+    private final Map<Object, Object> localStateMap;
 
     public JGroupsPeer(JGroupsCluster cluster, String name, EndPoint endPoint) {
         if (null == cluster) {
@@ -39,6 +42,7 @@ public class JGroupsPeer implements Peer, Address, Comparable {
         _cluster = cluster;
         this.name = name;
 
+        localStateMap = new HashMap<Object, Object>();
         peerInfo = new PeerInfo(endPoint);
     }
 
@@ -51,6 +55,8 @@ public class JGroupsPeer implements Peer, Address, Comparable {
         _cluster = cluster;
         this.name = prototype.name;
         this.peerInfo = prototype.peerInfo;
+        
+        localStateMap = new HashMap<Object, Object>();
     }
 
     protected Object readResolve() throws ObjectStreamException {
@@ -87,6 +93,10 @@ public class JGroupsPeer implements Peer, Address, Comparable {
 
     public PeerInfo getPeerInfo() {
         return peerInfo; 
+    }
+
+    public Map<Object, Object> getLocalStateMap() {
+        return localStateMap;
     }
 
 }

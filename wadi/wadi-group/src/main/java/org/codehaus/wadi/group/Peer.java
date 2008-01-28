@@ -15,6 +15,8 @@
  */
 package org.codehaus.wadi.group;
 
+import java.util.Map;
+
 
 /**
  * 
@@ -26,4 +28,6 @@ public interface Peer {
     PeerInfo getPeerInfo();
 
     Address getAddress();
+    
+    Map<Object, Object> getLocalStateMap();
 }

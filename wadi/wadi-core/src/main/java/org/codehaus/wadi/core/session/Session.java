@@ -52,4 +52,6 @@ public interface Session extends Motable, Externalizable {
     Map getState();
     
     void onEndProcessing();
+    
+    Map<Object, Object> getLocalStateMap();
 }
