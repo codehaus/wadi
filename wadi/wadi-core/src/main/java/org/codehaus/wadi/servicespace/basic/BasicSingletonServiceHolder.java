@@ -41,7 +41,7 @@ public class BasicSingletonServiceHolder extends BasicServiceHolder implements S
     private Peer hostingPeer;
 
 
-    public BasicSingletonServiceHolder(ServiceSpace serviceSpace, ServiceName serviceName, Lifecycle service) {
+    public BasicSingletonServiceHolder(ServiceSpace serviceSpace, ServiceName serviceName, Object service) {
         super(serviceSpace, serviceName, service);
         
         localPeer = serviceSpace.getDispatcher().getCluster().getLocalPeer();
@@ -76,7 +76,7 @@ public class BasicSingletonServiceHolder extends BasicServiceHolder implements S
         }
     }
 
-    public Lifecycle getSingletonService() {
+    public Object getSingletonService() {
         return service;
     }
 

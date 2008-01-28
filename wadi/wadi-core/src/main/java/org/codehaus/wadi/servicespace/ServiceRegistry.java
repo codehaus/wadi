@@ -17,16 +17,15 @@ package org.codehaus.wadi.servicespace;
 
 import java.util.List;
 
-import org.codehaus.wadi.core.Lifecycle;
 
 /**
  * 
  * @version $Revision: 1538 $
  */
 public interface ServiceRegistry {
-    void register(ServiceName name, Lifecycle service) throws ServiceAlreadyRegisteredException;
+    void register(ServiceName name, Object service) throws ServiceAlreadyRegisteredException;
 
-    SingletonServiceHolder registerSingleton(ServiceName name, Lifecycle service) throws ServiceAlreadyRegisteredException;
+    SingletonServiceHolder registerSingleton(ServiceName name, Object service) throws ServiceAlreadyRegisteredException;
 
     void unregister(ServiceName name) throws ServiceNotFoundException;
     

@@ -15,7 +15,6 @@
  */
 package org.codehaus.wadi.location.balancing;
 
-import org.codehaus.wadi.core.Lifecycle;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.servicespace.SingletonServiceHolder;
 
@@ -34,7 +33,7 @@ public class BasicPartitionBalancerSingletonServiceHolder implements PartitionBa
         }
         this.delegate = delegate;
         
-        Lifecycle singletonService = delegate.getSingletonService();
+        Object singletonService = delegate.getSingletonService();
         if (!(singletonService instanceof PartitionBalancerSingletonService)) {
             throw new IllegalArgumentException("Singleton service [" + singletonService + 
                     "] is not a [" + PartitionBalancerSingletonService.class + "]");
@@ -48,7 +47,7 @@ public class BasicPartitionBalancerSingletonServiceHolder implements PartitionBa
     }
 
 
-    public Lifecycle getSingletonService() {
+    public Object getSingletonService() {
         return delegate.getSingletonService();
     }
 

@@ -87,7 +87,7 @@ public class BasicServiceRegistry implements StartableServiceRegistry {
         return serviceHolder.isStarted();
     }
 
-    public void register(ServiceName name, Lifecycle service) throws ServiceAlreadyRegisteredException {
+    public void register(ServiceName name, Object service) throws ServiceAlreadyRegisteredException {
         if (null == name) {
             throw new IllegalArgumentException("name is required");
         } else if (started) {
@@ -101,7 +101,7 @@ public class BasicServiceRegistry implements StartableServiceRegistry {
         }
     }
 
-    public SingletonServiceHolder registerSingleton(ServiceName name, Lifecycle service) throws ServiceAlreadyRegisteredException {
+    public SingletonServiceHolder registerSingleton(ServiceName name, Object service) throws ServiceAlreadyRegisteredException {
         if (null == name) {
             throw new IllegalArgumentException("name is required");
         } else if (started) {
