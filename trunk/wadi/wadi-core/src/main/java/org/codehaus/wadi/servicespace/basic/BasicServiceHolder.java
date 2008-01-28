@@ -35,11 +35,11 @@ public class BasicServiceHolder implements Lifecycle {
     private static final Log log = LogFactory.getLog(BasicServiceHolder.class);
     
     protected final ServiceSpace serviceSpace;
-    protected final Lifecycle service;
+    protected final Object service;
     private final ServiceName serviceName;
     private volatile boolean started;
  
-    public BasicServiceHolder(ServiceSpace serviceSpace, ServiceName serviceName, Lifecycle service) {
+    public BasicServiceHolder(ServiceSpace serviceSpace, ServiceName serviceName, Object service) {
         if (null == serviceSpace) {
             throw new IllegalArgumentException("serviceSpace is required");
         } else if (null == service) {
@@ -55,7 +55,9 @@ public class BasicServiceHolder implements Lifecycle {
     public void start() throws Exception {
         sendLifecycleEventToCluster(LifecycleState.STARTING);
         try {
-            service.start();
+            if (service instanceof Lifecycle) {
+                ((Lifecycle) service).start();
+            }
             started = true;
             sendLifecycleEventToCluster(LifecycleState.STARTED);
         } catch (Exception e) {
@@ -68,7 +70,9 @@ public class BasicServiceHolder implements Lifecycle {
         started = false;
         sendLifecycleEventToCluster(LifecycleState.STOPPING);
         try {
-            service.stop();
+            if (service instanceof Lifecycle) {
+                ((Lifecycle) service).stop();
+            }
             sendLifecycleEventToCluster(LifecycleState.STOPPED);
         } catch (Exception e) {
             sendLifecycleEventToCluster(LifecycleState.FAILED);
@@ -80,7 +84,7 @@ public class BasicServiceHolder implements Lifecycle {
         return started;
     }
     
-    public Lifecycle getService() {
+    public Object getService() {
         return service;
     }
 

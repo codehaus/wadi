@@ -27,5 +27,5 @@ public interface SingletonServiceHolder extends Lifecycle {
 
     Peer getHostingPeer();
 
-    Lifecycle getSingletonService();
+    Object getSingletonService();
 }
