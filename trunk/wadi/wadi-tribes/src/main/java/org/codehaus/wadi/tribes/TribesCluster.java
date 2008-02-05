@@ -7,6 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.apache.catalina.tribes.Channel;
 import org.apache.catalina.tribes.ChannelException;
@@ -27,14 +28,12 @@ import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.PeerInfo;
 
-import EDU.oswego.cs.dl.util.concurrent.CopyOnWriteArrayList;
-
 public class TribesCluster implements Cluster {
     
     private final byte[] clusterDomain;
-    protected GroupChannel channel = null;
-    protected List listeners = new CopyOnWriteArrayList();
-    protected boolean initialized = false;
+    protected GroupChannel channel;
+    protected List<ClusterListener> listeners = new CopyOnWriteArrayList<ClusterListener>();
+    protected boolean initialized;
     private final TribesDispatcher dispatcher;
 
     public TribesCluster(byte[] clusterDomain,
@@ -258,8 +257,8 @@ public class TribesCluster implements Cluster {
             HashSet added = new HashSet();
             HashSet removed = new HashSet();
             if ( !member.equals(cluster.channel.getLocalMember(false)) ) added.add(member);
-            for (Iterator iter = cluster.listeners.iterator(); iter.hasNext();) {
-                ClusterListener listener = (ClusterListener) iter.next();
+            for (Iterator<ClusterListener> iter = cluster.listeners.iterator(); iter.hasNext();) {
+                ClusterListener listener = iter.next();
                 listener.onMembershipChanged(cluster,added,removed);
             }
         }
@@ -268,8 +267,8 @@ public class TribesCluster implements Cluster {
             HashSet added = new HashSet();
             HashSet removed = new HashSet();
             removed.add(member);
-            for (Iterator iter = cluster.listeners.iterator(); iter.hasNext();) {
-                ClusterListener listener = (ClusterListener) iter.next();
+            for (Iterator<ClusterListener> iter = cluster.listeners.iterator(); iter.hasNext();) {
+                ClusterListener listener = iter.next();
                 listener.onMembershipChanged(cluster, added, removed);
             }
         }

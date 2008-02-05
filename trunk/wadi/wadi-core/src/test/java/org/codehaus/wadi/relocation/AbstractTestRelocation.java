@@ -48,7 +48,7 @@ public abstract class AbstractTestRelocation extends AbstractTwoNodesTest {
     }
 
     private void executeTestThrowExceptionIfSessionIsBuzy(Session session) throws Exception {
-        session.getReadWriteLock().writeLock().acquire();
+        session.getReadWriteLock().writeLock().lock();
         
         Invocation invocation = new BasicInvocation(session.getName(), 1000);
         invocation.setErrorIfSessionNotAcquired(true);

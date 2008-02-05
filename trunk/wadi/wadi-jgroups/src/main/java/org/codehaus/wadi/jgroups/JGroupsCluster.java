@@ -22,12 +22,15 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.TimeUnit;
 
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.ClusterException;
 import org.codehaus.wadi.group.EndPoint;
-import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.Envelope;
+import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.command.BootRemotePeer;
@@ -41,8 +44,6 @@ import org.jgroups.MergeView;
 import org.jgroups.MessageListener;
 import org.jgroups.View;
 
-import EDU.oswego.cs.dl.util.concurrent.Latch;
-import EDU.oswego.cs.dl.util.concurrent.Slot;
 
 /**
  * A WADI Cluster mapped onto a JGroups Channel
@@ -53,7 +54,7 @@ import EDU.oswego.cs.dl.util.concurrent.Slot;
 public class JGroupsCluster extends AbstractCluster implements MembershipListener, MessageListener {
     protected final boolean _excludeSelf = true;
     // should probably be initialised in start() and dumped in stop()
-    protected final Latch _viewLatch = new Latch();
+    protected final CountDownLatch _viewLatch = new CountDownLatch(1);
     protected final ViewThread _viewThread = new ViewThread("WADI/JGroups View Thread");
     protected final Channel _channel;
     protected final JGroupsDispatcher _dispatcher;
@@ -102,7 +103,7 @@ public class JGroupsCluster extends AbstractCluster implements MembershipListene
         if (_log.isTraceEnabled())
             _log.trace(_localPeerName + " - " + "acquiring viewLatch...");
         try {
-            _viewLatch.acquire();
+            _viewLatch.await();
         } catch (InterruptedException e) {
             _log.warn("unexpected interruption", e);
         }
@@ -125,7 +126,7 @@ public class JGroupsCluster extends AbstractCluster implements MembershipListene
 
     // JGroups MembershipListener API
 
-    protected final EDU.oswego.cs.dl.util.concurrent.Channel _viewQueue = new Slot();
+    protected final SynchronousQueue<Set> _viewQueue = new SynchronousQueue<Set>();
 
     public void viewAccepted(View newView) {
         // this is meant to happen if a network split is healed and two
@@ -166,7 +167,7 @@ public class JGroupsCluster extends AbstractCluster implements MembershipListene
         public void run() {
             while (_running) {
                 try {
-                    Set members = (Set) _viewQueue.poll(2000);
+                    Set members = (Set) _viewQueue.poll(2000, TimeUnit.MILLISECONDS);
                     if (members != null) {
                         nextView(members);
                     }
@@ -230,7 +231,7 @@ public class JGroupsCluster extends AbstractCluster implements MembershipListene
         if (_log.isTraceEnabled()) {
             _log.trace(_localPeerName + " - " + "releasing viewLatch (viewAccepted)...");
         }
-        _viewLatch.release();
+        _viewLatch.countDown();
         if (_log.isTraceEnabled()) {
             _log.trace(_localPeerName + " - " + "...released viewLatch (viewAccepted)");
         }

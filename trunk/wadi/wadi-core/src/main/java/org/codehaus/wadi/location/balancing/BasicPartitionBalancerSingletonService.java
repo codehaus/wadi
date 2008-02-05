@@ -16,6 +16,7 @@
 package org.codehaus.wadi.location.balancing;
 
 import java.util.Set;
+import java.util.concurrent.SynchronousQueue;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -26,7 +27,6 @@ import org.codehaus.wadi.servicespace.ServiceSpace;
 import org.codehaus.wadi.servicespace.ServiceSpaceLifecycleEvent;
 import org.codehaus.wadi.servicespace.ServiceSpaceListener;
 
-import EDU.oswego.cs.dl.util.concurrent.Slot;
 
 /**
  * @version $Revision:1815 $
@@ -36,7 +36,7 @@ public class BasicPartitionBalancerSingletonService implements PartitionBalancer
 
     private final ServiceSpace serviceSpace;
 	private final PartitionBalancer partitionBalancer;
-    private final Slot rebalancingFlag;
+    private final SynchronousQueue<Boolean> rebalancingFlag;
     private Thread thread;
 
     private LeavingServiceSpaceMonitor leavingServiceSpaceMonitor;
@@ -50,7 +50,7 @@ public class BasicPartitionBalancerSingletonService implements PartitionBalancer
         this.serviceSpace = serviceSpace;
         this.partitionBalancer = partitionBalancer;
 
-        rebalancingFlag = new Slot();
+        rebalancingFlag = new SynchronousQueue<Boolean>();
         leavingServiceSpaceMonitor = new LeavingServiceSpaceMonitor();
     }
 
@@ -72,7 +72,7 @@ public class BasicPartitionBalancerSingletonService implements PartitionBalancer
     public void queueRebalancing() { 
         log.info("Queueing partition rebalancing");
         try {
-            rebalancingFlag.offer(Boolean.TRUE, 0);
+            rebalancingFlag.put(Boolean.TRUE);
         } catch (InterruptedException e) {
             throw (IllegalStateException) new IllegalStateException().initCause(e);
         }

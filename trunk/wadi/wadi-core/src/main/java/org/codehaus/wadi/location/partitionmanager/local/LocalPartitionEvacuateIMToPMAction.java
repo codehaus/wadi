@@ -16,6 +16,7 @@
 package org.codehaus.wadi.location.partitionmanager.local;
 
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
 
 import org.apache.commons.logging.Log;
 import org.codehaus.wadi.group.Dispatcher;
@@ -26,7 +27,6 @@ import org.codehaus.wadi.location.session.EvacuateIMToPM;
 import org.codehaus.wadi.location.session.EvacuatePMToIM;
 import org.codehaus.wadi.location.session.SessionResponseMessage;
 
-import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
  * 
@@ -50,9 +50,9 @@ public class LocalPartitionEvacuateIMToPMAction extends AbstractLocalPartitionAc
         if (location == null) {
             log.warn("evacuate [" + key + "]@[" + newPeer + "] failed; key not in use");
         } else {
-            Sync lock = location.getExclusiveLock();
+            Lock lock = location.getExclusiveLock();
             try {
-                lock.acquire();
+                lock.lockInterruptibly();
                 try {
                     oldPeer = location.getSMPeer();
                     if (oldPeer == newPeer) {
@@ -65,7 +65,7 @@ public class LocalPartitionEvacuateIMToPMAction extends AbstractLocalPartitionAc
                         success = true;
                     }
                 } finally {
-                    lock.release();
+                    lock.unlock();
                 }
             } catch (InterruptedException e) {
                 log.error("unexpected interruption waiting to perform relocation: " + key, e);

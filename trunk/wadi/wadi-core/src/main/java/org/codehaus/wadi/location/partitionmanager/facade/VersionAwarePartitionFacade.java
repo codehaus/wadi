@@ -16,6 +16,8 @@
 package org.codehaus.wadi.location.partitionmanager.facade;
 
 import java.io.Serializable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -35,8 +37,6 @@ import org.codehaus.wadi.location.session.MoveIMToPM;
 import org.codehaus.wadi.location.session.SessionRequestMessage;
 import org.codehaus.wadi.location.session.SessionResponseMessage;
 
-import EDU.oswego.cs.dl.util.concurrent.Latch;
-
 /**
  * @version $Revision:1815 $
  */
@@ -44,13 +44,13 @@ public class VersionAwarePartitionFacade implements PartitionFacade {
     private static final Log log = LogFactory.getLog(VersionAwarePartitionFacade.class);
     
     private final int key;
-    private final Latch partitionDefinedLatch;
+    private final CountDownLatch partitionDefinedLatch;
     private final Dispatcher dispatcher;
     private final long partitionUpdateWaitTime;
     private final Object partitionInfoLock = new Object();
     private PartitionInfo partitionInfo;
     private Partition partition;
-    private Latch partitionInfoLatch;
+    private CountDownLatch partitionInfoLatch;
 
     public VersionAwarePartitionFacade(int key,
             Dispatcher dispatcher,
@@ -70,20 +70,20 @@ public class VersionAwarePartitionFacade implements PartitionFacade {
         this.partitionInfo = partitionInfo;
         this.partitionUpdateWaitTime = partitionUpdateWaitTime;
 
-        partitionDefinedLatch = new Latch();
+        partitionDefinedLatch = new CountDownLatch(1);
         
         partition = new UnknownPartition(key);
-        partitionInfoLatch = new Latch();
+        partitionInfoLatch = new CountDownLatch(1);
     }
     
     public boolean waitForBoot(long attemptPeriod) throws InterruptedException {
-        return partitionDefinedLatch.attempt(attemptPeriod);
+        return partitionDefinedLatch.await(attemptPeriod, TimeUnit.MILLISECONDS);
     }
 
     public Envelope exchange(SessionRequestMessage request, long timeout) throws MessageExchangeException {
         PartitionInfo localPartitionInfo;
         Partition localPartition;
-        Latch localRequestLatch;
+        CountDownLatch localRequestLatch;
         synchronized (partitionInfoLock) {
             localPartitionInfo = partitionInfo;
             localPartition = partition;
@@ -212,11 +212,11 @@ public class VersionAwarePartitionFacade implements PartitionFacade {
         }
         
         Partition oldPartition;
-        Latch oldPartitionInfoLatch;
+        CountDownLatch oldPartitionInfoLatch;
         synchronized (partitionInfoLock) {
             oldPartition = this.partition;
             oldPartitionInfoLatch = partitionInfoLatch;
-            partitionInfoLatch = new Latch();
+            partitionInfoLatch = new CountDownLatch(1);
 
             if (null == partition) {
                 if (this.partitionInfo.getVersion() != partitionInfo.getVersion()) {
@@ -241,18 +241,18 @@ public class VersionAwarePartitionFacade implements PartitionFacade {
                 this.partition = partition;
             }
         }
-        oldPartitionInfoLatch.release();
+        oldPartitionInfoLatch.countDown();
 
-        partitionDefinedLatch.release();
+        partitionDefinedLatch.countDown();
         
         return oldPartition;
     }
     
-    protected Envelope waitForUpdateAndExchange(SessionRequestMessage request, long timeout, Latch latch)  
+    protected Envelope waitForUpdateAndExchange(SessionRequestMessage request, long timeout, CountDownLatch latch)  
         throws MessageExchangeException {
         boolean success;
         try {
-            success = latch.attempt(timeout);
+            success = latch.await(timeout, TimeUnit.MILLISECONDS);
             if (success) {
                 return exchange(request, timeout);
             }
@@ -266,7 +266,7 @@ public class VersionAwarePartitionFacade implements PartitionFacade {
             PartitionRunnable delegateAction) {
         PartitionInfo localPartitionInfo;
         Partition localPartition;
-        Latch localPartitionInfoLatch;
+        CountDownLatch localPartitionInfoLatch;
         synchronized (partitionInfoLock) {
             localPartitionInfo = partitionInfo;
             localPartition = partition;
@@ -285,11 +285,13 @@ public class VersionAwarePartitionFacade implements PartitionFacade {
         }
     }
     
-    protected void handleVersionTooHigh(Envelope message, SessionRequestMessage request, Runnable attemptAction, 
-            Latch latch) {
+    protected void handleVersionTooHigh(Envelope message,
+        SessionRequestMessage request,
+        Runnable attemptAction,
+        CountDownLatch latch) {
         boolean success = false;
         try {
-            success = latch.attempt(partitionUpdateWaitTime);
+            success = latch.await(partitionUpdateWaitTime, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }

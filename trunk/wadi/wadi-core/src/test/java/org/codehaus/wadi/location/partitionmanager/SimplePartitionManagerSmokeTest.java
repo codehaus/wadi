@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.codehaus.wadi.core.contextualiser.Contextualiser;
 import org.codehaus.wadi.core.reflect.base.DeclaredMemberFilter;
@@ -32,16 +34,10 @@ import org.codehaus.wadi.location.balancing.PartitionBalancerSingletonServiceHol
 import org.codehaus.wadi.location.balancing.PartitionBalancingInfoUpdate;
 import org.codehaus.wadi.location.balancing.PartitionInfo;
 import org.codehaus.wadi.location.balancing.PartitionInfoUpdate;
-import org.codehaus.wadi.location.partitionmanager.PartitionManagerException;
-import org.codehaus.wadi.location.partitionmanager.SimplePartitionManager;
-import org.codehaus.wadi.location.partitionmanager.SimplePartitionManagerTiming;
-import org.codehaus.wadi.location.partitionmanager.SimplePartitionMapper;
 import org.codehaus.wadi.location.statemanager.SimpleStateManager;
 import org.codehaus.wadi.servicespace.ServiceSpace;
 import org.codehaus.wadi.servicespace.ServiceSpaceName;
 import org.codehaus.wadi.servicespace.basic.BasicServiceSpace;
-
-import EDU.oswego.cs.dl.util.concurrent.Latch;
 
 import com.agical.rmock.extension.junit.RMockTestCase;
 
@@ -52,14 +48,14 @@ public class SimplePartitionManagerSmokeTest extends RMockTestCase {
     private static final long EXCHANGE_TIMEOUT = 6000;
 
     private Exception failureException;
-    private Latch failureLatch;
+    private CountDownLatch failureLatch;
     private int nbPartitions;
     private volatile int nbOperations;
     private volatile int nbRebalancing;
 
     protected void setUp() throws Exception {
         nbPartitions = 12;
-        failureLatch = new Latch();
+        failureLatch = new CountDownLatch(1);
     }
 
     public void testRebalancingUnderLoad() throws Exception {
@@ -86,7 +82,7 @@ public class SimplePartitionManagerSmokeTest extends RMockTestCase {
             loadThread.start();
         }
         
-        boolean success = failureLatch.attempt(10000);
+        boolean success = failureLatch.await(10000, TimeUnit.MILLISECONDS);
         rebalanceThread.interrupt();
         for (Thread loadThread : loadThreads) {
             loadThread.interrupt();
@@ -172,7 +168,7 @@ public class SimplePartitionManagerSmokeTest extends RMockTestCase {
                             synchronized (failureLatch) {
                                 failureException = e;
                             }
-                            failureLatch.release();
+                            failureLatch.countDown();
                         }
                     }
                 }.start();
@@ -215,7 +211,7 @@ public class SimplePartitionManagerSmokeTest extends RMockTestCase {
                     synchronized (failureLatch) {
                         failureException = e;
                     }
-                    failureLatch.release();
+                    failureLatch.countDown();
                     Thread.currentThread().interrupt();
                 }
             }
@@ -237,5 +233,6 @@ public class SimplePartitionManagerSmokeTest extends RMockTestCase {
                 nbOperations++;
             }
         }
+
     }
 }

@@ -19,13 +19,13 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.codehaus.wadi.core.util.Lease;
 import org.codehaus.wadi.core.util.SimpleLease;
 import org.codehaus.wadi.group.Peer;
 
-import EDU.oswego.cs.dl.util.concurrent.Sync;
-import EDU.oswego.cs.dl.util.concurrent.WriterPreferenceReadWriteLock;
 
 /**
  * a Location provides two things :
@@ -38,7 +38,7 @@ public class Location implements Serializable {
     protected Object _key;
     protected Peer peer;
     protected transient Lease _sharedLease;
-    protected transient Sync _exclusiveLock;
+    protected transient Lock _exclusiveLock;
 
     public Location(Object key, Peer peer) {
         _key = key;
@@ -48,7 +48,7 @@ public class Location implements Serializable {
     }
 
     private void initLeaseAndSync(Object key) {
-        WriterPreferenceReadWriteLock rwLock = new WriterPreferenceReadWriteLock();
+        ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
         _sharedLease = new SimpleLease(key.toString(), rwLock.readLock());
         _exclusiveLock = rwLock.writeLock();
     }
@@ -69,7 +69,7 @@ public class Location implements Serializable {
         return _sharedLease;
     }
 
-    public Sync getExclusiveLock() {
+    public Lock getExclusiveLock() {
         return _exclusiveLock;
     }
 

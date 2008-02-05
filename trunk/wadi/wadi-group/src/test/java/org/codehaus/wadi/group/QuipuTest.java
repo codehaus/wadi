@@ -15,6 +15,8 @@
  */
 package org.codehaus.wadi.group;
 
+import java.util.Collection;
+
 import junit.framework.TestCase;
 
 /**
@@ -42,6 +44,28 @@ public class QuipuTest extends TestCase {
             fail();
         }  catch (QuipuException e) {
         }
+    }
+    
+    public void testPutResult() throws Exception {
+        final Quipu quipu = new Quipu(1, "id");
+        final Object expectedResult = new Object();
+
+        new Thread() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                }
+                quipu.putResult(expectedResult);
+            }
+        }.run();
+        
+        boolean success = quipu.waitFor(200);
+        assertTrue(success);
+        Collection results = quipu.getResults();
+        assertEquals(1, results.size());
+        assertTrue(results.contains(expectedResult));
     }
     
 }

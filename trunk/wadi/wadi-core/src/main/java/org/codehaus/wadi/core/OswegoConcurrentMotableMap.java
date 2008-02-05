@@ -16,39 +16,39 @@
 package org.codehaus.wadi.core;
 
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
 
 import org.codehaus.wadi.core.motable.Motable;
-
-import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
-import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
  * 
  * @version $Revision: 1538 $
  */
 public class OswegoConcurrentMotableMap implements ConcurrentMotableMap {
-    private final ConcurrentHashMap delegate = new ConcurrentHashMap();
+    private final ConcurrentHashMap<String, Motable> delegate = new ConcurrentHashMap<String, Motable>();
 
     public Motable acquire(String id) {
-        Motable motable = (Motable) delegate.get(id);
+        Motable motable = delegate.get(id);
         if (null != motable) {
             try {
-                getSharedLock(motable).acquire();
+                getSharedLock(motable).lockInterruptibly();
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 return null;
             }
-            motable = (Motable) delegate.get(id);
+            motable = delegate.get(id);
         }
         return motable;
     }
     
     public Motable acquireExclusive(String id, long exclusiveSessionLockWaitTime) {
-        Motable motable = (Motable) delegate.get(id);
+        Motable motable = delegate.get(id);
         if (null != motable) {
             boolean success;
             try {
-                success = getExclusiveLock(motable).attempt(exclusiveSessionLockWaitTime);
+                success = getExclusiveLock(motable).tryLock(exclusiveSessionLockWaitTime, TimeUnit.MILLISECONDS);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 return null;
@@ -57,7 +57,7 @@ public class OswegoConcurrentMotableMap implements ConcurrentMotableMap {
                 throw new MotableBusyException("Cannot obtain exclusive lock for Motable [" + id + "] after [" + 
                     exclusiveSessionLockWaitTime + "]ms.");
             }
-            motable = (Motable) delegate.get(id);
+            motable = delegate.get(id);
         }
         return motable;
     }
@@ -75,11 +75,11 @@ public class OswegoConcurrentMotableMap implements ConcurrentMotableMap {
     }
 
     public void release(Motable motable) {
-        getSharedLock(motable).release();
+        getSharedLock(motable).unlock();
     }
 
     public void releaseExclusive(Motable motable) {
-        getExclusiveLock(motable).release();
+        getExclusiveLock(motable).unlock();
     }
     
     public void remove(String name) {
@@ -90,11 +90,11 @@ public class OswegoConcurrentMotableMap implements ConcurrentMotableMap {
         return delegate.size();
     }
     
-    protected Sync getSharedLock(Motable motable) {
+    protected Lock getSharedLock(Motable motable) {
         return motable.getReadWriteLock().readLock();
     }
 
-    protected Sync getExclusiveLock(Motable motable) {
+    protected Lock getExclusiveLock(Motable motable) {
         return motable.getReadWriteLock().writeLock();
     }
 

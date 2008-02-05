@@ -16,6 +16,8 @@
  */
 package org.codehaus.wadi.core.manager;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.core.ConcurrentMotableMap;
@@ -27,8 +29,6 @@ import org.codehaus.wadi.core.contextualiser.InvocationContext;
 import org.codehaus.wadi.core.contextualiser.InvocationException;
 import org.codehaus.wadi.core.session.Session;
 import org.codehaus.wadi.core.session.SessionFactory;
-
-import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
 
 /**
  *
@@ -43,7 +43,7 @@ public class StandardManager implements Lifecycle, Manager {
     private final Contextualiser contextualiser;
     private final ConcurrentMotableMap motableMap;
     private final Router router;
-    private final SynchronizedBoolean acceptingSessions = new SynchronizedBoolean(true);
+    private final AtomicBoolean acceptingSessions = new AtomicBoolean(true);
     private final SessionMonitor sessionMonitor;
     private ManagerConfig config;
     private int maxInactiveInterval = 30 * 60;

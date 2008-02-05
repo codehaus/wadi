@@ -17,7 +17,7 @@
 package org.codehaus.wadi.core.util;
 
 import java.io.Serializable;
-import EDU.oswego.cs.dl.util.concurrent.Sync;
+import java.util.concurrent.locks.Lock;
 
 /**
  * Lease - like a Sync, but locks are only granted for a given period after which they automatically unlock themselves.
@@ -27,7 +27,7 @@ import EDU.oswego.cs.dl.util.concurrent.Sync;
  * @author jules
  * @version $Revision$
  */
-public interface Lease extends Sync {
+public interface Lease extends Lock {
     
     public interface Handle extends Serializable, Comparable {
     }

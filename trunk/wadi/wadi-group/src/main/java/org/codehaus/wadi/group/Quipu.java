@@ -22,57 +22,60 @@ import java.util.Collection;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import EDU.oswego.cs.dl.util.concurrent.WaitableInt;
-
 /**
  * You have a flock of n Llamas, you [un]tie a knot in your Quipu as each one leaves/enters your pen.
  * When all are in/out, you are free to continue. If the Llamas take too long, you can leave anyway !
  *
- * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision: 1346 $
  */
-public class Quipu extends WaitableInt {
+public class Quipu {
 	protected final static Log _log = LogFactory.getLog(Quipu.class);
 
-    protected final Collection _results = new ArrayList();
+	private int remainingNumberOfResults;
+	private final Object lock;
+    protected final Collection<Object> results = new ArrayList<Object>();
     protected final String correlationId;
     protected Exception exception;
 
     public Quipu(int numLlammas, String correlationId) {
-        super(numLlammas);
         if (null == correlationId) {
             throw new IllegalArgumentException("correlationId is required");
         }
         this.correlationId = correlationId;
+
+        lock = new Object();
+        
+        remainingNumberOfResults = numLlammas;
     }
 
     public boolean waitFor(long timeout) throws InterruptedException, QuipuException {
         long end = System.currentTimeMillis() + timeout;
         long now = 0;
-        synchronized (lock_) {
-            while (0 != value_ && (now = System.currentTimeMillis()) < end) {
+        synchronized (lock) {
+            while (0 != remainingNumberOfResults && (now = System.currentTimeMillis()) < end) {
                 if (null != exception) {
                     throw new QuipuException(exception);
                 }
-                lock_.wait(end - now);
+                lock.wait(end - now);
             }
-            return 0 == value_;
+            return 0 == remainingNumberOfResults;
         }
     }
 
     public void putResult(Object result) {
-        synchronized (lock_) {
-            if (0 == value_) {
+        synchronized (lock) {
+            if (0 == remainingNumberOfResults) {
                 return;
             }
-            _results.add(result);
-            decrement();
+            results.add(result);
+            remainingNumberOfResults--;
+            lock.notifyAll();
         }
     }
 
     public Collection getResults() {
-        synchronized (lock_) {
-            return new ArrayList(_results);
+        synchronized (lock) {
+            return new ArrayList(results);
         }
     }
 
@@ -81,14 +84,14 @@ public class Quipu extends WaitableInt {
     }
     
     public void putException(Exception exception) {
-        synchronized (lock_) {
+        synchronized (lock) {
             this.exception = exception;
-            lock_.notifyAll();
+            lock.notifyAll();
         }
     }
     
     public String toString() {
-        return "Quipu [" + correlationId + "]; results [" + _results + "]";
+        return "Quipu [" + correlationId + "]; results [" + results + "]";
     }
 
 }

@@ -20,10 +20,6 @@
   <description>WADI Group API and Dispatcher implementations</description>
 
   <dependencies>
-    <dependency>
-      <groupId>concurrent</groupId>
-      <artifactId>concurrent</artifactId>
-    </dependency>
   </dependencies>
 
   <build>

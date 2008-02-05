@@ -16,6 +16,8 @@
 package org.codehaus.wadi.core.contextualiser;
 
 import java.io.IOException;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
 
 import org.codehaus.wadi.core.MotableBusyException;
 import org.codehaus.wadi.core.motable.Immoter;
@@ -36,8 +38,6 @@ import org.codehaus.wadi.replication.common.ReplicaInfo;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
 import org.codehaus.wadi.servicespace.ServiceSpace;
 
-import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
-import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 import com.agical.rmock.core.describe.ExpressionDescriber;
 import com.agical.rmock.core.match.operator.AbstractExpression;
@@ -108,10 +108,10 @@ public class HybridRelocaterTest extends RMockTestCase {
         ReadWriteLock rwLock = relocatedSession.getReadWriteLock();
         modify().multiplicity(expect.from(2));
 
-        Sync readLock = rwLock.readLock();
+        Lock readLock = rwLock.readLock();
         modify().multiplicity(expect.from(2));
 
-        readLock.acquire();
+        readLock.lockInterruptibly();
         
         immoter.immote(relocatedMotable, relocatedSession);
         modify().returnValue(true);
@@ -122,7 +122,7 @@ public class HybridRelocaterTest extends RMockTestCase {
         immoter.contextualise(invocation, key, relocatedSession);
         modify().returnValue(true);
 
-        readLock.release();
+        readLock.unlock();
         
         startVerification();
         
@@ -156,10 +156,10 @@ public class HybridRelocaterTest extends RMockTestCase {
         ReadWriteLock rwLock = relocatedSession.getReadWriteLock();
         modify().multiplicity(expect.from(2));
         
-        Sync readLock = rwLock.readLock();
+        Lock readLock = rwLock.readLock();
         modify().multiplicity(expect.from(2));
         
-        readLock.acquire();
+        readLock.lockInterruptibly();
         
         immoter.immote(relocatedMotable, relocatedSession);
         modify().returnValue(true);
@@ -167,7 +167,7 @@ public class HybridRelocaterTest extends RMockTestCase {
         immoter.contextualise(invocation, key, relocatedSession);
         modify().returnValue(true);
         
-        readLock.release();
+        readLock.unlock();
         
         startVerification();
         

@@ -21,6 +21,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -34,15 +36,9 @@ import org.codehaus.wadi.group.Quipu;
 import org.codehaus.wadi.group.QuipuException;
 import org.codehaus.wadi.group.ServiceEndpoint;
 
-import EDU.oswego.cs.dl.util.concurrent.ConcurrentHashMap;
-import EDU.oswego.cs.dl.util.concurrent.CopyOnWriteArrayList;
-import EDU.oswego.cs.dl.util.concurrent.SynchronizedInt;
-import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
-
 /**
  * The portable aspects of a Dispatcher implementation
  *
- * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision: 1595 $
  */
 public abstract class AbstractDispatcher implements Dispatcher {
@@ -104,10 +100,10 @@ public abstract class AbstractDispatcher implements Dispatcher {
 	
 	class SimpleCorrelationIDFactory {
 
-        protected final SynchronizedInt _count = new SynchronizedInt(0);
+        protected int count;
 
-        public String create() {
-            return Integer.toString(_count.increment());
+        public synchronized String create() {
+            return Integer.toString(count++);
         }
 
     }
@@ -159,8 +155,6 @@ public abstract class AbstractDispatcher implements Dispatcher {
                     } else {
                         _log.debug("unsuccessful message exchange within timeframe (" + timeout +" millis) {" + rv + "}", new Exception());
                     }
-                } catch (TimeoutException e) {
-                    _log.debug("no response to request within timeout ("+timeout+" millis)");
                 } catch (InterruptedException e) {
                     _log.debug("waiting for response - interruption ignored");
                 } catch (QuipuException e) {

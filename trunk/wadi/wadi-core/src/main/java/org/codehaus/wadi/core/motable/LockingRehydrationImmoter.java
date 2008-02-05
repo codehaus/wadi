@@ -32,13 +32,13 @@ public class LockingRehydrationImmoter extends RehydrationImmoter {
         try {
             return super.contextualise(invocation, id, immotable);
         } finally {
-            immotable.getReadWriteLock().readLock().release();
+            immotable.getReadWriteLock().readLock().unlock();
         }
     }
 
     public boolean immote(Motable emotable, Motable immotable) {
         try {
-            immotable.getReadWriteLock().readLock().acquire();
+            immotable.getReadWriteLock().readLock().lockInterruptibly();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             return false;
