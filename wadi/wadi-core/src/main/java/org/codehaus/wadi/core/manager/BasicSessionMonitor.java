@@ -16,10 +16,9 @@
 package org.codehaus.wadi.core.manager;
 
 import java.util.Iterator;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.codehaus.wadi.core.session.Session;
-
-import EDU.oswego.cs.dl.util.concurrent.CopyOnWriteArrayList;
 
 
 /**
@@ -27,10 +26,10 @@ import EDU.oswego.cs.dl.util.concurrent.CopyOnWriteArrayList;
  * @version $Revision: 1538 $
  */
 public class BasicSessionMonitor implements SessionMonitor {
-    private final CopyOnWriteArrayList sessionListeners;
+    private final CopyOnWriteArrayList<SessionListener> sessionListeners;
     
     public BasicSessionMonitor() {
-        sessionListeners = new CopyOnWriteArrayList();
+        sessionListeners = new CopyOnWriteArrayList<SessionListener>();
     }
     
     public void addSessionListener(SessionListener sessionListener) {
@@ -42,28 +41,28 @@ public class BasicSessionMonitor implements SessionMonitor {
     }
     
     public void notifyInboundSessionMigration(Session session) {
-        for (Iterator iter = sessionListeners.iterator(); iter.hasNext();) {
+        for (Iterator<SessionListener> iter = sessionListeners.iterator(); iter.hasNext();) {
             SessionListener listener = (SessionListener) iter.next();
             listener.onInboundSessionMigration(session);
         }
     }
     
     public void notifyOutboundSessionMigration(Session session) {
-        for (Iterator iter = sessionListeners.iterator(); iter.hasNext();) {
+        for (Iterator<SessionListener> iter = sessionListeners.iterator(); iter.hasNext();) {
             SessionListener listener = (SessionListener) iter.next();
             listener.onOutbountSessionMigration(session);
         }
     }
 
     public void notifySessionCreation(Session session) {
-        for (Iterator iter = sessionListeners.iterator(); iter.hasNext();) {
+        for (Iterator<SessionListener> iter = sessionListeners.iterator(); iter.hasNext();) {
             SessionListener listener = (SessionListener) iter.next();
             listener.onSessionCreation(session);
         }
     }
 
     public void notifySessionDestruction(Session session) {
-        for (Iterator iter = sessionListeners.iterator(); iter.hasNext();) {
+        for (Iterator<SessionListener> iter = sessionListeners.iterator(); iter.hasNext();) {
             SessionListener listener = (SessionListener) iter.next();
             listener.onSessionDestruction(session);
         }

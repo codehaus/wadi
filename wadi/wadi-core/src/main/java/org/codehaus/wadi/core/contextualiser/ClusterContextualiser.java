@@ -16,14 +16,14 @@
  */
 package org.codehaus.wadi.core.contextualiser;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.codehaus.wadi.core.motable.Emoter;
 import org.codehaus.wadi.core.motable.Immoter;
 import org.codehaus.wadi.core.motable.Motable;
 import org.codehaus.wadi.core.motable.SimpleMotable;
 import org.codehaus.wadi.location.partitionmanager.PartitionManager;
 import org.codehaus.wadi.location.statemanager.StateManager;
-
-import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -33,7 +33,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser {
     private final Relocater relocater;
     private final PartitionManager partitionManager;
     private final StateManager stateManager;
-    private final SynchronizedBoolean shuttingDown;
+    private final AtomicBoolean shuttingDown;
     private final Immoter immoter;
     private final Emoter emoter;
 
@@ -41,7 +41,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser {
             Relocater relocater,
             PartitionManager partitionManager,
             StateManager stateManager,
-            SynchronizedBoolean shuttingDown) {
+            AtomicBoolean shuttingDown) {
 		super(next);
         if (null == relocater) {
             throw new IllegalArgumentException("relocater is required");

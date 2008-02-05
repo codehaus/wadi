@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -46,8 +47,6 @@ import org.codehaus.wadi.servicespace.ServiceSpaceLifecycleEvent;
 import org.codehaus.wadi.servicespace.ServiceSpaceListener;
 import org.codehaus.wadi.servicespace.ServiceSpaceName;
 
-import EDU.oswego.cs.dl.util.concurrent.CopyOnWriteArrayList;
-
 /**
  * 
  * @version $Revision: $
@@ -55,7 +54,7 @@ import EDU.oswego.cs.dl.util.concurrent.CopyOnWriteArrayList;
 public class BasicServiceSpace implements ServiceSpace, Lifecycle {
     private static final Log log = LogFactory.getLog(BasicServiceSpace.class);
     
-    private final CopyOnWriteArrayList listeners;
+    private final CopyOnWriteArrayList<ServiceSpaceListener> listeners;
     private final Set<Peer> hostingPeers;
     private final Collection<ServiceMonitor> monitors;
     private final LocalPeer localPeer;
@@ -84,7 +83,7 @@ public class BasicServiceSpace implements ServiceSpace, Lifecycle {
 
         monitors = new ArrayList<ServiceMonitor>();
         hostingPeers = new HashSet<Peer>();
-        listeners = new CopyOnWriteArrayList();
+        listeners = new CopyOnWriteArrayList<ServiceSpaceListener>();
 
         this.name = name;
         this.underlyingDispatcher = underlyingDispatcher;
@@ -273,8 +272,8 @@ public class BasicServiceSpace implements ServiceSpace, Lifecycle {
     }
 
     protected void notifyListeners(ServiceSpaceLifecycleEvent event, Set<Peer> newHostingPeers) {
-        for (Iterator iter = listeners.iterator(); iter.hasNext();) {
-            ServiceSpaceListener listener = (ServiceSpaceListener) iter.next();
+        for (Iterator<ServiceSpaceListener> iter = listeners.iterator(); iter.hasNext();) {
+            ServiceSpaceListener listener = iter.next();
             listener.receive(event, newHostingPeers);
         }
     }

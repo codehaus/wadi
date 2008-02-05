@@ -16,6 +16,7 @@
 package org.codehaus.wadi.location.partitionmanager.local;
 
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
 
 import org.apache.commons.logging.Log;
 import org.codehaus.wadi.core.WADIRuntimeException;
@@ -30,7 +31,6 @@ import org.codehaus.wadi.location.session.MovePMToIMInvocation;
 import org.codehaus.wadi.location.session.MovePMToSM;
 import org.codehaus.wadi.location.session.MoveSMToPM;
 
-import EDU.oswego.cs.dl.util.concurrent.Sync;
 
 /**
  * 
@@ -71,15 +71,15 @@ public class LocalPartitionMoveIMToPMAction extends AbstractLocalPartitionAction
             throws MessageExchangeException {
         Object key = location.getKey();
         // session does exist - we need to ask SM to move it to IM
-        Sync lock = location.getExclusiveLock();
+        Lock lock = location.getExclusiveLock();
         try {
             // ensures that no-one else tries to relocate session whilst we are doing so...
             // wait til we have a lock on Location before retrieving the SM
-            lock.acquire();
+            lock.lockInterruptibly();
             try {
                 doRelocateSession(message, location, request, imCorrelationId);
             } finally {
-                lock.release();
+                lock.unlock();
             }
         } catch (InterruptedException e) {
             log.error("unexpected interruption waiting to perform Session relocation: " + key, e);

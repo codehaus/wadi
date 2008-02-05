@@ -18,6 +18,7 @@ package org.codehaus.wadi.group;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 
 import junit.framework.TestCase;
 
@@ -25,8 +26,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.group.impl.AbstractMsgDispatcher;
 import org.codehaus.wadi.group.impl.EnvelopeHelper;
-
-import EDU.oswego.cs.dl.util.concurrent.Latch;
 
 public abstract class AbstractTestGroup extends TestCase {
 
@@ -121,22 +120,22 @@ public abstract class AbstractTestGroup extends TestCase {
 
     class AsyncServiceEndpoint extends AbstractMsgDispatcher {
         
-        protected final Address _local;
-        protected final Latch _latch;
+        protected final Address localAddress;
+        protected final CountDownLatch latch;
         
-        AsyncServiceEndpoint(Dispatcher dispatcher, Class type, Address local, Latch latch) {
+        AsyncServiceEndpoint(Dispatcher dispatcher, Class type, Address local, CountDownLatch latch) {
             super(dispatcher, type);
-            _local=local;
-            _latch=latch;
+            localAddress=local;
+            this.latch=latch;
         }
         
         public void dispatch(Envelope envelope) throws Exception {
             Address content=(Address)envelope.getPayload();
             Address target=envelope.getAddress();
-            assertSame(_local, content);
-            assertSame(_local, target);
+            assertSame(localAddress, content);
+            assertSame(localAddress, target);
             assertSame(content, target);
-            _latch.release();
+            latch.countDown();
         }
         
     }
@@ -186,12 +185,12 @@ public abstract class AbstractTestGroup extends TestCase {
         assertTrue(cluster1.waitOnMembershipCount(2, 10000));
 
         // async - send a message (content=green's Address) red->green - confirm equality of local, target and content Addresses
-        Latch latch=new Latch();
+        CountDownLatch latch = new CountDownLatch(1);
         ServiceEndpoint async=new AsyncServiceEndpoint(dispatcher1, Address.class, cluster1.getLocalPeer().getAddress(), latch);
         dispatcher1.register(async);
         Peer peer=(Peer)cluster0.getRemotePeers().values().iterator().next();
         dispatcher0.send(peer.getAddress(), peer.getAddress()); // red sends green its own address
-        latch.acquire();
+        latch.await();
         dispatcher1.unregister(async, 10, 500); // what are these params for ?
         
         // sync - send a message red->green and reply green->red

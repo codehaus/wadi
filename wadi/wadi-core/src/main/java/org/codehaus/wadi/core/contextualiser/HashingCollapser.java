@@ -16,12 +16,14 @@
  */
 package org.codehaus.wadi.core.contextualiser;
 
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-
-import EDU.oswego.cs.dl.util.concurrent.Mutex;
-import EDU.oswego.cs.dl.util.concurrent.Sync;
-import EDU.oswego.cs.dl.util.concurrent.TimeoutSync;
+import org.codehaus.wadi.core.WADIRuntimeException;
 
 /**
  * A lock Collapser that collapses according to hash code
@@ -32,26 +34,45 @@ import EDU.oswego.cs.dl.util.concurrent.TimeoutSync;
 public class HashingCollapser implements Collapser {
 	private static final Log _log = LogFactory.getLog(HashingCollapser.class);
     
-    private final int _numSyncs;
-    private final Sync[] _syncs;
-    private final long _timeout;
+    private final Lock[] locks;
 
-    public HashingCollapser(int numSyncs, long timeout) {
-        _numSyncs = numSyncs;
-        _timeout = timeout;
-        _syncs = new Sync[_numSyncs];
-        for (int i = 0; i < _numSyncs; i++) {
-            _syncs[i] = new TimeoutSync(new Mutex(), _timeout);
+    public HashingCollapser(int numSyncs, final long timeout) {
+        locks = new Lock[numSyncs];
+        for (int i = 0; i < locks.length; i++) {
+            locks[i] = new ReentrantLock() {
+                public void lock() {
+                    try {
+                        tryLock(timeout, TimeUnit.MILLISECONDS);
+                    } catch (InterruptedException e) {
+                        throw new WADIRuntimeException(e);
+                    }
+                }
+
+                public void lockInterruptibly() throws InterruptedException {
+                    boolean locked = tryLock(timeout, TimeUnit.MILLISECONDS);
+                    if (!locked) {
+                        throw new InterruptedException();
+                    }
+                }
+
+                public boolean tryLock() {
+                    try {
+                        return tryLock(timeout, TimeUnit.MILLISECONDS);
+                    } catch (InterruptedException e) {
+                        throw new WADIRuntimeException(e);
+                    }
+                }
+            };
         }
     }
 
-    public Sync getLock(String id) {
+    public Lock getLock(String id) {
         // Jetty seems to generate negative session id hashcodes...
-        int index = Math.abs(id.hashCode() % _numSyncs); 
+        int index = Math.abs(id.hashCode() % locks.length); 
         if (_log.isTraceEnabled()) {
             _log.trace("collapsed " + id + " to index: " + index);
         }
-        return _syncs[index];
+        return locks[index];
     }
     
 }

@@ -16,6 +16,9 @@
  */
 package org.codehaus.wadi.core.contextualiser;
 
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.locks.Lock;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.core.ConcurrentMotableMap;
@@ -23,8 +26,7 @@ import org.codehaus.wadi.core.motable.Immoter;
 import org.codehaus.wadi.core.motable.Motable;
 import org.codehaus.wadi.core.util.Utils;
 
-import EDU.oswego.cs.dl.util.concurrent.Sync;
-import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
+
 
 /**
  * Ensure that any Contextualisations that pass through are serialised according to the strategy imposed by our Collapser.
@@ -53,7 +55,7 @@ public class SerialContextualiser extends AbstractDelegatingContextualiser {
             String key,
             Immoter immoter,
             boolean exclusiveOnly) throws InvocationException {
-        Sync invocationLock = collapser.getLock(key);
+        Lock invocationLock = collapser.getLock(key);
         try {
             // the promotion begins here. allocate a lock and continue...
             try {

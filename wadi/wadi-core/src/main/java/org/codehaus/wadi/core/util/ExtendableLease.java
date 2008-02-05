@@ -1,6 +1,6 @@
 /**
  *
- * Copyright 2003-2006 Core Developers Network Ltd.
+ * Copyright 2003-2005 Core Developers Network Ltd.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,61 +16,70 @@
  */
 package org.codehaus.wadi.core.util;
 
-import EDU.oswego.cs.dl.util.concurrent.Sync;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
 
 /**
- *
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
 public class ExtendableLease extends SimpleLease {
 
     public interface Extender {
-    	public boolean extend();
+        public boolean extend();
     }
 
-    protected static final Extender _DefaultExtender=new Extender(){public boolean extend(){return false;}};
-    
-	protected Extender _extender=_DefaultExtender;
-	protected long _leasePeriod;
-	
-    public ExtendableLease(String label, Sync sync) {
-    	super(label, sync);
+    protected static final Extender _DefaultExtender = new Extender() {
+        public boolean extend() {
+            return false;
+        }
+    };
+
+    protected Extender _extender = _DefaultExtender;
+
+    protected long _leasePeriod;
+
+    public ExtendableLease(String label, Lock sync) {
+        super(label, sync);
     }
-    
+
     public Handle acquire(long leasePeriod, Extender extender) throws InterruptedException {
-    	Handle handle=super.acquire(leasePeriod);
-    	_extender=extender; // TODO - needs some form of atomicity
-    	return handle;
+        Handle handle = super.acquire(leasePeriod);
+        _extender = extender; // TODO - needs some form of atomicity
+        return handle;
     }
 
     public Handle attempt(long timeframe, long leasePeriod, Extender extender) throws InterruptedException {
-    	Handle handle=super.attempt(timeframe, leasePeriod);
-    	_extender=extender;
-    	return handle;
+        Handle handle = super.attempt(timeframe, leasePeriod);
+        _extender = extender;
+        return handle;
     }
 
     // Use an ExtendableReleaser here
     protected Handle setAlarm(long leasePeriod) {
-    	_leasePeriod=leasePeriod;
-        Releaser releaser=new ExtendableReleaser();
-        Handle handle=new SimpleHandle(_daemon.executeAfterDelay(leasePeriod, releaser));
-        if (_lockLog.isTraceEnabled()) _lockLog.trace(_label+" - acquisition: "+this+"."+handle);
-        synchronized (_handles) {_handles.add(handle);}
+        _leasePeriod = leasePeriod;
+        Releaser releaser = new ExtendableReleaser();
+        _daemon.schedule(releaser, leasePeriod, TimeUnit.MILLISECONDS);
+        Handle handle = new SimpleHandle(releaser);
+        if (_lockLog.isTraceEnabled())
+            _lockLog.trace(_label + " - acquisition: " + this + "." + handle);
+        synchronized (_handles) {
+            _handles.add(handle);
+        }
         releaser.init(handle);
         return handle;
     }
-    
+
     public class ExtendableReleaser extends Releaser {
 
         public void run() {
-        	if (_extender.extend()) {
-        		// set up another lease...
-        		setAlarm(_leasePeriod);
-        	} else {
-        		// release lock
-        		super.run();
-        	}
+            if (_extender.extend()) {
+                // set up another lease...
+                setAlarm(_leasePeriod);
+            } else {
+                // release lock
+                super.run();
+            }
         }
     }
 

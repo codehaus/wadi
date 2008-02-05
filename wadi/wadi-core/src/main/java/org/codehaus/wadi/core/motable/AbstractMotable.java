@@ -16,11 +16,11 @@
  */
 package org.codehaus.wadi.core.motable;
 
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
 import org.codehaus.wadi.core.eviction.SimpleEvictable;
 import org.codehaus.wadi.core.eviction.SimpleEvictableMemento;
-
-import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
-import EDU.oswego.cs.dl.util.concurrent.WriterPreferenceReadWriteLock;
 
 /**
  * Implement all of Motable except for the Bytes field. This is the field most likely to have different representations.
@@ -94,7 +94,7 @@ public abstract class AbstractMotable extends SimpleEvictable implements Motable
     }
     
     protected ReadWriteLock newReadWriteLock() {
-        return new WriterPreferenceReadWriteLock();
+        return new ReentrantReadWriteLock();
     }
 
     protected synchronized void initExisting(long creationTime,

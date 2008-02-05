@@ -37,7 +37,7 @@ public class LockingRehydrationImmoterTest extends RMockTestCase {
         Motable immotable = (Motable) mock(Motable.class);
 
         beginSection(s.ordered("Lock and immote"));
-        immotable.getReadWriteLock().readLock().acquire();
+        immotable.getReadWriteLock().readLock().lockInterruptibly();
         delegate.immote(emotable, immotable);
         endSection();
         startVerification();
@@ -50,7 +50,7 @@ public class LockingRehydrationImmoterTest extends RMockTestCase {
 
         beginSection(s.ordered("Contextualize and unlock"));
         delegate.contextualise(null, null, immotable);
-        immotable.getReadWriteLock().readLock().release();
+        immotable.getReadWriteLock().readLock().unlock();
         endSection();
         startVerification();
         

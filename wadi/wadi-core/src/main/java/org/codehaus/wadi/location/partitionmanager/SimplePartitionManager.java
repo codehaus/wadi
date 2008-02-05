@@ -20,6 +20,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -49,7 +51,6 @@ import org.codehaus.wadi.servicespace.InvocationMetaData;
 import org.codehaus.wadi.servicespace.ServiceProxyFactory;
 import org.codehaus.wadi.servicespace.ServiceSpace;
 
-import EDU.oswego.cs.dl.util.concurrent.Latch;
 
 /**
  * A Simple PartitionManager.
@@ -70,7 +71,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionManage
     private final ServiceEndpointBuilder endpointBuilder;
     private final Object balancingUnderExecution = new Object();
     private volatile boolean evacuatingPartitions;
-    private Latch evacuationCompletionLatch;
+    private CountDownLatch evacuationCompletionLatch;
 
     public SimplePartitionManager(ServiceSpace serviceSpace,
             int numPartitions,
@@ -112,7 +113,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionManage
         
         queueRebalancing();
         
-        evacuationCompletionLatch = new Latch();
+        evacuationCompletionLatch = new CountDownLatch(1);
         waitForBoot();
     }
 
@@ -137,7 +138,8 @@ public class SimplePartitionManager implements PartitionManager, PartitionManage
             boolean evacuationCompleted = false;
             try {
                 dispatcher.send(coordPeer.getAddress(), request);
-                evacuationCompleted = evacuationCompletionLatch.attempt(timing.getWaitForEvacuationTime());
+                evacuationCompleted = evacuationCompletionLatch.await(timing.getWaitForEvacuationTime(),
+                    TimeUnit.MILLISECONDS);
             } catch (Exception e) {
                 log.warn("Problem evacuating partitions", e);
             }
@@ -189,7 +191,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionManage
                 throw new RuntimeException(e);
             } finally {
                 if (infoUpdate.isPartitionEvacuationAck()) {
-                    evacuationCompletionLatch.release();
+                    evacuationCompletionLatch.countDown();
                 }
             }
         }

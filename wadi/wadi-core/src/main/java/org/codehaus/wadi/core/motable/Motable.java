@@ -16,9 +16,9 @@
  */
 package org.codehaus.wadi.core.motable;
 
-import org.codehaus.wadi.core.eviction.Evictable;
+import java.util.concurrent.locks.ReadWriteLock;
 
-import EDU.oswego.cs.dl.util.concurrent.ReadWriteLock;
+import org.codehaus.wadi.core.eviction.Evictable;
 
 
 

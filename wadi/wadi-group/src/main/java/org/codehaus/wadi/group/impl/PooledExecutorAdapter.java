@@ -15,21 +15,25 @@
  */
 package org.codehaus.wadi.group.impl;
 
-import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
-import EDU.oswego.cs.dl.util.concurrent.ThreadFactory;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 
  * @version $Revision: 1603 $
  */
 public class PooledExecutorAdapter implements ThreadPool {
-    private final PooledExecutor pooledExecutor;
+    private final ThreadPoolExecutor pooledExecutor;
     
     public PooledExecutorAdapter(int minPoolSize) {
-        pooledExecutor = new PooledExecutor(); 
-        pooledExecutor.setMinimumPoolSize(minPoolSize);
-        pooledExecutor.setMaximumPoolSize(Integer.MAX_VALUE);
-        pooledExecutor.setThreadFactory(new ThreadFactory() {
+        pooledExecutor = new ThreadPoolExecutor(minPoolSize,
+            Integer.MAX_VALUE,
+            5000,
+            TimeUnit.MILLISECONDS,
+            new LinkedBlockingQueue<Runnable>(),
+            new ThreadFactory() {
             public synchronized Thread newThread(Runnable runnable) {
                 return new Thread(runnable);
             }

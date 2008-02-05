@@ -19,6 +19,9 @@ package org.codehaus.wadi.location.partitionmanager.local;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -35,8 +38,6 @@ import org.codehaus.wadi.location.session.InsertIMToPM;
 import org.codehaus.wadi.location.session.MoveIMToPM;
 import org.codehaus.wadi.location.session.SessionRequestMessage;
 
-import EDU.oswego.cs.dl.util.concurrent.WaitableInt;
-
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision:1815 $
@@ -45,7 +46,7 @@ public class BasicLocalPartition implements LocalPartition {
     private transient final Dispatcher dispatcher;
     private transient final LocalPeer peer;
     private transient final Log log;
-    private transient final WaitableInt nbClients;
+    private transient final ReadWriteLock readWriteLock;
     private final int key;
     private final Map<Object, Location> nameToLocation;
     
@@ -55,7 +56,7 @@ public class BasicLocalPartition implements LocalPartition {
         peer = null;
         log = null;
         nameToLocation = null;
-        nbClients = null;
+        readWriteLock = null;
     }
     
     public BasicLocalPartition(Dispatcher dispatcher, int key) {
@@ -67,7 +68,7 @@ public class BasicLocalPartition implements LocalPartition {
         this.key = key;
         this.dispatcher = dispatcher;
         
-        nbClients = new WaitableInt(0);
+        readWriteLock = new ReentrantReadWriteLock();
         peer = dispatcher.getCluster().getLocalPeer();
         log = LogFactory.getLog(getClass().getName() + "#" + key + "@" + peer.getName());
         nameToLocation = new HashMap<Object, Location>();
@@ -81,7 +82,7 @@ public class BasicLocalPartition implements LocalPartition {
         }
         this.dispatcher = dispatcher;
         
-        nbClients = new WaitableInt(0);
+        readWriteLock = new ReentrantReadWriteLock();
         key = prototype.getKey();
         peer = dispatcher.getCluster().getLocalPeer();
         log = LogFactory.getLog(getClass().getName() + "#" + key + "@" + peer.getName());
@@ -97,50 +98,54 @@ public class BasicLocalPartition implements LocalPartition {
     }
 
     public void onMessage(Envelope message, InsertIMToPM request) {
-        nbClients.increment();
+        Lock readLock = readWriteLock.readLock();
+        readLock.lock();
         try {
             LocalPartitionInsertIMToPMAction action = new LocalPartitionInsertIMToPMAction(dispatcher,
                     nameToLocation,
                     log);
             action.onMessage(message, request);
         } finally {
-            nbClients.decrement();
+            readLock.unlock();
         }
     }
 
     public void onMessage(Envelope message, DeleteIMToPM request) {
-        nbClients.increment();
+        Lock readLock = readWriteLock.readLock();
+        readLock.lock();
         try {
             LocalPartitionDeleteIMToPMAction action = new LocalPartitionDeleteIMToPMAction(dispatcher,
                     nameToLocation,
                     log);
             action.onMessage(message, request);
         } finally {
-            nbClients.decrement();
+            readLock.unlock();
         }
     }
 
     public void onMessage(Envelope message, MoveIMToPM request) {
-        nbClients.increment();
+        Lock readLock = readWriteLock.readLock();
+        readLock.lock();
         try {
             LocalPartitionMoveIMToPMAction action = new LocalPartitionMoveIMToPMAction(dispatcher,
                     nameToLocation,
                     log);
             action.onMessage(message, request);
         } finally {
-            nbClients.decrement();
+            readLock.unlock();
         }
     }
 
     public void onMessage(Envelope message, EvacuateIMToPM request) {
-        nbClients.increment();
+        Lock readLock = readWriteLock.readLock();
+        readLock.lock();
         try {
             LocalPartitionEvacuateIMToPMAction action = new LocalPartitionEvacuateIMToPMAction(dispatcher,
                     nameToLocation,
                     log);
             action.onMessage(message, request);
         } finally {
-            nbClients.decrement();
+            readLock.unlock();
         }
     }
 
@@ -150,8 +155,9 @@ public class BasicLocalPartition implements LocalPartition {
     }
 
     public void waitForClientCompletion() {
+        Lock writeLock = readWriteLock.writeLock();
         try {
-            nbClients.whenEqual(0, null);
+            writeLock.lockInterruptibly();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new WADIRuntimeException(e);

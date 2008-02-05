@@ -16,6 +16,7 @@
 package org.codehaus.wadi.core.assembler;
 
 import java.util.Timer;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.codehaus.wadi.core.ConcurrentMotableMap;
 import org.codehaus.wadi.core.OswegoConcurrentMotableMap;
@@ -86,8 +87,6 @@ import org.codehaus.wadi.servicespace.admin.commands.ContextualiserStackExplorer
 import org.codehaus.wadi.servicespace.basic.BasicServiceSpace;
 import org.codehaus.wadi.web.impl.JkRouter;
 import org.codehaus.wadi.web.impl.StandardHttpProxy;
-
-import EDU.oswego.cs.dl.util.concurrent.SynchronizedBoolean;
 
 /**
  * 
@@ -402,7 +401,7 @@ public class StackContext {
                 new HybridRelocater(serviceSpace, partitionManager, replicationManager),
                 partitionManager, 
                 stateManager, 
-                new SynchronizedBoolean(false));
+                new AtomicBoolean(false));
     }
 
     protected Contextualiser newSharedStoreContextualiser(Contextualiser next) {

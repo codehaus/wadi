@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -39,8 +40,6 @@ import org.codehaus.wadi.servicespace.ServiceSpace;
 import org.codehaus.wadi.servicespace.ServiceSpaceLifecycleEvent;
 import org.codehaus.wadi.servicespace.ServiceSpaceListener;
 
-import EDU.oswego.cs.dl.util.concurrent.CopyOnWriteArrayList;
-
 /**
  * 
  * @version $Revision: $
@@ -52,7 +51,7 @@ public class BasicServiceMonitor implements ServiceMonitor, Lifecycle {
     private final LocalPeer localPeer;
     private final ServiceSpace serviceSpace;
     private final ServiceName serviceName;
-    private final CopyOnWriteArrayList listeners;
+    private final CopyOnWriteArrayList<ServiceListener> listeners;
     private final Set<Peer> hostingPeers;
     private final ServiceLifecycleEndpoint lifecycleEndpoint;
     private final ServiceSpaceListener hostingServiceSpaceFailure;
@@ -69,7 +68,7 @@ public class BasicServiceMonitor implements ServiceMonitor, Lifecycle {
 
         dispatcher = serviceSpace.getDispatcher();
         localPeer = dispatcher.getCluster().getLocalPeer();
-        listeners = new CopyOnWriteArrayList();
+        listeners = new CopyOnWriteArrayList<ServiceListener>();
         hostingPeers = new HashSet<Peer>();
         lifecycleEndpoint = new ServiceLifecycleEndpoint();
         hostingServiceSpaceFailure = new HostingServiceSpaceFailure();
@@ -120,8 +119,8 @@ public class BasicServiceMonitor implements ServiceMonitor, Lifecycle {
     }
     
     protected void notifyListeners(ServiceLifecycleEvent event, Set<Peer> newHostingPeers) {
-        for (Iterator iter = listeners.iterator(); iter.hasNext();) {
-            ServiceListener listener = (ServiceListener) iter.next();
+        for (Iterator<ServiceListener> iter = listeners.iterator(); iter.hasNext();) {
+            ServiceListener listener = iter.next();
             listener.receive(event, newHostingPeers);
         }
     }

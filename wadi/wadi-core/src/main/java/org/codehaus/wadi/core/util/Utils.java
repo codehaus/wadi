@@ -22,6 +22,8 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.locks.Lock;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -29,8 +31,6 @@ import org.codehaus.wadi.core.motable.Emoter;
 import org.codehaus.wadi.core.motable.Immoter;
 import org.codehaus.wadi.core.motable.Motable;
 
-import EDU.oswego.cs.dl.util.concurrent.Sync;
-import EDU.oswego.cs.dl.util.concurrent.TimeoutException;
 
 /**
  * A collection of useful static functions
@@ -67,7 +67,7 @@ public class Utils {
         return immotable;
     }
 
-    public static void acquireUninterrupted(String lockType, String lockName, Sync sync) throws TimeoutException {
+    public static void acquireUninterrupted(String lockType, String lockName, Lock sync) throws TimeoutException {
         boolean interrupted = false;
         do {
             try {
@@ -75,16 +75,11 @@ public class Utils {
                     _lockLog.trace(lockType + " - acquiring: " + lockName + " [" + Thread.currentThread().getName()
                             + "]" + " : " + sync);
                 }
-                sync.acquire();
+                sync.lockInterruptibly();
                 if (_lockLog.isTraceEnabled()) {
                     _lockLog.trace(lockType + " - acquired : " + lockName + " [" + Thread.currentThread().getName()
                             + "]" + " : " + sync);
                 }
-            } catch (TimeoutException e) {
-                if (interrupted) {
-                    Thread.currentThread().interrupt();
-                }
-                throw e;
             } catch (InterruptedException e) {
                 _log.trace("unexpected interruption - ignoring", e);
                 interrupted = true;
@@ -95,12 +90,12 @@ public class Utils {
         }
     }
     
-	public static void release(String lockType, String lockName, Sync sync) {
+	public static void release(String lockType, String lockName, Lock sync) {
 		if (_lockLog.isTraceEnabled()) {
             _lockLog.trace(lockType + " - releasing: " + lockName + " [" + Thread.currentThread().getName() + "]"
                     + " : " + sync);
         }
-        sync.release();
+        sync.unlock();
         if (_lockLog.isTraceEnabled()) {
             _lockLog.trace(lockType + " - released : " + lockName + " [" + Thread.currentThread().getName() + "]"
                     + " : " + sync);

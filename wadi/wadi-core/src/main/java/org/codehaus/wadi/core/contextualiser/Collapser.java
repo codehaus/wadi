@@ -17,14 +17,13 @@
 
 package org.codehaus.wadi.core.contextualiser;
 
-import EDU.oswego.cs.dl.util.concurrent.Sync;
+import java.util.concurrent.locks.Lock;
 
 /**
  * Used to provide a Lock on which to collapse requests sharing the same session id.
  *
- * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
 public interface Collapser {
-	Sync getLock(String id);
+	Lock getLock(String id);
 }

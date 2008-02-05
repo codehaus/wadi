@@ -18,6 +18,7 @@ package org.codehaus.wadi.servicespace.basic;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.Semaphore;
 
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Cluster;
@@ -35,8 +36,6 @@ import org.codehaus.wadi.servicespace.ServiceSpace;
 import org.codehaus.wadi.servicespace.ServiceSpaceException;
 import org.codehaus.wadi.servicespace.ServiceSpaceLifecycleEvent;
 import org.codehaus.wadi.servicespace.ServiceSpaceListener;
-
-import EDU.oswego.cs.dl.util.concurrent.Latch;
 
 /**
  * 
@@ -105,14 +104,14 @@ public class BasicServiceSpaceDispatcher extends AbstractDispatcher {
 
     protected class BasicServiceSpaceCluster extends AbstractCluster {
         private final ServiceSpaceListener listener;
-        private Latch startLatch;
+        private Semaphore startLatch;
         
         public BasicServiceSpaceCluster() {
             super(underlyingDispatcher.getCluster().getClusterName() + "." + serviceSpace.getServiceSpaceName(),
                     underlyingDispatcher.getCluster().getLocalPeer().getName(),
                     BasicServiceSpaceDispatcher.this);
             
-            startLatch = new Latch();
+            startLatch = new Semaphore(0);
             listener = new ServiceSpaceListener() {
 
                 public void receive(ServiceSpaceLifecycleEvent event, Set<Peer> newHostingPeers) {
@@ -163,7 +162,7 @@ public class BasicServiceSpaceDispatcher extends AbstractDispatcher {
 
         public synchronized void stop() throws ClusterException {
             serviceSpace.removeServiceSpaceListener(listener);
-            startLatch = new Latch();
+            startLatch = new Semaphore(0);
         }
 
         public Address getAddress() {
