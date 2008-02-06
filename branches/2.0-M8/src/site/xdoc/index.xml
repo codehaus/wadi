@@ -11,12 +11,12 @@
 	  <img valign="top" src="./images/folder-open.gif" border="0" alt="" title="download"/>2.0-M8 Release Artifacts
           <ul>
 	    <li><a href="http://repository.codehaus.org/org/codehaus/wadi/wadi-aop/2.0-M8/wadi-aop-2.0-M8.jar">wadi-aop-2.0-M8.jar</a></li>
-	    <li><a href="http://repository.codehaus.org/org/codehaus/wadi/wadi-console/2.0-M8/wadi-console-2.0-M8.jar">wadi-console-2.0-M8.jar</a></li>
+	    <li><a href="http://repository.codehaus.org/org/codehaus/wadi/wadi-console/2.0-M8/wadi-console-2.0-M8.jar">wadi-console-2.0-M8.war</a></li>
 	    <li><a href="http://repository.codehaus.org/org/codehaus/wadi/wadi-core/2.0-M8/wadi-core-2.0-M8.jar">wadi-core-2.0-M8.jar</a></li>
 	    <li><a href="http://repository.codehaus.org/org/codehaus/wadi/wadi-group/2.0-M8/wadi-group-2.0-M8.jar">wadi-group-2.0-M8.jar</a></li>
 	    <li><a href="http://repository.codehaus.org/org/codehaus/wadi/wadi-jgroups/2.0-M8/wadi-jgroups-2.0-M8.jar">wadi-jgroups-2.0-M8.jar</a></li>
 	    <li><a href="http://repository.codehaus.org/org/codehaus/wadi/wadi-tribes/2.0-M8/wadi-tribes-2.0-M8.jar">wadi-tribes-2.0-M8.jar</a></li>
-	    <li><a href="http://repository.codehaus.org/org/codehaus/wadi/wadi-webapp/2.0-M8/wadi-webapp-2.0-M8.jar">wadi-webapp-2.0-M8.jar</a></li>
+	    <li><a href="http://repository.codehaus.org/org/codehaus/wadi/wadi-webapp/2.0-M8/wadi-webapp-2.0-M8.jar">wadi-webapp-2.0-M8.war</a></li>
           </ul>
 	</p>
       </div>
