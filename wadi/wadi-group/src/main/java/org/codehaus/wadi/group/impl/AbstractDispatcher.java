@@ -18,7 +18,6 @@ package org.codehaus.wadi.group.impl;
 
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -42,19 +41,17 @@ import org.codehaus.wadi.group.ServiceEndpoint;
  * @version $Revision: 1595 $
  */
 public abstract class AbstractDispatcher implements Dispatcher {
-	
+    protected final Log _log = LogFactory.getLog(getClass());
 	protected final ThreadPool _executor;
-    protected Log _log = LogFactory.getLog(getClass());
-    protected final Map _rvMap = new ConcurrentHashMap();
-    protected final List interceptors;
+    protected final Map<String, Quipu> rvMap = new ConcurrentHashMap<String, Quipu>();
+    protected final List<EnvelopeInterceptor> interceptors;
     private final DispatcherContext context;
-    
     private final EnvelopeDispatcherManager inboundEnvelopeDispatcher; 
 
     public AbstractDispatcher(ThreadPool executor) {
         _executor = executor;
         
-        interceptors = new CopyOnWriteArrayList();
+        interceptors = new CopyOnWriteArrayList<EnvelopeInterceptor>();
         inboundEnvelopeDispatcher = new BasicEnvelopeDispatcherManager(this, _executor);
         context = new BasicDispatcherContext();
     }
@@ -115,7 +112,7 @@ public abstract class AbstractDispatcher implements Dispatcher {
         if (null == targetCorrelationId) {
             throw new IllegalStateException("No targetCorrelationId");
         }
-        Quipu rv= (Quipu) _rvMap.get(targetCorrelationId);
+        Quipu rv= rvMap.get(targetCorrelationId);
         if (null == rv) {
             if (_log.isTraceEnabled()) {
                 _log.trace("no one waiting for [" + targetCorrelationId + "]");
@@ -162,7 +159,7 @@ public abstract class AbstractDispatcher implements Dispatcher {
                 }
             } while (Thread.interrupted());
         } finally {
-            _rvMap.remove(rv.getCorrelationId());
+            rvMap.remove(rv.getCorrelationId());
         }
         if (null == response) {
             throw new MessageExchangeException("No correlated messages received within [" + timeout + "]ms");
@@ -273,12 +270,12 @@ public abstract class AbstractDispatcher implements Dispatcher {
 
     protected Quipu setRendezVous(String correlationId, int numLlamas) {
         Quipu rv = new Quipu(numLlamas, correlationId);
-        _rvMap.put(correlationId, rv);
+        rvMap.put(correlationId, rv);
         return rv;
     }
     
 	protected void hook() {
-        AbstractCluster._cluster.set(getCluster());
+        AbstractCluster.clusterThreadLocal.set(getCluster());
 	}
 
     public ThreadPool getExecutor() {
@@ -288,8 +285,7 @@ public abstract class AbstractDispatcher implements Dispatcher {
     protected abstract void doSend(Address target, Envelope envelope) throws MessageExchangeException;
 
     protected Envelope onOutboundEnvelope(Envelope envelope) {
-        for (Iterator iter = interceptors.iterator(); iter.hasNext();) {
-            EnvelopeInterceptor interceptor = (EnvelopeInterceptor) iter.next();
+        for (EnvelopeInterceptor interceptor : interceptors) {
             envelope = interceptor.onOutboundEnvelope(envelope);
             if (null == envelope) {
                 return null;
@@ -299,8 +295,7 @@ public abstract class AbstractDispatcher implements Dispatcher {
     }
 
     protected Envelope onInboundEnvelope(Envelope envelope) {
-        for (Iterator iter = interceptors.iterator(); iter.hasNext();) {
-            EnvelopeInterceptor interceptor = (EnvelopeInterceptor) iter.next();
+        for (EnvelopeInterceptor interceptor : interceptors) {
             envelope = interceptor.onInboundEnvelope(envelope);
             if (null == envelope) {
                 return null;

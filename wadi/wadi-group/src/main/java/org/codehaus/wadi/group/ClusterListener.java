@@ -23,7 +23,7 @@ import java.util.Set;
  * @version $Revision: 1603 $
  */
 public interface ClusterListener {
-    void onListenerRegistration(Cluster cluster, Set existing);
+    void onListenerRegistration(Cluster cluster, Set<Peer> existing);
     
-    void onMembershipChanged(Cluster cluster, Set joiners, Set leavers);
+    void onMembershipChanged(Cluster cluster, Set<Peer> joiners, Set<Peer> leavers);
 }

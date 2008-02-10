@@ -24,7 +24,7 @@ import java.util.Map;
 public interface Cluster {
     String getClusterName();
     
-    Map getRemotePeers();
+    Map<Address, Peer> getRemotePeers();
     
     int getPeerCount();
 

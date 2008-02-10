@@ -19,6 +19,7 @@ import java.util.Collections;
 
 import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.ClusterListener;
+import org.codehaus.wadi.group.Peer;
 
 import com.agical.rmock.extension.junit.RMockTestCase;
 
@@ -49,8 +50,8 @@ public class TestVMCluster extends RMockTestCase {
         ClusterListener listener2 = (ClusterListener) mock(ClusterListener.class);
         
         listener1.onListenerRegistration(cluster1, Collections.EMPTY_SET);
-        listener2.onListenerRegistration(cluster2, Collections.singleton(cluster1.getLocalPeer()));
-        listener1.onMembershipChanged(cluster1, Collections.singleton(cluster2.getLocalPeer()), Collections.EMPTY_SET);
+        listener2.onListenerRegistration(cluster2, Collections.singleton((Peer) cluster1.getLocalPeer()));
+        listener1.onMembershipChanged(cluster1, Collections.singleton((Peer) cluster2.getLocalPeer()), Collections.EMPTY_SET);
         
         startVerification();
         
@@ -63,7 +64,7 @@ public class TestVMCluster extends RMockTestCase {
     
     public void testAddClusterListenerAfterStartSeeExistingPeer() throws Exception {
         ClusterListener listener2 = (ClusterListener) mock(ClusterListener.class);
-        listener2.onListenerRegistration(dispatcher2.getCluster(), Collections.singleton(cluster1.getLocalPeer()));
+        listener2.onListenerRegistration(dispatcher2.getCluster(), Collections.singleton((Peer) cluster1.getLocalPeer()));
 
         startVerification();
         

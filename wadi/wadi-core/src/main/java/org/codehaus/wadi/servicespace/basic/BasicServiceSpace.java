@@ -121,9 +121,9 @@ public class BasicServiceSpace implements ServiceSpace, Lifecycle {
         return name;
     }
     
-    public Set getHostingPeers() {
+    public Set<Peer> getHostingPeers() {
         synchronized (hostingPeers) {
-            return new HashSet(hostingPeers);
+            return new HashSet<Peer>(hostingPeers);
         }
     }
 
@@ -346,12 +346,11 @@ public class BasicServiceSpace implements ServiceSpace, Lifecycle {
 
     public class UnderlyingClusterListener implements ClusterListener {
 
-        public void onListenerRegistration(Cluster cluster, Set existing) {
+        public void onListenerRegistration(Cluster cluster, Set<Peer> existing) {
         }
 
-        public void onMembershipChanged(Cluster cluster, Set joiners, Set leavers) {
-            for (Iterator iter = leavers.iterator(); iter.hasNext();) {
-                Peer leaver = (Peer) iter.next();
+        public void onMembershipChanged(Cluster cluster, Set<Peer> joiners, Set<Peer> leavers) {
+            for (Peer leaver : leavers) {
                 boolean leaverIsHostingPeer;
                 synchronized (hostingPeers) {
                     leaverIsHostingPeer = hostingPeers.contains(leaver);

@@ -20,6 +20,7 @@ import java.util.Set;
 import org.codehaus.wadi.core.Lifecycle;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.LocalPeer;
+import org.codehaus.wadi.group.Peer;
 
 /**
  * 
@@ -30,7 +31,7 @@ public interface ServiceSpace extends Lifecycle {
 
     LocalPeer getLocalPeer();
 
-    Set getHostingPeers();
+    Set<Peer> getHostingPeers();
 
     ServiceRegistry getServiceRegistry();
 

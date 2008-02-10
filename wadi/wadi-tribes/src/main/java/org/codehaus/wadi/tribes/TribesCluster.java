@@ -157,10 +157,10 @@ public class TribesCluster implements Cluster {
      * @return Map
      * @todo Implement this org.codehaus.wadi.group.Cluster method
      */
-    public Map getRemotePeers() {
+    public Map<Address, Peer> getRemotePeers() {
         Member[] mbrs = channel.getMembers();
-        LinkedHashMap result = new LinkedHashMap();
-        for (int i=0; i<mbrs.length; i++) result.put(mbrs[i],mbrs[i]);
+        LinkedHashMap<Address, Peer> result = new LinkedHashMap<Address, Peer>();
+        for (int i=0; i<mbrs.length; i++) result.put((TribesPeer) mbrs[i], (TribesPeer) mbrs[i]);
         return result;
     }
 
@@ -236,11 +236,10 @@ public class TribesCluster implements Cluster {
     }
     
     protected void addStaticMembers(TribesDispatcher dispatcher) {
-        Collection staticMembers = dispatcher.getStaticMembers();
+        Collection<Member> staticMembers = dispatcher.getStaticMembers();
         if (!staticMembers.isEmpty()) {
             StaticMembershipInterceptor smi = new StaticMembershipInterceptor();
-            for (Iterator iter = staticMembers.iterator(); iter.hasNext();) {
-                Member member = (Member) iter.next();
+            for (Member member : staticMembers) {
                 smi.addStaticMember(member);
             }
             channel.addInterceptor(smi);
