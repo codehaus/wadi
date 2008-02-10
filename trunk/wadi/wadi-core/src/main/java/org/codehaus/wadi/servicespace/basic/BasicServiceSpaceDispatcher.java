@@ -16,9 +16,8 @@
 package org.codehaus.wadi.servicespace.basic;
 
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Set;
-import java.util.concurrent.Semaphore;
+import java.util.concurrent.CountDownLatch;
 
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Cluster;
@@ -104,14 +103,14 @@ public class BasicServiceSpaceDispatcher extends AbstractDispatcher {
 
     protected class BasicServiceSpaceCluster extends AbstractCluster {
         private final ServiceSpaceListener listener;
-        private Semaphore startLatch;
+        private CountDownLatch startLatch;
         
         public BasicServiceSpaceCluster() {
             super(underlyingDispatcher.getCluster().getClusterName() + "." + serviceSpace.getServiceSpaceName(),
                     underlyingDispatcher.getCluster().getLocalPeer().getName(),
                     BasicServiceSpaceDispatcher.this);
             
-            startLatch = new Semaphore(0);
+            startLatch = new CountDownLatch(1);
             listener = new ServiceSpaceListener() {
 
                 public void receive(ServiceSpaceLifecycleEvent event, Set<Peer> newHostingPeers) {
@@ -119,19 +118,19 @@ public class BasicServiceSpaceDispatcher extends AbstractDispatcher {
                     Peer hostingPeer = event.getHostingPeer();
                     Set<Peer> joiners = Collections.emptySet();
                     Set<Peer> leavers = Collections.emptySet();
-                    synchronized (_addressToPeer) {
+                    synchronized (addressToPeer) {
                         if (state == LifecycleState.STARTED || state == LifecycleState.AVAILABLE) {
-                            _addressToPeer.put(hostingPeer.getAddress(), hostingPeer);
+                            addressToPeer.put(hostingPeer.getAddress(), hostingPeer);
                             joiners = Collections.unmodifiableSet(Collections.singleton(hostingPeer));
                             notifyMembershipChanged(joiners, leavers);
                         } else if (state == LifecycleState.STOPPED || state == LifecycleState.FAILED) {
-                            _addressToPeer.remove(hostingPeer.getAddress());
+                            addressToPeer.remove(hostingPeer.getAddress());
                             leavers = Collections.unmodifiableSet(Collections.singleton(hostingPeer));
                             notifyMembershipChanged(joiners, leavers);
                         }
                     }
                     if (state == LifecycleState.AVAILABLE) {
-                        startLatch.release();
+                        startLatch.countDown();
                     }
                 }
 
@@ -148,11 +147,10 @@ public class BasicServiceSpaceDispatcher extends AbstractDispatcher {
 
         public synchronized void start() throws ClusterException {
             serviceSpace.addServiceSpaceListener(listener);
-            Set hostingPeers = serviceSpace.getHostingPeers();
-            synchronized (_addressToPeer) {
-                for (Iterator iter = hostingPeers.iterator(); iter.hasNext();) {
-                    Peer peer = (Peer) iter.next();
-                    _addressToPeer.put(peer.getAddress(), peer);
+            Set<Peer> hostingPeers = serviceSpace.getHostingPeers();
+            synchronized (addressToPeer) {
+                for (Peer peer : hostingPeers) {
+                    addressToPeer.put(peer.getAddress(), peer);
                 }
                 if (!hostingPeers.isEmpty()) {
                     notifyMembershipChanged(hostingPeers, Collections.EMPTY_SET);
@@ -162,7 +160,7 @@ public class BasicServiceSpaceDispatcher extends AbstractDispatcher {
 
         public synchronized void stop() throws ClusterException {
             serviceSpace.removeServiceSpaceListener(listener);
-            startLatch = new Semaphore(0);
+            startLatch = new CountDownLatch(1);
         }
 
         public Address getAddress() {

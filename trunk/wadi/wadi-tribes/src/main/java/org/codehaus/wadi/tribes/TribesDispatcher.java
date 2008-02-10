@@ -21,13 +21,16 @@ import org.codehaus.wadi.group.impl.AbstractDispatcher;
 
 public class TribesDispatcher extends AbstractDispatcher implements ChannelListener {
     protected TribesCluster cluster;
-    protected final Collection staticMembers;
+    protected final Collection<Member> staticMembers;
     
     public TribesDispatcher(String clusterName, String localPeerName, EndPoint endPoint) {
         this(clusterName, localPeerName, endPoint, Collections.EMPTY_LIST);
     }
 
-    public TribesDispatcher(String clusterName, String localPeerName, EndPoint endPoint, Collection staticMembers) {
+    public TribesDispatcher(String clusterName,
+        String localPeerName,
+        EndPoint endPoint,
+        Collection<Member> staticMembers) {
         if (null == staticMembers) {
             throw new IllegalArgumentException("staticMembers is required");
         }
@@ -38,7 +41,7 @@ public class TribesDispatcher extends AbstractDispatcher implements ChannelListe
         cluster = new TribesCluster(domain, this, localPeerName, localPeerInfo);
     }
 
-    public Collection getStaticMembers() {
+    public Collection<Member> getStaticMembers() {
         return staticMembers;
     }
 

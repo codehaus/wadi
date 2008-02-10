@@ -96,10 +96,10 @@ public class VMLocalCluster implements Cluster {
         delegate.removeClusterListener(new VMLocalClusterListener(this, listener, node));
     }
 
-    public Map getRemotePeers() {
+    public Map<Address, Peer> getRemotePeers() {
         Map peers = delegate.getPeers();
         peers.remove(node.getName());
-        Map remotePeers=new HashMap(peers.size());
+        Map<Address, Peer> remotePeers=new HashMap<Address, Peer>(peers.size());
         for (Iterator i=peers.values().iterator(); i.hasNext();) {
             VMLocalPeer peer=(VMLocalPeer)i.next();
             remotePeers.put(peer.getAddress(), peer);

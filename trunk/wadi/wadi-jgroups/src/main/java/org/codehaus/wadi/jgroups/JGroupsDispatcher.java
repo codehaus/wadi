@@ -88,7 +88,7 @@ public class JGroupsDispatcher extends AbstractDispatcher {
     }
 
     protected void hook() {
-        AbstractCluster._cluster.set(_cluster);
+        AbstractCluster.clusterThreadLocal.set(_cluster);
         super.hook();
     }
 
