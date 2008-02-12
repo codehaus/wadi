@@ -30,4 +30,5 @@ public class TestInVMReplicationManager extends AbstractSyncReplicationManagerTe
         }
         return new VMDispatcher(cluster, nodeName, null);
     }
+    
 }

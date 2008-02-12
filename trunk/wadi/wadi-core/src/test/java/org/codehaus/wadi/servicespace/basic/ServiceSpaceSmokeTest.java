@@ -25,6 +25,7 @@ import junit.framework.TestCase;
 import org.codehaus.wadi.core.Lifecycle;
 import org.codehaus.wadi.core.reflect.base.DeclaredMemberFilter;
 import org.codehaus.wadi.core.reflect.jdk.JDKClassIndexerRegistry;
+import org.codehaus.wadi.core.util.SimpleStreamer;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.vm.VMBroker;
 import org.codehaus.wadi.group.vm.VMDispatcher;
@@ -56,7 +57,8 @@ public class ServiceSpaceSmokeTest extends TestCase {
         
         BasicServiceSpace space1OnDisp1 = new BasicServiceSpace(serviceSpace1Name,
             dispatcher1,
-            new JDKClassIndexerRegistry(new DeclaredMemberFilter()));
+            new JDKClassIndexerRegistry(new DeclaredMemberFilter()),
+            new SimpleStreamer());
         ServiceName service1Name = new ServiceName("service1");
         space1OnDisp1.getServiceRegistry().register(service1Name, service1);
         space1OnDisp1.start();
@@ -65,7 +67,8 @@ public class ServiceSpaceSmokeTest extends TestCase {
         
         BasicServiceSpace space1OnDisp2 = new BasicServiceSpace(serviceSpace1Name,
             dispatcher2,
-            new JDKClassIndexerRegistry(new DeclaredMemberFilter()));
+            new JDKClassIndexerRegistry(new DeclaredMemberFilter()),
+            new SimpleStreamer());
         space1OnDisp2.getServiceRegistry().register(new ServiceName("service2"), service2);
         
         ServiceMonitor service1Monitor = space1OnDisp2.getServiceMonitor(service1Name);

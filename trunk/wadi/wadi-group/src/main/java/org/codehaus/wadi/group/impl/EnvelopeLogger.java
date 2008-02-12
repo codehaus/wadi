@@ -18,6 +18,7 @@ package org.codehaus.wadi.group.impl;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.group.Envelope;
+import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.NoOpEnvelopeInterceptor;
 
 /**
@@ -27,11 +28,11 @@ import org.codehaus.wadi.group.NoOpEnvelopeInterceptor;
 public class EnvelopeLogger extends NoOpEnvelopeInterceptor {
     protected final Log log = LogFactory.getLog(EnvelopeLogger.class);
 
-    public Envelope onInboundEnvelope(Envelope envelope) {
+    public Envelope onInboundEnvelope(Envelope envelope) throws MessageExchangeException {
         return onEnvelope(envelope, "Inbound");
     }
 
-    public Envelope onOutboundEnvelope(Envelope envelope) {
+    public Envelope onOutboundEnvelope(Envelope envelope) throws MessageExchangeException {
         return onEnvelope(envelope, "Outbound");
     }
 

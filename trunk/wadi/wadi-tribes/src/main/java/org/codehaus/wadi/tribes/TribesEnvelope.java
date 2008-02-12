@@ -27,7 +27,7 @@ public class TribesEnvelope implements Envelope, Serializable {
     protected Address replyto;
     protected String sourceCorrId;
     protected String targetCorrId;
-    private final Map properties = new HashMap();
+    private final Map<String, Object> properties = new HashMap<String, Object>();
     private transient Quipu quipu;
     
     public TribesEnvelope() {
@@ -133,7 +133,7 @@ public class TribesEnvelope implements Envelope, Serializable {
         this.targetCorrId = correlationId;
     }
 
-    public Map getProperties() {
+    public Map<String, Object> getProperties() {
         return Collections.unmodifiableMap(properties);
     }
 
@@ -141,6 +141,10 @@ public class TribesEnvelope implements Envelope, Serializable {
         return properties.get(key);
     }
 
+    public void removeProperty(String key) {
+        properties.remove(key);
+    }
+    
     public void setProperty(String key, Object value) {
         properties.put(key, value);
     }

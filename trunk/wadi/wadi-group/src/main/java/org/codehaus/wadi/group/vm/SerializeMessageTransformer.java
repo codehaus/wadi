@@ -21,7 +21,10 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+
+import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.Envelope;
+import org.codehaus.wadi.group.impl.AbstractCluster;
 
 /**
  * 
@@ -45,9 +48,9 @@ public class SerializeMessageTransformer implements EnvelopeTransformer {
             ObjectOutputStream out = new ObjectOutputStream(memOut);
             out.writeObject(payload);
             out.close();
-            
+
             ByteArrayInputStream memIn = new ByteArrayInputStream(memOut.toByteArray());
-            ObjectInputStream in = new VMClusterObjectInputStream(cluster, memIn);
+            ObjectInputStream in = new ObjectInputStream(memIn);
             payload = (Serializable) in.readObject();
             in.close();
         } catch (IOException e) {

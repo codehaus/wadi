@@ -24,7 +24,6 @@ import org.codehaus.wadi.group.ClusterException;
 import org.codehaus.wadi.group.EndPoint;
 import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.MessageExchangeException;
-import org.codehaus.wadi.group.impl.AbstractCluster;
 import org.codehaus.wadi.group.impl.AbstractDispatcher;
 import org.jgroups.ChannelException;
 import org.jgroups.blocks.MessageDispatcher;
@@ -85,11 +84,6 @@ public class JGroupsDispatcher extends AbstractDispatcher {
 
     public Cluster getCluster() {
         return _cluster;
-    }
-
-    protected void hook() {
-        AbstractCluster.clusterThreadLocal.set(_cluster);
-        super.hook();
     }
 
     public void findRelevantSessionNames(int numPartitions, Collection[] resultSet) {

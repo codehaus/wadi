@@ -41,7 +41,7 @@ import org.codehaus.wadi.group.ServiceEndpoint;
  * @version $Revision: 1595 $
  */
 public abstract class AbstractDispatcher implements Dispatcher {
-    protected final Log _log = LogFactory.getLog(getClass());
+    protected final Log log = LogFactory.getLog(getClass());
 	protected final ThreadPool _executor;
     protected final Map<String, Quipu> rvMap = new ConcurrentHashMap<String, Quipu>();
     protected final List<EnvelopeInterceptor> interceptors;
@@ -83,7 +83,11 @@ public abstract class AbstractDispatcher implements Dispatcher {
     }
 
     public final void onEnvelope(Envelope envelope) {
-        envelope = onInboundEnvelope(envelope);
+        try {
+            envelope = onInboundEnvelope(envelope);
+        } catch (MessageExchangeException e) {
+            log.error("See nested", e);
+        }
         if (null == envelope) {
             return;
         }
@@ -114,12 +118,12 @@ public abstract class AbstractDispatcher implements Dispatcher {
         }
         Quipu rv= rvMap.get(targetCorrelationId);
         if (null == rv) {
-            if (_log.isTraceEnabled()) {
-                _log.trace("no one waiting for [" + targetCorrelationId + "]");
+            if (log.isTraceEnabled()) {
+                log.trace("no one waiting for [" + targetCorrelationId + "]");
             }            
         } else {
-            if (_log.isTraceEnabled()) {
-                _log.trace("successful correlation [" + targetCorrelationId + "]");
+            if (log.isTraceEnabled()) {
+                log.trace("successful correlation [" + targetCorrelationId + "]");
             }
             rv.putResult(envelope);
         }
@@ -146,14 +150,14 @@ public abstract class AbstractDispatcher implements Dispatcher {
                     if (rv.waitFor(timeout)) {
                         response = rv.getResults();
                         long elapsedTime = System.currentTimeMillis()-startTime;
-                        if (_log.isTraceEnabled()) {
-                            _log.trace("successful message exchange within timeframe (" + elapsedTime + "<" + timeout + " millis) {" + rv + "}");
+                        if (log.isTraceEnabled()) {
+                            log.trace("successful message exchange within timeframe (" + elapsedTime + "<" + timeout + " millis) {" + rv + "}");
                         }
                     } else {
-                        _log.debug("unsuccessful message exchange within timeframe (" + timeout +" millis) {" + rv + "}", new Exception());
+                        log.debug("unsuccessful message exchange within timeframe (" + timeout +" millis) {" + rv + "}", new Exception());
                     }
                 } catch (InterruptedException e) {
-                    _log.debug("waiting for response - interruption ignored");
+                    log.debug("waiting for response - interruption ignored");
                 } catch (QuipuException e) {
                     throw new MessageExchangeException(e);
                 }
@@ -196,7 +200,7 @@ public abstract class AbstractDispatcher implements Dispatcher {
             envelope.setPayload(body);
             send(to, envelope);
         } catch (Exception e) {
-            _log.error("problem sending " + body, e);
+            log.error("problem sending " + body, e);
         }
     }
 	
@@ -209,7 +213,7 @@ public abstract class AbstractDispatcher implements Dispatcher {
             envelope.setQuipu(quipu);
             send(target, envelope);
         } catch (Exception e) {
-            _log.error("problem sending " + pojo, e);
+            log.error("problem sending " + pojo, e);
         }
     }
 
@@ -284,7 +288,7 @@ public abstract class AbstractDispatcher implements Dispatcher {
 
     protected abstract void doSend(Address target, Envelope envelope) throws MessageExchangeException;
 
-    protected Envelope onOutboundEnvelope(Envelope envelope) {
+    protected Envelope onOutboundEnvelope(Envelope envelope) throws MessageExchangeException {
         for (EnvelopeInterceptor interceptor : interceptors) {
             envelope = interceptor.onOutboundEnvelope(envelope);
             if (null == envelope) {
@@ -294,7 +298,7 @@ public abstract class AbstractDispatcher implements Dispatcher {
         return envelope;
     }
 
-    protected Envelope onInboundEnvelope(Envelope envelope) {
+    protected Envelope onInboundEnvelope(Envelope envelope) throws MessageExchangeException {
         for (EnvelopeInterceptor interceptor : interceptors) {
             envelope = interceptor.onInboundEnvelope(envelope);
             if (null == envelope) {

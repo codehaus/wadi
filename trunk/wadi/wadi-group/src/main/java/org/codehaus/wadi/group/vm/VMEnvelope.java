@@ -34,11 +34,11 @@ public class VMEnvelope implements Envelope {
     private Address address;
     private String targetCorrelationId;
     private String sourceCorrelationId;
-    private Map properties;
+    private Map<String, Object> properties;
     private transient Quipu quipu;
 
     public VMEnvelope() {
-        properties = new HashMap();
+        properties = new HashMap<String, Object>();
     }
 
     public VMEnvelope(VMEnvelope prototype) {
@@ -90,7 +90,7 @@ public class VMEnvelope implements Envelope {
         return payload;
     }
 
-    public Map getProperties() {
+    public Map<String, Object> getProperties() {
         return Collections.unmodifiableMap(properties);
     }
 
@@ -98,6 +98,10 @@ public class VMEnvelope implements Envelope {
         return properties.get(key);
     }
 
+    public void removeProperty(String key) {
+        properties.remove(key);
+    }
+    
     public void setProperty(String key, Object value) {
         properties.put(key, value);
     }

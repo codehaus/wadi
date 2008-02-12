@@ -39,7 +39,7 @@ public class JGroupsEnvelope implements Envelope, Serializable {
     protected String _sourceCorrelationId;
     protected String _targetCorrelationId;
     protected Serializable _payload;
-    private final Map properties = new HashMap();
+    private final Map<String, Object> properties = new HashMap<String, Object>();
     private transient Quipu quipu;
 
     public String getTargetCorrelationId() {
@@ -86,7 +86,7 @@ public class JGroupsEnvelope implements Envelope, Serializable {
         _cluster = cluster;
     }
 
-    public Map getProperties() {
+    public Map<String, Object> getProperties() {
         return Collections.unmodifiableMap(properties);
     }
 
@@ -94,6 +94,10 @@ public class JGroupsEnvelope implements Envelope, Serializable {
         return properties.get(key);
     }
 
+    public void removeProperty(String key) {
+        properties.remove(key);
+    }
+    
     public void setProperty(String key, Object value) {
         properties.put(key, value);
     }

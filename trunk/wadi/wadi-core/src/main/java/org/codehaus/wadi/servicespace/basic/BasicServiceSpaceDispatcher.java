@@ -44,24 +44,27 @@ public class BasicServiceSpaceDispatcher extends AbstractDispatcher {
 
     private final ServiceSpace serviceSpace;
     private final Dispatcher underlyingDispatcher;
-    private final ServiceSpaceEnvelopeHelper messageHelper;
+    private final ServiceSpaceEnvelopeHelper envelopeHelper;
     private final BasicServiceSpaceCluster serviceSpaceCluster;
 
-    public BasicServiceSpaceDispatcher(BasicServiceSpace serviceSpace) {
+    public BasicServiceSpaceDispatcher(BasicServiceSpace serviceSpace, ServiceSpaceEnvelopeHelper envelopeHelper) {
         super(new ExecuteInThread());
         if (null == serviceSpace) {
             throw new IllegalArgumentException("serviceSpace is required");
+        } else if (null == envelopeHelper) {
+            throw new IllegalArgumentException("envelopeHelper is required");
         }
         this.serviceSpace = serviceSpace;
-        this.underlyingDispatcher = serviceSpace.getUnderlyingDispatcher();
+        this.envelopeHelper = envelopeHelper;
 
-        messageHelper = new ServiceSpaceEnvelopeHelper(serviceSpace);
+        underlyingDispatcher = serviceSpace.getUnderlyingDispatcher();
+
         serviceSpaceCluster = new BasicServiceSpaceCluster();
     }
 
     public Envelope createEnvelope() {
         Envelope message = underlyingDispatcher.createEnvelope();
-        messageHelper.setServiceSpaceName(message);
+        envelopeHelper.setServiceSpaceName(message);
         return message;
     }
 

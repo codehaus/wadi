@@ -23,8 +23,8 @@ import org.codehaus.wadi.core.reflect.MemberUpdater;
 import org.codehaus.wadi.core.reflect.MemberUpdaterException;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Envelope;
-import org.codehaus.wadi.group.EnvelopeListener;
 import org.codehaus.wadi.group.MessageExchangeException;
+import org.codehaus.wadi.group.ServiceEndpoint;
 import org.codehaus.wadi.servicespace.InvocationInfo;
 import org.codehaus.wadi.servicespace.InvocationMetaData;
 import org.codehaus.wadi.servicespace.InvocationResult;
@@ -37,43 +37,38 @@ import org.codehaus.wadi.servicespace.ServiceSpace;
  * 
  * @version $Revision: $
  */
-public class ServiceInvocationListener implements EnvelopeListener {
+public class ServiceInvocationListener implements ServiceEndpoint {
     private static final Log log = LogFactory.getLog(ServiceInvocationListener.class);
     
-    private final ServiceSpace serviceSpace;
     private final Dispatcher dispatcher;
     private final ServiceRegistry serviceRegistry;
-    private final EnvelopeListener next;
     private final ClassIndexerRegistry classIndexerRegistry;
     
-    public ServiceInvocationListener(ServiceSpace serviceSpace,
-            ClassIndexerRegistry classIndexerRegistry,
-            EnvelopeListener next) {
+    public ServiceInvocationListener(ServiceSpace serviceSpace, ClassIndexerRegistry classIndexerRegistry) {
         if (null == serviceSpace) {
             throw new IllegalArgumentException("serviceSpace is required");
         } else if (null == classIndexerRegistry) {
             throw new IllegalArgumentException("classIndexerRegistry is required");
-        } else if (null == next) {
-            throw new IllegalArgumentException("next is required");
         }
-        this.serviceSpace = serviceSpace;
         this.classIndexerRegistry = classIndexerRegistry;
-        this.next = next;
         
         dispatcher = serviceSpace.getDispatcher();
         serviceRegistry = serviceSpace.getServiceRegistry();
     }
 
-    public void onEnvelope(Envelope message) {
-        ServiceName serviceName = EnvelopeServiceHelper.getServiceName(message);
-        if (null != serviceName) {
-            handleServiceMessage(serviceName, message);
-        } else {
-            next.onEnvelope(message);
-        }
+    public void dispatch(Envelope envelope) throws Exception {
+        ServiceName serviceName = EnvelopeServiceHelper.getServiceName(envelope);
+        handleServiceMessage(serviceName, envelope);
     }
 
-    private void handleServiceMessage(ServiceName serviceName, Envelope request) {
+    public void dispose(int nbAttemp, long delayMillis) {
+    }
+
+    public boolean testDispatchEnvelope(Envelope envelope) {
+        return null != EnvelopeServiceHelper.getServiceName(envelope);
+    }
+
+    protected void handleServiceMessage(ServiceName serviceName, Envelope request) {
         InvocationInfo invMetaData = (InvocationInfo) request.getPayload();
         InvocationMetaData metaData = invMetaData.getMetaData();
 
@@ -109,5 +104,5 @@ public class ServiceInvocationListener implements EnvelopeListener {
         }
         return result;
     }
-    
+
 }

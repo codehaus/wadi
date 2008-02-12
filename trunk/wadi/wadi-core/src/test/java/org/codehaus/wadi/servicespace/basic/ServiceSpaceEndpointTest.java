@@ -18,6 +18,7 @@ package org.codehaus.wadi.servicespace.basic;
 import java.net.URI;
 
 import org.codehaus.wadi.group.Envelope;
+import org.codehaus.wadi.group.EnvelopeListener;
 import org.codehaus.wadi.servicespace.ServiceSpaceName;
 
 
@@ -27,51 +28,62 @@ import org.codehaus.wadi.servicespace.ServiceSpaceName;
  */
 public class ServiceSpaceEndpointTest extends AbstractServiceSpaceTestCase {
 
+    private ServiceSpaceEnvelopeHelper helper;
+    private Envelope message;
+    private EnvelopeListener envelopeListener;
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        
+        envelopeListener = (EnvelopeListener) mock(EnvelopeListener.class);
+        helper = (ServiceSpaceEnvelopeHelper) mock(ServiceSpaceEnvelopeHelper.class);
+        message = (Envelope) mock(Envelope.class);
+    }
+    
     public void testDispatch() throws Exception {
-        Envelope message = (Envelope) mock(Envelope.class);
-        dispatcher.onEnvelope(message);
+        beginSection(s.ordered("tranform then dispatch"));
+        envelopeListener.onEnvelope(message);
+        endSection();
         
         startVerification();
         
-        ServiceSpaceEndpoint endpoint = new ServiceSpaceEndpoint(serviceSpace, dispatcher);
+        ServiceSpaceEndpoint endpoint = new ServiceSpaceEndpoint(serviceSpace, envelopeListener, helper);
         endpoint.dispatch(message);
     }
 
     public void testTestDispatchMessageOK() {
         beginSection(s.ordered("Get ServiceSpaceName and test for equality"));
-        Envelope message = (Envelope) mock(Envelope.class);
-        ServiceSpaceEnvelopeHelper.getServiceSpaceNameStatic(message);
+        helper.getServiceSpaceName(message);
         modify().returnValue(serviceSpaceName);
         endSection();
 
         startVerification();
         
-        ServiceSpaceEndpoint endpoint = new ServiceSpaceEndpoint(serviceSpace, dispatcher);
+        ServiceSpaceEndpoint endpoint = new ServiceSpaceEndpoint(serviceSpace, envelopeListener, helper);
         assertTrue(endpoint.testDispatchEnvelope(message));
     }
 
     public void testTestDispatchMessageServiceSpaceIsDifferent() throws Exception {
         beginSection(s.ordered("Get ServiceSpaceName and test for equality"));
-        Envelope message = (Envelope) mock(Envelope.class);
-        ServiceSpaceEnvelopeHelper.getServiceSpaceNameStatic(message);
+        helper.getServiceSpaceName(message);
         modify().returnValue(new ServiceSpaceName(new URI("NEW_SPACE")));
         endSection();
 
         startVerification();
         
-        ServiceSpaceEndpoint endpoint = new ServiceSpaceEndpoint(serviceSpace, dispatcher);
+        ServiceSpaceEndpoint endpoint = new ServiceSpaceEndpoint(serviceSpace, envelopeListener, helper);
         assertFalse(endpoint.testDispatchEnvelope(message));
     }
 
     public void testTestDispatchMessageServiceSpaceIsUndefined() throws Exception {
         beginSection(s.ordered("Get ServiceSpaceName and test for equality"));
-        Envelope message = (Envelope) mock(Envelope.class);
-        ServiceSpaceEnvelopeHelper.getServiceSpaceNameStatic(message);
+        helper.getServiceSpaceName(message);
         endSection();
 
         startVerification();
         
-        ServiceSpaceEndpoint endpoint = new ServiceSpaceEndpoint(serviceSpace, dispatcher);
+        ServiceSpaceEndpoint endpoint = new ServiceSpaceEndpoint(serviceSpace, envelopeListener, helper);
         assertFalse(endpoint.testDispatchEnvelope(message));
     }
 

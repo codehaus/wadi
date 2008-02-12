@@ -98,6 +98,7 @@ class BasicEnvelopeDispatcherManager implements EnvelopeDispatcherManager {
     				}
     				dispatcher.beforeDispatch();
     				_executor.execute(new DispatchRunner(dispatcher, message));
+    				break;
     			}
     		}
     	} catch (InterruptedException e) {

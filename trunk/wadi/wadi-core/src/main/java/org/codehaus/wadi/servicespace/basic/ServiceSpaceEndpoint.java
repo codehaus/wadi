@@ -27,23 +27,26 @@ import org.codehaus.wadi.servicespace.ServiceSpaceName;
  */
 public class ServiceSpaceEndpoint implements ServiceEndpoint {
     private final ServiceSpace serviceSpace;
-    private final ServiceSpaceEnvelopeHelper messageHelper;
-    private final EnvelopeListener messageListener;
+    private final ServiceSpaceEnvelopeHelper envelopeHelper;
+    private final EnvelopeListener envelpeListener;
     
-    public ServiceSpaceEndpoint(ServiceSpace serviceSpace, EnvelopeListener messageListener) {
+    public ServiceSpaceEndpoint(ServiceSpace serviceSpace,
+        EnvelopeListener envelpeListener,
+        ServiceSpaceEnvelopeHelper envelopeHelper) {
         if (null == serviceSpace) {
             throw new IllegalArgumentException("serviceSpace is required");
-        } else if (null == messageListener) {
-            throw new IllegalArgumentException("messageListener is required");
+        } else if (null == envelpeListener) {
+            throw new IllegalArgumentException("envelpeListener is required");
+        } else if (null == envelopeHelper) {
+            throw new IllegalArgumentException("envelopeHelper is required");
         }
         this.serviceSpace = serviceSpace;
-        this.messageListener = messageListener;
-        
-        messageHelper = new ServiceSpaceEnvelopeHelper(serviceSpace);
+        this.envelpeListener = envelpeListener;
+        this.envelopeHelper = envelopeHelper;
     }
 
     public void dispatch(Envelope envelope) throws Exception {
-        messageListener.onEnvelope(envelope);
+        envelpeListener.onEnvelope(envelope);
     }
 
     public void dispose(int nbAttemp, long delayMillis) {
@@ -51,7 +54,7 @@ public class ServiceSpaceEndpoint implements ServiceEndpoint {
     }
 
     public boolean testDispatchEnvelope(Envelope envelope) {
-        ServiceSpaceName serviceSpaceName = messageHelper.getServiceSpaceName(envelope);
+        ServiceSpaceName serviceSpaceName = envelopeHelper.getServiceSpaceName(envelope);
         if (null == serviceSpaceName) {
             return false;
         }

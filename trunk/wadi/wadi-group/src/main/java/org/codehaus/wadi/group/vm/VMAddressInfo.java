@@ -21,6 +21,8 @@ import java.io.ObjectOutputStream;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 
+import org.codehaus.wadi.group.impl.AbstractCluster;
+
 /**
  * 
  * @version $Revision: 1603 $
@@ -44,13 +46,9 @@ class VMAddressInfo implements Serializable {
     }
     
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        if (false == in instanceof VMClusterObjectInputStream) {
-            throw new IllegalArgumentException(VMClusterObjectInputStream.class + " expected.");
-        }
-        
-        VMClusterObjectInputStream extIn = (VMClusterObjectInputStream) in;
-        nodeName = extIn.readUTF();
-        address = (VMAddress) extIn.getCluster().getAddress(nodeName);
+        nodeName = in.readUTF();
+        VMLocalCluster cluster = (VMLocalCluster) AbstractCluster.clusterThreadLocal.get();
+        address = (VMAddress) cluster.getAddress(nodeName);
     }
     
     public Object readResolve() throws ObjectStreamException {

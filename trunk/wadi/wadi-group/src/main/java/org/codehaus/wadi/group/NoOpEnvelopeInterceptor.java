@@ -21,11 +21,11 @@ package org.codehaus.wadi.group;
  */
 public class NoOpEnvelopeInterceptor implements EnvelopeInterceptor {
 
-    public Envelope onInboundEnvelope(Envelope envelope) {
+    public Envelope onInboundEnvelope(Envelope envelope) throws MessageExchangeException {
         return envelope;
     }
     
-    public Envelope onOutboundEnvelope(Envelope envelope) {
+    public Envelope onOutboundEnvelope(Envelope envelope) throws MessageExchangeException {
         return envelope;
     }
 

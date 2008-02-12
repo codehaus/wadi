@@ -27,6 +27,7 @@ import org.codehaus.wadi.core.contextualiser.Contextualiser;
 import org.codehaus.wadi.core.manager.Manager;
 import org.codehaus.wadi.core.reflect.base.DeclaredMemberFilter;
 import org.codehaus.wadi.core.reflect.jdk.JDKClassIndexerRegistry;
+import org.codehaus.wadi.core.util.SimpleStreamer;
 import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.vm.VMBroker;
@@ -150,7 +151,8 @@ public class AdminServiceSpaceSmokeTest extends TestCase {
 
     private AdminServiceSpace newAdminServiceSpace(VMDispatcher dispatcher) throws Exception {
         AdminServiceSpace adminServiceSpace = new AdminServiceSpace(dispatcher,
-            new JDKClassIndexerRegistry(new DeclaredMemberFilter()));
+            new JDKClassIndexerRegistry(new DeclaredMemberFilter()),
+            new SimpleStreamer());
         adminServiceSpace.start();
         return adminServiceSpace;
     }

@@ -26,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 import org.codehaus.wadi.core.contextualiser.Contextualiser;
 import org.codehaus.wadi.core.reflect.base.DeclaredMemberFilter;
 import org.codehaus.wadi.core.reflect.jdk.JDKClassIndexerRegistry;
+import org.codehaus.wadi.core.util.SimpleStreamer;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.vm.VMBroker;
@@ -101,7 +102,8 @@ public class SimplePartitionManagerSmokeTest extends RMockTestCase {
 
         ServiceSpace serviceSpace = new BasicServiceSpace(new ServiceSpaceName(URI.create("serviceSpace")),
             dispatcher,
-            new JDKClassIndexerRegistry(new DeclaredMemberFilter()));
+            new JDKClassIndexerRegistry(new DeclaredMemberFilter()),
+            new SimpleStreamer());
 
         PartitionBalancerSingletonServiceHolder holder =
             (PartitionBalancerSingletonServiceHolder) mock(PartitionBalancerSingletonServiceHolder.class);

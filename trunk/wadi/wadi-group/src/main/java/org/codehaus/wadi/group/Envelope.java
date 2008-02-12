@@ -24,11 +24,13 @@ import java.util.Map;
  * @version $Revision: 1603 $
  */
 public interface Envelope extends Serializable {
+    void removeProperty(String key);
+
     void setProperty(String key, Object value);
 
     Object getProperty(String key);
     
-    Map getProperties();
+    Map<String, Object> getProperties();
 
     String getTargetCorrelationId();
 

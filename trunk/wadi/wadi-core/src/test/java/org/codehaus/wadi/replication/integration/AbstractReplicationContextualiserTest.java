@@ -53,9 +53,6 @@ public abstract class AbstractReplicationContextualiserTest extends TestCase {
         waitForStableCluster();
     }
 
-	protected void tearDown() throws Exception {
-	}
-
 	public void testGetSessionFromReplicationManager() throws Exception {
 		Session session = nodeInfo1.manager.create(null);
 		String attrValue = "bar";
@@ -107,6 +104,7 @@ public abstract class AbstractReplicationContextualiserTest extends TestCase {
         dispatcher.start();
         
         StackContext stackContext = new StackContext(new ServiceSpaceName(new URI("name")), dispatcher) {
+            @Override
             protected Router newRouter() {
                 return new DummyRouter();
             }
