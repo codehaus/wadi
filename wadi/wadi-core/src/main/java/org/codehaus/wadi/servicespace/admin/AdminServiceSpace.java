@@ -19,6 +19,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import org.codehaus.wadi.core.reflect.ClassIndexerRegistry;
+import org.codehaus.wadi.core.util.Streamer;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.servicespace.ServiceAlreadyRegisteredException;
 import org.codehaus.wadi.servicespace.ServiceSpaceName;
@@ -42,8 +43,10 @@ public class AdminServiceSpace extends BasicServiceSpace {
     
     private final CommandEndPoint commandEndPoint;
     
-    public AdminServiceSpace(Dispatcher underlyingDispatcher, ClassIndexerRegistry serviceClassIndexerRegistry) {
-        super(NAME, underlyingDispatcher, serviceClassIndexerRegistry);
+    public AdminServiceSpace(Dispatcher underlyingDispatcher,
+        ClassIndexerRegistry serviceClassIndexerRegistry,
+        Streamer streamer) {
+        super(NAME, underlyingDispatcher, serviceClassIndexerRegistry, streamer);
         
         commandEndPoint = new ClusterCommandEndPoint(this);
         

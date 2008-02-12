@@ -20,9 +20,9 @@ package org.codehaus.wadi.group;
  * @version $Revision: 1563 $
  */
 public interface EnvelopeInterceptor {
-    Envelope onInboundEnvelope(Envelope envelope);
+    Envelope onInboundEnvelope(Envelope envelope) throws MessageExchangeException;
 
-    Envelope onOutboundEnvelope(Envelope envelope);
+    Envelope onOutboundEnvelope(Envelope envelope) throws MessageExchangeException;
     
     void registerLoopbackEnvelopeListener(EnvelopeListener envelopeListener);
     

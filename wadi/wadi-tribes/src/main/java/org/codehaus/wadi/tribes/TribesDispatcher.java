@@ -104,7 +104,7 @@ public class TribesDispatcher extends AbstractDispatcher implements ChannelListe
             try {
                 _executor.execute(r);
             } catch ( InterruptedException x ) {
-                this._log.error("Interrupted when a TribesMessage received, unable to hand it off to the thread pool.",x);
+                this.log.error("Interrupted when a TribesMessage received, unable to hand it off to the thread pool.",x);
             }
         } 
     }

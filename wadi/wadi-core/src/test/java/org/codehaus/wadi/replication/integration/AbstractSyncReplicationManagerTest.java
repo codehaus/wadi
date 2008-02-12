@@ -201,7 +201,8 @@ public abstract class AbstractSyncReplicationManagerTest extends RMockTestCase {
         
         return new BasicServiceSpace(new ServiceSpaceName(new URI("name")),
             dispatcher,
-            new JDKClassIndexerRegistry(new DeclaredMemberFilter()));
+            new JDKClassIndexerRegistry(new DeclaredMemberFilter()),
+            new SimpleStreamer());
     }
 
     protected abstract Dispatcher createDispatcher(String clusterName, String nodeName, long timeout) throws Exception;

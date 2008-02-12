@@ -27,12 +27,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.core.Lifecycle;
 import org.codehaus.wadi.core.reflect.ClassIndexerRegistry;
+import org.codehaus.wadi.core.util.Streamer;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.ClusterListener;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Envelope;
-import org.codehaus.wadi.group.EnvelopeListener;
+import org.codehaus.wadi.group.EnvelopeInterceptor;
 import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.Peer;
@@ -70,39 +71,45 @@ public class BasicServiceSpace implements ServiceSpace, Lifecycle {
     private final ClassIndexerRegistry serviceClassIndexerRegistry;
 
     public BasicServiceSpace(ServiceSpaceName name,
-            Dispatcher underlyingDispatcher,
-            ClassIndexerRegistry serviceClassIndexerRegistry) {
+        Dispatcher underlyingDispatcher,
+        ClassIndexerRegistry serviceClassIndexerRegistry,
+        Streamer streamer) {
         if (null == name) {
             throw new IllegalArgumentException("name is required");
         } else if (null == underlyingDispatcher) {
             throw new IllegalArgumentException("underlyingDispatcher is required");
         } else if (null == serviceClassIndexerRegistry) {
             throw new IllegalArgumentException("serviceClassIndexerRegistry is required");
+        } else if (null == streamer) {
+            throw new IllegalArgumentException("streamer is required");
         }
         this.serviceClassIndexerRegistry = serviceClassIndexerRegistry;
+        this.name = name;
+        this.underlyingDispatcher = underlyingDispatcher;
+
+        envelopeHelper = newServiceSpaceEnvelopeHelper(streamer);
+        
+        dispatcher = newDispatcher();
+        
+        EnvelopeInterceptor transformEnvelopeInterceptor = new TransformEnvelopeInterceptor(envelopeHelper);
+        dispatcher.addInterceptor(transformEnvelopeInterceptor);
 
         monitors = new ArrayList<ServiceMonitor>();
         hostingPeers = new HashSet<Peer>();
         listeners = new CopyOnWriteArrayList<ServiceSpaceListener>();
-
-        this.name = name;
-        this.underlyingDispatcher = underlyingDispatcher;
-        this.dispatcher = newDispatcher();
 
         localPeer = dispatcher.getCluster().getLocalPeer();
         
         serviceRegistry = newServiceRegistry();
         
         underlyingClusterListener = new UnderlyingClusterListener();
-        
-        EnvelopeListener messageListener = dispatcher; 
-        messageListener = new ServiceInvocationListener(this, serviceClassIndexerRegistry, messageListener);
-        messageListener = new ServiceResponseListener(this, messageListener);
-        serviceSpaceEndpoint = new ServiceSpaceEndpoint(this, messageListener);
+
+        dispatcher.register(new ServiceInvocationListener(this, serviceClassIndexerRegistry));
+        dispatcher.register(new ServiceResponseListener(this));
+        serviceSpaceEndpoint = new ServiceSpaceEndpoint(this, dispatcher, envelopeHelper);
         
         lifecycleEndpoint = new ServiceSpaceLifecycleEndpoint();
-        serviceSpaceRVEndPoint = new RendezVousEndPoint(this);
-        envelopeHelper = new ServiceSpaceEnvelopeHelper(this);
+        serviceSpaceRVEndPoint = new RendezVousEndPoint(this, envelopeHelper);
     }
 
     public LocalPeer getLocalPeer() {
@@ -234,8 +241,12 @@ public class BasicServiceSpace implements ServiceSpace, Lifecycle {
         return new BasicServiceRegistry(this);
     }
 
+    protected BasicServiceSpaceEnvelopeHelper newServiceSpaceEnvelopeHelper(Streamer streamer) {
+        return new BasicServiceSpaceEnvelopeHelper(this, streamer);
+    }
+
     protected Dispatcher newDispatcher() {
-        return new BasicServiceSpaceDispatcher(this);
+        return new BasicServiceSpaceDispatcher(this, envelopeHelper);
     }
     
     protected ServiceMonitor newServiceMonitor(ServiceName serviceName) {

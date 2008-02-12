@@ -171,14 +171,18 @@ public class StackContext {
         
         ClassIndexerRegistry serviceClassIndexerRegistry = newServiceClassIndexerRegistry();
         
-        serviceSpace = new BasicServiceSpace(serviceSpaceName, underlyingDispatcher, serviceClassIndexerRegistry);
+        Streamer streamer = newStreamer();
+
+        serviceSpace = new BasicServiceSpace(serviceSpaceName,
+            underlyingDispatcher,
+            serviceClassIndexerRegistry,
+            streamer);
+
         sessionMonitor = newSessionMonitor();
         partitionMapper = newPartitionMapper();
         partitionManager = newPartitionManager();
         stateManager = newStateManager();
         router = newRouter();
-        
-        Streamer streamer = newStreamer();
         
         stateHandler = newObjectStateHandler(streamer);
         
@@ -337,7 +341,7 @@ public class StackContext {
                 replicationManager);
     }
 
-    protected SimpleStreamer newStreamer() {
+    protected Streamer newStreamer() {
         return new SimpleStreamer(cl);
     }
 

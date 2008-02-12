@@ -20,6 +20,7 @@ import java.util.Set;
 
 import org.codehaus.wadi.core.reflect.base.DeclaredMemberFilter;
 import org.codehaus.wadi.core.reflect.jdk.JDKClassIndexerRegistry;
+import org.codehaus.wadi.core.util.SimpleStreamer;
 import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.ClusterListener;
 import org.codehaus.wadi.group.Dispatcher;
@@ -53,12 +54,20 @@ public class BasicServiceSpaceTest extends AbstractServiceSpaceTestCase {
 
     protected void setUp() throws Exception {
         super.setUp();
+
         serviceSpaceCluster = (Cluster) mock(Cluster.class);
         serviceSpaceCluster.getLocalPeer();
         modify().multiplicity(expect.from(0));
         modify().returnValue(localPeer);
         
         serviceSpaceDispatcher = (Dispatcher) mock(Dispatcher.class);
+        
+        serviceSpaceDispatcher.addInterceptor(null);
+        modify().args(is.NOT_NULL);
+        
+        serviceSpaceDispatcher.register(null);
+        modify().multiplicity(expect.exactly(2)).args(is.NOT_NULL);
+        
         serviceSpaceDispatcher.getCluster();
         modify().multiplicity(expect.from(0));
         modify().returnValue(serviceSpaceCluster);
@@ -383,7 +392,7 @@ public class BasicServiceSpaceTest extends AbstractServiceSpaceTestCase {
         modify().returnValue(message);
         
         beginSection(s.unordered("Set message fields"));
-        ServiceSpaceEnvelopeHelper.setServiceSpaceName(serviceSpaceName, message);
+        message.setProperty(BasicServiceSpaceEnvelopeHelper.PROPERTY_SERVICE_SPACE_NAME, serviceSpaceName);
         
         ServiceSpaceLifecycleEvent event = newLifecycleEvent(state);
         message.setPayload(event);
@@ -403,7 +412,10 @@ public class BasicServiceSpaceTest extends AbstractServiceSpaceTestCase {
     private class SwapMockBasicServiceSpace extends BasicServiceSpace {
 
         public SwapMockBasicServiceSpace(ServiceSpaceName name, Dispatcher underlyingDispatcher) {
-            super(name, underlyingDispatcher, new JDKClassIndexerRegistry(new DeclaredMemberFilter()));
+            super(name,
+                underlyingDispatcher,
+                new JDKClassIndexerRegistry(new DeclaredMemberFilter()),
+                new SimpleStreamer());
         }
 
         protected Dispatcher newDispatcher() {

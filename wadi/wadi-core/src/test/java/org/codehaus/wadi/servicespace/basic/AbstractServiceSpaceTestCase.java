@@ -42,7 +42,7 @@ public class AbstractServiceSpaceTestCase extends RMockTestCase {
     protected Address address1;
     protected Peer remote2;
     protected Address address2;
-    protected Map remotePeers;
+    protected Map<Address, Peer> remotePeers;
     protected Cluster cluster;
     protected Address clusterAddress;
     protected Dispatcher dispatcher;
@@ -69,9 +69,9 @@ public class AbstractServiceSpaceTestCase extends RMockTestCase {
         address2 = (Address) mock(Address.class);
         modify().multiplicity(expect.from(0)).returnValue(address2);
         
-        remotePeers = new HashMap();
-        remotePeers.put("remote1", remote1);
-        remotePeers.put("remote2", remote2);
+        remotePeers = new HashMap<Address, Peer>();
+        remotePeers.put(address1, remote1);
+        remotePeers.put(address2, remote2);
     }
 
     private void setUpCluster() {
@@ -86,6 +86,7 @@ public class AbstractServiceSpaceTestCase extends RMockTestCase {
 
     private void setUpDispatcher() {
         dispatcher = (Dispatcher) mock(Dispatcher.class);
+
         dispatcher.getCluster();
         modify().multiplicity(expect.from(0)).returnValue(cluster);
         

@@ -31,10 +31,6 @@ public abstract class AbstractTestGroup extends TestCase {
 
     protected static Log _log = LogFactory.getLog(AbstractTestGroup.class);
 
-    public AbstractTestGroup(String name) {
-        super(name);
-    }
-
     protected interface DispatcherFactory {
         Dispatcher create(String clusterName, String peerName, long inactiveTime) throws Exception;
     }

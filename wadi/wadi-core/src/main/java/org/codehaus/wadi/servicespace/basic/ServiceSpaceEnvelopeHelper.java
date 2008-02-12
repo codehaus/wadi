@@ -15,40 +15,21 @@
  */
 package org.codehaus.wadi.servicespace.basic;
 
+import java.io.IOException;
+
 import org.codehaus.wadi.group.Envelope;
-import org.codehaus.wadi.servicespace.ServiceSpace;
 import org.codehaus.wadi.servicespace.ServiceSpaceName;
 
 /**
  * 
  * @version $Revision: $
  */
-public class ServiceSpaceEnvelopeHelper {
-    private static final String PROPERTY_SERVICE_SPACE_NAME = "wadi/ServiceSpaceName";
+public interface ServiceSpaceEnvelopeHelper {
+    ServiceSpaceName getServiceSpaceName(Envelope envelope);
 
-    private final ServiceSpace serviceSpace;
- 
-    public static void setServiceSpaceName(ServiceSpaceName serviceSpaceName, Envelope envelope) {
-        envelope.setProperty(PROPERTY_SERVICE_SPACE_NAME, serviceSpaceName);
-    }
+    void setServiceSpaceName(Envelope envelope);
 
-    public static ServiceSpaceName getServiceSpaceNameStatic(Envelope envelope) {
-        return (ServiceSpaceName) envelope.getProperty(PROPERTY_SERVICE_SPACE_NAME);
-    }
-    
-    public ServiceSpaceEnvelopeHelper(ServiceSpace serviceSpace) {
-        if (null == serviceSpace) {
-            throw new IllegalArgumentException("serviceSpace is required");
-        }
-        this.serviceSpace = serviceSpace;
-    }
-    
-    public ServiceSpaceName getServiceSpaceName(Envelope envelope) {
-        return (ServiceSpaceName) envelope.getProperty(PROPERTY_SERVICE_SPACE_NAME);
-    }
+    void transformOutboundEnvelope(Envelope envelope) throws IOException;
 
-    public void setServiceSpaceName(Envelope envelope) {
-        setServiceSpaceName(serviceSpace.getServiceSpaceName(), envelope);
-    }
-    
+    void transformInboundEnvelope(Envelope envelope) throws IOException, ClassNotFoundException;
 }

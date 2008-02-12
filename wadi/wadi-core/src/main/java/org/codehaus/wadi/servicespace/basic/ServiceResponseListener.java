@@ -17,41 +17,34 @@ package org.codehaus.wadi.servicespace.basic;
 
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Envelope;
-import org.codehaus.wadi.group.EnvelopeListener;
+import org.codehaus.wadi.group.ServiceEndpoint;
 import org.codehaus.wadi.servicespace.ServiceSpace;
 
 /**
  * 
  * @version $Revision: $
  */
-public class ServiceResponseListener implements EnvelopeListener {
+public class ServiceResponseListener implements ServiceEndpoint {
     
-    private final ServiceSpace serviceSpace;
     private final Dispatcher dispatcher;
-    private final EnvelopeListener next;
     
-    public ServiceResponseListener(ServiceSpace serviceSpace, EnvelopeListener next) {
+    public ServiceResponseListener(ServiceSpace serviceSpace) {
         if (null == serviceSpace) {
             throw new IllegalArgumentException("serviceSpace is required");
-        } else if (null == next) {
-            throw new IllegalArgumentException("next is required");
         }
-        this.serviceSpace = serviceSpace;
-        this.next = next;
         
         dispatcher = serviceSpace.getDispatcher();
     }
 
-    public void onEnvelope(Envelope message) {
-        if (EnvelopeServiceHelper.isServiceReply(message)) {
-            handleServiceReply(message);
-        } else {
-            next.onEnvelope(message);
-        }
+    public void dispatch(Envelope envelope) throws Exception {
+        dispatcher.addRendezVousEnvelope(envelope);
     }
 
-    private void handleServiceReply(Envelope reply) {
-        dispatcher.addRendezVousEnvelope(reply);
+    public void dispose(int nbAttemp, long delayMillis) {
+    }
+
+    public boolean testDispatchEnvelope(Envelope envelope) {
+        return EnvelopeServiceHelper.isServiceReply(envelope);
     }
     
 }

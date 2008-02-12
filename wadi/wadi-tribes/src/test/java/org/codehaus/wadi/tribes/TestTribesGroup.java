@@ -21,10 +21,6 @@ import org.codehaus.wadi.group.Dispatcher;
  
 public class TestTribesGroup extends AbstractTestGroup {
 
-    public TestTribesGroup(String name) {
-        super(name);
-    }
-
     public DispatcherFactory getDispatcherFactory() {
         return new DispatcherFactory() {
             public Dispatcher create(String clusterName, String peerName, long inactiveTime) throws Exception {

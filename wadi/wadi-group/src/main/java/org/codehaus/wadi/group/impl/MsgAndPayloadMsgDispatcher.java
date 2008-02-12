@@ -34,6 +34,7 @@ class MsgAndPayloadMsgDispatcher extends AbstractMsgMethodDispatcher {
         super(dispatcher, target, method, type);
     }
 
+    
     public void dispatch(Envelope envelope) throws Exception {
         Object[] pair = (Object[]) _pair.get();
         pair[0] = envelope;

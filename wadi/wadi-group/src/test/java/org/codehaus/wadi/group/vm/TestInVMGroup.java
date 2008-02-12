@@ -27,10 +27,6 @@ import org.codehaus.wadi.group.Dispatcher;
 public class TestInVMGroup extends AbstractTestGroup {
     private Map clusterNameToCluster = new HashMap();
     
-    public TestInVMGroup(String name) {
-        super(name);
-    }
-    
     public DispatcherFactory getDispatcherFactory() {
         return new InVMDispatcherFactory();
     }

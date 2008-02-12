@@ -28,6 +28,7 @@ import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.Peer;
+import org.codehaus.wadi.group.impl.AbstractCluster;
 
 /**
  * 
@@ -69,6 +70,7 @@ public class VMLocalCluster implements Cluster {
 
     void send(Address to, Envelope message) throws MessageExchangeException {
         message.setAddress(to);
+        AbstractCluster.clusterThreadLocal.set(this);
         delegate.send(to, message);
     }
 

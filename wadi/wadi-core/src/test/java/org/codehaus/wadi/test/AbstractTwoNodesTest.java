@@ -15,11 +15,18 @@
  */
 package org.codehaus.wadi.test;
 
+import java.net.URI;
+
 import junit.framework.TestCase;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.core.assembler.StackContext;
+import org.codehaus.wadi.core.manager.DummyRouter;
+import org.codehaus.wadi.core.manager.Router;
 import org.codehaus.wadi.group.Dispatcher;
+import org.codehaus.wadi.servicespace.ServiceSpace;
+import org.codehaus.wadi.servicespace.ServiceSpaceName;
 
 /**
  * 
@@ -27,13 +34,13 @@ import org.codehaus.wadi.group.Dispatcher;
  */
 public abstract class AbstractTwoNodesTest extends TestCase {
     protected Log log = LogFactory.getLog(getClass());
-    
+
     protected Dispatcher redD;
-    protected MyStack red;
+    protected StackContext red;
     protected Dispatcher redSSDispatcher;
 
     protected Dispatcher greenD;
-    protected MyStack green;
+    protected StackContext green;
     protected Dispatcher greenSSDispatcher;
 
     protected void setUp() throws Exception {
@@ -42,16 +49,28 @@ public abstract class AbstractTwoNodesTest extends TestCase {
 
         greenD = newDispatcher("green");
         greenD.start();
-        
-        red = new MyStack(redD);
-        red.start();
-        redSSDispatcher = red.getServiceSpace().getDispatcher();
-        
-        green = new MyStack(greenD);
-        green.start();
-        greenSSDispatcher = green.getServiceSpace().getDispatcher();
+
+        red = newStack(redD);
+        ServiceSpace redServiceSpace = red.getServiceSpace();
+        redServiceSpace.start();
+        redSSDispatcher = redServiceSpace.getDispatcher();
+
+        green = newStack(greenD);
+        ServiceSpace greenServiceSpace = green.getServiceSpace();
+        greenServiceSpace.start();
+        greenSSDispatcher = greenServiceSpace.getDispatcher();
         
         TestUtil.waitForDispatcherSeeOthers(new Dispatcher[] { redSSDispatcher, greenSSDispatcher }, 5000);
+    }
+
+    private StackContext newStack(Dispatcher dispatcher) throws Exception {
+        StackContext stack = new StackContext(new ServiceSpaceName(new URI("Space")), dispatcher) {
+            protected Router newRouter() {
+                return new DummyRouter();
+            }
+        };
+        stack.build();
+        return stack;
     }
 
     protected void tearDown() throws Exception {

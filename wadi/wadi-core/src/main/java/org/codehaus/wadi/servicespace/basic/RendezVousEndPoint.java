@@ -29,11 +29,16 @@ import org.codehaus.wadi.servicespace.ServiceSpaceName;
 public class RendezVousEndPoint implements ServiceEndpoint {
     private final Dispatcher dispatcher;
     private final ServiceSpaceName name;
+    private final ServiceSpaceEnvelopeHelper envelopeHelper;
     
-    public RendezVousEndPoint(ServiceSpace serviceSpace) {
+    public RendezVousEndPoint(ServiceSpace serviceSpace, ServiceSpaceEnvelopeHelper envelopeHelper) {
         if (null == serviceSpace) {
             throw new IllegalArgumentException("serviceSpace is required");
+        } else if (null == envelopeHelper) {
+            throw new IllegalArgumentException("envelopeHelper is required");
         }
+        this.envelopeHelper = envelopeHelper;
+
         dispatcher = serviceSpace.getDispatcher();
         name = serviceSpace.getServiceSpaceName();
     }
@@ -46,7 +51,7 @@ public class RendezVousEndPoint implements ServiceEndpoint {
     }
 
     public boolean testDispatchEnvelope(Envelope envelope) {
-        ServiceSpaceName targetedServiceSpaceName = ServiceSpaceEnvelopeHelper.getServiceSpaceNameStatic(envelope);
+        ServiceSpaceName targetedServiceSpaceName = envelopeHelper.getServiceSpaceName(envelope);
         if (null == targetedServiceSpaceName) {
             return false;
         }
