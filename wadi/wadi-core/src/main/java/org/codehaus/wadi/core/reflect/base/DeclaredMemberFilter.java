@@ -18,6 +18,7 @@ package org.codehaus.wadi.core.reflect.base;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 
 /**
  * 
@@ -26,15 +27,21 @@ import java.lang.reflect.Method;
 public class DeclaredMemberFilter implements MemberFilter {
 
     public Constructor[] filterConstructor(Class clazz) {
-        return clazz.getDeclaredConstructors();
+        Constructor[] constructors = clazz.getDeclaredConstructors();
+        Arrays.sort(constructors, new ConstructorComparator());
+        return constructors;
     }
 
     public Field[] filterFields(Class clazz) {
-        return clazz.getDeclaredFields();
+        Field[] fields = clazz.getDeclaredFields();
+        Arrays.sort(fields, new FieldComparator());
+        return fields;
     }
 
     public Method[] filterMethods(Class clazz) {
-        return clazz.getDeclaredMethods();
+        Method[] methods = clazz.getDeclaredMethods();
+        Arrays.sort(methods, new MethodComparator());
+        return methods;
     }
 
 }
