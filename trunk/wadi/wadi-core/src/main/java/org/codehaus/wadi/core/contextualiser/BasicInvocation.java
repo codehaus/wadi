@@ -50,6 +50,9 @@ public class BasicInvocation implements Invocation {
         try {
             doInvoke();
         } catch (Exception e) {
+            if (e instanceof InvocationException) {
+                throw (InvocationException) e;
+            }
             throw new InvocationException(e);
         } finally {
             if (!doNotExecuteOnEndProcessing && null != session) {
@@ -62,6 +65,9 @@ public class BasicInvocation implements Invocation {
         try {
             doInvoke(context);
         } catch (Exception e) {
+            if (e instanceof InvocationException) {
+                throw (InvocationException) e;
+            }
             throw new InvocationException(e);
         } finally {
             if (!doNotExecuteOnEndProcessing && null != session) {
