@@ -64,12 +64,10 @@ public class StandardSession extends AbstractMotable implements Session {
     
     public synchronized void destroy() throws Exception {
         manager.destroy(this);
-        attributes.clear();
         onDestroy();
     }
 
     protected synchronized void destroyForMotion() throws Exception {
-        attributes.clear();
     }
 
     public synchronized void onEndProcessing() {

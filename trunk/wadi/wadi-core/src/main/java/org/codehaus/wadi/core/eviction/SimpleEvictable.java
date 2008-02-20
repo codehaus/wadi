@@ -46,9 +46,6 @@ public abstract class SimpleEvictable implements Evictable, Externalizable {
     }
 
     public synchronized void destroy() throws Exception {
-        memento.setCreationTime(0);
-        memento.setLastAccessedTime(0);
-        memento.setMaxInactiveInterval(0);
     }
 
     public synchronized void copy(Evictable evictable) throws Exception {
