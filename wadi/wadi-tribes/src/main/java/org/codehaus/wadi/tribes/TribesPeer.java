@@ -49,8 +49,8 @@ public class TribesPeer implements Member, LocalPeer, Address {
     private final String name;
     private final PeerInfo peerInfo;
     private final UniqueId uniqueId;
-    private final Map<Object, Object> localStateMap;
-    
+    private transient final Map<Object, Object> localStateMap;
+     
     public TribesPeer(MemberImpl mbr) {
         if (null == mbr) {
             throw new IllegalArgumentException("mbr is required");
