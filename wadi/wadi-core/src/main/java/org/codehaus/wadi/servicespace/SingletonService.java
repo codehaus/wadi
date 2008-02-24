@@ -15,16 +15,11 @@
  */
 package org.codehaus.wadi.servicespace;
 
-import org.codehaus.wadi.core.Lifecycle;
-
-
 
 /**
  * 
  * @version $Revision: 1538 $
  */
-public interface ServiceHolder extends Lifecycle {
-    boolean isStarted();
-    
-    Object getService();
+public interface SingletonService {
+    public void onBecomeSingletonDueToMembershipUpdate();
 }
