@@ -93,6 +93,10 @@ public class BasicPartitionBalancerSingletonService implements PartitionBalancer
         }
     }
 
+    public void onBecomeSingletonDueToMembershipUpdate() {
+        queueRebalancing();
+    }
+
     @Override
     public String toString() {
         return "PartitionManager for ServiceSpace [" + serviceSpace.getServiceSpaceName() + "]";
@@ -118,5 +122,5 @@ public class BasicPartitionBalancerSingletonService implements PartitionBalancer
         }
         
     }
-    
+
 }

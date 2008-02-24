@@ -15,17 +15,14 @@
  */
 package org.codehaus.wadi.servicespace;
 
-import org.codehaus.wadi.core.Lifecycle;
 import org.codehaus.wadi.group.Peer;
 
 /**
  * 
  * @version $Revision: 1538 $
  */
-public interface SingletonServiceHolder extends Lifecycle {
+public interface SingletonServiceHolder extends ServiceHolder {
     boolean isLocal();
 
     Peer getHostingPeer();
-
-    Object getSingletonService();
 }
