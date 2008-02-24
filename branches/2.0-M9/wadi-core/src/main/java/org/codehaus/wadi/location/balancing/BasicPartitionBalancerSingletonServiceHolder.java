@@ -33,34 +33,25 @@ public class BasicPartitionBalancerSingletonServiceHolder implements PartitionBa
         }
         this.delegate = delegate;
         
-        Object singletonService = delegate.getSingletonService();
-        if (!(singletonService instanceof PartitionBalancerSingletonService)) {
-            throw new IllegalArgumentException("Singleton service [" + singletonService + 
+        Object service = delegate.getService();
+        if (!(service instanceof PartitionBalancerSingletonService)) {
+            throw new IllegalArgumentException("Singleton service [" + service + 
                     "] is not a [" + PartitionBalancerSingletonService.class + "]");
         }
-        balancerSingletonService = (PartitionBalancerSingletonService) singletonService;
+        balancerSingletonService = (PartitionBalancerSingletonService) service;
     }
-
 
     public Peer getHostingPeer() {
         return delegate.getHostingPeer();
     }
 
-
-    public Object getSingletonService() {
-        return delegate.getSingletonService();
-    }
-
-
     public boolean isLocal() {
         return delegate.isLocal();
     }
 
-
     public void start() throws Exception {
         delegate.start();
     }
-
 
     public void stop() throws Exception {
         delegate.stop();
@@ -68,6 +59,14 @@ public class BasicPartitionBalancerSingletonServiceHolder implements PartitionBa
     
     public PartitionBalancerSingletonService getPartitionBalancerSingletonService() {
         return balancerSingletonService;
+    }
+
+    public Object getService() {
+        return delegate.getService();
+    }
+
+    public boolean isStarted() {
+        return delegate.isStarted();
     }
 
 }

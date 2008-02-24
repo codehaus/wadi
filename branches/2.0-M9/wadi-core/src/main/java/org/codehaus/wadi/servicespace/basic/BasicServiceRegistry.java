@@ -27,6 +27,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.core.Lifecycle;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.servicespace.ServiceAlreadyRegisteredException;
+import org.codehaus.wadi.servicespace.ServiceHolder;
 import org.codehaus.wadi.servicespace.ServiceName;
 import org.codehaus.wadi.servicespace.ServiceNotAvailableException;
 import org.codehaus.wadi.servicespace.ServiceNotFoundException;
@@ -42,7 +43,7 @@ public class BasicServiceRegistry implements StartableServiceRegistry {
     
     private final ServiceSpace serviceSpace;
     private final Dispatcher dispatcher;
-    private final LinkedHashMap nameToServiceHolder;
+    private final LinkedHashMap<ServiceName, ServiceHolder> nameToServiceHolder;
     private final ServiceQueryEndpoint queryEndpoint;
     private volatile boolean started;
 
@@ -53,20 +54,20 @@ public class BasicServiceRegistry implements StartableServiceRegistry {
         this.serviceSpace = serviceSpace;
         
         dispatcher = serviceSpace.getDispatcher();
-        nameToServiceHolder = new LinkedHashMap();
+        nameToServiceHolder = new LinkedHashMap<ServiceName, ServiceHolder>();
         queryEndpoint = new ServiceQueryEndpoint(this, serviceSpace);
     }
     
-    public List getServiceNames() {
+    public List<ServiceName> getServiceNames() {
         synchronized (nameToServiceHolder) {
-            return new ArrayList(nameToServiceHolder.keySet());
+            return new ArrayList<ServiceName>(nameToServiceHolder.keySet());
         }
     }
     
     public Object getStartedService(ServiceName name) throws ServiceNotFoundException, ServiceNotAvailableException {
-        BasicServiceHolder serviceHolder;
+        ServiceHolder serviceHolder;
         synchronized (nameToServiceHolder) {
-            serviceHolder = (BasicServiceHolder) nameToServiceHolder.get(name);
+            serviceHolder = nameToServiceHolder.get(name);
         }
         if (null == serviceHolder) {
             throw new ServiceNotFoundException(name);
@@ -77,9 +78,9 @@ public class BasicServiceRegistry implements StartableServiceRegistry {
     }
     
     public boolean isServiceStarted(ServiceName name) {
-        BasicServiceHolder serviceHolder;
+        ServiceHolder serviceHolder;
         synchronized (nameToServiceHolder) {
-            serviceHolder = (BasicServiceHolder) nameToServiceHolder.get(name);
+            serviceHolder = nameToServiceHolder.get(name);
         }
         if (null == serviceHolder) {
             return false;
@@ -140,13 +141,13 @@ public class BasicServiceRegistry implements StartableServiceRegistry {
         
         dispatcher.register(queryEndpoint);
         
-        Collection services;
+        Collection<ServiceHolder> services;
         synchronized (nameToServiceHolder) {
-            services = nameToServiceHolder.values();
+            services = new ArrayList<ServiceHolder>(nameToServiceHolder.values());
         }
-        Collection startedServices = new ArrayList();
-        for (Iterator iter = services.iterator(); iter.hasNext();) {
-            BasicServiceHolder serviceHolder = (BasicServiceHolder) iter.next();
+        Collection<ServiceHolder> startedServices = new ArrayList<ServiceHolder>();
+        for (Iterator<ServiceHolder> iter = services.iterator(); iter.hasNext();) {
+            ServiceHolder serviceHolder = iter.next();
             try {
                 serviceHolder.start();
                 startedServices.add(serviceHolder);

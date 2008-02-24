@@ -19,39 +19,51 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.wadi.core.Lifecycle;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.servicespace.LifecycleState;
+import org.codehaus.wadi.servicespace.ServiceHolder;
 import org.codehaus.wadi.servicespace.ServiceName;
 import org.codehaus.wadi.servicespace.ServiceSpace;
 import org.codehaus.wadi.servicespace.ServiceSpaceLifecycleEvent;
 import org.codehaus.wadi.servicespace.ServiceSpaceListener;
+import org.codehaus.wadi.servicespace.SingletonService;
 import org.codehaus.wadi.servicespace.SingletonServiceHolder;
 
 /**
  * 
  * @version $Revision: 1538 $
  */
-public class BasicSingletonServiceHolder extends BasicServiceHolder implements SingletonServiceHolder {
+public class BasicSingletonServiceHolder implements SingletonServiceHolder {
     private static final Log log = LogFactory.getLog(BasicSingletonServiceHolder.class);
-    
+
+    private final ServiceSpace serviceSpace;
+    private final Object service;
+    private final ServiceHolder delegate;
     private final Peer localPeer;
     private final ServiceSpaceListener singletonElector;
     private final Object hostingPeerLock = new Object();
     private Peer hostingPeer;
 
-
     public BasicSingletonServiceHolder(ServiceSpace serviceSpace, ServiceName serviceName, Object service) {
-        super(serviceSpace, serviceName, service);
-        
+        if (null == serviceSpace) {
+            throw new IllegalArgumentException("serviceSpace is required");
+        } else if (null == serviceName) {
+            throw new IllegalArgumentException("serviceName is required");
+        } else if (null == service) {
+            throw new IllegalArgumentException("service is required");
+        }
+        this.serviceSpace = serviceSpace;
+        this.service = service;
+
+        delegate = newDelegateServiceHolder(serviceSpace, serviceName, service);
         localPeer = serviceSpace.getDispatcher().getCluster().getLocalPeer();
         singletonElector = newSingletonElector();
     }
 
     public void start() throws Exception {
         serviceSpace.addServiceSpaceListener(singletonElector);
-        Set hostingPeers = serviceSpace.getHostingPeers();
-        elect(hostingPeers);
+        Set<Peer> hostingPeers = serviceSpace.getHostingPeers();
+        elect(hostingPeers, false);
     }
 
     public void stop() throws Exception {
@@ -76,17 +88,25 @@ public class BasicSingletonServiceHolder extends BasicServiceHolder implements S
         }
     }
 
-    public Object getSingletonService() {
+    public Object getService() {
         return service;
     }
 
-    protected void updateHostingPeer(Peer newHostingPeer) {
+    public boolean isStarted() {
+        return delegate.isStarted();
+    }
+
+    protected void updateHostingPeer(Peer newHostingPeer, boolean callbackService) {
         synchronized (hostingPeerLock) {
             if (newHostingPeer != hostingPeer) {
                 if (isLocal()) {
                     onDismissal();
                 } else if (newHostingPeer == localPeer) {
                     onElection();
+
+                    if (callbackService && service instanceof SingletonService) {
+                        ((SingletonService) service).onBecomeSingletonDueToMembershipUpdate();
+                    }
                 }
                 hostingPeer = newHostingPeer;
             }
@@ -96,7 +116,7 @@ public class BasicSingletonServiceHolder extends BasicServiceHolder implements S
     protected void onElection() {
         log.info("[" + localPeer + "] owns singleton service [" + service + "]");
         try {
-            super.start();
+            delegate.start();
         } catch (Exception e) {
             log.error("Problem starting singleton service", e);
         }
@@ -105,13 +125,13 @@ public class BasicSingletonServiceHolder extends BasicServiceHolder implements S
     protected void onDismissal() {
         log.info("[" + localPeer + "] resigns ownership of singleton service [" + service + "]");
         try {
-            super.stop();
+            delegate.stop();
         } catch (Exception e) {
             log.error("Problem stopping singleton service", e);
         }
     }
 
-    protected void elect(Set<Peer> newHostingPeers) {
+    protected void elect(Set<Peer> newHostingPeers, boolean callbackService) {
         Peer oldest = localPeer;
         long oldestBirthtime = localPeer.getPeerInfo().getBirthtime();
         for (Peer hostingPeer : newHostingPeers) {
@@ -121,7 +141,13 @@ public class BasicSingletonServiceHolder extends BasicServiceHolder implements S
                 oldestBirthtime = birthTime;
             }
         }
-        updateHostingPeer(oldest);
+        updateHostingPeer(oldest, callbackService);
+    }
+
+    protected ServiceHolder newDelegateServiceHolder(ServiceSpace serviceSpace,
+        ServiceName serviceName,
+        Object service) {
+        return new BasicServiceHolder(serviceSpace, serviceName, service);
     }
 
     protected SeniorityElector newSingletonElector() {
@@ -136,7 +162,7 @@ public class BasicSingletonServiceHolder extends BasicServiceHolder implements S
                     state != LifecycleState.STARTED && state != LifecycleState.STOPPED) {
                 return;
             }
-            elect(newHostingPeers);
+            elect(newHostingPeers, true);
         }
 
     }
