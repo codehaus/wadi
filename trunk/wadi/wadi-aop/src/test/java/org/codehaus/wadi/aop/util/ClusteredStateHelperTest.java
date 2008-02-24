@@ -26,6 +26,7 @@ import org.codehaus.wadi.aop.tracker.basic.BasicInstanceRegistry;
 import org.codehaus.wadi.aop.tracker.basic.BasicInstanceTrackerFactory;
 import org.codehaus.wadi.aop.tracker.basic.BasicWireMarshaller;
 import org.codehaus.wadi.aop.tracker.basic.CompoundReplacer;
+import org.codehaus.wadi.aop.tracker.basic.InFlyInstanceRegistry;
 import org.codehaus.wadi.aop.tracker.basic.InstanceAndTrackerReplacer;
 import org.codehaus.wadi.aop.tracker.basic.WireMarshaller;
 import org.codehaus.wadi.core.reflect.ClassIndexerRegistry;
@@ -53,7 +54,7 @@ public class ClusteredStateHelperTest extends RMockTestCase {
         marshaller = new BasicWireMarshaller(streamer, registry, replacer);
 
         instanceIdFactory = (InstanceIdFactory) mock(InstanceIdFactory.class);
-        instanceRegistry = new BasicInstanceRegistry();
+        instanceRegistry = new InFlyInstanceRegistry(new BasicInstanceRegistry());
         
         ClusteredStateAspectUtil.resetInstanceTrackerFactory();
         ClusteredStateAspectUtil.setInstanceTrackerFactory(new BasicInstanceTrackerFactory(replacer, registry));
