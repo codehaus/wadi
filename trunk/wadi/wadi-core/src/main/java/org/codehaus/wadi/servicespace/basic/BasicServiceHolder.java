@@ -22,6 +22,7 @@ import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.servicespace.LifecycleState;
+import org.codehaus.wadi.servicespace.ServiceHolder;
 import org.codehaus.wadi.servicespace.ServiceLifecycleEvent;
 import org.codehaus.wadi.servicespace.ServiceName;
 import org.codehaus.wadi.servicespace.ServiceSpace;
@@ -31,7 +32,7 @@ import org.codehaus.wadi.servicespace.ServiceSpace;
  * 
  * @version $Revision: 1538 $
  */
-public class BasicServiceHolder implements Lifecycle {
+public class BasicServiceHolder implements ServiceHolder {
     private static final Log log = LogFactory.getLog(BasicServiceHolder.class);
     
     protected final ServiceSpace serviceSpace;

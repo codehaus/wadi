@@ -29,7 +29,7 @@ public interface ServiceRegistry {
 
     void unregister(ServiceName name) throws ServiceNotFoundException;
     
-    List getServiceNames();
+    List<ServiceName> getServiceNames();
     
     Object getStartedService(ServiceName name) throws ServiceNotFoundException, ServiceNotAvailableException;
 
