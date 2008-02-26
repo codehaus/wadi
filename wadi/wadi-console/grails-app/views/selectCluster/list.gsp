@@ -4,6 +4,11 @@
         <meta name="title" content="Clusters"></meta>
     </head>
     <body>
+	<g:if test="${null != flash.warningMessage}">
+        <span class="error">${flash.warningMessage}</span>
+        <p/>
+	</g:if>
+    
 	This page displays the available clusters. A cluster must be selected to enable the other functionalities.
 	<p/>
 

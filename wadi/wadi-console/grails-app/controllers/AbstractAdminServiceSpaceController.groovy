@@ -8,14 +8,6 @@ abstract class AbstractAdminServiceSpaceController {
 	def adminServiceSpaceHelper = new AdminServiceSpaceHelper()
 	def dispatcherRegistry
 
-    def beforeInterceptor = {
-        if (null == session[SelectClusterController.SESSION_KEY_SELECTED_CLUSTER_NAME]) {
-	        redirect(controller:'selectCluster', action:'list')
-	        return false
-        }
-        return true
- 	}
-    
 	def index = {
 	    redirect(action:listServiceSpaceNames)
 	}
