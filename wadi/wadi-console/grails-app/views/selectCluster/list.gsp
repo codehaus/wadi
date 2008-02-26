@@ -28,10 +28,10 @@
 		    	</td>
 		    	<td>
 			    	<g:if test="${clusterName == selectedClusterName}">
-			    		<a onclick="${remoteFunction(action:'unselect')}" href="">unselect</a>
+			    		<a href="${createLink(action:'unselect')}">unselect</a>
 					</g:if>
 					<g:else>
-			    		<a onclick="${remoteFunction(action:'select', params:[clusterName:clusterName])}" href="">select</a>
+			    		<a href="${createLink(action:'select', params:[clusterName:clusterName])}">select</a>
 					</g:else>
 		    	</td>
 		    </tr>
