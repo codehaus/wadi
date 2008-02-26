@@ -9,10 +9,12 @@ class SelectClusterController {
 	def select = {
 	    def clusterName = params['clusterName']
 	    session[SESSION_KEY_SELECTED_CLUSTER_NAME] = clusterName
+	    chain(action:list)
 	}
     
 	def unselect = {
 	    session[SESSION_KEY_SELECTED_CLUSTER_NAME] = null
+	    chain(action:list)
 	}
 }
 
