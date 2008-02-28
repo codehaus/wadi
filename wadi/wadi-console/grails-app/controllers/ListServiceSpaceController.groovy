@@ -1,7 +1,7 @@
 import org.codehaus.wadi.servicespace.admin.commands.GetServiceSpaceInfos
 import org.codehaus.wadi.servicespace.admin.AdminServiceSpace
 
-class ListServiceSpaceController extends AbstractAdminServiceSpaceController {
+class ListServiceSpaceController extends AbstractTargetServiceSpaceController {
 
 	def index = {
 	    redirect(action:list)

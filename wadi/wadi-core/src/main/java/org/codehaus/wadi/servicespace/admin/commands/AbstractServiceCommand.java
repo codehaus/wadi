@@ -15,9 +15,9 @@
  */
 package org.codehaus.wadi.servicespace.admin.commands;
 
-import java.util.Iterator;
 import java.util.Set;
 
+import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.servicespace.InvocationResultCombiner;
 import org.codehaus.wadi.servicespace.ServiceName;
@@ -47,17 +47,16 @@ public abstract class AbstractServiceCommand implements Command {
         this.serviceName = serviceName;
     }
 
-    public Object execute(LocalPeer localPeer, ServiceSpaceRegistry serviceSpaceRegistry) {
-        Set serviceSpaces = serviceSpaceRegistry.getServiceSpaces();
+    public Object execute(Dispatcher underlyingDispatcher, LocalPeer localPeer, ServiceSpaceRegistry registry) {
+        Set<ServiceSpace> serviceSpaces = registry.getServiceSpaces();
         
-        for (Iterator iter = serviceSpaces.iterator(); iter.hasNext();) {
-            ServiceSpace currServiceSpace = (ServiceSpace) iter.next();
-            if (currServiceSpace.getServiceSpaceName().equals(name)) {
-                Object service = getService(currServiceSpace);
+        for (ServiceSpace serviceSpace : serviceSpaces) {
+            if (serviceSpace.getServiceSpaceName().equals(name)) {
+                Object service = getService(serviceSpace);
                 if (null == service) {
                     return null;
                 }
-                return execute(localPeer, currServiceSpace, service);
+                return execute(localPeer, serviceSpace, service);
             }
         }
         

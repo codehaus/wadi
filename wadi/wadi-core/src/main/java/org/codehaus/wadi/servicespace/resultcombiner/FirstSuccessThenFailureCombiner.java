@@ -31,14 +31,13 @@ public class FirstSuccessThenFailureCombiner implements InvocationResultCombiner
     protected FirstSuccessThenFailureCombiner() {
     }
     
-    public InvocationResult combine(Collection invocationResults) {
+    public InvocationResult combine(Collection<InvocationResult> invocationResults) {
         if (null == invocationResults || invocationResults.isEmpty()) {
             throw new IllegalArgumentException("No InvocationResults are provided");
         }
         
         InvocationResult firstFailure = null;
-        for (Iterator iter = invocationResults.iterator(); iter.hasNext();) {
-            InvocationResult result = (InvocationResult) iter.next();
+        for (InvocationResult result : invocationResults) {
             if (result.isSuccess()) {
                 if (shouldReturn(result)) {
                     return result;

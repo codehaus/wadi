@@ -17,7 +17,6 @@ package org.codehaus.wadi.servicespace.resultcombiner;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 import org.codehaus.wadi.servicespace.InvocationResult;
@@ -33,13 +32,12 @@ public class SuccessfullSetResultCombiner implements InvocationResultCombiner {
     protected SuccessfullSetResultCombiner() {
     }
 
-    public InvocationResult combine(Collection invocationResults) {
+    public InvocationResult combine(Collection<InvocationResult> invocationResults) {
         Set results = new HashSet();
         
-        for (Iterator iter = invocationResults.iterator(); iter.hasNext();) {
-            InvocationResult invocationResult = (InvocationResult) iter.next();
-            if (invocationResult.isSuccess()) {
-                Set tmpResults = (Set) invocationResult.getResult();
+        for (InvocationResult result : invocationResults) {
+            if (result.isSuccess()) {
+                Set tmpResults = (Set) result.getResult();
                 if (null != tmpResults) {
                     results.addAll(tmpResults);
                 }

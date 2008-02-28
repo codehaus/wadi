@@ -19,10 +19,10 @@
 	</tr>
 	<g:each in="${sessions}" var="sessionInfo">
 		<tr>
-			<td>${sessionInfo.getName()}</td>
-			<td>${sessionInfo.getContextualiserName()}</td>
-			<td>${sessionInfo.getContextualiserIndex()}</td>
-			<td>${sessionInfo.getHostingPeer().getName()}</td>
+			<td>${sessionInfo.name}</td>
+			<td>${sessionInfo.contextualiserName}</td>
+			<td>${sessionInfo.contextualiserIndex}</td>
+			<td>${sessionInfo.hostingPeer.name}</td>
 		</tr>
 	</g:each>
 </table>

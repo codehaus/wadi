@@ -17,6 +17,7 @@ package org.codehaus.wadi.servicespace.admin;
 
 import java.io.Serializable;
 
+import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.servicespace.InvocationResultCombiner;
 import org.codehaus.wadi.servicespace.basic.ServiceSpaceRegistry;
@@ -26,7 +27,7 @@ import org.codehaus.wadi.servicespace.basic.ServiceSpaceRegistry;
  * @version $Revision: 1538 $
  */
 public interface Command extends Serializable {
-    Object execute(LocalPeer localPeer, ServiceSpaceRegistry serviceSpaceRegistry);
+    Object execute(Dispatcher underlyingDispatcher, LocalPeer localPeer, ServiceSpaceRegistry registry);
     
     InvocationResultCombiner getInvocationResultCombiner();
 }

@@ -31,10 +31,10 @@ import org.codehaus.wadi.servicespace.ServiceSpaceNotFoundException;
  * @version $Revision: 1538 $
  */
 public class BasicServiceSpaceRegistry implements ServiceSpaceRegistry {
-    private final Map nameToServiceSpace;
+    private final Map<ServiceSpaceName, ServiceSpace> nameToServiceSpace;
     
     public BasicServiceSpaceRegistry() {
-        nameToServiceSpace = new HashMap();
+        nameToServiceSpace = new HashMap<ServiceSpaceName, ServiceSpace>();
     }
 
     public void register(ServiceSpace serviceSpace) throws ServiceSpaceAlreadyRegisteredException {
@@ -68,9 +68,9 @@ public class BasicServiceSpaceRegistry implements ServiceSpaceRegistry {
         return serviceSpace;
     }
     
-    public Set getServiceSpaces() {
+    public Set<ServiceSpace> getServiceSpaces() {
         synchronized (nameToServiceSpace) {
-            return new HashSet(nameToServiceSpace.values());
+            return new HashSet<ServiceSpace>(nameToServiceSpace.values());
         }
     }
     

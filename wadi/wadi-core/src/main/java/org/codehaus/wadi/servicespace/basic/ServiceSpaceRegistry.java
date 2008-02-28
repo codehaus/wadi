@@ -35,5 +35,5 @@ public interface ServiceSpaceRegistry {
 
     ServiceSpace getServiceSpace(ServiceSpaceName serviceSpaceName) throws ServiceSpaceNotFoundException;
 
-    Set getServiceSpaces();
+    Set<ServiceSpace> getServiceSpaces();
 }

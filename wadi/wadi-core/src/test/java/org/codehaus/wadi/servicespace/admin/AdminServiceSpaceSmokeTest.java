@@ -28,6 +28,7 @@ import org.codehaus.wadi.core.manager.Manager;
 import org.codehaus.wadi.core.reflect.base.DeclaredMemberFilter;
 import org.codehaus.wadi.core.reflect.jdk.JDKClassIndexerRegistry;
 import org.codehaus.wadi.core.util.SimpleStreamer;
+import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.vm.VMBroker;
@@ -165,14 +166,14 @@ public class AdminServiceSpaceSmokeTest extends TestCase {
 
     private static class CountResultsCommand implements Command {
 
-        public Object execute(LocalPeer localPeer, ServiceSpaceRegistry serviceSpaceRegistry) {
+        public Object execute(Dispatcher underlyingDispatcher, LocalPeer localPeer, ServiceSpaceRegistry registry) {
             return Integer.valueOf(1);
         }
         
         public InvocationResultCombiner getInvocationResultCombiner() {
             return new InvocationResultCombiner() {
 
-                public InvocationResult combine(Collection invocationResults) {
+                public InvocationResult combine(Collection<InvocationResult> invocationResults) {
                     return new InvocationResult(Integer.valueOf(invocationResults.size()));
                 }
                 

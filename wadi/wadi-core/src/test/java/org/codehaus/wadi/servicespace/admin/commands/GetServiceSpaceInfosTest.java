@@ -56,7 +56,7 @@ public class GetServiceSpaceInfosTest extends RMockTestCase {
         startVerification();
         
         GetServiceSpaceInfos command = new GetServiceSpaceInfos();
-        Set actualServiceSpaceNames = (Set) command.execute(localPeer, serviceSpaceRegistry);
+        Set actualServiceSpaceNames = (Set) command.execute(null, localPeer, serviceSpaceRegistry);
         
         Set expectedServiceSpaceInfos = new HashSet();
         expectedServiceSpaceInfos.add(new ServiceSpaceInfo(localPeer, name1));

@@ -50,7 +50,10 @@ public class AdminServiceSpace extends BasicServiceSpace {
         
         commandEndPoint = new ClusterCommandEndPoint(this);
         
-        CommandEndPoint peerCommandEndPoint = new BasicCommandEndPoint(this, getServiceSpaceRegistry());
+        CommandEndPoint peerCommandEndPoint = new BasicCommandEndPoint(underlyingDispatcher,
+            this,
+            getServiceSpaceRegistry());
+        
         try {
             getServiceRegistry().register(CommandEndPoint.NAME, peerCommandEndPoint);
         } catch (ServiceAlreadyRegisteredException e) {
