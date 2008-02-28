@@ -15,6 +15,7 @@
  */
 package org.codehaus.wadi.servicespace.admin;
 
+import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.servicespace.ServiceSpace;
 import org.codehaus.wadi.servicespace.basic.ServiceSpaceRegistry;
@@ -24,20 +25,28 @@ import org.codehaus.wadi.servicespace.basic.ServiceSpaceRegistry;
  * @version $Revision: 1538 $
  */
 public class BasicCommandEndPoint implements CommandEndPoint {
+    private final Dispatcher underlyingDispatcher;
     private final ServiceSpaceRegistry serviceSpaceRegistry;
     private final LocalPeer localPeer;
     
-    public BasicCommandEndPoint(ServiceSpace serviceSpace, ServiceSpaceRegistry serviceSpaceRegistry) {
-        if (null == serviceSpaceRegistry) {
+    public BasicCommandEndPoint(Dispatcher underlyingDispatcher,
+        ServiceSpace serviceSpace,
+        ServiceSpaceRegistry serviceSpaceRegistry) {
+        if (null == underlyingDispatcher) {
+            throw new IllegalArgumentException("underlyingDispatcher is required");
+        } else if (null == serviceSpace) {
+            throw new IllegalArgumentException("serviceSpace is required");
+        } else if (null == serviceSpaceRegistry) {
             throw new IllegalArgumentException("serviceSpaceRegistry is required");
         }
+        this.underlyingDispatcher = underlyingDispatcher;
         this.serviceSpaceRegistry = serviceSpaceRegistry;
         
         localPeer = serviceSpace.getLocalPeer();
     }
 
     public Object execute(Command command) {
-        return command.execute(localPeer, serviceSpaceRegistry);
+        return command.execute(underlyingDispatcher, localPeer, serviceSpaceRegistry);
     }
 
     public void start() throws Exception {
@@ -45,5 +54,5 @@ public class BasicCommandEndPoint implements CommandEndPoint {
 
     public void stop() throws Exception {
     }
-    
+
 }

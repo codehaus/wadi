@@ -1,7 +1,7 @@
 import org.codehaus.wadi.servicespace.admin.commands.GetContextualiserInfoStack
 import org.codehaus.wadi.servicespace.ServiceSpaceName
 
-class RetrieveContextualiserStackController extends AbstractAdminServiceSpaceController {
+class RetrieveContextualiserStackController extends AbstractTargetServiceSpaceController {
 
 	def getContextualiserStack = {
 	    def serviceSpaceName = params['serviceSpaceName']

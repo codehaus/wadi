@@ -17,14 +17,23 @@
  * under the License.
  */
 
-package org.codehaus.wadi.servicespace;
+package org.codehaus.wadi.servicespace.admin.commands;
 
-import java.util.Collection;
+import org.codehaus.wadi.group.Dispatcher;
+import org.codehaus.wadi.group.LocalPeer;
+import org.codehaus.wadi.servicespace.basic.ServiceSpaceRegistry;
 
 /**
- *
- * @version $Rev:$ $Date:$
+ * 
+ * @version $Revision: 1538 $
  */
-public interface InvocationResultCombiner {
-    InvocationResult combine(Collection<InvocationResult> invocationResults);
+public class CountingGlobalEnvelopeCommand extends AbstractCountingCommand {
+    
+    @Override
+    protected Dispatcher getDispatcher(Dispatcher underlyingDispatcher,
+        LocalPeer localPeer,
+        ServiceSpaceRegistry registry) {
+        return underlyingDispatcher;
+    }
+    
 }

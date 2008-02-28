@@ -1,7 +1,7 @@
 import org.codehaus.wadi.servicespace.admin.commands.GetSessionInfos
 import org.codehaus.wadi.servicespace.ServiceSpaceName
 
-class ListSessionController extends AbstractAdminServiceSpaceController {
+class ListSessionController extends AbstractTargetServiceSpaceController {
 
 	def listSession = {
 	    retrieveSessions(params, session, 'listSession')

@@ -18,6 +18,7 @@ package org.codehaus.wadi.group;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -28,6 +29,8 @@ public interface Dispatcher extends EnvelopeListener {
 
     void removeInterceptor(EnvelopeInterceptor interceptor);
     
+    List<EnvelopeInterceptor> getInterceptors();
+
     void register(ServiceEndpoint internalDispatcher);
 
     void unregister(ServiceEndpoint internalDispatcher, int nbAttemp, long delayMillis);

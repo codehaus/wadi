@@ -19,6 +19,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.servicespace.InvocationResultCombiner;
 import org.codehaus.wadi.servicespace.ServiceSpace;
@@ -33,13 +34,12 @@ import org.codehaus.wadi.servicespace.resultcombiner.SuccessfullSetResultCombine
  */
 public class GetServiceSpaceInfos implements Command {
 
-    public Object execute(LocalPeer localPeer, ServiceSpaceRegistry serviceSpaceRegistry) {
-        Set serviceSpaces = serviceSpaceRegistry.getServiceSpaces();
+    public Object execute(Dispatcher underlyingDispatcher, LocalPeer localPeer, ServiceSpaceRegistry registry) {
+        Set<ServiceSpace> serviceSpaces = registry.getServiceSpaces();
         
-        Set serviceSpaceInfos = new HashSet();
-        for (Iterator iter = serviceSpaces.iterator(); iter.hasNext();) {
-            ServiceSpace currServiceSpace = (ServiceSpace) iter.next();
-            serviceSpaceInfos.add(new ServiceSpaceInfo(localPeer, currServiceSpace.getServiceSpaceName()));
+        Set<ServiceSpaceInfo> serviceSpaceInfos = new HashSet<ServiceSpaceInfo>();
+        for (ServiceSpace serviceSpace : serviceSpaces) {
+            serviceSpaceInfos.add(new ServiceSpaceInfo(localPeer, serviceSpace.getServiceSpaceName()));
         }
         return serviceSpaceInfos;
     }

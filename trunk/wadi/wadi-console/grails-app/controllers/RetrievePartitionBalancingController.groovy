@@ -1,7 +1,7 @@
 import org.codehaus.wadi.servicespace.admin.commands.GetPartitionBalancingInfos
 import org.codehaus.wadi.servicespace.ServiceSpaceName
 
-class RetrievePartitionBalancingController extends AbstractAdminServiceSpaceController {
+class RetrievePartitionBalancingController extends AbstractTargetServiceSpaceController {
 
 	def getPartitionBalancing = {
 	    def serviceSpaceName = params['serviceSpaceName']

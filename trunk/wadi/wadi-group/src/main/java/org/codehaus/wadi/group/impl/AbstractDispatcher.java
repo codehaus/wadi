@@ -17,6 +17,7 @@
 package org.codehaus.wadi.group.impl;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -72,6 +73,10 @@ public abstract class AbstractDispatcher implements Dispatcher {
     public void removeInterceptor(EnvelopeInterceptor interceptor) {
         interceptors.remove(interceptor);
         interceptor.unregisterLoopbackEnvelopeListener(this);
+    }
+    
+    public List<EnvelopeInterceptor> getInterceptors() {
+        return new ArrayList<EnvelopeInterceptor>(interceptors);
     }
     
 	public void register(ServiceEndpoint msgDispatcher) {
