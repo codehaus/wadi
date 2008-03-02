@@ -1,9 +1,10 @@
 <!--
 var AutoRefreshManager = Class.create();
 AutoRefreshManager.prototype = {
-  initialize: function(handle, track) {
+  initialize: function(handle, track, refreshFunction) {
     this.handle = handle;
     this.track = track;
+    this.refreshFunction = refreshFunction;
     this.periodicalExecuter = null;
   },
 
@@ -26,15 +27,19 @@ AutoRefreshManager.prototype = {
     }
     if (pauseTime > 0) {
       $(seconds).innerHTML = "Auto-refresh every " + pauseTime + " secs.";
-      var refresh = this.refresh.bind(this);
+      var refresh = this.refresh.bind(this, pauseTime);
       this.periodicalExecuter = new PeriodicalExecuter(refresh, pauseTime);
     } else {
       $(seconds).innerHTML = "Use this slider to auto-refresh";
     }
   },
   
-  refresh: function() {
-    document.refreshForm.refresh.click();
+  refresh: function(pauseTime) {
+    if (this.refreshFunction) {
+      this.refreshFunction(pauseTime);
+    } else {
+      document.refreshForm.refresh.click();
+    }
   }
 }
 -->
