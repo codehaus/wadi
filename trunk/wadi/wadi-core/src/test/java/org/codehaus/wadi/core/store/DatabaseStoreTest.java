@@ -188,42 +188,6 @@ public class DatabaseStoreTest extends RMockTestCase {
         assertEquals(0, actualBody.length);
     }
     
-    public void testUpdate() throws Exception {
-        Motable motable = (Motable) mock(Motable.class);
-
-        beginSection(s.ordered("Update"));
-        Connection connection = dataSource.getConnection();
-        PreparedStatement ps = connection.prepareStatement("UPDATE TABLE_NAME SET last_accessed_time = ?, max_inactive_interval = ?, body = ? WHERE name = ?");
-        
-        motable.getLastAccessedTime();
-        modify().returnValue(1);
-        ps.setLong(1, 1);
-        
-        motable.getMaxInactiveInterval();
-        modify().returnValue(2);
-        ps.setInt(2, 2);
-        
-        motable.getBodyAsByteArray();
-        modify().returnValue(new byte[] {'1'});
-        ps.setBinaryStream(3, null, 1);
-        modify().args(is.AS_RECORDED, is.ANYTHING, is.AS_RECORDED);
-        
-        motable.getName();
-        modify().returnValue("name");
-        ps.setString(4, "name");
-        
-        ps.executeUpdate();
-        modify().returnValue(1);
-
-        ps.close();
-        connection.close();
-        endSection();
-        startVerification();
-        
-        DatabaseStore store = new DatabaseStore(dataSource, "TABLE_NAME", false, false);
-        store.update(motable);
-    }
-    
     public void testInsert() throws Exception {
         Motable motable = (Motable) mock(Motable.class);
 

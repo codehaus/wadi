@@ -35,8 +35,6 @@ public interface Store {
     
     void insert(Motable motable) throws Exception;
     
-    void update(Motable motable) throws Exception;
-
     void delete(Motable motable);
     
     byte[] loadBody(Motable motable) throws Exception;

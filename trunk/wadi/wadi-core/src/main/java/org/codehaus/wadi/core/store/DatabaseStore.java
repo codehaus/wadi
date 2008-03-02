@@ -156,35 +156,6 @@ public class DatabaseStore implements Store {
         }
     }
 
-    public void update(Motable motable) throws Exception {
-        Connection conn = null;
-        PreparedStatement ps = null;
-        try {
-            conn = getConnection();
-            ps = conn.prepareStatement(updateMotableSQL);
-            int i = 1;
-            ps.setLong(i++, motable.getLastAccessedTime());
-            ps.setInt(i++, motable.getMaxInactiveInterval());
-            byte[] body = motable.getBodyAsByteArray();
-            ps.setBinaryStream(i++, new ByteArrayInputStream(body), body.length);
-            String name = motable.getName();
-            ps.setString(i++, name);
-            int nbUpdate = ps.executeUpdate();
-            if (1 != nbUpdate) {
-                throw new AssertionError("[" + nbUpdate + "] updated for Motable [" + name + "]");
-            }
-            if (log.isTraceEnabled()) {
-                log.trace("Motable [" + name + "] has been updated");
-            }
-        } catch (SQLException e) {
-            log.warn("See nested", e);
-            throw e;
-        } finally {
-            closeStatement(ps);
-            closeConnection(conn);
-        }
-    }
-
     public void insert(Motable motable) throws Exception {
         Connection conn = null;
         PreparedStatement ps = null;
