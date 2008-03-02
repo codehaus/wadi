@@ -1,5 +1,5 @@
 <div id="banner">
-	<div id="bannerLeft"><img src="../images/wadi/wadi.gif"/></div>
+	<div id="bannerLeft"><img src="${createLinkTo(dir:'images/wadi',file:'wadi.gif')}"/></div>
 </div>
 
 <div id="breadcrumbs">
