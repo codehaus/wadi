@@ -116,10 +116,6 @@ public class DiscStore implements Store {
         return new BasicStoreMotable(this);
     }
 
-    public boolean getReusingStore() {
-        return _reusingStore;
-    }
-
     public void delete(Motable motable) {
         File file = new File(_dir, motable.getName() + _streamer.getSuffixWithDot());
         if (file.exists()) {
@@ -196,13 +192,6 @@ public class DiscStore implements Store {
                 _log.warn("load exclusive disc problem: " + file, e);
             }
         }
-    }
-
-    public void update(Motable motable) throws Exception {
-        File file = new File(_dir, motable.getName() + _streamer.getSuffixWithDot());
-        file.delete();
-
-        insert(motable);
     }
 
 }
