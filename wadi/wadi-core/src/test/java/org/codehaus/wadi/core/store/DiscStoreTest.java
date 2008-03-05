@@ -33,7 +33,7 @@ import com.agical.rmock.extension.junit.RMockTestCase;
  * @version $Revision$
  */
 public class DiscStoreTest extends RMockTestCase {
-    private static final File BASE_DIR = new File(System.getProperty("basedir", System.getProperty("user.dir")));
+    private static final File BASE_DIR = new File(System.getProperty("basedir", System.getProperty("user.dir")), "target");
     
     public void testDiscMotables() throws Exception {
         Store store = new DiscStore(new SimpleStreamer(), BASE_DIR, false);
