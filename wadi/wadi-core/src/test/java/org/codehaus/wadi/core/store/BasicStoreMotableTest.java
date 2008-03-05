@@ -42,12 +42,15 @@ public class BasicStoreMotableTest extends RMockTestCase {
         assertSame(body, actualBody);
     }
     
-    public void testSetBodyAdByteArray() throws Exception {
+    public void testSetBodyAsByteArray() throws Exception {
         store.insert(storeMotable);
+        store.loadBody(storeMotable);
+        
         startVerification();
         
         byte[] body = new byte[0];
         storeMotable.setBodyAsByteArray(body);
+        storeMotable.getBodyAsByteArray();
     }
     
     public void testDestroy() throws Exception {

@@ -48,6 +48,7 @@ public class BasicStoreMotable extends AbstractMotable {
     public void setBodyAsByteArray(byte[] body) throws Exception {
         this.body = body;
         store.insert(this);
+        this.body = null;
     }
 
     public void destroy() throws Exception {
