@@ -49,6 +49,11 @@ public class ExclusiveStoreContextualiser extends AbstractExclusiveContextualise
         emoter = new BaseMappedEmoter(map);
 	}
 
+	@Override
+    public void promoteToExclusive(Immoter immoter) {
+        next.promoteToExclusive(immoter);
+    }
+	
 	public Immoter getImmoter() {
         return immoter;
     }

@@ -35,7 +35,6 @@ import org.codehaus.wadi.core.util.Streamer;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.replication.manager.basic.ObjectStateHandler;
 import org.codehaus.wadi.replication.strategy.BackingStrategyFactory;
-import org.codehaus.wadi.servicespace.ServiceAlreadyRegisteredException;
 import org.codehaus.wadi.servicespace.ServiceSpaceName;
 
 
@@ -67,7 +66,7 @@ public class AOPStackContext extends StackContext {
     }
     
     @Override
-    public void build() throws ServiceAlreadyRegisteredException {
+    public void build() throws Exception {
         replacer = new CompoundReplacer();
         classIndexerRegistry = newClassIndexerRegistry();
 
