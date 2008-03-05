@@ -33,54 +33,59 @@ import org.codehaus.wadi.core.util.Streamer;
  * @version $Revision$
  */
 public class DiscStore implements Store {
-    private final Log _log = LogFactory.getLog(DiscStore.class);
+    private final Log log = LogFactory.getLog(DiscStore.class);
 
-    protected final Streamer _streamer;
-    protected final File _dir;
-    protected final boolean _reusingStore;
+    public static final String SESSION_STORE_DIR_NAME = "SessionStore";
+
+    protected final Streamer streamer;
+    protected final File sessionStoreDir;
     private final boolean accessOnLoad;
 
-    public DiscStore(Streamer streamer, File dir, boolean reusingStore, boolean accessOnLoad) throws Exception {
-        _streamer = streamer;
-        _dir = dir;
-        _reusingStore = reusingStore;
+    public DiscStore(Streamer streamer, File dir, boolean accessOnLoad) throws Exception {
+        if (null == streamer) {
+            throw new IllegalArgumentException("streamer is required");
+        } else if (null == dir) {
+            throw new IllegalArgumentException("dir is required");
+        }
+        this.streamer = streamer;
         this.accessOnLoad = accessOnLoad;
 
-        if (!dir.exists()) {
-            _log.info("Creating directory: " + _dir.getCanonicalPath());
-            if (!dir.mkdirs()) {
-                throw new IOException("Couldn't create directory " + _dir.getCanonicalPath());
+        sessionStoreDir = new File(dir, SESSION_STORE_DIR_NAME);
+        if (!sessionStoreDir.exists()) {
+            log.info("Creating directory: " + sessionStoreDir.getCanonicalPath());
+            if (!sessionStoreDir.mkdirs()) {
+                throw new IOException("Couldn't create directory " + sessionStoreDir.getAbsolutePath());
             }
         }
 
         try {
-            File.createTempFile("DiscStore_WriteTest", null, _dir).delete();
+            File.createTempFile("DiscStore_WriteTest", null, sessionStoreDir).delete();
         } catch (IOException e) {
-            _log.error("bad directory: " + _dir, e);
+            log.error("bad directory: " + sessionStoreDir, e);
             throw e;
         }
     }
 
     public void clean() {
-        File[] files = _dir.listFiles();
+        File[] files = sessionStoreDir.listFiles();
         for (int i = 0; i < files.length; i++) {
             files[i].delete();
         }
-        if (_log.isInfoEnabled()) {
-            _log.info("removed (exclusive disc): " + files.length + " files");
+        if (log.isInfoEnabled()) {
+            log.info("removed (exclusive disc): " + files.length + " files");
         }
     }
 
     public void load(Putter putter) {
         long time = System.currentTimeMillis();
-        String[] list = _dir.list();
-        int suffixLength = ".".length() + _streamer.getSuffix().length();
+        String[] list = sessionStoreDir.list();
+        int suffixLength = ".".length() + streamer.getSuffix().length();
         for (int i = 0; i < list.length; i++) {
             String name = list[i];
             String id = name.substring(0, name.length() - suffixLength);
             
             Motable motable = new BasicStoreMotable(this);
-            File file = new File(_dir, id + _streamer.getSuffixWithDot());
+            File file = new File(sessionStoreDir, id + streamer.getSuffixWithDot());
             FileInputStream fis = null;
             ObjectInputStream ois = null;
             try {
@@ -98,18 +103,18 @@ public class DiscStore implements Store {
                     putter.put(id, motable);
                 }
             } catch (Exception e) {
-                _log.warn("load (exclusive disc) failed [" + file + "]", e);
+                log.warn("load (exclusive disc) failed [" + file + "]", e);
             } finally {
                 try {
                     if (null != ois) {
                         ois.close();
                     }
                 } catch (IOException e) {
-                    _log.warn("load (exclusive disc) problem [" + file + "]", e);
+                    log.warn("load (exclusive disc) problem [" + file + "]", e);
                 }
             }
         }
-        _log.info("loaded (exclusive disc): " + list.length);
+        log.info("loaded (exclusive disc): " + list.length);
     }
 
     public Motable create() {
@@ -117,17 +122,17 @@ public class DiscStore implements Store {
     }
 
     public void delete(Motable motable) {
-        File file = new File(_dir, motable.getName() + _streamer.getSuffixWithDot());
+        File file = new File(sessionStoreDir, motable.getName() + streamer.getSuffixWithDot());
         if (file.exists()) {
             file.delete();
-            if (_log.isTraceEnabled()) {
-                _log.trace("removed (exclusive disc) [" + file + "]");
+            if (log.isTraceEnabled()) {
+                log.trace("removed (exclusive disc) [" + file + "]");
             }
         }
     }
 
     public void insert(Motable motable) throws Exception {
-        File file = new File(_dir, motable.getName() + _streamer.getSuffixWithDot());
+        File file = new File(sessionStoreDir, motable.getName() + streamer.getSuffixWithDot());
 
         ObjectOutputStream oos = null;
         FileOutputStream fos = null;
@@ -145,11 +150,11 @@ public class DiscStore implements Store {
             if (bodyAsByteArray.length > 0) {
                 fos.write(bodyAsByteArray);
             }
-            if (_log.isTraceEnabled()) {
-                _log.trace("stored disc motable): " + file + ": " + bodyAsByteArray.length + " bytes");
+            if (log.isTraceEnabled()) {
+                log.trace("stored disc motable): " + file + ": " + bodyAsByteArray.length + " bytes");
             }
         } catch (Exception e) {
-            _log.warn("store exclusive disc failed. File [" + file + "]", e);
+            log.warn("store exclusive disc failed. File [" + file + "]", e);
             throw e;
         } finally {
             try {
@@ -157,13 +162,13 @@ public class DiscStore implements Store {
                     oos.close();
                 }
             } catch (IOException e) {
-                _log.warn("store exclusive disc) problem. File [" + file + "]", e);
+                log.warn("store exclusive disc) problem. File [" + file + "]", e);
             }
         }
     }
 
     public byte[] loadBody(Motable motable) throws Exception {
-        File file = new File(_dir, motable.getName() + _streamer.getSuffixWithDot());
+        File file = new File(sessionStoreDir, motable.getName() + streamer.getSuffixWithDot());
 
         FileInputStream fis = null;
         try {
@@ -176,12 +181,12 @@ public class DiscStore implements Store {
             int bodyLength = ois.readInt();
             byte[] body = new byte[bodyLength];
             fis.read(body);
-            if (_log.isTraceEnabled())  {
-                _log.trace("loaded exclusive disc: " + file + ": " + bodyLength + " bytes");
+            if (log.isTraceEnabled())  {
+                log.trace("loaded exclusive disc: " + file + ": " + bodyLength + " bytes");
             }
             return body;
         } catch (Exception e) {
-            _log.error("load exclusive disc failed: " + file, e);
+            log.error("load exclusive disc failed: " + file, e);
             throw e;
         } finally {
             try {
@@ -189,7 +194,7 @@ public class DiscStore implements Store {
                     fis.close();
                 }
             } catch (IOException e) {
-                _log.warn("load exclusive disc problem: " + file, e);
+                log.warn("load exclusive disc problem: " + file, e);
             }
         }
     }
