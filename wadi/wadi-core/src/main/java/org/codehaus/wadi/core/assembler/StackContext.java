@@ -15,6 +15,7 @@
  */
 package org.codehaus.wadi.core.assembler;
 
+import java.io.File;
 import java.util.Timer;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -23,6 +24,7 @@ import org.codehaus.wadi.core.OswegoConcurrentMotableMap;
 import org.codehaus.wadi.core.contextualiser.ClusterContextualiser;
 import org.codehaus.wadi.core.contextualiser.Contextualiser;
 import org.codehaus.wadi.core.contextualiser.DummyContextualiser;
+import org.codehaus.wadi.core.contextualiser.ExclusiveStoreContextualiser;
 import org.codehaus.wadi.core.contextualiser.HashingCollapser;
 import org.codehaus.wadi.core.contextualiser.HybridRelocater;
 import org.codehaus.wadi.core.contextualiser.MemoryContextualiser;
@@ -47,6 +49,7 @@ import org.codehaus.wadi.core.session.DistributableValueFactory;
 import org.codehaus.wadi.core.session.SessionFactory;
 import org.codehaus.wadi.core.session.ValueFactory;
 import org.codehaus.wadi.core.session.ValueHelperRegistry;
+import org.codehaus.wadi.core.store.DiscStore;
 import org.codehaus.wadi.core.store.Store;
 import org.codehaus.wadi.core.util.SimpleStreamer;
 import org.codehaus.wadi.core.util.Streamer;
@@ -100,6 +103,8 @@ public class StackContext {
     private final int sweepInterval;
     private final int numPartitions;
     private final BackingStrategyFactory backingStrategyFactory;
+    private File discStoreDir;
+    private int numberOfSecondsInMemoryContextualiser;
     private boolean disableReplication;
     private Store sharedStore;
     
@@ -165,7 +170,7 @@ public class StackContext {
         this.backingStrategyFactory = backingStrategyFactory;
     }
 
-    public void build() throws ServiceAlreadyRegisteredException {
+    public void build() throws Exception {
         simplePartitionManagerTiming = new SimplePartitionManagerTiming();
         timer = new Timer();
         
@@ -212,6 +217,9 @@ public class StackContext {
         contextualiser = newCollapserContextualiser(contextualiser, memoryMap);
         stackExplorer.pushContextualiser(contextualiser);
 
+        contextualiser = newDiscStoreContextualiser(streamer, contextualiser);
+        stackExplorer.pushContextualiser(contextualiser);
+        
         contextualiser = newMemoryContextualiser(contextualiser, memoryMap);
         stackExplorer.pushContextualiser(contextualiser);
 
@@ -238,6 +246,35 @@ public class StackContext {
         registerStateManager();
         registerClusteredManager(manager);
         // End of implementation note.
+    }
+
+    protected Contextualiser newDiscStoreContextualiser(Streamer streamer, Contextualiser contextualiser)
+            throws Exception {
+        int numberOfSecondsInDiscStoreContextualiser;
+        if (0 == numberOfSecondsInMemoryContextualiser) {
+            numberOfSecondsInDiscStoreContextualiser = sessionTimeout / 2;
+        } else {
+            numberOfSecondsInDiscStoreContextualiser = sessionTimeout - numberOfSecondsInMemoryContextualiser;
+        }
+        
+        if (0 == numberOfSecondsInDiscStoreContextualiser) {
+            return contextualiser;
+        }
+        
+        DiscStore store = newDiscStore(streamer);
+        return new ExclusiveStoreContextualiser(contextualiser,
+            true,
+            new AbsoluteEvicter(sweepInterval, true, numberOfSecondsInDiscStoreContextualiser),
+            new OswegoConcurrentMotableMap(),
+            store);
+    }
+
+    protected DiscStore newDiscStore(Streamer streamer) throws Exception {
+        if (null == discStoreDir) {
+            String tmpDir = System.getProperty("java.io.tmpdir");
+            discStoreDir = new File(tmpDir);
+        }
+        return new DiscStore(streamer, discStoreDir, true);
     }
 
     protected ClassIndexerRegistry newServiceClassIndexerRegistry() {
@@ -389,7 +426,10 @@ public class StackContext {
     }
     
     protected Contextualiser newMemoryContextualiser(Contextualiser next, ConcurrentMotableMap mmap) {
-        Evicter mevicter = new AbsoluteEvicter(sweepInterval, true, sessionTimeout);
+        if (0 == numberOfSecondsInMemoryContextualiser) {
+            numberOfSecondsInMemoryContextualiser = sessionTimeout / 2;
+        }
+        Evicter mevicter = new AbsoluteEvicter(sweepInterval, true, numberOfSecondsInMemoryContextualiser);
         return newMemoryContextualiser(next, mmap, mevicter);
     }
 
@@ -468,6 +508,19 @@ public class StackContext {
 
     public void setSharedStore(Store sharedStore) {
         this.sharedStore = sharedStore;
+    }
+
+    public void setDiscStoreDir(File discStoreDir) {
+        this.discStoreDir = discStoreDir;
+    }
+
+    public void setNumberOfSecondsInMemoryContextualiser(int numberOfSecondsInMemoryContextualiser) {
+        if (numberOfSecondsInMemoryContextualiser < 1) {
+            throw new IllegalStateException("numberOfSecondsInMemoryContextualiser must be greater than 0");
+        } else if (numberOfSecondsInMemoryContextualiser > sessionTimeout) {
+            throw new IllegalStateException("numberOfSecondsInMemoryContextualiser is greater than sessionTimeout!");
+        }
+        this.numberOfSecondsInMemoryContextualiser = numberOfSecondsInMemoryContextualiser;
     }
 
 }
