@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<project
+  xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"
+  >
+
+  <parent>
+    <groupId>org.codehaus.wadi</groupId>
+    <artifactId>wadi</artifactId>
+    <relativePath>../pom.xml</relativePath>
+    <version>2.0-M9</version>
+  </parent>
+
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>wadi-console</artifactId>
+  <packaging>war</packaging>
+  <name>WADI :: Console</name>
+  <description>WADI Console</description>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.codehaus.wadi</groupId>
+      <artifactId>wadi-group</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.wadi</groupId>
+      <artifactId>wadi-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.wadi</groupId>
+      <artifactId>wadi-tribes</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+    	<groupId>org.apache.maven.plugins</groupId>
+    	<artifactId>maven-dependency-plugin</artifactId>
+    	<executions>
+    	  <execution>
+            <id>grails-copy-to-lib</id>
+            <phase>compile</phase>
+            <goals>
+                <goal>copy-dependencies</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${basedir}/lib</outputDirectory>
+            </configuration>
+    	  </execution>
+    	</executions>
+      </plugin>
+      
+      <plugin>
+    	<groupId>org.apache.maven.plugins</groupId>
+    	<artifactId>maven-antrun-plugin</artifactId>
+    	<executions>
+    	  <execution>
+            <id>grails-war</id>
+            <phase>compile</phase>
+            <goals>
+                <goal>run</goal>
+            </goals>
+            <configuration>
+              <tasks>
+                <exec
+                  dir="${basedir}"
+                  executable="${env.GRAILS_HOME}/bin/grails"
+                  failonerror="true">
+                  <arg line="war" />            
+                </exec>
+                <mkdir dir="${basedir}/target/${project.artifactId}-${project.version}"/>
+                <unjar src="${basedir}/${project.artifactId}-${project.version}.war" dest="${basedir}/target/${project.artifactId}-${project.version}"/>
+                
+                <mkdir dir="${basedir}/target/clover/${project.artifactId}-${project.version}-clover"/>
+                <unjar src="${basedir}/${project.artifactId}-${project.version}.war" dest="${basedir}/target/clover/${project.artifactId}-${project.version}-clover"/>
+              </tasks>
+            </configuration>
+    	  </execution>
+    	</executions>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>
