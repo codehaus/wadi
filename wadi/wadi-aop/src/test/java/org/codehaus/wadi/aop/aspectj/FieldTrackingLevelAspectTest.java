@@ -50,7 +50,7 @@ public class FieldTrackingLevelAspectTest extends RMockTestCase {
         startVerification();
         
         FieldLevelTrackingClass instance = new FieldLevelTrackingClass();
-        instance.test = 1;
+        instance.setTest(1);
     }
 
     public void testSetTransientField() throws Exception {
@@ -79,17 +79,44 @@ public class FieldTrackingLevelAspectTest extends RMockTestCase {
         
         SubClass instance = new SubClass();
         instance.test2 = 1;
-        instance.test = 1;
+        instance.setTest(1);
 
         instance.transientTest = 2;
         instance.transientTest2 = 2;
     }
 
+    public void testSubClassFieldHidesParentClassField() throws Exception {
+        instanceTracker.track(0, SubClass2.class.getConstructor(new Class[0]), null);
+        modify().args(is.AS_RECORDED, is.AS_RECORDED, is.ANYTHING);
+        
+        Field test2Field = SubClass2.class.getDeclaredField("test");
+        Integer fieldValue = new Integer(1);
+        instanceTracker.track(1, test2Field, fieldValue);
+        instanceTracker.recordFieldUpdate(test2Field, fieldValue);
+        
+        Field testField = FieldLevelTrackingClass.class.getDeclaredField("test");
+        instanceTracker.track(2, testField, fieldValue);
+        instanceTracker.recordFieldUpdate(testField, fieldValue);
+        
+        startVerification();
+        
+        SubClass2 instance = new SubClass2();
+        instance.setTestForSubClass(1);
+        instance.setTest(1);
+        
+        instance.transientTest = 2;
+        instance.transientTest2 = 2;
+    }
+    
     @ClusteredState(trackingLevel=TrackingLevel.FIELD)
     public static class FieldLevelTrackingClass {
-        protected int test;
+        private int test;
         
         protected transient int transientTest;
+        
+        public void setTest(int test) {
+            this.test = test;
+        }
     }
 
     public static class SubClass extends FieldLevelTrackingClass {
@@ -98,4 +125,14 @@ public class FieldTrackingLevelAspectTest extends RMockTestCase {
         protected transient int transientTest2;
     }
 
+    public static class SubClass2 extends FieldLevelTrackingClass {
+        private int test;
+        
+        protected transient int transientTest2;
+        
+        public void setTestForSubClass(int test) {
+            this.test = test;
+        }
+    }
+    
 }
