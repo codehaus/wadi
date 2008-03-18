@@ -12,8 +12,10 @@
         </moduleId>
     </environment>
 
+   <context-root>/wadi-webapp</context-root>
+
    <wadi:clustering-wadi>
-       <wadi:deltaReplication>true</wadi:deltaReplication>
+       <wadi:deltaReplication>false</wadi:deltaReplication>
    </wadi:clustering-wadi>
 
 </web-app>
