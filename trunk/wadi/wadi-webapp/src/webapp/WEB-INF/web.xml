@@ -5,12 +5,6 @@
 
   <distributable/>
 
-  <context-param>
-    <param-name>org.mortbay.jetty.servlet.SessionPath</param-name>
-    <param-value>/wadi</param-value>
-    <!-- <description>create session cookies with given path</description> --> <!-- upsets geronimo-1.0.0 -->
-  </context-param>
-
 <!-- [INSERT FRAGMENT HERE] -->
 
 </web-app>
