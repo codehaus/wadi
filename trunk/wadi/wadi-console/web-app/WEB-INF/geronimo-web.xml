@@ -26,4 +26,6 @@
 
     </environment>
 
+    <context-root>/wadi-console</context-root>
+
 </web-app>
