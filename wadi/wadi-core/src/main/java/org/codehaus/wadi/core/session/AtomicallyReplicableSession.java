@@ -86,7 +86,10 @@ public class AtomicallyReplicableSession extends AbstractReplicableSession {
      */
     public synchronized Object getState(Object key) {
         Object tmp = super.getState(key);
-        dirty = (tmp != null) && semantics.getAttributeDirties();
+        if (dirty) {
+            return tmp;
+        }
+        dirty = null != tmp && semantics.getAttributeDirties();
         return tmp;
     };
 
