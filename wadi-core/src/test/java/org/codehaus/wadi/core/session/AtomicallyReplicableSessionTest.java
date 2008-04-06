@@ -97,4 +97,31 @@ public class AtomicallyReplicableSessionTest extends RMockTestCase {
         session.onEndProcessing();
     }
     
+    public void testGetStateNotDirtyWithUndefinedKey() throws Exception {
+        replicationManager.create(sessionName, session);
+        startVerification();
+        
+        session.onEndProcessing();
+        session.getState("key");
+        session.onEndProcessing();
+        assertFalse(session.isDirty());
+    }
+    
+    public void testGetStateDoesNotResetDirtyWithUndefinedKey() throws Exception {
+        replicationManager.create(sessionName, session);
+        replicationManager.update(sessionName, session);
+        replicationManager.update(sessionName, session);
+        startVerification();
+
+        session.onEndProcessing();
+
+        String key = "key";
+        session.addState(key, "value");
+        session.onEndProcessing();
+
+        session.getState(key);
+        session.getState("key2");
+        session.onEndProcessing();
+    }
+    
 }
