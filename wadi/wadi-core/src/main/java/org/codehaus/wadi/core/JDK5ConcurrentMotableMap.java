@@ -26,7 +26,7 @@ import org.codehaus.wadi.core.motable.Motable;
  * 
  * @version $Revision: 1538 $
  */
-public class OswegoConcurrentMotableMap implements ConcurrentMotableMap {
+public class JDK5ConcurrentMotableMap implements ConcurrentMotableMap {
     private final ConcurrentHashMap<String, Motable> delegate = new ConcurrentHashMap<String, Motable>();
 
     public Motable acquire(String id) {

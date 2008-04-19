@@ -5,14 +5,14 @@ import junit.framework.TestCase;
 import org.codehaus.wadi.core.motable.Motable;
 import org.codehaus.wadi.core.motable.SimpleMotable;
 
-public class OswegoConcurrentMotableMapTest extends TestCase {
+public class JDK5ConcurrentMotableMapTest extends TestCase {
 
-    private OswegoConcurrentMotableMap map;
+    private JDK5ConcurrentMotableMap map;
     private volatile boolean expectNull;
     private volatile boolean failure;
     
     protected void setUp() throws Exception {
-        map = new OswegoConcurrentMotableMap();
+        map = new JDK5ConcurrentMotableMap();
     }
     
     public void testRemoveBetweenAcquireExclusiveAndMultipleAcquire() throws Exception {

@@ -20,7 +20,7 @@ import java.util.Timer;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.codehaus.wadi.core.ConcurrentMotableMap;
-import org.codehaus.wadi.core.OswegoConcurrentMotableMap;
+import org.codehaus.wadi.core.JDK5ConcurrentMotableMap;
 import org.codehaus.wadi.core.contextualiser.ClusterContextualiser;
 import org.codehaus.wadi.core.contextualiser.Contextualiser;
 import org.codehaus.wadi.core.contextualiser.DummyContextualiser;
@@ -265,7 +265,7 @@ public class StackContext {
         return new ExclusiveStoreContextualiser(contextualiser,
             true,
             new AbsoluteEvicter(sweepInterval, true, numberOfSecondsInDiscStoreContextualiser),
-            new OswegoConcurrentMotableMap(),
+            new JDK5ConcurrentMotableMap(),
             store);
     }
 
@@ -281,8 +281,8 @@ public class StackContext {
         return new JDKClassIndexerRegistry(new DeclaredMemberFilter());
     }
 
-    protected OswegoConcurrentMotableMap newConcurrentMap() {
-        return new OswegoConcurrentMotableMap();
+    protected JDK5ConcurrentMotableMap newConcurrentMap() {
+        return new JDK5ConcurrentMotableMap();
     }
 
     protected ObjectStateHandler newObjectStateHandler(Streamer streamer) {
