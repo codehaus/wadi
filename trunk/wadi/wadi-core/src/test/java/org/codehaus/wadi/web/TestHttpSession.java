@@ -35,7 +35,7 @@ import javax.servlet.http.HttpSessionListener;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.core.ConcurrentMotableMap;
-import org.codehaus.wadi.core.OswegoConcurrentMotableMap;
+import org.codehaus.wadi.core.JDK5ConcurrentMotableMap;
 import org.codehaus.wadi.core.contextualiser.Contextualiser;
 import org.codehaus.wadi.core.contextualiser.DummyContextualiser;
 import org.codehaus.wadi.core.manager.BasicSessionMonitor;
@@ -72,7 +72,7 @@ public class TestHttpSession extends RMockTestCase {
     protected final String _clusterName = "WADI.TEST";
     protected Listener _listener;
     protected List events = new ArrayList();
-    protected ConcurrentMotableMap motableMap = new OswegoConcurrentMotableMap();
+    protected ConcurrentMotableMap motableMap = new JDK5ConcurrentMotableMap();
     protected boolean accessOnLoad = true;
     protected Router router = new DummyRouter();
 
