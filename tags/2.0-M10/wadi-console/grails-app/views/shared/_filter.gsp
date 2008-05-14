@@ -1,2 +1,0 @@
-<br/>[<a onClick="switchFilter('${filterName}')" id="${filterName}">Show Filter</a>]&nbsp;
-<div id="${filterName}Layer" style="display:none"><input type="text" name="${filterName}Value" onkeyup="filterTable(this.value, ${tableToFilter}, ${index})"></div>
