@@ -284,6 +284,9 @@
     <module>wadi-aop</module>
     <module>wadi-group</module>
     <module>wadi-core</module>
+<!--
+    <module>wadi-cache</module>
+-->
     <module>wadi-jgroups</module>
     <module>wadi-tribes</module>
     <module>wadi-webapp</module>
@@ -348,7 +351,26 @@
 	<version>1.2.5</version>
 	<scope>test</scope>
       </dependency>
-      <!--  -->
+      <dependency>
+	<groupId>log4j</groupId>
+	<artifactId>log4j</artifactId>
+	<version>1.2.15</version>
+	<scope>test</scope>
+        <exclusions>
+          <exclusion>
+            <groupId>javax.jms</groupId>
+            <artifactId>jms</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>com.sun.jdmk</groupId>
+            <artifactId>jmxtools</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>com.sun.jmx</groupId>
+            <artifactId>jmxri</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
@@ -488,19 +510,11 @@
 	    -->
 	    <exclude implementation="java.lang.String">**/TestAC*.java</exclude>
 	  </excludes>
-	  <systemProperties>
-	    <property>
-	      <name>org.apache.commons.logging.Log</name>
-	      <value>org.apache.commons.logging.impl.SimpleLog</value>
-	    </property>
-	    <property>
-	      <name>org.apache.commons.logging.simplelog.showdatetime</name>
-	      <value>true</value>
-	    </property>
-	    <property>
-	      <name>org.apache.commons.logging.simplelog.log.org.codehaus.wadi</name>
-	      <value>warn</value>
-	    </property>
+          <systemProperties>
+            <property>
+              <name>log4j.configuration</name>
+              <value>log4j.properties</value>
+            </property>
 	  </systemProperties>
 	</configuration>
       </plugin>
@@ -532,20 +546,6 @@
 	  <source>${jse.version}</source>
 	  <minMemory>512m</minMemory>
 	  <maxMemory>512m</maxMemory>
-	  <links>
-<!--
-	    <link>http://java.sun.com/j2se/${jse.version}/docs/api</link>
-	    <link>http://www.junit.org/junit/javadoc/${junit.version}</link>
-	    <link>http://jakarta.apache.org/commons/logging/commons-logging-${commons-logging.version}/apidocs</link>
-	    <link>http://gee.cs.oswego.edu/dl/classes/EDU/oswego/cs/dl/util/concurrent</link>
-	    <link>http://jakarta.apache.org/commons/httpclient/apidocs</link>
-	    <link>http://www.jgroups.org/javagroupsnew/docs/javadoc</link>
--->
-	    <!-- <link>http://mx4j.sourceforge.net/docs/api</link> -->
-	    <!-- activecluster: not online -->
-	    <!-- axis2: not online -->
-	    <!-- <link>http://www.openejb.org/apidocs</link> --> <!-- causing trouble -->
-	  </links>
 	</configuration>
       </plugin>
       <plugin>

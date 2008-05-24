@@ -25,13 +25,13 @@
       <artifactId>wadi-core</artifactId>
       <version>${project.version}</version>
     </dependency>
+
     <dependency>
       <groupId>org.apache.tomcat</groupId>
       <artifactId>tribes</artifactId>
       <version>6.0.13</version>
     </dependency>
 
-    <!-- test -->
     <dependency>
       <groupId>org.codehaus.wadi</groupId>
       <artifactId>wadi-group</artifactId>
@@ -39,6 +39,7 @@
       <type>test-jar</type>
       <scope>test</scope>
     </dependency>
+
     <dependency>
       <groupId>org.codehaus.wadi</groupId>
       <artifactId>wadi-core</artifactId>
@@ -46,12 +47,18 @@
       <type>test-jar</type>
       <scope>test</scope>
     </dependency>
+
     <dependency>
       <groupId>geronimo-spec</groupId>
       <artifactId>geronimo-spec-servlet</artifactId>
       <scope>test</scope>
     </dependency>
 
+    <dependency>
+      <groupId>log4j</groupId>
+      <artifactId>log4j</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -59,28 +66,22 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-          <configuration>
-            <forkMode>pertest</forkMode><!-- we must fork in order to enable argLine -->
-            <argLine>-enableassertions -Xmx1024m</argLine>
-            <systemProperties>
-              <property>
-                <name>org.apache.commons.logging.Log</name>
-                <value>org.apache.commons.logging.impl.SimpleLog</value>
-              </property>
-              <property>
-                <name>org.apache.commons.logging.simplelog.showdatetime</name>
-                <value>true</value>
-              </property>
-              <property>
-                <name>org.apache.commons.logging.simplelog.log.org.codehaus.wadi</name>
-                <value>warn</value>
-              </property>
-              <property>
-                <name>java.net.preferIPv4Stack</name>
-                <value>true</value>
-              </property>
-            </systemProperties>
-          </configuration>
+        <configuration>
+        <!-- 
+          <forkMode>pertest</forkMode>
+          <argLine>-enableassertions -Xmx1024m</argLine>
+         -->
+          <systemProperties>
+            <property>
+              <name>log4j.configuration</name>
+              <value>log4j.properties</value>
+            </property>
+            <property>
+              <name>java.net.preferIPv4Stack</name>
+              <value>true</value>
+            </property>
+          </systemProperties>
+        </configuration>
         </plugin>
     </plugins>
   </build>
