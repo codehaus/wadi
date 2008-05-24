@@ -55,14 +55,15 @@ public class ReplicaStorageInfo implements Externalizable {
     }
 
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-        replicaInfo = (ReplicaInfo) in.readObject();
+        replicaInfo = new ReplicaInfo();
+        replicaInfo.readExternal(in);
         int length = in.readInt();
         serializedPayload = new byte[length];
         in.readFully(serializedPayload);
     }
 
     public void writeExternal(ObjectOutput out) throws IOException {
-        out.writeObject(replicaInfo);
+        replicaInfo.writeExternal(out);
         out.writeInt(serializedPayload.length);
         out.write(serializedPayload);
     }
