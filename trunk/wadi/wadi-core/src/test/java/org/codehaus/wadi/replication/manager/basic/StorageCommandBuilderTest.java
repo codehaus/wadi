@@ -51,7 +51,7 @@ public class StorageCommandBuilderTest extends RMockTestCase {
         ReplicaStorageMixInServiceProxy storage = (ReplicaStorageMixInServiceProxy) mock(ReplicaStorageMixInServiceProxy.class);
 
         ServiceProxyFactory serviceProxy = (ServiceProxyFactory) mock(ServiceProxyFactory.class);
-        beginSection(s.ordered("create - update - destroy"));
+        beginSection(s.ordered("create - destroy"));
         serviceProxy.getProxy();
         modify().returnValue(storage);
         storage.getInvocationMetaData();
@@ -68,19 +68,8 @@ public class StorageCommandBuilderTest extends RMockTestCase {
         modify().returnValue(storage);
         storage.getInvocationMetaData();
         modify().returnValue(invMetaData);
-        invMetaData.setTargets(new Peer[] {peer3});
-        
-        stateHandler.extractUpdatedState(expectedKey, payload);
-        modify().returnValue(new byte[0]);
-
-        storage.mergeUpdate(expectedKey, null);
-        modify().args(is.AS_RECORDED, is.NOT_NULL);
-
-        serviceProxy.getProxy();
-        modify().returnValue(storage);
-        storage.getInvocationMetaData();
-        modify().returnValue(invMetaData);
         invMetaData.setTargets(new Peer[] {peer4});
+        invMetaData.setOneWay(true);
         storage.mergeDestroy(expectedKey);
         endSection();
 
@@ -92,11 +81,10 @@ public class StorageCommandBuilderTest extends RMockTestCase {
             stateHandler);
         
         StorageCommand[] commands = builder.build();
-        assertEquals(3, commands.length);
+        assertEquals(2, commands.length);
 
         commands[0].execute(serviceProxy);
         commands[1].execute(serviceProxy);
-        commands[2].execute(serviceProxy);
     }
     
     public interface ReplicaStorageMixInServiceProxy extends ReplicaStorage, ServiceProxy {

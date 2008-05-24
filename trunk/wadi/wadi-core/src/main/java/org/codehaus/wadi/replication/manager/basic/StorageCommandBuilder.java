@@ -49,15 +49,15 @@ class StorageCommandBuilder {
     }
 
     public StorageCommand[] build() {
-        Set destroySecondariesSet = new HashSet();
+        Set<Peer> destroySecondariesSet = new HashSet<Peer>();
         for (int i = 0; i < oldSecondaries.length; i++) {
             destroySecondariesSet.add(oldSecondaries[i]);
         }
 
         Peer newSecondaries[] = replicaInfo.getSecondaries();
         
-        Set createSecondariesSet = new HashSet();
-        Set updateSecondariesSet = new HashSet();
+        Set<Peer> createSecondariesSet = new HashSet<Peer>();
+        Set<Peer> updateSecondariesSet = new HashSet<Peer>();
         for (int i = 0; i < newSecondaries.length; i++) {
             Peer secondary = newSecondaries[i];
             boolean exist = destroySecondariesSet.remove(secondary);
@@ -68,16 +68,11 @@ class StorageCommandBuilder {
             }
         }
         
-        Collection commands = new ArrayList(3);
+        Collection<StorageCommand> commands = new ArrayList<StorageCommand>(2);
 
         if (0 != createSecondariesSet.size()) {
             Peer targets[] = (Peer[]) createSecondariesSet.toArray(new Peer[0]);
             commands.add(new CreateStorageCommand(targets, key, replicaInfo, stateHandler));
-        }
-
-        if (0 != updateSecondariesSet.size()) {
-            Peer targets[] = (Peer[]) updateSecondariesSet.toArray(new Peer[0]);
-            commands.add(new UpdateStorageCommand(targets, key, replicaInfo, stateHandler));
         }
 
         if (0 != destroySecondariesSet.size()) {
@@ -85,6 +80,6 @@ class StorageCommandBuilder {
             commands.add(new DestroyStorageCommand(targets,key));
         }
 
-        return (StorageCommand[]) commands.toArray(new StorageCommand[0]);
+        return commands.toArray(new StorageCommand[0]);
     }
 }

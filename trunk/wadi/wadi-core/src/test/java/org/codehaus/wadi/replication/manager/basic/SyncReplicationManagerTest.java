@@ -64,6 +64,7 @@ public class SyncReplicationManagerTest extends RMockTestCase {
     private ReplicaStorage replicaStorageProxy;
     private ReplicaStorage localReplicaStorage;
     private HashMap<Object, ReplicaInfo> keyToReplicaInfo;
+    private SecondaryManager secondaryManager;
 
     protected void setUp() throws Exception {
         keyToReplicaInfo = new HashMap<Object, ReplicaInfo>();
@@ -97,6 +98,7 @@ public class SyncReplicationManagerTest extends RMockTestCase {
         backingStrategy = (BackingStrategy) mock(BackingStrategy.class);
         stateHandler = (ObjectStateHandler) mock(ObjectStateHandler.class);
         localReplicaStorage = (ReplicaStorage) mock(ReplicaStorage.class);
+        secondaryManager = (SecondaryManager) mock(SecondaryManager.class);
     }
 
     public void testStart() throws Exception {
@@ -118,9 +120,16 @@ public class SyncReplicationManagerTest extends RMockTestCase {
     public void testStorageListener() throws Exception {
         beginSection(s.ordered("ordered secondary un/registration"));
         backingStrategy.addSecondary(peer3);
+        secondaryManager.updateSecondariesFollowingJoiningPeer(peer3);
+        
         backingStrategy.addSecondary(peer4);
+        secondaryManager.updateSecondariesFollowingJoiningPeer(peer4);
+
         backingStrategy.removeSecondary(peer3);
+        secondaryManager.updateSecondariesFollowingLeavingPeer(peer3);
+        
         backingStrategy.removeSecondary(peer4);
+        secondaryManager.updateSecondariesFollowingLeavingPeer(peer4);
         endSection();
         startVerification();
         
@@ -214,8 +223,8 @@ public class SyncReplicationManagerTest extends RMockTestCase {
         modify().returnValue(instance);
         stateHandler.resetObjectState(instance);
         
-        backingStrategy.reElectSecondaries(key, replicaInfo.getPrimary(), replicaInfo.getSecondaries());
-        modify().returnValue(new Peer[] {peer4});
+        secondaryManager.updateSecondariesFollowingRestoreFromSecondary(key, replicaInfo);
+        modify().returnValue(replicaInfo);
         startVerification();
         
         SyncReplicationManager manager = newReplicationManager();
@@ -318,9 +327,9 @@ public class SyncReplicationManagerTest extends RMockTestCase {
             protected Map<Object, ReplicaInfo> newKeyToReplicaInfo() {
                 return keyToReplicaInfo;
             }
-            
             @Override
-            protected void updateReplicaStorages(Object key, ReplicaInfo replicaInfo, Peer[] oldSecondaries) {
+            protected SecondaryManager newSecondaryManager() {
+                return secondaryManager;
             }
         };
     }
