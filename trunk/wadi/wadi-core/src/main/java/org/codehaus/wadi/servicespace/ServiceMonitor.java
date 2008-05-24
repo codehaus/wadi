@@ -18,13 +18,14 @@ package org.codehaus.wadi.servicespace;
 import java.util.Set;
 
 import org.codehaus.wadi.core.Lifecycle;
+import org.codehaus.wadi.group.Peer;
 
 /**
  * 
  * @version $Revision: 1538 $
  */
 public interface ServiceMonitor extends Lifecycle {
-    Set getHostingPeers();
+    Set<Peer> getHostingPeers();
     
     void addServiceLifecycleListener(ServiceListener listener);
 

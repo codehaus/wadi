@@ -78,9 +78,9 @@ public class BasicServiceMonitor implements ServiceMonitor, Lifecycle {
         listeners.add(listener);
     }
 
-    public Set getHostingPeers() {
+    public Set<Peer> getHostingPeers() {
         synchronized (hostingPeers) {
-            return new HashSet(hostingPeers);
+            return new HashSet<Peer>(hostingPeers);
         }
     }
 
