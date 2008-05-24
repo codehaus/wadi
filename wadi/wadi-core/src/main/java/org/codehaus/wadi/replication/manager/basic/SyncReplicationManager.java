@@ -56,12 +56,13 @@ public class SyncReplicationManager implements ReplicationManager {
     private final ReplicaStorage replicaStorageProxy;
     private final ServiceProxyFactory replicaStorageServiceProxy;
     private final ProxyFactory proxyFactory;
+    private final SecondaryManager replicaInfoReOrganizer;
 
 
     public SyncReplicationManager(ServiceSpace serviceSpace,
-        ObjectStateHandler stateHandler,
-        BackingStrategy backingStrategy,
-        ReplicaStorage localReplicaStorage) {
+            ObjectStateHandler stateHandler,
+            BackingStrategy backingStrategy,
+            ReplicaStorage localReplicaStorage) {
         this(serviceSpace, stateHandler, backingStrategy, localReplicaStorage, new BasicProxyFactory(serviceSpace));
     }    
     
@@ -95,6 +96,16 @@ public class SyncReplicationManager implements ReplicationManager {
         replicaStorageProxy = proxyFactory.newReplicaStorageProxy();
 
         keyToReplicaInfo = newKeyToReplicaInfo();
+        
+        replicaInfoReOrganizer = newSecondaryManager();
+    }
+
+    protected SecondaryManager newSecondaryManager() {
+        return new SyncSecondaryManager(keyToReplicaInfo,
+                backingStrategy,
+                localPeer,
+                stateHandler,
+                replicaStorageServiceProxy);
     }
 
     protected Map<Object, ReplicaInfo> newKeyToReplicaInfo() {
@@ -177,7 +188,7 @@ public class SyncReplicationManager implements ReplicationManager {
             }
         }
 
-        replicaInfo = reOrganizeSecondaries(key, replicaInfo);
+        replicaInfo = replicaInfoReOrganizer.updateSecondariesFollowingRestoreFromSecondary(key, replicaInfo);
         return replicaInfo.getPayload();
     }
 
@@ -253,43 +264,10 @@ public class SyncReplicationManager implements ReplicationManager {
         storage.mergeDestroy(key);
     }
 
-    protected void reOrganizeSecondaries() {
-        Map<Object, ReplicaInfo> tmpKeyToReplicaInfo;
-        synchronized (keyToReplicaInfo) {
-            tmpKeyToReplicaInfo = new HashMap<Object, ReplicaInfo>(keyToReplicaInfo);
-        }
-        for (Map.Entry<Object, ReplicaInfo> entry : tmpKeyToReplicaInfo.entrySet()) {
-            Object key = entry.getKey();
-            ReplicaInfo replicaInfo = entry.getValue();
-            reOrganizeSecondaries(key, replicaInfo);
-        }
-    }
-    
-    protected ReplicaInfo reOrganizeSecondaries(Object key, ReplicaInfo replicaInfo) {
-        Peer oldSecondaries[] = replicaInfo.getSecondaries();
-        Peer newSecondaries[] = backingStrategy.reElectSecondaries(key, replicaInfo.getPrimary(), oldSecondaries);
-        replicaInfo = new ReplicaInfo(replicaInfo, localPeer, newSecondaries);
-        synchronized (keyToReplicaInfo) {
-            keyToReplicaInfo.put(key, replicaInfo);
-        }
-        
-        updateReplicaStorages(key, replicaInfo, oldSecondaries);
-        return replicaInfo;
-    }
-
-    protected void updateReplicaStorages(Object key, ReplicaInfo replicaInfo, Peer[] oldSecondaries) {
-        StorageCommandBuilder commandBuilder = new StorageCommandBuilder(key, replicaInfo, oldSecondaries, stateHandler);
-        StorageCommand[] commands = commandBuilder.build();
-        for (int i = 0; i < commands.length; i++) {
-            StorageCommand command = commands[i];
-            command.execute(replicaStorageServiceProxy);
-        }
-    }
-    
     protected void startStorageMonitoring() throws Exception {
         storageMonitor.start();
-        Set storagePeers = storageMonitor.getHostingPeers();
-        backingStrategy.addSecondaries((Peer[]) storagePeers.toArray(new Peer[storagePeers.size()]));
+        Set<Peer> storagePeers = storageMonitor.getHostingPeers();
+        backingStrategy.addSecondaries(storagePeers.toArray(new Peer[storagePeers.size()]));
     }
     
     protected void stopStorageMonitoring() throws Exception {
@@ -307,11 +285,13 @@ public class SyncReplicationManager implements ReplicationManager {
         public void receive(ServiceLifecycleEvent event, Set newHostingPeers) {
             LifecycleState state = event.getState();
             if (state == LifecycleState.AVAILABLE || state == LifecycleState.STARTED) {
-                backingStrategy.addSecondary(event.getHostingPeer());
-                reOrganizeSecondaries();
+                Peer hostingPeer = event.getHostingPeer();
+                backingStrategy.addSecondary(hostingPeer);
+                replicaInfoReOrganizer.updateSecondariesFollowingJoiningPeer(hostingPeer);
             } else if (state == LifecycleState.STOPPING || state == LifecycleState.FAILED) {
-                backingStrategy.removeSecondary(event.getHostingPeer());
-                reOrganizeSecondaries();
+                Peer hostingPeer = event.getHostingPeer();
+                backingStrategy.removeSecondary(hostingPeer);
+                replicaInfoReOrganizer.updateSecondariesFollowingLeavingPeer(hostingPeer);
             }
         }
     }
