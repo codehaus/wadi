@@ -24,11 +24,19 @@
       <groupId>concurrent</groupId>
       <artifactId>concurrent</artifactId>
     </dependency>
+
+    <dependency>
+      <groupId>org.codehaus.wadi</groupId>
+      <artifactId>wadi-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
     <dependency>
       <groupId>org.codehaus.wadi</groupId>
       <artifactId>wadi-group</artifactId>
       <version>${project.version}</version>
     </dependency>
+
     <dependency>
       <groupId>org.codehaus.wadi</groupId>
       <artifactId>wadi-group</artifactId>
@@ -36,16 +44,13 @@
       <type>test-jar</type>
       <scope>test</scope>
     </dependency>
+
     <dependency>
       <groupId>geronimo-spec</groupId>
       <artifactId>geronimo-spec-servlet</artifactId>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>org.codehaus.wadi</groupId>
-      <artifactId>wadi-core</artifactId>
-      <version>${project.version}</version>
-    </dependency>
+
     <dependency>
       <groupId>org.codehaus.wadi</groupId>
       <artifactId>wadi-core</artifactId>
@@ -60,6 +65,11 @@
       <version>2.2.9.1</version>
     </dependency>
 
+    <dependency>
+      <groupId>log4j</groupId>
+      <artifactId>log4j</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
 </project>
