@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
+import org.codehaus.wadi.core.motable.Motable;
 import org.codehaus.wadi.group.Peer;
 
 /**
@@ -31,13 +32,13 @@ public class ReplicaInfo implements Externalizable {
 
     private Peer primary;
     private Peer[] secondaries;
-    private transient Object payload;
+    private transient Motable payload;
     private int version;
 
     public ReplicaInfo() {
     }
     
-    public ReplicaInfo(Peer primary, Peer[] secondaries, Object payload) {
+    public ReplicaInfo(Peer primary, Peer[] secondaries, Motable payload) {
         if (null == primary) {
             throw new IllegalArgumentException("primary is required");
         } else if (null == secondaries) {
@@ -75,11 +76,11 @@ public class ReplicaInfo implements Externalizable {
         return secondaries;
     }
     
-    public Object getPayload() {
+    public Motable getPayload() {
         return payload;
     }
 
-    public void setPayload(Object payload) {
+    public void setPayload(Motable payload) {
         this.payload = payload;
     }
 

@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.codehaus.wadi.core.motable.Motable;
 import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.Peer;
@@ -65,6 +66,8 @@ public class SyncReplicationManagerTest extends RMockTestCase {
     private ReplicaStorage localReplicaStorage;
     private HashMap<Object, ReplicaInfo> keyToReplicaInfo;
     private SecondaryManager secondaryManager;
+    private Motable instance;
+    private Object key;
 
     protected void setUp() throws Exception {
         keyToReplicaInfo = new HashMap<Object, ReplicaInfo>();
@@ -99,6 +102,9 @@ public class SyncReplicationManagerTest extends RMockTestCase {
         stateHandler = (ObjectStateHandler) mock(ObjectStateHandler.class);
         localReplicaStorage = (ReplicaStorage) mock(ReplicaStorage.class);
         secondaryManager = (SecondaryManager) mock(SecondaryManager.class);
+        
+        key = new Object();
+        instance = (Motable) mock(Motable.class);
     }
 
     public void testStart() throws Exception {
@@ -142,8 +148,6 @@ public class SyncReplicationManagerTest extends RMockTestCase {
     }
     
     public void testCreate() throws Exception {
-        Object key = new Object();
-        Object instance = new Object();
         Peer[] targets = new Peer[] {peer2};
         
         recordCreate(key, instance, targets);
@@ -160,10 +164,8 @@ public class SyncReplicationManagerTest extends RMockTestCase {
     }
 
     public void testUpdate() throws Exception {
-        Object key = new Object();
-        Object instance = new Object();
         Peer[] targets = new Peer[] {peer2};
-        Object newInstance = new Object();
+        Motable newInstance = (Motable) mock(Motable.class);
 
         keyToReplicaInfo.put(key, new ReplicaInfo(localPeer, targets, instance));
         
@@ -187,9 +189,6 @@ public class SyncReplicationManagerTest extends RMockTestCase {
     }
     
     public void testDelete() throws Exception {
-        Object key = new Object();
-        Object instance = new Object();
-        
         keyToReplicaInfo.put(key, new ReplicaInfo(localPeer, new Peer[0], instance));
 
         startVerification();
@@ -212,8 +211,6 @@ public class SyncReplicationManagerTest extends RMockTestCase {
     }
 
     public void testRetrieveReplicaWithFoundReplica() throws Exception {
-        Object key = new Object();
-        Object instance = new Object();
         ReplicaInfo replicaInfo = new ReplicaInfo(peer2, new Peer[] {peer3}, instance);
         ReplicaStorageInfo replicaStorageInfo = new ReplicaStorageInfo(replicaInfo, new byte[0]);
         
@@ -233,8 +230,6 @@ public class SyncReplicationManagerTest extends RMockTestCase {
     }
 
     public void testReleaseReplicaInfoWhenLocalPeerBecomesSecondary() throws Exception {
-        Object key = new Object();
-        Object instance = new Object();
         Peer[] secondaries = new Peer[] {peer3};
         
         keyToReplicaInfo.put(key, new ReplicaInfo(localPeer, secondaries, instance));
@@ -262,8 +257,6 @@ public class SyncReplicationManagerTest extends RMockTestCase {
     }
     
     public void testReleaseReplicaInfoWhenLocalPeerDoesNotBecomesSecondary() throws Exception {
-        Object key = new Object();
-        Object instance = new Object();
         Peer[] secondaries = new Peer[] {peer2};
         
         keyToReplicaInfo.put(key, new ReplicaInfo(localPeer, secondaries, instance));
@@ -289,8 +282,7 @@ public class SyncReplicationManagerTest extends RMockTestCase {
     }
     
     public void testInsertReplicaInfo() throws Exception {
-        Object key = new Object();
-        ReplicaInfo replicaInfo = new ReplicaInfo(localPeer, new Peer[0], new Object());
+        ReplicaInfo replicaInfo = new ReplicaInfo(localPeer, new Peer[0], instance);
         
         localReplicaStorage.mergeDestroyIfExist(key);
         
@@ -303,8 +295,7 @@ public class SyncReplicationManagerTest extends RMockTestCase {
     }
     
     public void testInsertReplicaInfoForExistingKeyFails() throws Exception {
-        Object key = new Object();
-        ReplicaInfo replicaInfo = new ReplicaInfo(localPeer, new Peer[0], new Object());
+        ReplicaInfo replicaInfo = new ReplicaInfo(localPeer, new Peer[0], instance);
         keyToReplicaInfo.put(key, replicaInfo);
         
         startVerification();
@@ -334,7 +325,7 @@ public class SyncReplicationManagerTest extends RMockTestCase {
         };
     }
     
-    protected void recordCreate(Object key, Object instance, Peer[] targets) {
+    protected void recordCreate(Object key, Motable instance, Peer[] targets) {
         beginSection(s.ordered("Extract State; Reset state; Elect Secondaries; mergeCreate"));
         stateHandler.extractFullState(key, instance);
         modify().returnValue(new byte[0]);

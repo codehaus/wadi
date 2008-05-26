@@ -22,6 +22,7 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.core.motable.Motable;
 import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.replication.common.ReplicaInfo;
@@ -123,7 +124,7 @@ public class SyncReplicationManager implements ReplicationManager {
         stopStorageMonitoring();
     }
     
-    public void create(Object key, Object tmp) {
+    public void create(Object key, Motable tmp) {
         synchronized (keyToReplicaInfo) {
             if (keyToReplicaInfo.containsKey(key)) {
                 throw new ReplicationKeyAlreadyExistsException(key);
@@ -137,7 +138,7 @@ public class SyncReplicationManager implements ReplicationManager {
         backOffCapableTask.attempt();
     }
 
-    public void update(Object key, Object tmp) {
+    public void update(Object key, Motable tmp) {
         ReplicaInfo replicaInfo;
         synchronized (keyToReplicaInfo) {
             replicaInfo = keyToReplicaInfo.get(key);
@@ -171,13 +172,13 @@ public class SyncReplicationManager implements ReplicationManager {
         }
     }
     
-    public Object retrieveReplica(Object key) {
+    public Motable retrieveReplica(Object key) {
         ReplicaInfo replicaInfo;
         try {
             ReplicaStorageInfo storageInfo = replicaStorageProxy.retrieveReplicaStorageInfo(key);
             
             replicaInfo = storageInfo.getReplicaInfo();
-            Object target = stateHandler.restoreFromFullStateTransient(key, storageInfo.getSerializedPayload());
+            Motable target = stateHandler.restoreFromFullStateTransient(key, storageInfo.getSerializedPayload());
             stateHandler.resetObjectState(target);
             replicaInfo.setPayload(target);
         } catch (ServiceInvocationException e) {
@@ -309,12 +310,12 @@ public class SyncReplicationManager implements ReplicationManager {
         private static final long BACK_OFF_PERIOD = 1000;
 
         protected final Object key;
-        private final Object tmp;
+        private final Motable tmp;
         private final byte[] fullState;
         private volatile int currentAttempt;
         private volatile ReplicaInfo replicaInfo;
 
-        private CreateReplicaTask(Object key, Object tmp, byte[] fullState) {
+        private CreateReplicaTask(Object key, Motable tmp, byte[] fullState) {
             this.key = key;
             this.tmp = tmp;
             this.fullState = fullState;

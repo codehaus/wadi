@@ -15,6 +15,8 @@
  */
 package org.codehaus.wadi.replication.manager.basic;
 
+import java.util.concurrent.locks.Lock;
+
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.replication.common.ReplicaInfo;
 import org.codehaus.wadi.replication.common.ReplicaStorageInfo;
@@ -36,7 +38,14 @@ class CreateStorageCommand extends AbstractStorageCommand {
         ReplicaStorage storage = (ReplicaStorage) serviceProxy.getProxy();
         ((ServiceProxy) storage).getInvocationMetaData().setTargets(targets);
         
-        byte[] fullState = stateHandler.extractFullState(key, replicaInfo.getPayload());
+        byte[] fullState;
+        Lock exclusiveLock = replicaInfo.getPayload().getReadWriteLock().writeLock();
+        exclusiveLock.lock();
+        try {
+            fullState = stateHandler.extractFullState(key, replicaInfo.getPayload());
+        } finally {
+            exclusiveLock.unlock();
+        }
         storage.mergeCreate(key, new ReplicaStorageInfo(replicaInfo, fullState));
     }
     

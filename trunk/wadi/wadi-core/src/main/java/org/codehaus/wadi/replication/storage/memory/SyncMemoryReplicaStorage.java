@@ -20,6 +20,7 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.wadi.core.motable.Motable;
 import org.codehaus.wadi.replication.common.ReplicaInfo;
 import org.codehaus.wadi.replication.common.ReplicaStorageInfo;
 import org.codehaus.wadi.replication.manager.basic.ObjectStateHandler;
@@ -79,7 +80,7 @@ public class SyncMemoryReplicaStorage implements ReplicaStorage {
             keyToStorageInfo.put(key, storageInfo);
         }
         
-        Object payload = objectStateHandler.restoreFromFullState(key, storageInfo.getSerializedPayload());
+        Motable payload = objectStateHandler.restoreFromFullState(key, storageInfo.getSerializedPayload());
         storageInfo.getReplicaInfo().setPayload(payload);
     }
 
@@ -94,13 +95,13 @@ public class SyncMemoryReplicaStorage implements ReplicaStorage {
             }
             // Implementation note: keep a strong reference to the payload otherwise, it can be GCed and, hence, we
             // can not apply a delta to it.
-            Object payload = storageInfo.getReplicaInfo().getPayload();
+            Motable payload = storageInfo.getReplicaInfo().getPayload();
             updateStorageInfo.getReplicaInfo().setPayload(payload);
             storageInfo = updateStorageInfo;
             keyToStorageInfo.put(key, storageInfo);
         }
 
-        Object payload = objectStateHandler.restoreFromUpdatedState(key, storageInfo.getSerializedPayload());
+        Motable payload = objectStateHandler.restoreFromUpdatedState(key, storageInfo.getSerializedPayload());
         storageInfo.getReplicaInfo().setPayload(payload);
     }
 

@@ -15,27 +15,29 @@
  */
 package org.codehaus.wadi.replication.manager.basic;
 
+import org.codehaus.wadi.core.motable.Motable;
+
 
 /**
  * 
  * @version $Revision: 2340 $
  */
 public interface ObjectStateHandler {
-    byte[] extractFullState(Object key, Object target);
+    byte[] extractFullState(Object key, Motable target);
     
-    byte[] extractUpdatedState(Object key, Object target);
+    byte[] extractUpdatedState(Object key, Motable target);
     
-    void resetObjectState(Object target);
+    void resetObjectState(Motable target);
     
-    Object restoreFromFullState(Object key, byte[] state);
+    Motable restoreFromFullState(Object key, byte[] state);
     
-    Object restoreFromUpdatedState(Object key, byte[] state);
+    Motable restoreFromUpdatedState(Object key, byte[] state);
     
-    Object restoreFromFullStateTransient(Object key, byte[] state);
+    Motable restoreFromFullStateTransient(Object key, byte[] state);
     
     void setObjectFactory(Object factory);
 
-    void discardState(Object key, Object payload);
+    void discardState(Object key, Motable payload);
 
-    void initState(Object key, Object payload);
+    void initState(Object key, Motable payload);
 }

@@ -57,13 +57,12 @@ public class ReplicaAwareContextualiser extends AbstractSharedContextualiser {
     }
     
     protected Motable get(String id, boolean exclusiveOnly) {
-        Object object;
+        Motable motable;
         try {
-            object = replicationManager.retrieveReplica(id);
+            motable = replicationManager.retrieveReplica(id);
         } catch (Exception e) {
             return null;
         }
-        Motable motable = (Motable) object;
         if (null != motable) {
             stateManager.insert(motable.getName());
         }

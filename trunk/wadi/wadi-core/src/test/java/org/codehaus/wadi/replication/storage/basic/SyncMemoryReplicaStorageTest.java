@@ -15,6 +15,7 @@
  */
 package org.codehaus.wadi.replication.storage.basic;
 
+import org.codehaus.wadi.core.motable.Motable;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.vm.VMPeer;
 import org.codehaus.wadi.replication.common.ReplicaInfo;
@@ -33,7 +34,7 @@ public class SyncMemoryReplicaStorageTest extends RMockTestCase {
     private ObjectStateHandler objectStateManager;
     private Peer node1;
     private Peer node2;
-    private Object payload;
+    private Motable payload;
     private Object key;
     private ReplicaInfo replicaInfo;
     private byte[] serializedState;
@@ -44,9 +45,9 @@ public class SyncMemoryReplicaStorageTest extends RMockTestCase {
         node1 = new VMPeer("node1", null);
         node2 = new VMPeer("node2", null);
         
-        payload = new Object();
+        payload = (Motable) mock(Motable.class);
         key = new Object();
-        replicaInfo = new ReplicaInfo(node1, new Peer[] {node2}, new Object());
+        replicaInfo = new ReplicaInfo(node1, new Peer[] {node2}, payload);
         serializedState = new byte[0];
     }
   
@@ -74,8 +75,9 @@ public class SyncMemoryReplicaStorageTest extends RMockTestCase {
     }
 
     public void testMergeUpdate() {
+        Motable fullStateMotable = (Motable) mock(Motable.class, "FullStateMotable");
         objectStateManager.restoreFromFullState(key, serializedState);
-        modify().returnValue(new Object());
+        modify().returnValue(fullStateMotable);
         
         byte[] updateSerializedState = new byte[1];
         objectStateManager.restoreFromUpdatedState(key, updateSerializedState);
