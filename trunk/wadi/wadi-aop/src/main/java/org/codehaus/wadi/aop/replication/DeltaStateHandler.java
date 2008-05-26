@@ -23,6 +23,7 @@ import org.codehaus.wadi.aop.tracker.basic.BasicInstanceRegistry;
 import org.codehaus.wadi.aop.tracker.basic.WireMarshaller;
 import org.codehaus.wadi.aop.util.ClusteredStateHelper;
 import org.codehaus.wadi.core.WADIRuntimeException;
+import org.codehaus.wadi.core.motable.Motable;
 import org.codehaus.wadi.core.util.Streamer;
 import org.codehaus.wadi.core.util.Utils;
 import org.codehaus.wadi.replication.manager.basic.SessionStateHandler;
@@ -67,37 +68,37 @@ public class DeltaStateHandler extends SessionStateHandler {
     }
     
     @Override
-    public void resetObjectState(Object target) {
+    public void resetObjectState(Motable target) {
         ClusteredStateSessionMemento memento = extractMemento(target);
         ClusteredStateHelper.resetTracker(memento);
     }
     
-    public Object restoreFromFullState(Object key, byte[] state) {
+    public Motable restoreFromFullState(Object key, byte[] state) {
         return restore(state, instanceRegistry);
     }
 
     @Override
-    public Object restoreFromFullStateTransient(Object key, byte[] state) {
+    public Motable restoreFromFullStateTransient(Object key, byte[] state) {
         return restore(state, new BasicInstanceRegistry());
     }
     
-    public Object restoreFromUpdatedState(Object key, byte[] state) {
+    public Motable restoreFromUpdatedState(Object key, byte[] state) {
         return restore(state, instanceRegistry);
     }
 
     @Override
-    public void discardState(Object key, Object payload) {
+    public void discardState(Object key, Motable payload) {
         ClusteredStateSessionMemento memento = extractMemento(payload);
         ClusteredStateHelper.unregisterTracker(instanceRegistry, memento);
     }
     
     @Override
-    public void initState(Object key, Object payload) {
+    public void initState(Object key, Motable payload) {
         ClusteredStateSessionMemento memento = extractMemento(payload);
         ClusteredStateHelper.registerTracker(instanceRegistry, memento);
     }
     
-    protected Object restore(byte[] state, InstanceRegistry instanceRegistry) {
+    protected ClusteredStateSession restore(byte[] state, InstanceRegistry instanceRegistry) {
         RestoreStateExternalizable externalizable = new RestoreStateExternalizable(instanceRegistry, marshaller);
         try {
             Utils.setContent(externalizable, state, streamer);
