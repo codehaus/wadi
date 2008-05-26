@@ -109,7 +109,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionManage
         
         endpointBuilder.addSEI(dispatcher, PartitionManagerMessageListener.class, this);
         
-        Thread.sleep(2000);
+        waitForElectionOfPartitionBalancerSingleton();
         
         queueRebalancing();
         
@@ -220,6 +220,10 @@ public class SimplePartitionManager implements PartitionManager, PartitionManage
 
     public ServiceSpace getServiceSpace() {
         return serviceSpace;
+    }
+
+    protected void waitForElectionOfPartitionBalancerSingleton() throws InterruptedException {
+        Thread.sleep(2000);
     }
 
     protected void queueRebalancing() {
