@@ -87,6 +87,7 @@ public class SyncSecondaryManagerTest extends RMockTestCase {
             public boolean passes(Object arg0) {
                 ReplicaInfo newReplicaInfo = (ReplicaInfo) arg0;
                 assertEquals(newSecondaries, newReplicaInfo.getSecondaries());
+                assertReplicaInfoMapHasNotYetBeenUpdated();
                 return true;
             }
         }, is.AS_RECORDED);
@@ -94,6 +95,7 @@ public class SyncSecondaryManagerTest extends RMockTestCase {
         startVerification();
         
         manager.updateSecondariesFollowingJoiningPeer(peer3);
+        assertReplicaInfoMapHasNowBeenUpdated();
     }
     
     public void testUpdateSecondariesFollowingLeavingPeer() throws Exception {
@@ -109,13 +111,23 @@ public class SyncSecondaryManagerTest extends RMockTestCase {
             public boolean passes(Object arg0) {
                 ReplicaInfo newReplicaInfo = (ReplicaInfo) arg0;
                 assertEquals(newSecondaries, newReplicaInfo.getSecondaries());
+                assertReplicaInfoMapHasNotYetBeenUpdated();
                 return true;
             }
         }, is.AS_RECORDED);
         
         startVerification();
-        
+
         manager.updateSecondariesFollowingLeavingPeer(peer2);
+        assertReplicaInfoMapHasNowBeenUpdated();
+    }
+
+    private void assertReplicaInfoMapHasNowBeenUpdated() {
+        assertNotSame(keyToReplicaInfo.get(key), replicaInfoForKey);
+    }
+
+    private void assertReplicaInfoMapHasNotYetBeenUpdated() {
+        assertSame(keyToReplicaInfo.get(key), replicaInfoForKey);
     }
     
 }

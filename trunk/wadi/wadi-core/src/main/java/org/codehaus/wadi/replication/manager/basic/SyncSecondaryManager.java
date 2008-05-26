@@ -93,12 +93,14 @@ public class SyncSecondaryManager implements SecondaryManager {
     protected ReplicaInfo updateSecondaries(Object key, ReplicaInfo replicaInfo) {
         Peer oldSecondaries[] = replicaInfo.getSecondaries();
         Peer newSecondaries[] = backingStrategy.reElectSecondaries(key, replicaInfo.getPrimary(), oldSecondaries);
+
         replicaInfo = new ReplicaInfo(replicaInfo, localPeer, newSecondaries);
+        updateSecondaries(key, replicaInfo, oldSecondaries);
+
         synchronized (keyToReplicaInfo) {
             keyToReplicaInfo.put(key, replicaInfo);
         }
         
-        updateSecondaries(key, replicaInfo, oldSecondaries);
         return replicaInfo;
     }
     
@@ -106,15 +108,16 @@ public class SyncSecondaryManager implements SecondaryManager {
             ReplicaInfo replicaInfo,
             Peer leavingPeer) {
         Peer oldSecondaries[] = replicaInfo.getSecondaries();
-        
         Peer newSecondaries[] = backingStrategy.reElectSecondaries(key, replicaInfo.getPrimary(), oldSecondaries);
+
         replicaInfo = new ReplicaInfo(replicaInfo, localPeer, newSecondaries);
+        oldSecondaries = filterLeavingPeer(leavingPeer, oldSecondaries);
+        updateSecondaries(key, replicaInfo, oldSecondaries);
+        
         synchronized (keyToReplicaInfo) {
             keyToReplicaInfo.put(key, replicaInfo);
         }
         
-        oldSecondaries = filterLeavingPeer(leavingPeer, oldSecondaries);
-        updateSecondaries(key, replicaInfo, oldSecondaries);
         return replicaInfo;
     }
 
