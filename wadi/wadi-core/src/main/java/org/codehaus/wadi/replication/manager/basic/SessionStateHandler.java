@@ -19,6 +19,7 @@ import java.io.Externalizable;
 import java.io.IOException;
 
 import org.codehaus.wadi.core.WADIRuntimeException;
+import org.codehaus.wadi.core.motable.Motable;
 import org.codehaus.wadi.core.session.Session;
 import org.codehaus.wadi.core.session.SessionFactory;
 import org.codehaus.wadi.core.util.Streamer;
@@ -48,7 +49,7 @@ public class SessionStateHandler implements ObjectStateHandler {
         this.sessionFactory = (SessionFactory) factory;
     }
     
-    public byte[] extractFullState(Object key, Object target) {
+    public byte[] extractFullState(Object key, Motable target) {
         Externalizable externalizable = newExtractFullStateExternalizable(key, target);
         try {
             return Utils.getContent(externalizable, streamer);
@@ -57,7 +58,7 @@ public class SessionStateHandler implements ObjectStateHandler {
         }
     }
 
-    public byte[] extractUpdatedState(Object key, Object target) {
+    public byte[] extractUpdatedState(Object key, Motable target) {
         Externalizable externalizable = newExtractUpdatedStateExternalizable(key, target);
         try {
             return Utils.getContent(externalizable, streamer);
@@ -66,37 +67,37 @@ public class SessionStateHandler implements ObjectStateHandler {
         }
     }
 
-    public void resetObjectState(Object target) {
+    public void resetObjectState(Motable target) {
     }
     
-    public Object restoreFromFullState(Object key, byte[] state) {
+    public Motable restoreFromFullState(Object key, byte[] state) {
         Externalizable externalizable = newExternalizable(key);
         try {
             Utils.setContent(externalizable, state, streamer);
         } catch (Exception e) {
             throw new WADIRuntimeException(e);
         }
-        return externalizable;
+        return (Session) externalizable;
     }
 
-    public Object restoreFromFullStateTransient(Object key, byte[] state) {
+    public Motable restoreFromFullStateTransient(Object key, byte[] state) {
         return restoreFromFullState(key, state);
     }
     
-    public Object restoreFromUpdatedState(Object key, byte[] state) {
+    public Motable restoreFromUpdatedState(Object key, byte[] state) {
         Externalizable externalizable = newExternalizable(key);
         try {
             Utils.setContent(externalizable, state, streamer);
         } catch (Exception e) {
             throw new WADIRuntimeException(e);
         }
-        return externalizable;
+        return (Session) externalizable;
     }
     
-    public void discardState(Object key, Object payload) {
+    public void discardState(Object key, Motable payload) {
     }
     
-    public void initState(Object key, Object payload) {
+    public void initState(Object key, Motable payload) {
     }
     
     protected Externalizable newExtractFullStateExternalizable(Object key, Object target) {

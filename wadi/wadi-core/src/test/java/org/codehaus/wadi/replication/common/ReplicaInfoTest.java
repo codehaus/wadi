@@ -24,17 +24,25 @@ import java.util.Map;
 
 import junit.framework.TestCase;
 
+import org.codehaus.wadi.core.motable.Motable;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.PeerInfo;
 
-public class ReplicaInfoTest extends TestCase {
+import com.agical.rmock.extension.junit.RMockTestCase;
+
+public class ReplicaInfoTest extends RMockTestCase {
     private static final Peer peer1 = new MockPeer("PEER1");
     private static final Peer peer2 = new MockPeer("PEER2");
     private static final Peer peer3 = new MockPeer("PEER3");
+    private Motable replica;
+    
+    @Override
+    protected void setUp() throws Exception {
+        replica = (Motable) mock(Motable.class);
+    }
     
     public void testUpdateSecondaries() throws Exception {
-        Object replica = new Object();
         Peer[] secondaries = new Peer[] {peer2};
         ReplicaInfo info = new ReplicaInfo(peer1, secondaries, replica);
         assertEquals(0, info.getVersion());
@@ -45,10 +53,9 @@ public class ReplicaInfoTest extends TestCase {
     }
     
     public void testCreateWithPrototype() {
-        Object payload = new Object();
         Peer primary = peer1;
         Peer[] secondaries = new Peer[] {peer2};
-        ReplicaInfo info = new ReplicaInfo(primary, secondaries, payload);
+        ReplicaInfo info = new ReplicaInfo(primary, secondaries, replica);
         assertEquals(0, info.getVersion());
         
         primary = peer2;
@@ -56,12 +63,12 @@ public class ReplicaInfoTest extends TestCase {
         info = new ReplicaInfo(info, primary, secondaries);
         assertSame(primary, info.getPrimary());
         assertSame(secondaries, info.getSecondaries());
-        assertSame(payload, info.getPayload());
+        assertSame(replica, info.getPayload());
         assertEquals(1, info.getVersion());
     }
 
     public void testExternalizable() throws Exception {
-        ReplicaInfo info = new ReplicaInfo(peer1, new Peer[] {peer2}, new Object());
+        ReplicaInfo info = new ReplicaInfo(peer1, new Peer[] {peer2}, replica);
         info.increaseVersion();
         
         ByteArrayOutputStream memOut = new ByteArrayOutputStream();

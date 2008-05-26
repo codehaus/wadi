@@ -22,18 +22,21 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Map;
 
-import junit.framework.TestCase;
-
+import org.codehaus.wadi.core.motable.Motable;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.PeerInfo;
 
-public class ReplicaStorageInfoTest extends TestCase {
+import com.agical.rmock.extension.junit.RMockTestCase;
+
+public class ReplicaStorageInfoTest extends RMockTestCase {
     private static final Peer peer1 = new MockPeer("PEER1");
     private static final Peer peer2 = new MockPeer("PEER2");
     
     public void testExternalizable() throws Exception {
-        ReplicaInfo info = new ReplicaInfo(peer1, new Peer[] {peer2}, new Object());
+        Motable motable = (Motable) mock(Motable.class);
+        
+        ReplicaInfo info = new ReplicaInfo(peer1, new Peer[] {peer2}, motable);
         info.increaseVersion();
         
         ReplicaStorageInfo storageInfo = new ReplicaStorageInfo(info, new byte[] {1, 2});

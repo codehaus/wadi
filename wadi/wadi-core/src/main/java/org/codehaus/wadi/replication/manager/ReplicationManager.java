@@ -18,6 +18,7 @@ package org.codehaus.wadi.replication.manager;
 import java.util.Set;
 
 import org.codehaus.wadi.core.Lifecycle;
+import org.codehaus.wadi.core.motable.Motable;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.replication.common.ReplicaInfo;
 import org.codehaus.wadi.servicespace.ServiceName;
@@ -29,13 +30,14 @@ import org.codehaus.wadi.servicespace.ServiceName;
 public interface ReplicationManager extends Lifecycle {
     ServiceName NAME = new ServiceName("ReplicationManager");
     
-    void create(Object key, Object tmp) throws ReplicationKeyAlreadyExistsException, InternalReplicationManagerException;
+    void create(Object key, Motable tmp) throws ReplicationKeyAlreadyExistsException,
+            InternalReplicationManagerException;
     
-    void update(Object key, Object tmp) throws ReplicationKeyNotFoundException, InternalReplicationManagerException;
+    void update(Object key, Motable tmp) throws ReplicationKeyNotFoundException, InternalReplicationManagerException;
     
     void destroy(Object key);
 
-    Object retrieveReplica(Object key) throws ReplicationKeyNotFoundException, InternalReplicationManagerException;
+    Motable retrieveReplica(Object key) throws ReplicationKeyNotFoundException, InternalReplicationManagerException;
 
     void insertReplicaInfo(Object key, ReplicaInfo replicaInfo) throws ReplicationKeyAlreadyExistsException;
     

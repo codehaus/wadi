@@ -15,6 +15,9 @@
  */
 package org.codehaus.wadi.replication.manager.basic;
 
+import java.util.concurrent.locks.Lock;
+
+import org.codehaus.wadi.core.motable.Motable;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.vm.VMPeer;
 import org.codehaus.wadi.replication.common.ReplicaInfo;
@@ -45,7 +48,8 @@ public class StorageCommandBuilderTest extends RMockTestCase {
         InvocationMetaData invMetaData = (InvocationMetaData) intercept(InvocationMetaData.class, "invMetaData");
         
         String expectedKey = "key";
-        Object payload = new Object();
+        Motable payload = (Motable) mock(Motable.class);
+        
         ReplicaInfo replicaInfo = new ReplicaInfo(peer1, new Peer[] {peer2, peer3}, payload);
 
         ReplicaStorageMixInServiceProxy storage = (ReplicaStorageMixInServiceProxy) mock(ReplicaStorageMixInServiceProxy.class);
@@ -58,8 +62,11 @@ public class StorageCommandBuilderTest extends RMockTestCase {
         modify().returnValue(invMetaData);
         invMetaData.setTargets(new Peer[] {peer2});
         
+        Lock writeLock = payload.getReadWriteLock().writeLock();
+        writeLock.lock();
         stateHandler.extractFullState(expectedKey, payload);
         modify().returnValue(new byte[0]);
+        writeLock.unlock();
         
         storage.mergeCreate(expectedKey, null);
         modify().args(is.AS_RECORDED, is.NOT_NULL);

@@ -18,6 +18,7 @@ package org.codehaus.wadi.replication.manager.basic;
 import java.util.Collections;
 import java.util.Set;
 
+import org.codehaus.wadi.core.motable.Motable;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.replication.common.ReplicaInfo;
 import org.codehaus.wadi.replication.manager.InternalReplicationManagerException;
@@ -37,18 +38,21 @@ public class NoOpReplicationManager implements ReplicationManager {
 
     public void insertReplicaInfo(Object key, ReplicaInfo replicaInfo) throws ReplicationKeyAlreadyExistsException {
     }
-    
-    public Object retrieveReplica(Object key) throws ReplicationKeyNotFoundException, InternalReplicationManagerException {
+
+    public Motable retrieveReplica(Object key) throws ReplicationKeyNotFoundException,
+            InternalReplicationManagerException {
         return null;
     }
-    
-    public void create(Object key, Object tmp) throws ReplicationKeyAlreadyExistsException, InternalReplicationManagerException {
+
+    public void create(Object key, Motable tmp) throws ReplicationKeyAlreadyExistsException,
+            InternalReplicationManagerException {
     }
 
     public void destroy(Object key) {
     }
 
-    public void update(Object key, Object tmp) throws ReplicationKeyNotFoundException, InternalReplicationManagerException {
+    public void update(Object key, Motable tmp) throws ReplicationKeyNotFoundException,
+            InternalReplicationManagerException {
     }
 
     public void start() throws Exception {
@@ -61,5 +65,5 @@ public class NoOpReplicationManager implements ReplicationManager {
     public Set<Object> getManagedReplicaInfoKeys() {
         return Collections.EMPTY_SET;
     }
-    
+
 }

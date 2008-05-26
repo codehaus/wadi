@@ -22,6 +22,7 @@ package org.codehaus.wadi.replication.manager.basic;
 import java.io.IOException;
 import java.util.HashMap;
 
+import org.codehaus.wadi.core.motable.Motable;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.vm.VMLocalPeer;
 import org.codehaus.wadi.group.vm.VMPeer;
@@ -58,7 +59,8 @@ public class SyncSecondaryManagerTest extends RMockTestCase {
 
         keyToReplicaInfo = new HashMap<Object, ReplicaInfo>();
         key = "key";
-        replicaInfoForKey = new ReplicaInfo(localPeer, new Peer[] {peer2, peer3}, new Object());
+        Motable motable = (Motable) mock(Motable.class);
+        replicaInfoForKey = new ReplicaInfo(localPeer, new Peer[] {peer2, peer3}, motable);
         keyToReplicaInfo.put(key, replicaInfoForKey);
 
         replicaStorageServiceProxy = (ServiceProxyFactory) mock(ServiceProxyFactory.class);
