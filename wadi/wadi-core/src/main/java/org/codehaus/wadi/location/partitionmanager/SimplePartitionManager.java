@@ -41,6 +41,8 @@ import org.codehaus.wadi.location.balancing.PartitionInfoUpdate;
 import org.codehaus.wadi.location.balancing.RetrieveBalancingInfoEvent;
 import org.codehaus.wadi.location.partition.BasicPartitionRepopulateTask;
 import org.codehaus.wadi.location.partition.PartitionEvacuationRequest;
+import org.codehaus.wadi.location.partition.PartitionRepopulateTask;
+import org.codehaus.wadi.location.partition.PartitionRepopulationException;
 import org.codehaus.wadi.location.partition.PartitionTransferRequest;
 import org.codehaus.wadi.location.partitionmanager.facade.PartitionFacade;
 import org.codehaus.wadi.location.partitionmanager.facade.VersionAwarePartitionFacade;
@@ -268,20 +270,17 @@ public class SimplePartitionManager implements PartitionManager, PartitionManage
     }
     
     protected void doOnPartitionBalancingInfoUpdate(Envelope om, PartitionBalancingInfoUpdate infoUpdate) throws MessageExchangeException, PartitionBalancingException {
-        PartitionBalancingInfo newBalancingInfo = infoUpdate.buildNewPartitionInfo(localPeer);
-        if (infoUpdate.isPartitionManagerAlone()) {
-            // This case happens when this PartitionManager is shutting down and is the last one. In this scenario,
-            // its partitions do not need to be localised.
-            if (!infoUpdate.isPartitionEvacuationAck()) {
-                localise(newBalancingInfo);
-            }
-        } else {
-            PartitionInfo[] newPartitionInfos = newBalancingInfo.getPartitionInfos();
-            transferPartitions(newPartitionInfos);
-            repopulatePartition(newPartitionInfos, infoUpdate.getRepopulatePartitionInfoUpdates());
-            redefineLocalUnchangedPartitions(newPartitionInfos);
-            redefineRemotePartitions(newPartitionInfos);
+        if (infoUpdate.isPartitionManagerAlone() && infoUpdate.isPartitionEvacuationAck()) {
+            // PartitionManager is alone and shutting down. Nothing to do.
+            return;
         }
+
+        PartitionBalancingInfo newBalancingInfo = infoUpdate.buildNewPartitionInfo(localPeer);
+        PartitionInfo[] newPartitionInfos = newBalancingInfo.getPartitionInfos();
+        transferPartitions(newPartitionInfos);
+        redefineLocalUnchangedPartitions(newPartitionInfos);
+        redefineRemotePartitions(newPartitionInfos);
+        repopulatePartition(newPartitionInfos, infoUpdate.getRepopulatePartitionInfoUpdates());
     }
 
     protected void transferPartitions(PartitionInfo[] newPartitionInfos) throws MessageExchangeException, PartitionBalancingException {
@@ -304,9 +303,7 @@ public class SimplePartitionManager implements PartitionManager, PartitionManage
             toBePopulated[i] = new BasicLocalPartition(dispatcher, index);
         }
         
-        BasicPartitionRepopulateTask repopulateTask =
-            new BasicPartitionRepopulateTask(dispatcher, timing.getWaitForRepopulationTime());
-        repopulateTask.repopulate(toBePopulated);
+        repopulate(toBePopulated);
 
         for (int i = 0; i < updates.length; i++) {
             int index = updates[i].getPartitionInfo().getIndex();
@@ -314,6 +311,12 @@ public class SimplePartitionManager implements PartitionManager, PartitionManage
             PartitionInfo partitionInfo = newPartitionInfos[index];
             facade.setContent(partitionInfo, toBePopulated[i]);
         }
+    }
+
+    protected void repopulate(LocalPartition[] toBePopulated) throws MessageExchangeException, PartitionRepopulationException {
+        PartitionRepopulateTask repopulateTask =
+            new BasicPartitionRepopulateTask(dispatcher, timing.getWaitForRepopulationTime());
+        repopulateTask.repopulate(toBePopulated);
     }
 
     protected void redefineRemotePartitions(PartitionInfo[] newPartitionInfos) {
@@ -383,20 +386,6 @@ public class SimplePartitionManager implements PartitionManager, PartitionManage
             partitionInfos.add(newPartitionInfo);
         }
         return peerToPartitionInfos;
-    }
-
-    protected void localise(PartitionBalancingInfo newBalancingInfo) {
-        log.info("Allocating [" + numPartitions + "] partitions");
-        PartitionInfo[] partitionInfos = newBalancingInfo.getPartitionInfos();
-        for (int i = 0; i < numPartitions; i++) {
-            PartitionFacade facade = partitions[i];
-            if (facade.isLocal()) {
-                facade.setPartitionInfo(partitionInfos[i]);
-            } else {
-                LocalPartition local = new BasicLocalPartition(dispatcher, i);
-                facade.setContent(partitionInfos[i], local);
-            }
-        }
     }
 
 }

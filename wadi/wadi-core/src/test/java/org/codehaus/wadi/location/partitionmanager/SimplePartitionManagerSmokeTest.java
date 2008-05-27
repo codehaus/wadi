@@ -28,6 +28,7 @@ import org.codehaus.wadi.core.reflect.base.DeclaredMemberFilter;
 import org.codehaus.wadi.core.reflect.jdk.JDKClassIndexerRegistry;
 import org.codehaus.wadi.core.util.SimpleStreamer;
 import org.codehaus.wadi.group.Dispatcher;
+import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.vm.VMBroker;
 import org.codehaus.wadi.group.vm.VMDispatcher;
@@ -35,6 +36,8 @@ import org.codehaus.wadi.location.balancing.PartitionBalancerSingletonServiceHol
 import org.codehaus.wadi.location.balancing.PartitionBalancingInfoUpdate;
 import org.codehaus.wadi.location.balancing.PartitionInfo;
 import org.codehaus.wadi.location.balancing.PartitionInfoUpdate;
+import org.codehaus.wadi.location.partition.PartitionRepopulationException;
+import org.codehaus.wadi.location.partitionmanager.local.LocalPartition;
 import org.codehaus.wadi.location.statemanager.SimpleStateManager;
 import org.codehaus.wadi.servicespace.ServiceSpace;
 import org.codehaus.wadi.servicespace.ServiceSpaceName;
@@ -112,10 +115,14 @@ public class SimplePartitionManagerSmokeTest extends RMockTestCase {
                 new SimplePartitionMapper(nbPartitions),
                 holder,
                 new SimplePartitionManagerTiming()) {
+            @Override
             protected void waitForBoot() throws InterruptedException, PartitionManagerException {
             }  
-            
+            @Override
             protected void queueRebalancing() {
+            }
+            @Override
+            protected void repopulate(LocalPartition[] toBePopulated) throws MessageExchangeException, PartitionRepopulationException {
             }
         };
         manager.start();
@@ -184,7 +191,7 @@ public class SimplePartitionManagerSmokeTest extends RMockTestCase {
             PartitionInfoUpdate[] updates = new PartitionInfoUpdate[nbPartitions];
             for (int i = 0; i < updates.length; i++) {
                 PartitionInfo partitionInfo = new PartitionInfo(version, i, owner);
-                updates[i] = new PartitionInfoUpdate(false, partitionInfo);
+                updates[i] = new PartitionInfoUpdate(true, partitionInfo);
             }
             PartitionBalancingInfoUpdate update = new PartitionBalancingInfoUpdate(updates, true, false);
             manager.onPartitionBalancingInfoUpdate(null, update);
