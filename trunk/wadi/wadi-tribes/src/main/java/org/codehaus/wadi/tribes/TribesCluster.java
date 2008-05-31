@@ -19,6 +19,8 @@ import org.apache.catalina.tribes.group.interceptors.MessageDispatchInterceptor;
 import org.apache.catalina.tribes.group.interceptors.StaticMembershipInterceptor;
 import org.apache.catalina.tribes.group.interceptors.TcpFailureDetector;
 import org.apache.catalina.tribes.membership.McastService;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.ClusterException;
@@ -29,7 +31,11 @@ import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.group.PeerInfo;
 
 public class TribesCluster implements Cluster {
-    
+    private static final Log LOG = LogFactory.getLog(TribesCluster.class);
+    private static final String SYS_PROP_PREFER_IPV4_STACK = "java.net.preferIPv4Stack";
+    private static final String SYS_PROP_INHIBIT_AUTO_PREFER_IPV4_STACK = 
+        "org.codehaus.wadi.tribes.inhibit.auto.preferIPv4Stack";
+
     private final byte[] clusterDomain;
     protected GroupChannel channel;
     protected List<ClusterListener> listeners = new CopyOnWriteArrayList<ClusterListener>();
@@ -175,11 +181,27 @@ public class TribesCluster implements Cluster {
     }
     
     public void init() throws ClusterException {
+        ensurePreferIPv4StackPropertyIsSet();
+        
         try {
             channel.start(Channel.SND_RX_SEQ);
             initialized = true;
         }catch ( ChannelException x ) {
             throw new ClusterException(x);
+        }
+    }
+
+    protected void ensurePreferIPv4StackPropertyIsSet() {
+        String preferIPv4Stack = System.getProperty(SYS_PROP_PREFER_IPV4_STACK);
+        if (null == preferIPv4Stack) {
+            if (null != System.getProperty(SYS_PROP_INHIBIT_AUTO_PREFER_IPV4_STACK)) {
+                LOG.warn("System property java.net.preferIPv4Stack is not set and auto-set if inhibited. Tribes " +
+                		"multicasting will not properly work. You need to have a static cluster configuration.");
+            } else {
+                LOG.info("System property java.net.preferIPv4Stack has been set automatically to true so that " +
+                		"Tribes multicasting properly works.");
+                System.setProperty(SYS_PROP_PREFER_IPV4_STACK, "true");
+            }
         }
     }
 
