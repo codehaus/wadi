@@ -111,10 +111,11 @@ public class PartitionBalancingInfo implements Serializable {
     }
 
     public String toString() {
-        StringBuffer buffer = new StringBuffer("Partition Balancing:size [" + partitionInfos.length + "]");
+        StringBuffer buffer = new StringBuffer("Partition Balancing\n" +
+            "    Size [" + partitionInfos.length + "]\n");
         for (int i = 0; i < partitionInfos.length; i++) {
             PartitionInfo partitionInfo = partitionInfos[i];
-            buffer.append("; [" + partitionInfo + "]");
+            buffer.append("    " + partitionInfo + "\n");
         }
         return buffer.toString();
     }
@@ -130,5 +131,5 @@ public class PartitionBalancingInfo implements Serializable {
         }
         return true;
     }
-
+    
 }

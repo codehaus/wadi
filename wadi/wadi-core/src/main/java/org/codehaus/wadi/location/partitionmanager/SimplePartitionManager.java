@@ -281,6 +281,12 @@ public class SimplePartitionManager implements PartitionManager, PartitionManage
         redefineLocalUnchangedPartitions(newPartitionInfos);
         redefineRemotePartitions(newPartitionInfos);
         repopulatePartition(newPartitionInfos, infoUpdate.getRepopulatePartitionInfoUpdates());
+        
+        log.info(
+            "\n=============================\n" +
+            "New Partition Balancing\n" +
+            newBalancingInfo +
+            "=============================\n");
     }
 
     protected void transferPartitions(PartitionInfo[] newPartitionInfos) throws MessageExchangeException, PartitionBalancingException {
