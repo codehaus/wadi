@@ -301,27 +301,10 @@
   likelihood of a cache hit.
   -->
   <repositories>
-    <repository><!-- std maven2 repo -->
+    <repository>
       <id>maven2-ibiblio</id>
       <name>Maven 2 Repository at Ibiblio</name>
       <url>http://ibiblio.org/maven2</url>
-    </repository>
-    <repository><!-- our own repo for custom deps -->
-      <id>wadi-dependencies</id>
-      <name>WADI Dependencies Repository at the Haus</name>
-      <url>http://dist.codehaus.org/wadi/dependencies/maven2</url><!-- TODO: should be moved over to WadiReleaseRepository -->
-    </repository>
-    <repository>
-      <id>tomcat-m2-repo</id>
-      <name>Tomcat M2 Repository</name>
-      <url>http://tomcat.apache.org/dev/dist/m2-repository/</url>
-      <layout>default</layout>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
     </repository>
   </repositories>
 
@@ -394,7 +377,6 @@
       <groupId>commons-logging</groupId>
       <artifactId>commons-logging</artifactId>
       <version>${commons-logging.version}</version>
-      <!-- <scope>provided</scope> -->
       <exclusions>
 	<exclusion>
 	  <groupId>javax.servlet</groupId>
@@ -421,20 +403,20 @@
   likelihood of a cache hit.
   -->
   <pluginRepositories>
-    <pluginRepository><!-- std maven2 repo -->
+    <pluginRepository>
       <id>maven2-apache</id>
       <name>Maven 2 Repository at Apache</name>
-      <url>http://people.apache.org/repo/m2-ibiblio-rsync-repository</url><!-- org.apache.maven.plugins -->
+      <url>http://people.apache.org/repo/m2-ibiblio-rsync-repository</url>
     </pluginRepository>
     <pluginRepository>
       <id>maven2-ibiblio</id>
       <name>Maven 2 Repository at Ibiblio</name>
-      <url>http://www.ibiblio.org/maven2/</url><!-- org.codehaus.mojo -->
+      <url>http://www.ibiblio.org/maven2/</url>
     </pluginRepository>
     <pluginRepository>
       <id>wadi-dependencies</id>
       <name>WADI Dependencies Repository at the Haus</name>
-      <url>http://dist.codehaus.org/wadi/dependencies/maven2</url><!-- TODO: should be moved over to WadiReleaseRepository -->
+      <url>http://dist.codehaus.org/wadi/dependencies/maven2</url>
     </pluginRepository>
   </pluginRepositories>
 
@@ -500,15 +482,6 @@
 	    <!-- JGroups -->
 	    <exclude implementation="java.lang.String">**/TestJGRelocation.java</exclude><!-- fails occasionally, investigate -->
 	    <exclude implementation="java.lang.String">**/TestJGEvacuation.java</exclude><!-- fails occasionally, investigate -->
-
-	    <!--
-	    Peer group tests fail when executed with
-	    maven. TestACPeerGroup: when the two testMETHOD are
-	    executed one after the other one, the second one
-	    fails. However, each testMETHOD when executed alone is OK.
-	    InVM and TCP tests also seem buggy.
-	    -->
-	    <exclude implementation="java.lang.String">**/TestAC*.java</exclude>
 	  </excludes>
           <systemProperties>
             <property>
