@@ -115,7 +115,7 @@ public class PartitionInfo implements Serializable {
     }
     
     public String toString() {
-        return "Partition[" + index + "]; owned by [" + owner + "]; version [" + version + ".]; mergeVersion [" + numberOfExpectedMerge + "]";
+        return "Partition[" + index + "] owned by [" + owner + "]; version [" + version + "]; mergeVersion [" + numberOfExpectedMerge + "]";
     }
 
 }
