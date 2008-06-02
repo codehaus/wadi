@@ -17,7 +17,6 @@
 package org.codehaus.wadi.core.contextualiser;
 
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -51,7 +50,7 @@ public class HashingCollapser implements Collapser {
                 public void lockInterruptibly() throws InterruptedException {
                     boolean locked = tryLock(timeout, TimeUnit.MILLISECONDS);
                     if (!locked) {
-                        throw new InterruptedException();
+                        throw new WADIRuntimeException("Cannot acquire lock after " + timeout + "ms");
                     }
                 }
 
