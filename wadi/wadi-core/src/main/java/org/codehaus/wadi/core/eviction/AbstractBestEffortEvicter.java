@@ -46,25 +46,20 @@ public abstract class AbstractBestEffortEvicter extends AbstractEvicter {
     public void evict(ConcurrentMotableMap idToEvictable, EvictionStrategy evictionStrategy) {
         log.debug("Sweep started");
 
-        List<Motable> toExpireList = new ArrayList<Motable>();
         List<Motable> toDemoteList = new ArrayList<Motable>();
-        identifyDemotionsAndExpirations(idToEvictable, toExpireList, toDemoteList);
+        identifyDemotions(idToEvictable, toDemoteList);
         
-        Motable[] toExpire = toExpireList.toArray(new Motable[0]);
         Motable[] toDemote = toDemoteList.toArray(new Motable[0]);
-        sortCandidates(toExpire, toDemote);
+        sortCandidates(toDemote);
         
-        expire(toExpire, evictionStrategy);
         demote(toDemote, evictionStrategy);
 
         if (log.isDebugEnabled()) {
-            log.debug("Sweep completed - expirations=[" + toExpire.length + "], demotions=[" + toDemote.length + "]");
+            log.debug("Sweep completed - demotions=[" + toDemote.length + "]");
         }
     }
 
-    protected void identifyDemotionsAndExpirations(ConcurrentMotableMap idToEvictable,
-            List<Motable> toExpire,
-            List<Motable> toDemote) {
+    protected void identifyDemotions(ConcurrentMotableMap idToEvictable, List<Motable> toDemote) {
         long time = System.currentTimeMillis();
         for (Iterator iter = idToEvictable.getNames().iterator(); iter.hasNext();) {
             String id = (String) iter.next();
@@ -78,10 +73,7 @@ public abstract class AbstractBestEffortEvicter extends AbstractEvicter {
                 continue;
             }
             try {
-                if (isReadyToExpire(motable, time)) {
-                    toExpire.add(motable);
-                    idToEvictable.remove(id);
-                } else if (isReadyToDemote(motable, time)) {
+                if (isReadyToDemote(motable, time)) {
                     toDemote.add(motable);
                     idToEvictable.remove(id);
                 }
@@ -89,14 +81,6 @@ public abstract class AbstractBestEffortEvicter extends AbstractEvicter {
                 idToEvictable.releaseExclusive(motable);
             }
         }
-    }
-
-    protected boolean isReadyToExpire(Motable motable, long time) {
-        long ttl = motable.getTimeToLive(time);
-        if (ttl <= 0) {
-            return true;
-        }
-        return false;
     }
 
     protected boolean isReadyToDemote(Motable motable, long time) {
@@ -107,12 +91,11 @@ public abstract class AbstractBestEffortEvicter extends AbstractEvicter {
         return false;
     }
 
-    protected void sortCandidates(Motable[] toExpire, Motable[] toDemote) {
+    protected void sortCandidates(Motable[] toDemote) {
         long time = System.currentTimeMillis();
         // if strict ordering is required we sort the candidate lists before the next stage.
         if (strictOrdering) {
             Comparator<Evictable> comparator = getComparator(time);
-            Arrays.sort(toExpire, comparator);
             Arrays.sort(toDemote, comparator);
         }
     }
@@ -124,13 +107,6 @@ public abstract class AbstractBestEffortEvicter extends AbstractEvicter {
         }
     }
     
-    protected void expire(Motable[] toExpire, EvictionStrategy evictionStrategy) {
-        for (int i = 0; i < toExpire.length; i++) {
-            Motable motable = toExpire[i];
-            evictionStrategy.expire(motable);
-        }
-    }
-
     protected Comparator<Evictable> getComparator(long time) {
         return new TimeToLiveComparator(time);
     }

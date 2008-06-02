@@ -185,14 +185,6 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
             Utils.mote(emoter, immoter, motable, id);
         }
 
-        public void expire(Motable motable) {
-            try {
-                motable.destroy();
-            } catch (Exception e) {
-                log.warn("Problem while destroying motable", e);
-            }
-        }
-        
     }
     
 }

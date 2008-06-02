@@ -23,6 +23,4 @@ import org.codehaus.wadi.core.motable.Motable;
  */
 public interface EvictionStrategy {
     void demote(Motable motable);
-    
-    void expire(Motable motable);
 }
