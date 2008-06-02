@@ -22,8 +22,6 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.locks.Lock;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -40,8 +38,7 @@ import org.codehaus.wadi.core.motable.Motable;
  */
 
 public class Utils {
-	protected static final Log _log=LogFactory.getLog(Utils.class);
-	protected static final Log _lockLog=LogFactory.getLog("org.codehaus.wadi.LOCKS");
+	private static final Log LOG = LogFactory.getLog(Utils.class);
 
 	/**
 	 * Mote (in other words - move) the data held in a Motable from one Contextualiser to another, such
@@ -66,41 +63,6 @@ public class Utils {
         }
         return immotable;
     }
-
-    public static void acquireUninterrupted(String lockType, String lockName, Lock sync) throws TimeoutException {
-        boolean interrupted = false;
-        do {
-            try {
-                if (_lockLog.isTraceEnabled()) {
-                    _lockLog.trace(lockType + " - acquiring: " + lockName + " [" + Thread.currentThread().getName()
-                            + "]" + " : " + sync);
-                }
-                sync.lockInterruptibly();
-                if (_lockLog.isTraceEnabled()) {
-                    _lockLog.trace(lockType + " - acquired : " + lockName + " [" + Thread.currentThread().getName()
-                            + "]" + " : " + sync);
-                }
-            } catch (InterruptedException e) {
-                _log.trace("unexpected interruption - ignoring", e);
-                interrupted = true;
-            }
-        } while (Thread.interrupted());
-        if (interrupted) {
-            Thread.currentThread().interrupt();
-        }
-    }
-    
-	public static void release(String lockType, String lockName, Lock sync) {
-		if (_lockLog.isTraceEnabled()) {
-            _lockLog.trace(lockType + " - releasing: " + lockName + " [" + Thread.currentThread().getName() + "]"
-                    + " : " + sync);
-        }
-        sync.unlock();
-        if (_lockLog.isTraceEnabled()) {
-            _lockLog.trace(lockType + " - released : " + lockName + " [" + Thread.currentThread().getName() + "]"
-                    + " : " + sync);
-        }
-	}
 
     public static byte[] getContent(Externalizable object, Streamer streamer) throws IOException {
         ByteArrayOutputStream baos=new ByteArrayOutputStream();

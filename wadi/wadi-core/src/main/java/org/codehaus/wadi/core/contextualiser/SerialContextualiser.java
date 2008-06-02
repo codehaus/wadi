@@ -16,7 +16,6 @@
  */
 package org.codehaus.wadi.core.contextualiser;
 
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.Lock;
 
 import org.apache.commons.logging.Log;
@@ -24,7 +23,6 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.core.ConcurrentMotableMap;
 import org.codehaus.wadi.core.motable.Immoter;
 import org.codehaus.wadi.core.motable.Motable;
-import org.codehaus.wadi.core.util.Utils;
 
 
 
@@ -56,27 +54,23 @@ public class SerialContextualiser extends AbstractDelegatingContextualiser {
             Immoter immoter,
             boolean exclusiveOnly) throws InvocationException {
         Lock invocationLock = collapser.getLock(key);
+
+        // the promotion begins here. allocate a lock and continue...
         try {
-            // the promotion begins here. allocate a lock and continue...
-            try {
-                Utils.acquireUninterrupted("Invocation(SerialContextualiser)", key, invocationLock);
-            } catch (TimeoutException e) {
-                log.error("could not acquire session within timeframe: " + key);
-                return false;
-            }
-            
-            // whilst we were waiting for the motionLock, the session in
-            // question may have been moved back into memory somehow.
-            // before we proceed, confirm that this has not happened.
+            invocationLock.lockInterruptibly();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new InvocationException(e);
+        } catch (Exception e) {
+            log.error("could not acquire session within timeframe: " + key);
+            return false;
+        }
+
+        try {
+            // whilst we were waiting for the motionLock, the session in question may have been moved back into memory 
+            // somehow. before we proceed, confirm that this has not happened.
             Motable context = map.acquire(key);
             if (null != context) {
-                if (log.isTraceEnabled()) {
-                    log.trace("session has reappeared in memory whilst we were waiting to immote it...: " + key
-                            + " [" + Thread.currentThread().getName() + "]");
-                }
-                // overlap two locking systems until we have secured the
-                // session in memory, then run the request
-                // and release the lock.
                 try {
                     return immoter.contextualise(invocation, key, context);
                 } finally {
@@ -84,14 +78,10 @@ public class SerialContextualiser extends AbstractDelegatingContextualiser {
                 }
             }
 
-            // session was not promoted whilst we were waiting for motionLock.
-            // Continue down Contextualiser stack
-            // it may be below us...
-            // lock is to be released as soon as context is available to
-            // subsequent contextualisations...
+            // session was not promoted whilst we were waiting for motionLock. Continue down Contextualiser stack.
             return next.contextualise(invocation, key, immoter, exclusiveOnly);
         } finally {
-            Utils.release("Invocation", key, invocationLock);
+            invocationLock.unlock();
         }
     }
 
