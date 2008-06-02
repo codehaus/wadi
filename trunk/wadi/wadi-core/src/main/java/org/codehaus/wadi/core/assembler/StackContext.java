@@ -96,6 +96,10 @@ import org.codehaus.wadi.web.impl.StandardHttpProxy;
  * @version $Revision: 1538 $
  */
 public class StackContext {
+    private static final int THIRTY_MINUTES_IN_SECONDS = 30 * 60;
+    private static final int ONE_MINUTE_IN_SECONDS = 60;
+    private static final int TEN_SECONDS_IN_MILLISECONDS = 10 * 1000;
+    
     private final ClassLoader cl;
     private final ServiceSpaceName serviceSpaceName;
     protected final Dispatcher underlyingDispatcher;
@@ -126,7 +130,7 @@ public class StackContext {
     protected ObjectStateHandler stateHandler;
 
     public StackContext(ServiceSpaceName serviceSpaceName, Dispatcher underlyingDispatcher) {
-        this(serviceSpaceName, underlyingDispatcher, 30 * 60);
+        this(serviceSpaceName, underlyingDispatcher, THIRTY_MINUTES_IN_SECONDS);
     }
 
     public StackContext(ServiceSpaceName serviceSpaceName, Dispatcher underlyingDispatcher, int sessionTimeout) {
@@ -135,7 +139,7 @@ public class StackContext {
                 underlyingDispatcher,
                 sessionTimeout,
                 24,
-                1000 * 60 * 60 * 24,
+                ONE_MINUTE_IN_SECONDS,
                 new RoundRobinBackingStrategyFactory(1));
     }
     
@@ -383,8 +387,7 @@ public class StackContext {
     }
     
     protected StateManager newStateManager() {
-        // TODO - revert to 2000 ms
-        return new SimpleStateManager(serviceSpace, partitionManager, 1000 * 60 * 60);
+        return new SimpleStateManager(serviceSpace, partitionManager, TEN_SECONDS_IN_MILLISECONDS);
     }
 
     protected PartitionMapper newPartitionMapper() {
@@ -415,7 +418,7 @@ public class StackContext {
     }
 
     protected Contextualiser newCollapserContextualiser(Contextualiser contextualiser, ConcurrentMotableMap mmap) {
-        return new SerialContextualiser(contextualiser, new HashingCollapser(1024, 2000), mmap);
+        return new SerialContextualiser(contextualiser, new HashingCollapser(1024, TEN_SECONDS_IN_MILLISECONDS), mmap);
     }
     
     protected Contextualiser newMemoryContextualiser(Contextualiser next, ConcurrentMotableMap mmap) {
