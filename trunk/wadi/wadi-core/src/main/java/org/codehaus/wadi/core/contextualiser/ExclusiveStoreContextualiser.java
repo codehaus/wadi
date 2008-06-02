@@ -63,6 +63,8 @@ public class ExclusiveStoreContextualiser extends AbstractExclusiveContextualise
     }
 
     protected void doStart() throws Exception {
+        super.doStart();
+
         if (clean) {
             store.clean();
         } else {
