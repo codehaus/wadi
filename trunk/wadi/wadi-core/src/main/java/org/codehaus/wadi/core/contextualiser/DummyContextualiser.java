@@ -27,6 +27,7 @@ import org.codehaus.wadi.core.motable.Motable;
 import org.codehaus.wadi.core.motable.SimpleMotable;
 import org.codehaus.wadi.location.partitionmanager.PartitionMapper;
 import org.codehaus.wadi.location.statemanager.StateManager;
+import org.codehaus.wadi.replication.manager.ReplicationManager;
 
 /**
  * A Contextualiser that does no contextualising
@@ -39,12 +40,16 @@ public class DummyContextualiser implements Contextualiser {
     protected final Immoter _immoter = new DummyImmoter();
 
     private final StateManager stateManager;
+    private final ReplicationManager replicationManager;
     
-    public DummyContextualiser(StateManager stateManager) {
+    public DummyContextualiser(StateManager stateManager, ReplicationManager replicationManager) {
         if (null == stateManager) {
             throw new IllegalArgumentException("stateManager is required");
+        } else if (null == replicationManager) {
+            throw new IllegalArgumentException("replicationManager is required");
         }
         this.stateManager = stateManager;
+        this.replicationManager = replicationManager;
     }
 
     public boolean contextualise(Invocation invocation, String key, Immoter immoter, boolean exclusiveOnly)
@@ -82,7 +87,9 @@ public class DummyContextualiser implements Contextualiser {
 
     public class DummyImmoter implements Immoter {
         public boolean immote(Motable emotable, Motable immotable) {
-            stateManager.remove(emotable.getName());
+            String key = emotable.getName();
+            stateManager.remove(key);
+            replicationManager.destroy(key);
             return true;
         }
         

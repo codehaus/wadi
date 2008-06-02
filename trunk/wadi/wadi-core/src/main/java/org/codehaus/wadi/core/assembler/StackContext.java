@@ -202,7 +202,7 @@ public class StackContext {
         
         ContextualiserStackExplorer stackExplorer = new ContextualiserStackExplorer();
         
-        Contextualiser contextualiser = new DummyContextualiser(stateManager);
+        Contextualiser contextualiser = new DummyContextualiser(stateManager, replicationManager);
         
         contextualiser = newSharedStoreContextualiser(contextualiser);
         stackExplorer.pushContextualiser(contextualiser);

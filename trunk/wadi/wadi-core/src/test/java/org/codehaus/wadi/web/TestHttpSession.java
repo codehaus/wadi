@@ -37,7 +37,6 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.core.ConcurrentMotableMap;
 import org.codehaus.wadi.core.JDK5ConcurrentMotableMap;
 import org.codehaus.wadi.core.contextualiser.Contextualiser;
-import org.codehaus.wadi.core.contextualiser.DummyContextualiser;
 import org.codehaus.wadi.core.manager.BasicSessionMonitor;
 import org.codehaus.wadi.core.manager.ClusteredManager;
 import org.codehaus.wadi.core.manager.DummyManagerConfig;
@@ -48,12 +47,10 @@ import org.codehaus.wadi.core.manager.SessionIdFactory;
 import org.codehaus.wadi.core.manager.SessionMonitor;
 import org.codehaus.wadi.core.manager.StandardManager;
 import org.codehaus.wadi.core.manager.TomcatSessionIdFactory;
-import org.codehaus.wadi.core.motable.Motable;
 import org.codehaus.wadi.core.session.DistributableAttributesFactory;
 import org.codehaus.wadi.core.session.StandardValueFactory;
 import org.codehaus.wadi.core.session.ValueFactory;
 import org.codehaus.wadi.core.util.SimpleStreamer;
-import org.codehaus.wadi.location.statemanager.StateManager;
 import org.codehaus.wadi.replication.manager.basic.NoOpReplicationManager;
 import org.codehaus.wadi.web.impl.StandardSessionWrapperFactory;
 
@@ -78,31 +75,7 @@ public class TestHttpSession extends RMockTestCase {
 
     // Standard
     protected SessionMonitor sessionMonitor = new BasicSessionMonitor();
-    protected Contextualiser contextualiser = new DummyContextualiser(new StateManager() {
-        public boolean insert(String name) {
-            throw new UnsupportedOperationException();
-        }
-
-        public boolean offerEmigrant(Motable emotable) {
-            throw new UnsupportedOperationException();
-        }
-
-        public void relocate(String name) {
-            throw new UnsupportedOperationException();
-        }
-
-        public void remove(String name) {
-            throw new UnsupportedOperationException();
-        }
-
-        public void start() throws Exception {
-            throw new UnsupportedOperationException();
-        }
-
-        public void stop() throws Exception {
-            throw new UnsupportedOperationException();
-        }
-    });
+    protected Contextualiser contextualiser;
     protected WebSessionWrapperFactory webSessionWrapperFactory = new StandardSessionWrapperFactory();
     protected SessionIdFactory sessionIdFactory = new TomcatSessionIdFactory();
     protected ValueFactory valueFactory = new StandardValueFactory();
@@ -113,12 +86,7 @@ public class TestHttpSession extends RMockTestCase {
             router,
             webSessionWrapperFactory);
 
-    protected StandardManager _standardManager = new StandardManager(webSessionFactory,
-            sessionIdFactory,
-            contextualiser,
-            motableMap,
-            router,
-            sessionMonitor);
+    protected StandardManager _standardManager;
     protected DummyManagerConfig _standardConfig = new DummyManagerConfig();
     private WADIHttpSessionListener wadiHttpSessionListener;
 
@@ -236,6 +204,14 @@ public class TestHttpSession extends RMockTestCase {
     }
 
     protected void setUp() throws Exception {
+        contextualiser = (Contextualiser) mock(Contextualiser.class);
+        _standardManager = new StandardManager(webSessionFactory,
+                sessionIdFactory,
+                contextualiser,
+                motableMap,
+                router,
+                sessionMonitor);
+        
         _listener = new Listener();
         HttpSessionListener[] sessionListeners = new HttpSessionListener[] { _listener };
         wadiHttpSessionListener = new WADIHttpSessionListener(sessionListeners);

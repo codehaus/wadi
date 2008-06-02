@@ -18,6 +18,7 @@ package org.codehaus.wadi.core.contextualiser;
 import org.codehaus.wadi.core.motable.Immoter;
 import org.codehaus.wadi.core.motable.Motable;
 import org.codehaus.wadi.location.statemanager.StateManager;
+import org.codehaus.wadi.replication.manager.ReplicationManager;
 
 import com.agical.rmock.extension.junit.RMockTestCase;
 
@@ -27,6 +28,8 @@ import com.agical.rmock.extension.junit.RMockTestCase;
 public class DummyContextualiserTest extends RMockTestCase {
 
     public void testImmotionNotifyStateManager() throws Exception {
+        ReplicationManager replicationManager = (ReplicationManager) mock(ReplicationManager.class);
+        
         StateManager stateManager = (StateManager) mock(StateManager.class);
         Motable emotable = (Motable) mock(Motable.class);
         emotable.getName();
@@ -34,9 +37,11 @@ public class DummyContextualiserTest extends RMockTestCase {
         modify().returnValue(name);
         
         stateManager.remove(name);
+        replicationManager.destroy(name);
+        
         startVerification();
         
-        DummyContextualiser contextualiser = new DummyContextualiser(stateManager);
+        DummyContextualiser contextualiser = new DummyContextualiser(stateManager, replicationManager);
         
         Immoter immoter = contextualiser.getDemoter(name, emotable);
         Motable newMotable = immoter.newMotable(emotable);
