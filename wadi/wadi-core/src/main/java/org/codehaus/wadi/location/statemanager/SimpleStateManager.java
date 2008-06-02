@@ -45,9 +45,7 @@ public class SimpleStateManager implements StateManager, StateManagerMessageList
     private final long inactiveTime;
     private final ServiceEndpointBuilder endpointBuilder;
 
-    public SimpleStateManager(ServiceSpace serviceSpace,
-            PartitionManager partitionManager,
-            long inactiveTime) {
+    public SimpleStateManager(ServiceSpace serviceSpace, PartitionManager partitionManager, long inactiveTime) {
         if (null == serviceSpace) {
             throw new IllegalArgumentException("serviceSpace is required");
         } else if (null == partitionManager) {
