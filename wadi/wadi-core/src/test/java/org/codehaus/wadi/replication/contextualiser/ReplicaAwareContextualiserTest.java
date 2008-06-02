@@ -15,11 +15,10 @@
  */
 package org.codehaus.wadi.replication.contextualiser;
 
-import org.codehaus.wadi.core.contextualiser.DummyContextualiser;
+import org.codehaus.wadi.core.contextualiser.Contextualiser;
 import org.codehaus.wadi.core.motable.Emoter;
 import org.codehaus.wadi.core.motable.Motable;
 import org.codehaus.wadi.location.statemanager.StateManager;
-import org.codehaus.wadi.replication.contextualiser.ReplicaAwareContextualiser;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
 
 import com.agical.rmock.extension.junit.RMockTestCase;
@@ -31,10 +30,15 @@ import com.agical.rmock.extension.junit.RMockTestCase;
 public class ReplicaAwareContextualiserTest extends RMockTestCase {
     private ReplicationManager manager;
     private StateManager stateManager;
+    private Contextualiser next;
+    private ReplicaAwareContextualiser contextualiser;
 
     protected void setUp() throws Exception {
         manager = (ReplicationManager) mock(ReplicationManager.class);
         stateManager = (StateManager) mock(StateManager.class);
+        next = (Contextualiser) mock(Contextualiser.class);
+        
+        contextualiser = new ReplicaAwareContextualiser(next, manager, stateManager);
     }
     
     public void testEmoter() throws Exception {
@@ -60,10 +64,6 @@ public class ReplicaAwareContextualiserTest extends RMockTestCase {
         
         startVerification();
         
-        ReplicaAwareContextualiser contextualiser = new ReplicaAwareContextualiser(new DummyContextualiser(stateManager),
-                manager,
-                stateManager);
-        
         Emoter emoter = contextualiser.getEmoter();
         emoter.emote(emotable, immotable);
     }
@@ -79,12 +79,8 @@ public class ReplicaAwareContextualiserTest extends RMockTestCase {
         stateManager.insert(key);
         startVerification();
         
-        ReplicaAwareContextualiser contextualiser = new ReplicaAwareContextualiser(new DummyContextualiser(stateManager),
-                manager,
-                stateManager);
         Motable actualMotable = contextualiser.get(key, false);
         assertSame(motable, actualMotable);
     }
-    
     
 }
