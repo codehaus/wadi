@@ -250,21 +250,14 @@ public class StackContext {
 
     protected Contextualiser newDiscStoreContextualiser(Streamer streamer, Contextualiser contextualiser)
             throws Exception {
-        int numberOfSecondsInDiscStoreContextualiser;
-        if (0 == numberOfSecondsInMemoryContextualiser) {
-            numberOfSecondsInDiscStoreContextualiser = sessionTimeout / 2;
-        } else {
-            numberOfSecondsInDiscStoreContextualiser = sessionTimeout - numberOfSecondsInMemoryContextualiser;
-        }
-        
-        if (0 == numberOfSecondsInDiscStoreContextualiser) {
+        if (sessionTimeout == numberOfSecondsInMemoryContextualiser) {
             return contextualiser;
         }
         
         DiscStore store = newDiscStore(streamer);
         return new ExclusiveStoreContextualiser(contextualiser,
             true,
-            new AbsoluteEvicter(sweepInterval, true, numberOfSecondsInDiscStoreContextualiser),
+            new AbsoluteEvicter(sweepInterval, true, sessionTimeout),
             new JDK5ConcurrentMotableMap(),
             store);
     }
