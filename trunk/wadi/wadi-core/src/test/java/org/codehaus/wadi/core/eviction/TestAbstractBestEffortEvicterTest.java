@@ -5,7 +5,6 @@ import java.util.Collections;
 import org.codehaus.wadi.core.ConcurrentMotableMap;
 import org.codehaus.wadi.core.MotableBusyException;
 import org.codehaus.wadi.core.contextualiser.EvictionStrategy;
-import org.codehaus.wadi.core.eviction.AbstractBestEffortEvicter;
 import org.codehaus.wadi.core.motable.Motable;
 
 import com.agical.rmock.extension.junit.RMockTestCase;
@@ -22,34 +21,6 @@ public class TestAbstractBestEffortEvicterTest extends RMockTestCase {
         evictionStrategy = (EvictionStrategy) mock(EvictionStrategy.class);
     }
     
-    public void testExpiration() throws Exception {
-        AbstractBestEffortEvicter evicter = new AbstractBestEffortEvicter(10, false) {
-            public boolean testForDemotion(Motable motable, long time, long ttl) {
-                throw new UnsupportedOperationException();
-            }
-        };
-
-        beginSection(s.ordered("Expire"));
-        idToEvictable.getNames();
-        String id = "id";
-        modify().returnValue(Collections.singleton(id));
-
-        idToEvictable.acquireExclusive(id, 1);
-        modify().returnValue(motable);
-
-        motable.getTimeToLive(10);
-        modify().args(is.ANYTHING).returnValue(-1);
-        idToEvictable.remove(id);
-        
-        idToEvictable.releaseExclusive(motable);
-
-        evictionStrategy.expire(motable);
-        endSection();
-        startVerification();
-
-        evicter.evict(idToEvictable, evictionStrategy);
-    }
-
     public void testDemotion() throws Exception {
         AbstractBestEffortEvicter evicter = new AbstractBestEffortEvicter(10, false) {
             public boolean testForDemotion(Motable motable, long time, long ttl) {
@@ -66,7 +37,7 @@ public class TestAbstractBestEffortEvicterTest extends RMockTestCase {
         modify().returnValue(motable);
 
         motable.getTimeToLive(10);
-        modify().multiplicity(expect.exactly(2)).args(is.ANYTHING).returnValue(10);
+        modify().args(is.ANYTHING).returnValue(10);
         idToEvictable.remove(id);
         
         idToEvictable.releaseExclusive(motable);
@@ -115,7 +86,7 @@ public class TestAbstractBestEffortEvicterTest extends RMockTestCase {
         modify().returnValue(motable);
 
         motable.getTimeToLive(10);
-        modify().multiplicity(expect.exactly(2)).args(is.ANYTHING).returnValue(10);
+        modify().args(is.ANYTHING).returnValue(10);
         
         idToEvictable.releaseExclusive(motable);
 
