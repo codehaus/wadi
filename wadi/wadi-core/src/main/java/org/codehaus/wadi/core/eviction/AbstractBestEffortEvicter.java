@@ -34,7 +34,8 @@ import org.codehaus.wadi.core.motable.Motable;
  * @version $Revision$
  */
 public abstract class AbstractBestEffortEvicter extends AbstractEvicter {
-    protected final Log log = LogFactory.getLog(getClass());
+    private static final Log log = LogFactory.getLog(AbstractBestEffortEvicter.class);
+
     protected final boolean strictOrdering;
 
     public AbstractBestEffortEvicter(int sweepInterval, boolean strictOrdering) {
@@ -45,12 +46,12 @@ public abstract class AbstractBestEffortEvicter extends AbstractEvicter {
     public void evict(ConcurrentMotableMap idToEvictable, EvictionStrategy evictionStrategy) {
         log.debug("Sweep started");
 
-        List toExpireList = new ArrayList();
-        List toDemoteList = new ArrayList();
+        List<Motable> toExpireList = new ArrayList<Motable>();
+        List<Motable> toDemoteList = new ArrayList<Motable>();
         identifyDemotionsAndExpirations(idToEvictable, toExpireList, toDemoteList);
         
-        Motable[] toExpire = (Motable[]) toExpireList.toArray(new Motable[0]);
-        Motable[] toDemote = (Motable[]) toDemoteList.toArray(new Motable[0]);
+        Motable[] toExpire = toExpireList.toArray(new Motable[0]);
+        Motable[] toDemote = toDemoteList.toArray(new Motable[0]);
         sortCandidates(toExpire, toDemote);
         
         expire(toExpire, evictionStrategy);
@@ -61,7 +62,9 @@ public abstract class AbstractBestEffortEvicter extends AbstractEvicter {
         }
     }
 
-    protected void identifyDemotionsAndExpirations(ConcurrentMotableMap idToEvictable, List toExpire, List toDemote) {
+    protected void identifyDemotionsAndExpirations(ConcurrentMotableMap idToEvictable,
+            List<Motable> toExpire,
+            List<Motable> toDemote) {
         long time = System.currentTimeMillis();
         for (Iterator iter = idToEvictable.getNames().iterator(); iter.hasNext();) {
             String id = (String) iter.next();
@@ -108,7 +111,7 @@ public abstract class AbstractBestEffortEvicter extends AbstractEvicter {
         long time = System.currentTimeMillis();
         // if strict ordering is required we sort the candidate lists before the next stage.
         if (strictOrdering) {
-            Comparator comparator = getComparator(time);
+            Comparator<Evictable> comparator = getComparator(time);
             Arrays.sort(toExpire, comparator);
             Arrays.sort(toDemote, comparator);
         }
@@ -128,11 +131,11 @@ public abstract class AbstractBestEffortEvicter extends AbstractEvicter {
         }
     }
 
-    protected Comparator getComparator(long time) {
+    protected Comparator<Evictable> getComparator(long time) {
         return new TimeToLiveComparator(time);
     }
 
-    static class TimeToLiveComparator implements Comparator {
+    static class TimeToLiveComparator implements Comparator<Evictable> {
         protected final long _time;
 
         public TimeToLiveComparator(long time) {
@@ -145,8 +148,14 @@ public abstract class AbstractBestEffortEvicter extends AbstractEvicter {
         }
 
         // orders smallest ttl first, largest last
-        public int compare(Object o1, Object o2) {
-            return (int) (((Evictable) o1).getTimeToLive(_time) - ((Evictable) o2).getTimeToLive(_time));
+        public int compare(Evictable o1, Evictable o2) {
+            long delta = o1.getTimeToLive(_time) - o2.getTimeToLive(_time);
+            if (delta < 0) {
+                return -1;
+            } else if (delta > 0) {
+                return 1;
+            }
+            return 0;
         }
 
     }
