@@ -1,0 +1,70 @@
+
+Abstract:
+
+Highly Available State in the Apache Geronimo Web-Tier.
+-------------------------------------------------------
+
+High availability and scalability are becoming an increasing business
+requirement for the modern enterprise.
+
+This talk will look at the challenge of maintaining the high
+availibility of state in an open source web cluster.
+
+We will survey current open source solutions to these problems, with
+specific reference and comparison to Geronimo (geronimo.apache.org),
+Apache's J2EE Application Server project and WADI (wadi.codehaus.org),
+its web clustering component.
+
+We will discuss in detail issues such as HttpSession affinity,
+bleeding, what it means to be a 'distributed' web application, the
+semantics of the HttpSession event model in a 'distributed'
+deployment, the semantics of object reference within a 'distributed'
+HttpSession, session passivation, activation, eviction, migration and
+replication (a number of strategies) and finally self-organising and
+self-healing clusters.
+
+
+Attendees
+---------
+
+To derive maximum benefit from this BOF, the attendee should have a
+good grasp of what an HttpSession is, what it looks like and what it
+is used for. Knowledge about HttpRequest/Response and the use of
+Cookies / URL parameters to mark session identity will also be
+helpful.
+
+
+Summary
+---------
+
+The BOF will use slides and demonstrations to illustrate the issues
+surrounding maintaining the high availibility of web state within a
+J2EE cluster.
+
+The goal of the session is that attendees will leave with a thorough
+understanding of the issues surrounding clustering a stateful
+web-application, and a strong grasp of the technologies available to
+them within the open source arena.
+
+Bio:
+----
+Jules Gosnell is a Core Developers Network partner, founding Apache
+Geronimo committer and PMC member. He has been writing open source for
+a number of years and using it for a long time previous to
+that. Further years of experience working for financial institutions
+in the J2EE arena have given him a solid grasp of exactly what he
+needs from a J2EE Application Server and his work in and around
+Geronimo is an effort to attain that goal....
+
+
+Address:
+--------
+
+2, Tannery Cottages
+Tannery Lane
+Bramley
+Surrey
+GU5 0AB
+U.K.
+
++1483-898348
