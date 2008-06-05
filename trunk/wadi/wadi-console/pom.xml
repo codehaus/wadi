@@ -72,6 +72,12 @@
                   dir="${basedir}"
                   executable="${env.GRAILS_HOME}/bin/grails"
                   failonerror="true">
+                  <arg line="unpack-dojo" />            
+                </exec>
+                <exec
+                  dir="${basedir}"
+                  executable="${env.GRAILS_HOME}/bin/grails"
+                  failonerror="true">
                   <arg line="war" />            
                 </exec>
                 <mkdir dir="${basedir}/target/${project.artifactId}-${project.version}"/>
