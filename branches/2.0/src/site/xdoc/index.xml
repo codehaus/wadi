@@ -6,17 +6,17 @@
   <body>
     <section name="WADI - WADI Application Distribution Infrastructure">
       <div id="downloadbox">
-	<h5>Download WADI 2.0-M10</h5>
+	<h5>Download WADI 2.0</h5>
 	<p>
-	  <img valign="top" src="./images/folder-open.gif" border="0" alt="" title="download"/>2.0-M10 Release Artifacts
+	  <img valign="top" src="./images/folder-open.gif" border="0" alt="" title="download"/>2.0 Release Artifacts
           <ul>
-	    <li><a href="http://repository.codehaus.org/org/codehaus/wadi/wadi-aop/2.0-M10/wadi-aop-2.0-M10.jar">wadi-aop-2.0-M10.jar</a></li>
-	    <li><a href="http://repository.codehaus.org/org/codehaus/wadi/wadi-console/2.0-M10/wadi-console-2.0-M10.jar">wadi-console-2.0-M10.war</a></li>
-	    <li><a href="http://repository.codehaus.org/org/codehaus/wadi/wadi-core/2.0-M10/wadi-core-2.0-M10.jar">wadi-core-2.0-M10.jar</a></li>
-	    <li><a href="http://repository.codehaus.org/org/codehaus/wadi/wadi-group/2.0-M10/wadi-group-2.0-M10.jar">wadi-group-2.0-M10.jar</a></li>
-	    <li><a href="http://repository.codehaus.org/org/codehaus/wadi/wadi-jgroups/2.0-M10/wadi-jgroups-2.0-M10.jar">wadi-jgroups-2.0-M10.jar</a></li>
-	    <li><a href="http://repository.codehaus.org/org/codehaus/wadi/wadi-tribes/2.0-M10/wadi-tribes-2.0-M10.jar">wadi-tribes-2.0-M10.jar</a></li>
-	    <li><a href="http://repository.codehaus.org/org/codehaus/wadi/wadi-webapp/2.0-M10/wadi-webapp-2.0-M10.jar">wadi-webapp-2.0-M10.war</a></li>
+	    <li><a href="http://repository.codehaus.org/org/codehaus/wadi/wadi-aop/2.0/wadi-aop-2.0.jar">wadi-aop-2.0.jar</a></li>
+	    <li><a href="http://repository.codehaus.org/org/codehaus/wadi/wadi-console/2.0/wadi-console-2.0.war">wadi-console-2.0.war</a></li>
+	    <li><a href="http://repository.codehaus.org/org/codehaus/wadi/wadi-core/2.0/wadi-core-2.0.jar">wadi-core-2.0.jar</a></li>
+	    <li><a href="http://repository.codehaus.org/org/codehaus/wadi/wadi-group/2.0/wadi-group-2.0.jar">wadi-group-2.0.jar</a></li>
+	    <li><a href="http://repository.codehaus.org/org/codehaus/wadi/wadi-jgroups/2.0/wadi-jgroups-2.0.jar">wadi-jgroups-2.0.jar</a></li>
+	    <li><a href="http://repository.codehaus.org/org/codehaus/wadi/wadi-tribes/2.0/wadi-tribes-2.0.jar">wadi-tribes-2.0.jar</a></li>
+	    <li><a href="http://repository.codehaus.org/org/codehaus/wadi/wadi-webapp/2.0/wadi-webapp-2.0.war">wadi-webapp-2.0.war</a></li>
           </ul>
 	</p>
       </div>
