@@ -27,15 +27,9 @@
       <item name="How To Help" href="./help.html"/>
       <item name="Release Repository" href="http://repository.codehaus.org/org/codehaus/wadi/"/>
       <item name="Snapshot Repository" href="http://snapshots.repository.codehaus.org/org/codehaus/wadi/"/>
-      <item name="Dependency Repository" href="http://dist.codehaus.org/wadi/dependencies/maven2/"/>
     </menu>
 
     <menu name="Developers">
-      <item name="Maven 2.0.x" href="http://docs.codehaus.org/display/WADI/Maven+2.0.x"/>
-      <item name="Eclipse 3.2.x" href="http://docs.codehaus.org/display/WADI/Eclipse-3.2.x"/>
-      <item name="Conventions" href="http://docs.codehaus.org/display/WADI/Conventions"/>
-      <item name="Gmane" href="http://docs.codehaus.org/display/WADI/Gmane"/>
-      <item name="Library" href="http://docs.codehaus.org/display/WADI/Library"/>
       <item name="Dev List" href="mailto:dev@wadi.codehaus.org"/>
       <item name="Issue Tracker" href="http://jira.codehaus.org/browse/WADI"/>
       <item name="FishEye" href="http://svn.wadi.codehaus.org/viewrep/wadi/trunk/wadi"/>
@@ -43,7 +37,6 @@
       <item name="Release Distributions" href="https://dav.codehaus.org/dist/wadi/"/>
       <item name="Snapshot Repository" href="https://dav.codehaus.org/snapshots.repository/wadi/org/codehaus/wadi/"/>
       <item name="Snapshot Distributions" href="https://dav.codehaus.org/snapshots.dist/wadi/"/>
-      <item name="Dependency Repository" href="https://dav.codehaus.org/dist/wadi/dependencies/maven2/"/>
     </menu>
 
     <menu name="Modules">
