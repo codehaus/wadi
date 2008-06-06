@@ -1,0 +1,543 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+
+ TODO:
+
+ merge in pom-clover.xml
+ scope collisions for junit/commons-httpclient ?
+
+-->
+
+<project
+  xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd"
+  >
+
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.codehaus.wadi</groupId>
+  <artifactId>wadi</artifactId>
+  <version>2.0</version>
+  <packaging>pom</packaging>
+  <name>WADI</name>
+  <url>http://wadi.codehaus.org</url>
+
+  <mailingLists>
+    <mailingList>
+      <name>Development List</name>
+      <subscribe>dev-subscribe@wadi.codehaus.org</subscribe>
+      <unsubscribe>dev-unsubscribe@wadi.codehaus.org</unsubscribe>
+      <post>dev@wadi.codehaus.org</post>
+      <archive>http://news.gmane.org/gmane.comp.java.wadi.devel</archive>
+    </mailingList>
+    <mailingList>
+      <name>User List</name>
+      <subscribe>user-subscribe@wadi.codehaus.org</subscribe>
+      <unsubscribe>user-unsubscribe@wadi.codehaus.org</unsubscribe>
+      <post>user@wadi.codehaus.org</post>
+      <archive>http://news.gmane.org/gmane.comp.java.wadi.general</archive>
+    </mailingList>
+    <mailingList>
+      <name>Commits List</name>
+      <subscribe>scm-subscribe@wadi.codehaus.org</subscribe>
+      <unsubscribe>scm-unsubscribe@wadi.codehaus.org</unsubscribe>
+      <archive>http://news.gmane.org/gmane.comp.java.wadi.cvs</archive>
+    </mailingList>
+  </mailingLists>
+
+  <developers>
+    <developer>
+      <id>rajith</id>
+      <name>Rajith Attapattu</name>
+      <email>rajith@codehaus.org</email>
+      <organization>RedHat</organization>
+      <organizationUrl>http://www.redhat.com/</organizationUrl>
+      <roles>
+	<role>Axis</role>
+      </roles>
+      <timezone>-5</timezone>
+    </developer>
+    <developer>
+      <id>janb</id>
+      <name>Jan Bartel</name>
+      <email>janb@mortbay.com</email>
+      <organization>Mort Bay Consulting</organization>
+      <organizationUrl>http://www.mortbay.com</organizationUrl>
+      <roles><role>Jetty</role></roles>
+      <timezone>+1</timezone>
+    </developer>
+    <developer>
+      <id>gdamour</id>
+      <name>Gianny Damour</name>
+      <email>gianny.damour@optusnet.com.au</email>
+      <organization></organization>
+      <organizationUrl></organizationUrl>
+      <roles>
+	<role>OpenEJB</role>
+	<role>Replication</role>
+      </roles>
+      <timezone>+10</timezone>
+    </developer>
+    <developer>
+      <id>jules</id>
+      <name>Jules Gosnell</name>
+      <email>jules@coredevelopers.net</email>
+      <organization>Core Developers Network</organization>
+      <organizationUrl>http://www.coredevelopers.net</organizationUrl>
+      <roles>
+	<role>Despot</role>
+	<role>Core</role>
+      </roles>
+      <timezone>+0</timezone>
+    </developer>
+    <developer>
+      <id>fhanik</id>
+      <name>Filip Hanik</name>
+      <email>filip@hanik.com</email>
+      <roles>
+	<role>Tribes</role>
+      </roles>
+      <timezone>-6</timezone>
+    </developer>
+    <developer>
+      <id>gscenini</id>
+      <name>Gianni Scenini</name>
+      <email>gianni.scenini@gmail.com</email>
+      <organization>Quativa</organization>
+      <organizationUrl>http://www.quativa.com</organizationUrl>
+      <roles>
+	<role>P2P</role>
+      </roles>
+      <timezone>+1</timezone>
+    </developer>
+    <developer>
+      <id>bsnyder</id>
+      <name>Bruce Snyder</name>
+      <email>bsnyder@codehaus.org</email>
+      <organization>LogicBlaze</organization>
+      <organizationUrl>http://www.logicblaze.com</organizationUrl>
+      <roles>
+	<role>Admin</role>
+      </roles>
+      <timezone>-8</timezone>
+    </developer>
+    <developer>
+      <id>gregw</id>
+      <name>Greg Wilkins</name>
+      <email>gregw@mortbay.com</email>
+      <organization>Mort Bay Consulting</organization>
+      <organizationUrl>http://www.mortbay.com</organizationUrl>
+      <roles><role>Jetty</role></roles>
+      <timezone>+1</timezone>
+    </developer>
+    <!-- retired -->
+    <developer>
+      <id>bdudney</id>
+      <name>Bill Dudney</name>
+      <email>bdudney@codehaus.org</email>
+      <organization>Virtuas</organization>
+      <organizationUrl>http://www.virtuas.com</organizationUrl>
+      <roles>
+	<role>Retired</role>
+      </roles>
+      <timezone>-7</timezone>
+    </developer>
+    <developer>
+      <id>jgenender</id>
+      <name>Jeff Genender</name>
+      <email>jgenender@codehaus.org</email>
+      <organization>Virtuas</organization>
+      <organizationUrl>http://www.virtuas.com</organizationUrl>
+      <roles>
+	<role>Retired</role>
+      </roles>
+      <timezone>-7</timezone>
+    </developer>
+    <developer>
+      <id>jgoodwill</id>
+      <name>James Goodwill</name>
+      <email>jgoodwill@codehaus.org</email>
+      <organization>Virtuas</organization>
+      <organizationUrl>http://www.virtuas.com</organizationUrl>
+      <roles><role>Retired</role></roles>
+      <timezone>-7</timezone>
+    </developer>
+  </developers>
+
+  <contributors>
+    <contributor>
+      <name>Simone Bordet</name>
+      <email></email>
+      <timezone>+1</timezone>
+      <roles>
+	<role>Monitoring</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>Hiram Chirino</name>
+      <email></email>
+      <organization>LogicBlaze</organization>
+      <organizationUrl>http://www.logicblaze.com</organizationUrl>
+      <roles>
+	<role>AC</role>
+	<role>AMQ</role>
+      </roles>
+    </contributor>
+    <contributor>
+      <name>James Strachan</name>
+      <email></email>
+      <organization>LogicBlaze</organization>
+      <organizationUrl>http://www.logicblaze.com</organizationUrl>
+      <timezone>+0</timezone>
+      <roles>
+	<role>AC</role>
+	<role>AMQ</role>
+      </roles>
+    </contributor>
+  </contributors>
+
+  <licenses>
+    <license>
+      <name>The Apache Software License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <scm>
+    <connection>scm:http://svn.codehaus.org/wadi/trunk/wadi/</connection>
+    <developerConnection>scm:svn://svn.wadi.codehaus.org/wadi/trunk/wadi/</developerConnection>
+    <url>http://svn.wadi.codehaus.org/wadi/trunk/wadi</url>
+  </scm>
+
+  <issueManagement>
+    <system>jira</system>
+    <url>http://jira.codehaus.org/browse/WADI</url>
+  </issueManagement>
+
+  <distributionManagement>
+    <repository>
+      <id>codehaus.org</id>
+      <name>WADI Central Repository</name>
+      <url>dav:https://dav.codehaus.org/repository/wadi/</url>
+    </repository>
+    <snapshotRepository>
+      <id>codehaus.org</id>
+      <name>WADI Central Development Repository</name>
+      <url>dav:https://dav.codehaus.org/snapshots.repository/wadi/</url>
+    </snapshotRepository>
+    <site>
+      <id>codehaus.org</id>
+      <name>WADI Website</name>
+      <url>dav:https://dav.codehaus.org/wadi/</url>
+      <!-- <url>file:///tmp/WADI/${project.version}/</url> -->
+    </site>
+  </distributionManagement>
+
+  <!--
+  [becoming] complete list of versions of all components consumed
+  directly by WADI at any level. In alphabetical order.
+  -->
+  <properties>
+    <activemq.version>4.0.1</activemq.version>
+    <backport-util-concurrent.version>2.0_01_pd</backport-util-concurrent.version>
+    <cglib.version>2.1_3</cglib.version>
+    <commons-dbcp.version>1.2.1</commons-dbcp.version>
+    <commons-logging.version>1.1</commons-logging.version>
+    <concurrent.version>1.3.4</concurrent.version>
+    <derby.version>10.1.1.0</derby.version>
+    <geronimo-spec-jms.version>1.1-rc4</geronimo-spec-jms.version>
+    <geronimo-spec-servlet.version>2.4-rc4</geronimo-spec-servlet.version>
+    <jse.version>1.5</jse.version>
+    <junit.version>3.8.1</junit.version>
+    <mx4j.version>3.0.1</mx4j.version>
+    <rmock.version>2.0.0-rc-6</rmock.version>
+    <tomcat55.version>5.5.12</tomcat55.version>
+  </properties>
+
+  <!--
+  modules in compilation order.
+  -->
+  <modules>
+    <module>wadi-aop</module>
+    <module>wadi-group</module>
+    <module>wadi-core</module>
+<!--
+    <module>wadi-cache</module>
+-->
+    <module>wadi-jgroups</module>
+    <module>wadi-tribes</module>
+    <module>wadi-webapp</module>
+<!--
+    <module>wadi-tomcat55</module>
+    <module>wadi-assembly</module>
+-->
+  </modules>
+
+  <!--
+  repositories from which to retrieve dependencies. In order of
+  likelihood of a cache hit.
+  -->
+  <repositories>
+    <repository>
+      <id>maven2-ibiblio</id>
+      <name>Maven 2 Repository at Ibiblio</name>
+      <url>http://ibiblio.org/maven2</url>
+    </repository>
+  </repositories>
+
+  <!--
+  templates for dependencies that are used in more than one module -
+  but not declared in this pom's dependencies element.  in vague order
+  of level complexity. saves typing when mentioned in module dependencies.
+  -->
+  <dependencyManagement>
+    <dependencies>
+      <!-- group, [core], jgroups, activecluster, axis2, [itest] -->
+      <dependency>
+	<groupId>concurrent</groupId>
+	<artifactId>concurrent</artifactId>
+	<version>${concurrent.version}</version>
+      </dependency>
+      <!-- core, tc*, axis -->
+      <dependency>
+	<groupId>geronimo-spec</groupId>
+	<artifactId>geronimo-spec-servlet</artifactId>
+	<version>${geronimo-spec-servlet.version}</version>
+	<scope>provided</scope>
+      </dependency>
+      <dependency>
+	<groupId>org.springframework</groupId>
+	<artifactId>spring-mock</artifactId>
+	<version>1.2.5</version>
+	<scope>test</scope>
+      </dependency>
+      <dependency>
+	<groupId>log4j</groupId>
+	<artifactId>log4j</artifactId>
+	<version>1.2.15</version>
+	<scope>test</scope>
+        <exclusions>
+          <exclusion>
+            <groupId>javax.jms</groupId>
+            <artifactId>jms</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>com.sun.jdmk</groupId>
+            <artifactId>jmxtools</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>com.sun.jmx</groupId>
+            <artifactId>jmxri</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <!--
+  dependencies common to most modules.
+  -->
+  <dependencies>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.agical.rmock</groupId>
+      <artifactId>rmock</artifactId>
+      <version>${rmock.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>commons-logging</groupId>
+      <artifactId>commons-logging</artifactId>
+      <version>${commons-logging.version}</version>
+      <exclusions>
+	<exclusion>
+	  <groupId>javax.servlet</groupId>
+	  <artifactId>servlet-api</artifactId>
+	</exclusion>
+	<exclusion>
+	  <groupId>avalon-framework</groupId>
+	  <artifactId>avalon-framework</artifactId>
+	</exclusion>
+	<exclusion>
+	  <groupId>log4j</groupId>
+	  <artifactId>log4j</artifactId>
+	</exclusion>
+	<exclusion>
+	  <groupId>logkit</groupId>
+	  <artifactId>logkit</artifactId>
+	</exclusion>
+      </exclusions>
+    </dependency>
+  </dependencies>
+
+  <!--
+  repositories from which to retrieve plugin dependencies. In order of
+  likelihood of a cache hit.
+  -->
+  <pluginRepositories>
+    <pluginRepository>
+      <id>maven2-apache</id>
+      <name>Maven 2 Repository at Apache</name>
+      <url>http://people.apache.org/repo/m2-ibiblio-rsync-repository</url>
+    </pluginRepository>
+    <pluginRepository>
+      <id>maven2-ibiblio</id>
+      <name>Maven 2 Repository at Ibiblio</name>
+      <url>http://www.ibiblio.org/maven2/</url>
+    </pluginRepository>
+    <pluginRepository>
+      <id>wadi-dependencies</id>
+      <name>WADI Dependencies Repository at the Haus</name>
+      <url>http://dist.codehaus.org/wadi/dependencies/maven2</url>
+    </pluginRepository>
+  </pluginRepositories>
+
+  <!-- Building: default plugin set for all modules -->
+  <build>
+    <extensions>
+      <!-- TODO: which wagon strategy do we need ? -->
+      <extension>
+	<groupId>org.apache.maven.wagon</groupId>
+	<artifactId>wagon-ssh-external</artifactId>
+      </extension>
+      <extension>
+	<groupId>org.apache.maven.wagon</groupId>
+	<artifactId>wagon-webdav</artifactId>
+	<version>1.0-beta-1</version><!-- TODO: update? -->
+      </extension>
+    </extensions>
+    <plugins>
+      <plugin>
+	<groupId>org.apache.maven.plugins</groupId>
+	<artifactId>maven-clean-plugin</artifactId>
+	<version>2.1</version>
+      </plugin>
+      <plugin>
+	<groupId>org.apache.maven.plugins</groupId>
+	<artifactId>maven-install-plugin</artifactId>
+	<version>2.1</version>
+      </plugin>
+      <plugin>
+	<groupId>org.apache.maven.plugins</groupId>
+	<artifactId>maven-compiler-plugin</artifactId>
+	<version>2.0.1</version>
+	<configuration>
+	  <source>${jse.version}</source>
+	  <target>${jse.version}</target>
+	</configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-clover-plugin</artifactId>
+	<version>2.3</version>
+        <configuration>
+	  <jdk>${jse.version}</jdk>
+	  <licenseLocation>./etc/clover.license</licenseLocation>
+	  <aggregate>true</aggregate>
+          <flushPolicy>threaded</flushPolicy>
+          <flushInterval>100</flushInterval>
+	  <!-- <targetPercentage>0%</targetPercentage> -->  <!-- adds clover to std build, too slow -->
+        </configuration>
+      </plugin>
+      <plugin>
+	<groupId>org.apache.maven.plugins</groupId>
+	<artifactId>maven-surefire-plugin</artifactId>
+	<configuration>
+	  <excludes>
+	    <exclude implementation="java.lang.String">**/*$*.java</exclude><!-- do not run nested classes -->
+	    <exclude implementation="java.lang.String">**/Abstract*.java</exclude><!-- do not run abstract classes -->
+	    <exclude implementation="java.lang.String">**/*TestCase.java</exclude><!-- do not run TestCase base classes -->
+	    <exclude implementation="java.lang.String">**/TestLease.java</exclude>
+
+            <!-- InVM -->
+            <exclude implementation="java.lang.String">**/TestInVMReplicationManager.java</exclude>
+
+	    <!-- JGroups -->
+	    <exclude implementation="java.lang.String">**/TestJGRelocation.java</exclude><!-- fails occasionally, investigate -->
+	    <exclude implementation="java.lang.String">**/TestJGEvacuation.java</exclude><!-- fails occasionally, investigate -->
+	  </excludes>
+          <systemProperties>
+            <property>
+              <name>log4j.configuration</name>
+              <value>log4j.properties</value>
+            </property>
+	  </systemProperties>
+	</configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <!-- WebSite: default plugin set for all modules -->
+  <reporting>
+    <plugins>
+      <plugin>
+	<groupId>org.apache.maven.plugins</groupId>
+	<artifactId>maven-project-info-reports-plugin</artifactId>
+      </plugin>
+      <plugin>
+ 	<groupId>org.codehaus.mojo</groupId>
+	<artifactId>jxr-maven-plugin</artifactId>
+	<version>2.0-beta-1</version>
+      </plugin>
+      <plugin>
+	<groupId>org.apache.maven.plugins</groupId>
+	<artifactId>maven-javadoc-plugin</artifactId>
+	<configuration>
+	  <!--
+	  I thought that we might be able to aggregate javadoc for all
+	  modules,but because different modules consume multiple versions
+	  of the same classes, I don't think we will be able to...
+	  -->
+	  <aggregate>false</aggregate>
+	  <source>${jse.version}</source>
+	  <minMemory>512m</minMemory>
+	  <maxMemory>512m</maxMemory>
+	</configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-clover-plugin</artifactId>
+        <configuration>
+          <generateHistorical>true</generateHistorical>
+        </configuration>
+      </plugin>
+      <!-- tags -->
+      <plugin>
+	<groupId>org.codehaus.mojo</groupId>
+	<artifactId>taglist-maven-plugin</artifactId>
+	<configuration>
+	  <tags>
+	    <tag>TODO</tag>
+	    <tag>@todo</tag>
+	    <tag>FIXME</tag>
+	    <tag>HACK</tag>
+	    <tag>@deprecated</tag>
+	  </tags>
+	</configuration>
+      </plugin>
+      <plugin>
+	<groupId>org.codehaus.mojo</groupId>
+	<artifactId>jdepend-maven-plugin</artifactId> <!-- needs: maven-plugin-snapshots -->
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-report-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </reporting>
+
+  <profiles>
+    <profile>
+      <id>grails-environment</id>
+      <modules>
+        <module>wadi-console</module>
+      </modules>
+    </profile>
+  </profiles>
+
+</project>

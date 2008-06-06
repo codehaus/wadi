@@ -1,0 +1,91 @@
+<?xml version="1.0"?>
+<document>
+  <properties>
+    <title>Welcome to WADI</title>
+  </properties>
+  <body>
+    <section name="WADI - WADI Application Distribution Infrastructure">
+      <div id="downloadbox">
+	<h5>Download WADI 2.0</h5>
+	<p>
+	  <img valign="top" src="./images/folder-open.gif" border="0" alt="" title="download"/>2.0 Release Artifacts
+          <ul>
+	    <li><a href="http://repository.codehaus.org/org/codehaus/wadi/wadi-aop/2.0/wadi-aop-2.0.jar">wadi-aop-2.0.jar</a></li>
+	    <li><a href="http://repository.codehaus.org/org/codehaus/wadi/wadi-console/2.0/wadi-console-2.0.war">wadi-console-2.0.war</a></li>
+	    <li><a href="http://repository.codehaus.org/org/codehaus/wadi/wadi-core/2.0/wadi-core-2.0.jar">wadi-core-2.0.jar</a></li>
+	    <li><a href="http://repository.codehaus.org/org/codehaus/wadi/wadi-group/2.0/wadi-group-2.0.jar">wadi-group-2.0.jar</a></li>
+	    <li><a href="http://repository.codehaus.org/org/codehaus/wadi/wadi-jgroups/2.0/wadi-jgroups-2.0.jar">wadi-jgroups-2.0.jar</a></li>
+	    <li><a href="http://repository.codehaus.org/org/codehaus/wadi/wadi-tribes/2.0/wadi-tribes-2.0.jar">wadi-tribes-2.0.jar</a></li>
+	    <li><a href="http://repository.codehaus.org/org/codehaus/wadi/wadi-webapp/2.0/wadi-webapp-2.0.war">wadi-webapp-2.0.war</a></li>
+          </ul>
+	</p>
+      </div>
+      <p>
+      WADI is an acronym of 'WADI Application Distribution Infrastructure'.
+      </p>
+
+      <p>
+	WADI started life as a solution to the problems surrounding
+	the distribution of state in clustered web tiers. It has
+	evolved into a more generalised distributed state and service
+        framework.
+      </p>
+
+      <p>
+	WADI's aim is to resolve many of the problems of dealing
+	with state in a cluster. This involves technologies such as:
+      </p>
+
+      <p>
+	WADI Core:
+      </p>
+	  <ul>
+	    <li>Vertically - a distributed 'space' with pluggable/stackable 
+            paging and persistance mechanisms (e.g. File and Database)</li>
+	    <li>Horizontally - A scalable, highly available, self-partitioning,
+            self-healing clustering substrate</li>
+	    <li>Providing transparent migration of State to Invocation but also
+            migration of Invocation to State</li>
+	    <li>Pluggable in-memory replication strategies for HA state</li>
+	  </ul>
+
+      <p>
+	WADI AOP:
+      </p>
+	  <ul>
+	    <li>An AOP extension providing the fine-grained replication of
+            state, i.e. object instances. Thanks to AOP, field updates 
+            and method executions are tracked and replayed on state replicas. 
+            </li>
+	  </ul>
+
+	<p>
+	  WADI Web:
+	</p>
+	  <ul>
+	    <li>A resolution to application vs container space concurrency 
+            issues surrounding HttpSessions</li>
+	    <li>Pluggable HttpSession serialisation strategies - per-session, 
+            per-attribute</li>
+	    <li>HttpRequest relocation (by redirection and proxying)</li>
+	    <li>HttpSession replication</li>
+	  </ul>
+
+      <p>
+	WADI currently supports the following J2EE containers and application 
+        servers:
+      </p>
+	<ul>
+	  <li>Jetty-6.x</li>
+	  <li>Geronimo-2.x/Jetty</li>
+	  <li>Geronimo-2.1/Tomcat</li>
+	  <li>Geronimo-2.1/OpenEJB</li>
+	</ul>
+
+      <p>
+	If you have problems or concerns with WADI, ask on the 
+        <a href="./mail-lists.html">users mailing list</a>.
+      </p>
+    </section>
+  </body>
+</document>
