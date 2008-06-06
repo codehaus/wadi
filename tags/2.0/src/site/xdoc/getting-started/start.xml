@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<document>
+  <properties>
+    <title>Getting Started with WADI</title>
+  </properties>
+  <body>
+    <section name="Getting Started: Start">
+      <p>
+	You can put together a heterogeneous cluster of <a href="./tomcat.html">Tomcat</a>, <a href="./jetty.html">Jetty</a> and <a href="./jboss.html">JBoss</a> instances.
+      </p>
+      <p>
+	If you are using a clustered configuration
+	<ol>
+	  <li>cd $ACTIVEMQ_HOME/bin</li>
+	  <li>Start the activemq broker - e.g. 'sh ./activemq'</li>
+	  <li>
+	    Then run up one <font color="red">red</font> and one <font color="green">green</font> instance of either <a href="./tomcat.html">Tomcat</a>, <a href="./jetty.html">Jetty</a> and <a href="./jboss.html">JBoss</a>.
+	    Congratulations, you have started your first (2 node) WADI cluster
+	  </li>
+	  <li>Look in $WADI_HOME/conf for the set of node.&lt;colour&gt;.properties files that define the red, green and many other nodes...</li>
+	</ol>
+      </p>
+    </section>
+  </body>
+</document>
