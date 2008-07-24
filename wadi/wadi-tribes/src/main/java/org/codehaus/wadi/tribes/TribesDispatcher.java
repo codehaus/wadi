@@ -1,6 +1,8 @@
 package org.codehaus.wadi.tribes;
 
 import java.io.Serializable;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -10,6 +12,7 @@ import org.apache.catalina.tribes.ChannelListener;
 import org.apache.catalina.tribes.ErrorHandler;
 import org.apache.catalina.tribes.Member;
 import org.apache.catalina.tribes.UniqueId;
+import org.apache.catalina.tribes.membership.StaticMember;
 import org.codehaus.wadi.group.Address;
 import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.EndPoint;
@@ -18,30 +21,65 @@ import org.codehaus.wadi.group.MessageExchangeException;
 import org.codehaus.wadi.group.PeerInfo;
 import org.codehaus.wadi.group.Quipu;
 import org.codehaus.wadi.group.impl.AbstractDispatcher;
+import org.codehaus.wadi.web.impl.URIEndPoint;
 
 public class TribesDispatcher extends AbstractDispatcher implements ChannelListener {
+    private static final PeerInfo STATIC_PEER_INFO;
+    
+    static {
+        PeerInfo peerInfo = null;
+        try {
+            peerInfo = new PeerInfo(new URIEndPoint(new URI("/unknown")));
+        } catch (URISyntaxException e) {
+        }
+        STATIC_PEER_INFO = peerInfo;
+    }
+    
     protected TribesCluster cluster;
-    protected final Collection<Member> staticMembers;
+    protected final Collection<StaticMember> staticMembers;
     
     public TribesDispatcher(String clusterName, String localPeerName, EndPoint endPoint) {
         this(clusterName, localPeerName, endPoint, Collections.EMPTY_LIST);
     }
 
     public TribesDispatcher(String clusterName,
+            String localPeerName,
+            EndPoint endPoint,
+            Collection<StaticMember> staticMembers) {
+        this(clusterName, localPeerName, endPoint, staticMembers, false);
+    }
+
+    public TribesDispatcher(String clusterName,
         String localPeerName,
         EndPoint endPoint,
-        Collection<Member> staticMembers) {
+        Collection<StaticMember> staticMembers,
+        boolean disableMulticasting) {
         if (null == staticMembers) {
             throw new IllegalArgumentException("staticMembers is required");
         }
         byte[] domain = getBytes(clusterName);
+        
         this.staticMembers = staticMembers;
+        initStaticMembers(domain);
         
         PeerInfo localPeerInfo = new PeerInfo(endPoint);
-        cluster = new TribesCluster(domain, this, localPeerName, localPeerInfo);
+        cluster = new TribesCluster(domain,
+                this,
+                localPeerName,
+                localPeerInfo,
+                disableMulticasting);
     }
 
-    public Collection<Member> getStaticMembers() {
+    protected void initStaticMembers(byte[] domain) {
+        for (StaticMember member : staticMembers) {
+            String staticPeerName = "tcp://" + member.getHostname() + ":" + member.getPort();
+            byte[] payload = TribesPeer.writePayload(staticPeerName, STATIC_PEER_INFO);
+            member.setDomain(domain);
+            member.setPayload(payload);
+        }
+    }
+
+    public Collection<StaticMember> getStaticMembers() {
         return staticMembers;
     }
 
