@@ -15,10 +15,12 @@ import org.apache.catalina.tribes.Member;
 import org.apache.catalina.tribes.MembershipListener;
 import org.apache.catalina.tribes.group.GroupChannel;
 import org.apache.catalina.tribes.group.interceptors.DomainFilterInterceptor;
-import org.apache.catalina.tribes.group.interceptors.MessageDispatchInterceptor;
+import org.apache.catalina.tribes.group.interceptors.MessageDispatch15Interceptor;
 import org.apache.catalina.tribes.group.interceptors.StaticMembershipInterceptor;
 import org.apache.catalina.tribes.group.interceptors.TcpFailureDetector;
+import org.apache.catalina.tribes.group.interceptors.TcpPingInterceptor;
 import org.apache.catalina.tribes.membership.McastService;
+import org.apache.catalina.tribes.membership.StaticMember;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.group.Address;
@@ -41,11 +43,20 @@ public class TribesCluster implements Cluster {
     protected List<ClusterListener> listeners = new CopyOnWriteArrayList<ClusterListener>();
     protected boolean initialized;
     private final TribesDispatcher dispatcher;
+    private final boolean disableMulticasting;
 
     public TribesCluster(byte[] clusterDomain,
             TribesDispatcher dispatcher,
             String localPeerName,
             PeerInfo localPeerinfo) {
+        this(clusterDomain, dispatcher, localPeerName, localPeerinfo, false);
+    }
+    
+    public TribesCluster(byte[] clusterDomain,
+            TribesDispatcher dispatcher,
+            String localPeerName,
+            PeerInfo localPeerinfo,
+            boolean disableMulticasting) {
         if (null == clusterDomain) {
             throw new IllegalArgumentException("clusterDomain is required");
         } else if (null == dispatcher) {
@@ -53,16 +64,12 @@ public class TribesCluster implements Cluster {
         }
         this.clusterDomain = clusterDomain;
         this.dispatcher = dispatcher;
+        this.disableMulticasting = disableMulticasting;
         
         channel = new GroupChannel();
         channel.addInterceptor(new WadiMemberInterceptor());
-        //uncomment for java1.5
-        //channel.addInterceptor(new MessageDispatch15Interceptor());
-        //comment out for java 1.5
-        channel.addInterceptor(new MessageDispatchInterceptor());
+        channel.addInterceptor(new MessageDispatch15Interceptor());
         channel.addMembershipListener(new WadiListener(this));
-        
-        addStaticMembers(dispatcher);
         
         ((McastService)channel.getMembershipService()).setMcastAddr("224.0.0.4");
         ((McastService)channel.getMembershipService()).setDomain(clusterDomain);
@@ -73,8 +80,11 @@ public class TribesCluster implements Cluster {
         DomainFilterInterceptor filter = new DomainFilterInterceptor();
         filter.setDomain(clusterDomain);
         channel.addInterceptor(filter);
-        //channel.addInterceptor(new MessageTrackInterceptor());//for debug only
-        channel.addInterceptor(new TcpFailureDetector());//this one should always be at the bottom
+
+        channel.addInterceptor(new TcpPingInterceptor());
+        channel.addInterceptor(new TcpFailureDetector());
+
+        addStaticMembers(dispatcher);
     }
 
     public String getClusterName() {
@@ -214,7 +224,11 @@ public class TribesCluster implements Cluster {
     public void start() throws ClusterException {
         try {
             if (!initialized) init();
-            channel.start(Channel.MBR_RX_SEQ | Channel.MBR_TX_SEQ | Channel.SND_TX_SEQ);
+            if (disableMulticasting) {
+                channel.start(Channel.SND_TX_SEQ);
+            } else {
+                channel.start(Channel.MBR_RX_SEQ | Channel.MBR_TX_SEQ | Channel.SND_TX_SEQ);
+            }
         }catch ( ChannelException x ) {
             throw new ClusterException(x);
         }
@@ -258,7 +272,7 @@ public class TribesCluster implements Cluster {
     }
     
     protected void addStaticMembers(TribesDispatcher dispatcher) {
-        Collection<Member> staticMembers = dispatcher.getStaticMembers();
+        Collection<StaticMember> staticMembers = dispatcher.getStaticMembers();
         if (!staticMembers.isEmpty()) {
             StaticMembershipInterceptor smi = new StaticMembershipInterceptor();
             for (Member member : staticMembers) {
