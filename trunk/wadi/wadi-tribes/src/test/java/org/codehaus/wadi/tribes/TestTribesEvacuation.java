@@ -17,6 +17,7 @@
 package org.codehaus.wadi.tribes;
 
 import java.io.Serializable;
+import java.util.Properties;
 
 import org.codehaus.wadi.evacuation.AbstractTestEvacuation;
 import org.codehaus.wadi.group.Dispatcher;
@@ -27,7 +28,13 @@ public class TestTribesEvacuation extends AbstractTestEvacuation {
     String clusterName = "dummy" + System.currentTimeMillis();
 
     protected Dispatcher newDispatcher(String name) throws Exception {
-        return new TribesDispatcher(clusterName, "red", new MockEndPoint("red"));
+        Properties properties = new Properties();
+        properties.setProperty("mcastPort","45564");
+        properties.setProperty("mcastAddress","228.0.0.4");
+        properties.setProperty("memberDropTime","3000");
+        properties.setProperty("mcastFrequency","500");
+        
+        return new TribesDispatcher(clusterName, name, new MockEndPoint(name), null, false, properties, 4100);
     }
     
     static class MockEndPoint implements EndPoint, Serializable {

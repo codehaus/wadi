@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -21,6 +22,7 @@ import org.apache.catalina.tribes.group.interceptors.TcpFailureDetector;
 import org.apache.catalina.tribes.group.interceptors.TcpPingInterceptor;
 import org.apache.catalina.tribes.membership.McastService;
 import org.apache.catalina.tribes.membership.StaticMember;
+import org.apache.catalina.tribes.transport.ReceiverBase;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.group.Address;
@@ -49,30 +51,45 @@ public class TribesCluster implements Cluster {
             TribesDispatcher dispatcher,
             String localPeerName,
             PeerInfo localPeerinfo) {
-        this(clusterDomain, dispatcher, localPeerName, localPeerinfo, false);
+        this(clusterDomain, dispatcher, localPeerName, localPeerinfo, false, null, 4000);
     }
     
     public TribesCluster(byte[] clusterDomain,
             TribesDispatcher dispatcher,
             String localPeerName,
             PeerInfo localPeerinfo,
-            boolean disableMulticasting) {
+            boolean disableMulticasting,
+            Properties mcastServiceProperties,
+            int receiverPort) {
         if (null == clusterDomain) {
             throw new IllegalArgumentException("clusterDomain is required");
         } else if (null == dispatcher) {
             throw new IllegalArgumentException("dispatcher is required");
+        } else if (receiverPort < 1) {
+            throw new IllegalArgumentException("receiverPort must be greater than zero");
         }
         this.clusterDomain = clusterDomain;
         this.dispatcher = dispatcher;
         this.disableMulticasting = disableMulticasting;
         
         channel = new GroupChannel();
+
+        ReceiverBase receiver = (ReceiverBase) channel.getChannelReceiver();
+        receiver.setPort(receiverPort);
+        
         channel.addInterceptor(new WadiMemberInterceptor());
         channel.addInterceptor(new MessageDispatch15Interceptor());
         channel.addMembershipListener(new WadiListener(this));
         
-        ((McastService)channel.getMembershipService()).setMcastAddr("224.0.0.4");
-        ((McastService)channel.getMembershipService()).setDomain(clusterDomain);
+        McastService mcastService = (McastService) channel.getMembershipService();
+        if (null == mcastServiceProperties) {
+            mcastService.setAddress("224.0.0.4");
+        } else {
+            mcastServiceProperties.setProperty("tcpListenPort", "123456789");
+            mcastServiceProperties.setProperty("tcpListenHost", "NOT_USED");
+            mcastService.setProperties(mcastServiceProperties);
+        }
+        mcastService.setDomain(clusterDomain);
         
         byte[] payload = TribesPeer.writePayload(localPeerName, localPeerinfo);
         channel.getMembershipService().setPayload(payload);
