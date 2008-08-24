@@ -5,6 +5,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Properties;
 
 import org.apache.catalina.tribes.Channel;
 import org.apache.catalina.tribes.ChannelException;
@@ -46,16 +47,18 @@ public class TribesDispatcher extends AbstractDispatcher implements ChannelListe
             String localPeerName,
             EndPoint endPoint,
             Collection<StaticMember> staticMembers) {
-        this(clusterName, localPeerName, endPoint, staticMembers, false);
+        this(clusterName, localPeerName, endPoint, staticMembers, false, null, 4000);
     }
 
     public TribesDispatcher(String clusterName,
-        String localPeerName,
-        EndPoint endPoint,
-        Collection<StaticMember> staticMembers,
-        boolean disableMulticasting) {
+            String localPeerName,
+            EndPoint endPoint,
+            Collection<StaticMember> staticMembers,
+            boolean disableMulticasting,
+            Properties mcastServiceProperties,
+            int receiverPort) {
         if (null == staticMembers) {
-            throw new IllegalArgumentException("staticMembers is required");
+            staticMembers = Collections.EMPTY_LIST;
         }
         byte[] domain = getBytes(clusterName);
         
@@ -67,7 +70,9 @@ public class TribesDispatcher extends AbstractDispatcher implements ChannelListe
                 this,
                 localPeerName,
                 localPeerInfo,
-                disableMulticasting);
+                disableMulticasting,
+                mcastServiceProperties,
+                receiverPort);
     }
 
     protected void initStaticMembers(byte[] domain) {
