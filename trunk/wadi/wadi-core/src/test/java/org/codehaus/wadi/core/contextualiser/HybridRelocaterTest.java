@@ -16,13 +16,11 @@
 package org.codehaus.wadi.core.contextualiser;
 
 import java.io.IOException;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
 
 import org.codehaus.wadi.core.MotableBusyException;
+import org.codehaus.wadi.core.motable.Emoter;
 import org.codehaus.wadi.core.motable.Immoter;
 import org.codehaus.wadi.core.motable.Motable;
-import org.codehaus.wadi.core.session.Session;
 import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Envelope;
@@ -37,7 +35,6 @@ import org.codehaus.wadi.location.session.MoveSMToIM;
 import org.codehaus.wadi.replication.common.ReplicaInfo;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
 import org.codehaus.wadi.servicespace.ServiceSpace;
-
 
 import com.agical.rmock.core.describe.ExpressionDescriber;
 import com.agical.rmock.core.match.operator.AbstractExpression;
@@ -59,6 +56,7 @@ public class HybridRelocaterTest extends RMockTestCase {
     private LocalPeer localPeer;
     private String key;
     private ReplicationManager replicationManager;
+    private Immoter sessionRelocationImmoter;
 
     protected void setUp() throws Exception {
         serviceSpace = (ServiceSpace) mock(ServiceSpace.class);
@@ -78,6 +76,7 @@ public class HybridRelocaterTest extends RMockTestCase {
         modify().returnValue(exclusiveSessionLockWaitTime);
         
         immoter = (Immoter) mock(Immoter.class);
+        sessionRelocationImmoter = (Immoter) mock(Immoter.class);
         
         key = "key";
     }
@@ -97,37 +96,20 @@ public class HybridRelocaterTest extends RMockTestCase {
         ReplicaInfo replicaInfo = (ReplicaInfo) intercept(ReplicaInfo.class, new Object[] {localPeer, new Peer[0], relocatedMotable}, "ReplicaInfo");
         modify().returnValue(new MoveSMToIM(relocatedMotable, replicaInfo));
 
-        immoter.newMotable(relocatedMotable);
-        Session relocatedSession = (Session) mock(Session.class);
-        modify().returnValue(relocatedSession);
+        Motable motedNewMotable = sessionRelocationImmoter.newMotable(relocatedMotable);
         
-        recordRehydration(key, relocatedMotable, relocatedSession);
-
         recordReplyToSM(envelope, true);
         
-        ReadWriteLock rwLock = relocatedSession.getReadWriteLock();
-        modify().multiplicity(expect.from(2));
-
-        Lock readLock = rwLock.readLock();
-        modify().multiplicity(expect.from(2));
-
-        readLock.lockInterruptibly();
-        
-        immoter.immote(relocatedMotable, relocatedSession);
-        modify().returnValue(true);
-        
-        replicaInfo.setPayload(relocatedSession);
         replicationManager.insertReplicaInfo(key, replicaInfo);
         
-        immoter.contextualise(invocation, key, relocatedSession);
+        sessionRelocationImmoter.contextualise(invocation, key, motedNewMotable);
         modify().returnValue(true);
-
-        readLock.unlock();
         
         startVerification();
         
-        HybridRelocater relocater = new HybridRelocater(serviceSpace, partitionManager, replicationManager);
+        HybridRelocater relocater = newMockedHybridRelocater();
         boolean relocated = relocater.relocate(invocation, key, immoter, shuttingDown);
+
         assertTrue(relocated);
     }
 
@@ -145,34 +127,18 @@ public class HybridRelocaterTest extends RMockTestCase {
         
         modify().returnValue(new MoveSMToIM(relocatedMotable, null));
         
-        immoter.newMotable(relocatedMotable);
-        Session relocatedSession = (Session) mock(Session.class);
-        modify().returnValue(relocatedSession);
-        
-        recordRehydration(key, relocatedMotable, relocatedSession);
+        Motable motedNewMotable = sessionRelocationImmoter.newMotable(relocatedMotable);
         
         recordReplyToSM(envelope, true);
         
-        ReadWriteLock rwLock = relocatedSession.getReadWriteLock();
-        modify().multiplicity(expect.from(2));
-        
-        Lock readLock = rwLock.readLock();
-        modify().multiplicity(expect.from(2));
-        
-        readLock.lockInterruptibly();
-        
-        immoter.immote(relocatedMotable, relocatedSession);
+        sessionRelocationImmoter.contextualise(invocation, key, motedNewMotable);
         modify().returnValue(true);
-        
-        immoter.contextualise(invocation, key, relocatedSession);
-        modify().returnValue(true);
-        
-        readLock.unlock();
-        
+
         startVerification();
         
-        HybridRelocater relocater = new HybridRelocater(serviceSpace, partitionManager, replicationManager);
+        HybridRelocater relocater = newMockedHybridRelocater();
         boolean relocated = relocater.relocate(invocation, key, immoter, shuttingDown);
+
         assertTrue(relocated);
     }
     
@@ -214,22 +180,17 @@ public class HybridRelocaterTest extends RMockTestCase {
         }
     }
 
-    private void recordRehydration(String key, Motable relocatedMotable, Session relocatedSession) throws Exception {
-        relocatedMotable.getCreationTime();
-        int creationTime = 1;
-        modify().returnValue(creationTime);
-        relocatedMotable.getLastAccessedTime();
-        int lastAccessedTime = 2;
-        modify().returnValue(lastAccessedTime);
-        relocatedMotable.getMaxInactiveInterval();
-        int maxInactiveInterval = 3;
-        modify().returnValue(maxInactiveInterval);
-        relocatedMotable.getName();
-        modify().returnValue(key);
-        relocatedMotable.getBodyAsByteArray();
-        byte[] body = new byte[0];
-        modify().returnValue(body);
-        relocatedSession.rehydrate(creationTime, lastAccessedTime, maxInactiveInterval, key, body);
+    private HybridRelocater newMockedHybridRelocater() {
+        return new HybridRelocater(serviceSpace, partitionManager, replicationManager) {
+            @Override
+            protected Immoter newSessionRelocationImmoter(Invocation invocation, Immoter immoter) {
+                return sessionRelocationImmoter;
+            }
+            @Override
+            protected Motable mote(String name, Immoter immoter, Motable emotable, Emoter emoter) {
+                return immoter.newMotable(emotable);
+            }
+        };
     }
 
     private void recordReplyToSM(Envelope envelope, final boolean success) throws MessageExchangeException {

@@ -54,7 +54,11 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
         this.sessionMonitor = sessionMonitor;
         
         _immoter = new MemoryImmoter(map);
-        _emoter = new MemoryEmoter(map);
+        _emoter = newEmoter(map);
+    }
+
+    protected MemoryEmoter newEmoter(ConcurrentMotableMap map) {
+        return new MemoryEmoter(map);
     }
 
     protected boolean handleLocally(Invocation invocation, String id, Motable motable) throws InvocationException {

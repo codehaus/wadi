@@ -24,18 +24,24 @@ import org.codehaus.wadi.group.EndPoint;
  */
 public class BasicInvocation implements Invocation {
 
-    private final String sessionKey;
-    private Session session;
+    protected final String sessionKey;
+    protected Session session;
     private boolean errorIfSessionNotAcquired;
     private boolean errored;
     private int errorCode;
     private String errorMessage;
-    private long exclusiveSessionLockWaitTime;
+    protected long exclusiveSessionLockWaitTime;
     private boolean doNotExecuteOnEndProcessing;
+    private boolean acquireLockOnInvocationStart;
+    private boolean releaseLockOnInvocationEnd;
+    private boolean withExclusiveLock;
     
     public BasicInvocation(String sessionKey, long exclusiveSessionLockWaitTime) {
         this.sessionKey = sessionKey;
         this.exclusiveSessionLockWaitTime = exclusiveSessionLockWaitTime;
+        
+        acquireLockOnInvocationStart = true;
+        releaseLockOnInvocationEnd = true;
     }
     
     public Session getSession() {
@@ -141,6 +147,30 @@ public class BasicInvocation implements Invocation {
 
     public InvocationContext newContext(Session context) {
         return new BasicInvocationContext(this);
+    }
+
+    public boolean isWithExclusiveLock() {
+        return withExclusiveLock;
+    }
+
+    public void setWithExclusiveLock(boolean withExclusiveLock) {
+        this.withExclusiveLock = withExclusiveLock;
+    }
+
+    public void setAcquireLockOnInvocationStart(boolean acquireLockOnInvocationStart) {
+        this.acquireLockOnInvocationStart = acquireLockOnInvocationStart;
+    }
+
+    public boolean isAcquireLockOnInvocationStart() {
+        return acquireLockOnInvocationStart;
+    }
+
+    public void setReleaseLockOnInvocationEnd(boolean releaseLockOnInvocationEnd) {
+        this.releaseLockOnInvocationEnd = releaseLockOnInvocationEnd;
+    }
+
+    public boolean isReleaseLockOnInvocationEnd() {
+        return releaseLockOnInvocationEnd;
     }
 
 }

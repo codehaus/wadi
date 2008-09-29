@@ -86,7 +86,9 @@ public class MovePMToSMEndPoint implements Lifecycle, MovePMToSMEndPointMessageL
                     replicationManager,
                     sessionRelocationIMToSMAckWaitTime);
             
-            Invocation invocation = new BasicInvocation((String) key, request.getExclusiveSessionLockWaitTime());
+            BasicInvocation invocation = new BasicInvocation((String) key, request.getExclusiveSessionLockWaitTime());
+            invocation.setWithExclusiveLock(true);
+
             // if we own session, this will send the correct response...
             contextualiser.contextualise(invocation, (String) key, promoter, true);
             successfulRelocation = promoter.isSuccessfulRelocation();

@@ -36,7 +36,7 @@ public class SerialContextualiser extends AbstractDelegatingContextualiser {
     private static final Log log = LogFactory.getLog(SerialContextualiser.class);
     
 	private final Collapser collapser;
-    private final ConcurrentMotableMap map;
+    private final ExclusiveContextualiserLockHandler lockHandler;
 
     public SerialContextualiser(Contextualiser next, Collapser collapser, ConcurrentMotableMap map) {
         super(next);
@@ -46,7 +46,8 @@ public class SerialContextualiser extends AbstractDelegatingContextualiser {
             throw new IllegalArgumentException("map is required");
         }
         this.collapser = collapser;
-        this.map = map;
+        
+        lockHandler = new BasicExclusiveContextualiserLockHandler(map);
     }
 
     public boolean contextualise(Invocation invocation,
@@ -62,19 +63,18 @@ public class SerialContextualiser extends AbstractDelegatingContextualiser {
             Thread.currentThread().interrupt();
             throw new InvocationException(e);
         } catch (Exception e) {
-            log.error("could not acquire session within timeframe: " + key);
-            return false;
+            throw new InvocationException("Could not acquire serialization lock for session " + key, e);
         }
 
         try {
             // whilst we were waiting for the motionLock, the session in question may have been moved back into memory 
             // somehow. before we proceed, confirm that this has not happened.
-            Motable context = map.acquire(key);
+            Motable context = lockHandler.acquire(invocation, key);
             if (null != context) {
                 try {
                     return immoter.contextualise(invocation, key, context);
                 } finally {
-                    map.release(context);
+                    lockHandler.release(invocation, context);
                 }
             }
 

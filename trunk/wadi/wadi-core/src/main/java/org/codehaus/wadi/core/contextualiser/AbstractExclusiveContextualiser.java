@@ -44,6 +44,7 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
     private static Log log = LogFactory.getLog(AbstractExclusiveContextualiser.class);
     
 	protected final ConcurrentMotableMap map;
+	private final ExclusiveContextualiserLockHandler lockHandler;
     private final Evicter evicter;
     private final Timer timer;
     private TimerTask evictionTask;
@@ -59,6 +60,7 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
         this.evicter = evicter;
         
         timer = new Timer();
+        lockHandler = new BasicExclusiveContextualiserLockHandler(map);
     }
 
     public void promoteToExclusive(Immoter immoter) {
@@ -77,27 +79,11 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
         throw new UnsupportedOperationException();
     }
     
-    protected Motable acquire(String id, boolean exclusiveOnly, long exclusiveSessionLockWaitTime) {
-        if (exclusiveOnly) {
-            return map.acquireExclusive(id, exclusiveSessionLockWaitTime);
-        } else {
-            return map.acquire(id);
-        }
-    }
-
-    protected void release(Motable motable, boolean exclusiveOnly) {
-        if (exclusiveOnly) {
-            map.releaseExclusive(motable);
-        } else {
-            map.release(motable);
-        }
-    }
-    
     public final boolean handle(Invocation invocation,
             String id,
             Immoter immoter,
             boolean exclusiveOnly) throws InvocationException {
-        Motable emotable = acquire(id, exclusiveOnly, invocation.getExclusiveSessionLockWaitTime());
+        Motable emotable = lockHandler.acquire(invocation, id);
         if (emotable == null) {
             return false;
         }
@@ -108,7 +94,7 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
                 return handleLocally(invocation, id, emotable);
             }
         } finally {
-            release(emotable, exclusiveOnly);
+            lockHandler.release(invocation, emotable);
         }
     }
 

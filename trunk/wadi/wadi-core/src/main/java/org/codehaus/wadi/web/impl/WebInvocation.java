@@ -43,6 +43,7 @@ public class WebInvocation implements Invocation {
     private boolean errorIfSessionNotAcquired;
     private long exclusiveSessionLockWaitTime;
     private boolean doNotExecuteOnEndProcessing;
+    private boolean withExclusiveLock;
 
     public WebInvocation() {
         this(5000);
@@ -179,6 +180,18 @@ public class WebInvocation implements Invocation {
 
     public InvocationContext newContext(Session context) {
         return new BasicHttpInvocationContext(this);
+    }
+
+    public boolean isWithExclusiveLock() {
+        return withExclusiveLock;
+    }
+
+    public boolean isAcquireLockOnInvocationStart() {
+        return true;
+    }
+    
+    public boolean isReleaseLockOnInvocationEnd() {
+        return true;
     }
     
 }

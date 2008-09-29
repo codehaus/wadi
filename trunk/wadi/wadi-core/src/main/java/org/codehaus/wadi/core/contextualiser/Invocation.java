@@ -101,4 +101,10 @@ public interface Invocation {
     long getExclusiveSessionLockWaitTime();
     
     InvocationContext newContext(Session context);
+
+    boolean isWithExclusiveLock();
+
+    boolean isAcquireLockOnInvocationStart();
+
+    boolean isReleaseLockOnInvocationEnd();
 }

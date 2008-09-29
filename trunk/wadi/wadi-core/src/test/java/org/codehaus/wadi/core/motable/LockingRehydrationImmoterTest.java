@@ -15,6 +15,9 @@
  */
 package org.codehaus.wadi.core.motable;
 
+import org.codehaus.wadi.core.contextualiser.Invocation;
+import org.codehaus.wadi.core.contextualiser.MotableLockHandler;
+
 import com.agical.rmock.extension.junit.RMockTestCase;
 
 /**
@@ -25,36 +28,59 @@ public class LockingRehydrationImmoterTest extends RMockTestCase {
 
     private Immoter delegate;
     private LockingRehydrationImmoter immoter;
+    private Invocation invocation;
+    private MotableLockHandler lockHandler;
 
     @Override
     protected void setUp() throws Exception {
         delegate = (Immoter) mock(Immoter.class);
-        immoter = new LockingRehydrationImmoter(delegate);
+        invocation = (Invocation) mock(Invocation.class);
+        lockHandler = (MotableLockHandler) mock(MotableLockHandler.class);
+        immoter = new LockingRehydrationImmoter(delegate, invocation, lockHandler);
+    }
+    
+    public void testMotableCannotBeLockedReturnFalse() throws Exception {
+        Motable immotable = (Motable) mock(Motable.class);
+
+        lockHandler.acquire(invocation, immotable);
+        modify().returnValue(false);
+        
+        startVerification();
+        
+        boolean immoted = immoter.immote(null, immotable);
+        assertFalse(immoted);
     }
     
     public void testMotableIsLockedPriorToImmote() throws Exception {
-        Motable emotable = (Motable) mock(Motable.class);
         Motable immotable = (Motable) mock(Motable.class);
-
-        beginSection(s.ordered("Lock and immote"));
-        immotable.getReadWriteLock().readLock().lockInterruptibly();
+        Motable emotable = (Motable) mock(Motable.class);
+        
+        lockHandler.acquire(invocation, immotable);
+        modify().returnValue(true);
+        
         delegate.immote(emotable, immotable);
-        endSection();
+        modify().returnValue(true);
+        
         startVerification();
         
-        immoter.immote(emotable, immotable);
+        boolean immoted = immoter.immote(emotable, immotable);
+        assertTrue(immoted);
     }
     
     public void testMotableIsUnLockedAfterContextualization() throws Exception {
         Motable immotable = (Motable) mock(Motable.class);
 
         beginSection(s.ordered("Contextualize and unlock"));
-        delegate.contextualise(null, null, immotable);
-        immotable.getReadWriteLock().readLock().unlock();
+        delegate.contextualise(invocation, null, immotable);
+        modify().returnValue(true);
+        
+        lockHandler.release(invocation, immotable);
         endSection();
+
         startVerification();
         
-        immoter.contextualise(null, null, immotable);
+        boolean contextualised = immoter.contextualise(invocation, null, immotable);
+        assertTrue(contextualised);
     }
     
 }
