@@ -139,27 +139,40 @@ public class HybridRelocater implements Relocater {
                 throw new MotableBusyException("Motable [" + name + "] buzy. Session relocation has been aborted.");
             }
             return false;
-        } else {
-            // We are receiving an incoming state migration. Insert motable into contextualiser stack...
-            Emoter emoter = new SMToIMEmoter();
-            immoter = new LockingRehydrationImmoter(immoter);
-            Motable immotable = Utils.mote(emoter, immoter, emotable, name);
-            
-            MoveIMToSM response = new MoveIMToSM(true);
-            try {
-                dispatcher.reply(message, response);
-            } catch (MessageExchangeException e) {
-                log.warn("Session migration has not been acknowledged. SM has disappeared.", e);
-            }
-            
-            ReplicaInfo replicaInfo = req.getReplicaInfo();
-            if (null != replicaInfo) {
-                replicaInfo.setPayload(immotable);
-                replicationManager.insertReplicaInfo(name, replicaInfo);
-            }
-            
-            return immoter.contextualise(invocation, name, immotable);
         }
+
+        // We are receiving an incoming state migration. Insert motable into contextualiser stack...
+        Emoter emoter = newSessionRelocationEmoter();
+        immoter = newSessionRelocationImmoter(invocation, immoter);
+        Motable immotable = mote(name, immoter, emotable, emoter);
+
+        MoveIMToSM response = new MoveIMToSM(true);
+        try {
+            dispatcher.reply(message, response);
+        } catch (MessageExchangeException e) {
+            log.warn("Session migration has not been acknowledged. SM has disappeared.", e);
+        }
+        
+        ReplicaInfo replicaInfo = req.getReplicaInfo();
+        if (null != replicaInfo) {
+            replicaInfo.setPayload(immotable);
+            replicationManager.insertReplicaInfo(name, replicaInfo);
+        }
+
+        return immoter.contextualise(invocation, name, immotable);
+    }
+
+    protected Motable mote(String name, Immoter immoter, Motable emotable, Emoter emoter) {
+        return Utils.mote(emoter, immoter, emotable, name);
+    }
+
+    protected Immoter newSessionRelocationImmoter(Invocation invocation, Immoter immoter) {
+        MotableLockHandler lockHandler = new BasicMotableLockHandler();
+        return new LockingRehydrationImmoter(immoter, invocation, lockHandler);
+    }
+
+    protected SMToIMEmoter newSessionRelocationEmoter() {
+        return new SMToIMEmoter();
     }
 
     class SMToIMEmoter implements Emoter {

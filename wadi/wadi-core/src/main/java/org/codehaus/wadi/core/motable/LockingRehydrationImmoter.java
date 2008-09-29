@@ -17,6 +17,7 @@ package org.codehaus.wadi.core.motable;
 
 import org.codehaus.wadi.core.contextualiser.Invocation;
 import org.codehaus.wadi.core.contextualiser.InvocationException;
+import org.codehaus.wadi.core.contextualiser.MotableLockHandler;
 
 /**
  * 
@@ -24,25 +25,33 @@ import org.codehaus.wadi.core.contextualiser.InvocationException;
  */
 public class LockingRehydrationImmoter extends RehydrationImmoter {
     
-    public LockingRehydrationImmoter(Immoter delegate) {
+    private final Invocation invocation;
+    private final MotableLockHandler lockHandler;
+
+    public LockingRehydrationImmoter(Immoter delegate, Invocation invocation, MotableLockHandler lockHandler) {
         super(delegate);
+        if (null == invocation) {
+            throw new IllegalArgumentException("invocation is required");
+        } else if (null == lockHandler) {
+            throw new IllegalArgumentException("lockHandler is required");
+        }
+        this.invocation = invocation;
+        this.lockHandler = lockHandler;
     }
 
     public boolean contextualise(Invocation invocation, String id, Motable immotable) throws InvocationException {
         try {
             return super.contextualise(invocation, id, immotable);
         } finally {
-            immotable.getReadWriteLock().readLock().unlock();
+            lockHandler.release(invocation, immotable);
         }
     }
 
     public boolean immote(Motable emotable, Motable immotable) {
-        try {
-            immotable.getReadWriteLock().readLock().lockInterruptibly();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
+        if (!lockHandler.acquire(invocation, immotable)) {
             return false;
         }
+        
         return super.immote(emotable, immotable);
     }
 

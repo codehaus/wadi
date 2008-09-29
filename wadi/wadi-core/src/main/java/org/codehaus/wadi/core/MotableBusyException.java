@@ -24,5 +24,9 @@ public class MotableBusyException extends WADIRuntimeException {
     public MotableBusyException(String message) {
         super(message);
     }
+
+    public MotableBusyException(Throwable cause) {
+        super(cause);
+    }
     
 }

@@ -21,6 +21,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.codehaus.wadi.core.eviction.SimpleEvictable;
 import org.codehaus.wadi.core.eviction.SimpleEvictableMemento;
+import org.codehaus.wadi.core.util.LoggingReadWriteLock;
+import org.codehaus.wadi.core.util.LoggingLock.NameAccessor;
 
 /**
  * Implement all of Motable except for the Bytes field. This is the field most likely to have different representations.
@@ -29,6 +31,7 @@ import org.codehaus.wadi.core.eviction.SimpleEvictableMemento;
  * @version $Revision: 2244 $
  */
 public abstract class AbstractMotable extends SimpleEvictable implements Motable {
+
     protected ReadWriteLock readWriteLock;
 
     protected AbstractMotable() {
@@ -94,7 +97,12 @@ public abstract class AbstractMotable extends SimpleEvictable implements Motable
     }
     
     protected ReadWriteLock newReadWriteLock() {
-        return new ReentrantReadWriteLock();
+        ReadWriteLock delegate = new ReentrantReadWriteLock(true);
+        return new LoggingReadWriteLock(new NameAccessor() {
+            public String getName() {
+                return AbstractMotable.this.getName();
+            }
+        }, delegate);
     }
 
     protected synchronized void initExisting(long creationTime,
@@ -114,7 +122,7 @@ public abstract class AbstractMotable extends SimpleEvictable implements Motable
     protected void destroyForMotion() throws Exception {
         super.destroy();
     }
-    
+
 }
 
 

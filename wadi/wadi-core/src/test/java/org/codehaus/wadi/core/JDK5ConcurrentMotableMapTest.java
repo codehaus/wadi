@@ -25,12 +25,17 @@ public class JDK5ConcurrentMotableMapTest extends TestCase {
                 public void run() {
                     while (!Thread.currentThread().isInterrupted()) {
                         Motable motable = map.acquire(id);
-                        if (expectNull) {
-                            if (null != motable) {
-                                failure = true;
+                        try {
+                            Thread.sleep(10);
+                            if (expectNull) {
+                                if (null != motable) {
+                                    failure = true;
+                                }
+                            } else {
+                                map.release(motable);
                             }
-                        } else {
-                            map.release(motable);
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
                         }
                     }
                 }

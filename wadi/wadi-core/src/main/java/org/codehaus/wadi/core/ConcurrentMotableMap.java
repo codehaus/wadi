@@ -28,6 +28,8 @@ public interface ConcurrentMotableMap {
 
     void remove(String name);
 
+    Motable get(String id);
+
     Motable acquire(String id);
 
     Motable acquireExclusive(String id, long exclusiveSessionLockWaitTime) throws MotableBusyException;

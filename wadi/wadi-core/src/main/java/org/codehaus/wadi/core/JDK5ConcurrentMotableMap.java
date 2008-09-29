@@ -29,16 +29,24 @@ import org.codehaus.wadi.core.motable.Motable;
 public class JDK5ConcurrentMotableMap implements ConcurrentMotableMap {
     private final ConcurrentHashMap<String, Motable> delegate = new ConcurrentHashMap<String, Motable>();
 
+    public Motable get(String id) {
+        return delegate.get(id);
+    }
+    
     public Motable acquire(String id) {
         Motable motable = delegate.get(id);
         if (null != motable) {
+            Lock lock = getSharedLock(motable);
             try {
-                getSharedLock(motable).lockInterruptibly();
+                lock.lockInterruptibly();
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 return null;
             }
             motable = delegate.get(id);
+            if (null == motable) {
+                lock.unlock();
+            }
         }
         return motable;
     }
@@ -46,9 +54,10 @@ public class JDK5ConcurrentMotableMap implements ConcurrentMotableMap {
     public Motable acquireExclusive(String id, long exclusiveSessionLockWaitTime) {
         Motable motable = delegate.get(id);
         if (null != motable) {
+            Lock lock = getExclusiveLock(motable);
             boolean success;
             try {
-                success = getExclusiveLock(motable).tryLock(exclusiveSessionLockWaitTime, TimeUnit.MILLISECONDS);
+                success = lock.tryLock(exclusiveSessionLockWaitTime, TimeUnit.MILLISECONDS);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 return null;
@@ -58,6 +67,9 @@ public class JDK5ConcurrentMotableMap implements ConcurrentMotableMap {
                     exclusiveSessionLockWaitTime + "]ms.");
             }
             motable = delegate.get(id);
+            if (null == motable) {
+                lock.unlock();
+            }
         }
         return motable;
     }
