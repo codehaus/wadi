@@ -263,9 +263,7 @@
     <module>wadi-aop</module>
     <module>wadi-group</module>
     <module>wadi-core</module>
-<!--
     <module>wadi-cache</module>
--->
     <module>wadi-jgroups</module>
     <module>wadi-tribes</module>
     <module>wadi-webapp</module>
