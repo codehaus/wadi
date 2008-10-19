@@ -96,12 +96,11 @@ public class HybridRelocater implements Relocater {
         try {
             message = partitionManager.getPartition(name).exchange(request, exclusiveSessionLockWaitTime + 10000);
         } catch (MessageExchangeException e) {
-            return false;
+            throw new WADIRuntimeException(e);
         }
 
         if (message == null) {
-            log.error("Something went wrong during a session relocation.");
-            return false;
+            throw new WADIRuntimeException("Something went wrong during a session relocation.");
         }
 
         Serializable dm = message.getPayload();
