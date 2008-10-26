@@ -39,26 +39,20 @@ public class ObjectInputStream extends java.io.ObjectInputStream {
 		_classLoader=classLoader;
 	}
 
-	// copied from super as this seems to be the only way to parameterise the ClassLoader... - TODO
+    private static final HashMap<String, Class<?>> PRIMITIVE_CLASSES =
+        new HashMap<String, Class<?>>();
 
-	/*
-	 * @(#)ObjectInputStream.java	1.146 04/01/13
-	 *
-	 * Copyright 2004 Sun Microsystems, Inc. All rights reserved.
-	 * SUN PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
-	 */
-	private static final HashMap primClasses = new HashMap(8, 1.0F);
-	static {
-		primClasses.put("boolean", boolean.class);
-		primClasses.put("byte", byte.class);
-		primClasses.put("char", char.class);
-		primClasses.put("short", short.class);
-		primClasses.put("int", int.class);
-		primClasses.put("long", long.class);
-		primClasses.put("float", float.class);
-		primClasses.put("double", double.class);
-		primClasses.put("void", void.class);
-	}
+    static {
+        PRIMITIVE_CLASSES.put("byte", byte.class);
+        PRIMITIVE_CLASSES.put("short", short.class);
+        PRIMITIVE_CLASSES.put("int", int.class);
+        PRIMITIVE_CLASSES.put("long", long.class);
+        PRIMITIVE_CLASSES.put("float", float.class);
+        PRIMITIVE_CLASSES.put("double", double.class);
+        PRIMITIVE_CLASSES.put("boolean", boolean.class);
+        PRIMITIVE_CLASSES.put("char", char.class);
+        PRIMITIVE_CLASSES.put("void", void.class);
+    }
 
     protected Class resolveClass(ObjectStreamClass desc)
 	throws IOException, ClassNotFoundException
@@ -67,7 +61,7 @@ public class ObjectInputStream extends java.io.ObjectInputStream {
 		try {
 			return Class.forName(name, false, _classLoader);
 		} catch (ClassNotFoundException ex) {
-			Class cl = (Class) primClasses.get(name);
+			Class cl = (Class) PRIMITIVE_CLASSES.get(name);
 			if (cl != null) {
 				return cl;
 			} else {
