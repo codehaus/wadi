@@ -6,22 +6,12 @@ http://www.springframework.org/schema/beans http://www.springframework.org/schem
 	
   <bean id="dispatcher" class="org.codehaus.wadi.tribes.TribesDispatcher" init-method="start">
     <constructor-arg value="DEFAULT_CLUSTER" />
-    <constructor-arg value="red" />
+    <constructor-arg value="NODE1" />
     <constructor-arg><null/></constructor-arg>
   </bean>
 
-  <bean id="classIndexerRegistry" class="org.codehaus.wadi.core.reflect.jdk.JDKClassIndexerRegistry">
-    <constructor-arg>
-      <bean class="org.codehaus.wadi.core.reflect.base.DeclaredMemberFilter" />
-    </constructor-arg>
-  </bean>
-
-  <bean id="streamer" class="org.codehaus.wadi.core.util.SimpleStreamer" />
-
   <bean id="adminServiceSpace" class="org.codehaus.wadi.servicespace.admin.AdminServiceSpace" init-method="start">
-    <constructor-arg ref="classIndexerRegistry" />
     <constructor-arg ref="dispatcher" />
-    <constructor-arg ref="streamer" />
   </bean>
   
   <bean id="dispatcherRegistry" class="org.codehaus.wadi.group.StaticDispatcherRegistry"/>
@@ -35,22 +25,12 @@ http://www.springframework.org/schema/beans http://www.springframework.org/schem
   
   <bean id="dispatcher2" class="org.codehaus.wadi.tribes.TribesDispatcher" init-method="start">
     <constructor-arg value="DEFAULT_CLUSTER" />
-    <constructor-arg value="yellow" />
+    <constructor-arg value="NODE2" />
     <constructor-arg><null/></constructor-arg>
   </bean>
 
-  <bean id="classIndexerRegistry2" class="org.codehaus.wadi.core.reflect.jdk.JDKClassIndexerRegistry">
-    <constructor-arg>
-      <bean class="org.codehaus.wadi.core.reflect.base.DeclaredMemberFilter" />
-    </constructor-arg>
-  </bean>
-
-  <bean id="streamer2" class="org.codehaus.wadi.core.util.SimpleStreamer" />
-
   <bean id="adminServiceSpace2" class="org.codehaus.wadi.servicespace.admin.AdminServiceSpace" init-method="start">
-    <constructor-arg ref="classIndexerRegistry2" />
     <constructor-arg ref="dispatcher2" />
-    <constructor-arg ref="streamer2" />
   </bean>
   
   <bean id="aServiceSpace2" class="org.codehaus.wadi.console.groovy.ServiceSpaceBuilder">
