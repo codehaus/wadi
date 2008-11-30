@@ -41,6 +41,7 @@
 
     <menu name="Modules">
       <item name="wadi-aop" href="wadi-aop/index.html"/>
+      <item name="wadi-cache" href="wadi-cache/index.html"/>
       <item name="wadi-console" href="wadi-console/index.html"/>
       <item name="wadi-core" href="wadi-core/index.html"/>
       <item name="wadi-group" href="wadi-group/index.html"/>
