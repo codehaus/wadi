@@ -207,8 +207,8 @@
 
   <scm>
     <connection>scm:http://svn.codehaus.org/wadi/trunk/wadi/</connection>
-    <developerConnection>scm:svn://svn.wadi.codehaus.org/wadi/trunk/wadi/</developerConnection>
-    <url>http://svn.wadi.codehaus.org/wadi/trunk/wadi</url>
+    <developerConnection>scm:https://svn.codehaus.org/wadi/trunk/wadi/</developerConnection>
+    <url>http://svn.codehaus.org/wadi/trunk/wadi</url>
   </scm>
 
   <issueManagement>
