@@ -19,10 +19,12 @@
 
 package org.codehaus.wadi.cache.grid;
 
+import java.io.Serializable;
+
 /**
  *
  * @version $Rev:$ $Date:$
  */
-public interface CacheOperation {
-    Object execute(DataGrid grid, Object key, Object value);
+public interface CacheOperation extends Serializable {
+    Object execute(DataGrid grid, String key, Object value);
 }
