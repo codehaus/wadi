@@ -72,6 +72,7 @@ import org.codehaus.wadi.location.statemanager.StateManager;
 import org.codehaus.wadi.replication.contextualiser.ReplicaAwareContextualiser;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
 import org.codehaus.wadi.replication.manager.ReplicationManagerFactory;
+import org.codehaus.wadi.replication.manager.basic.LoggingReplicationManager;
 import org.codehaus.wadi.replication.manager.basic.NoOpReplicationManagerFactory;
 import org.codehaus.wadi.replication.manager.basic.ObjectStateHandler;
 import org.codehaus.wadi.replication.manager.basic.SessionStateHandler;
@@ -414,7 +415,8 @@ public class StackContext {
     }
 
     protected ReplicationManager newReplicationManager() {
-        return repManagerFactory.factory(serviceSpace, backingStrategyFactory);
+        ReplicationManager replicationManager = repManagerFactory.factory(serviceSpace, backingStrategyFactory);
+        return new LoggingReplicationManager(replicationManager);
     }
 
     protected Contextualiser newCollapserContextualiser(Contextualiser contextualiser, ConcurrentMotableMap mmap) {
