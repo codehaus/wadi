@@ -29,7 +29,7 @@ import org.codehaus.wadi.cache.AcquisitionPolicy;
  * @version $Rev:$ $Date:$
  */
 public interface DataGrid extends Cache {
-    Object execute(CacheOperation process, String key, AcquisitionPolicy getPolicy);
+    Object execute(CacheOperation operation, String key, AcquisitionPolicy policy);
     
-    Object execute(CacheOperation operation, LinkedHashMap<String, AcquisitionPolicy> keyToGetPolicy);
+    Object execute(CacheOperation operation, LinkedHashMap<String, AcquisitionPolicy> keyToPolicy);
 }
