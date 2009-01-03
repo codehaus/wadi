@@ -120,6 +120,8 @@ public abstract class AbstractCacheEntry implements CacheEntry {
     }
 
     protected ObjectInfoEntry fetchObjectInfoEntry(CacheInvocation invocation) {
+        invocation.setDoNotExecuteOnEndProcessing(true);
+        
         boolean contextualised;
         try {
             contextualised = manager.contextualise(invocation);

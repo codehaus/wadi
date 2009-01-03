@@ -107,13 +107,12 @@ public class AbstractCacheEntryTest extends BaseCacheEntryTestCase {
         modify().args(is.instanceOf(invocationClass)).perform(new Action() {
             public Object invocation(Object[] arg0, MethodHandle arg1) throws Throwable {
                 CacheInvocation invocation = (CacheInvocation) arg0[0];
+                assertTrue(invocation.isDoNotExecuteOnEndProcessing());
                 invocation.setSession(session);
                 invocation.invoke(null);
                 return true;
             }
         });
-        
-        session.onEndProcessing();
     }
 
 }
