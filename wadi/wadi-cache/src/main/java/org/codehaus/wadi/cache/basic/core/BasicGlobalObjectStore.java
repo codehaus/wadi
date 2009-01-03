@@ -98,7 +98,7 @@ public class BasicGlobalObjectStore implements GlobalObjectStore {
         commitPhases.add(new CheckConflictPhase());
         commitPhases.add(new InsertPhase(manager));
         commitPhases.add(new DestroyPhase(manager));
-        commitPhases.add(new MergePhase());
+        commitPhases.add(new MergePhase(manager));
         return commitPhases;
     }
 

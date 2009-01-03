@@ -25,6 +25,7 @@ import org.codehaus.wadi.cache.basic.ObjectInfo;
 import org.codehaus.wadi.cache.basic.ObjectInfoEntry;
 import org.codehaus.wadi.cache.basic.entry.CacheEntry;
 import org.codehaus.wadi.cache.basic.entry.CacheEntryState;
+import org.codehaus.wadi.core.manager.Manager;
 
 import com.agical.rmock.extension.junit.RMockTestCase;
 
@@ -36,11 +37,13 @@ public class MergePhaseTest extends RMockTestCase {
 
     private CacheEntry entry;
     private MergePhase phase;
+    private Manager manager;
 
     @Override
     protected void setUp() throws Exception {
         entry = (CacheEntry) mock(CacheEntry.class);
-        phase = new MergePhase();
+        manager = (Manager) mock(Manager.class);
+        phase = new MergePhase(manager);
     }
     
     public void testExecuteDoesNotMergeCleanEntry() throws Exception {
@@ -71,7 +74,7 @@ public class MergePhaseTest extends RMockTestCase {
         phase.execute(Collections.singletonMap("key", entry));
     }
 
-    private void executeMerges(CacheEntryState state) {
+    private void executeMerges(CacheEntryState state) throws Exception {
         recordState(state);
 
         entry.getExclusiveObjectInfoEntry();
@@ -82,6 +85,9 @@ public class MergePhaseTest extends RMockTestCase {
         ObjectInfo expectedObjectInfo = new ObjectInfo(2, new Object());
         modify().multiplicity(expect.from(1)).returnValue(expectedObjectInfo);
 
+        manager.contextualise(null);
+        modify().args(is.NOT_NULL);
+        
         startVerification();
         
         phase.execute(Collections.singletonMap("key", entry));

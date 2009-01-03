@@ -21,11 +21,15 @@ package org.codehaus.wadi.cache.basic.commitphase;
 
 import java.util.Map;
 
+import org.codehaus.wadi.cache.AcquisitionInfo;
 import org.codehaus.wadi.cache.TransactionException;
+import org.codehaus.wadi.cache.basic.CacheInvocation;
 import org.codehaus.wadi.cache.basic.ObjectInfo;
 import org.codehaus.wadi.cache.basic.ObjectInfoEntry;
 import org.codehaus.wadi.cache.basic.entry.CacheEntry;
 import org.codehaus.wadi.cache.basic.entry.CacheEntryState;
+import org.codehaus.wadi.core.contextualiser.InvocationException;
+import org.codehaus.wadi.core.manager.Manager;
 
 /**
  *
@@ -33,13 +37,33 @@ import org.codehaus.wadi.cache.basic.entry.CacheEntryState;
  */
 public class MergePhase implements CommitPhase {
 
+    private final Manager manager;
+
+    public MergePhase(Manager manager) {
+        if (null == manager) {
+            throw new IllegalArgumentException("manager is required");
+        }
+        this.manager = manager;
+    }
+
     public void execute(Map<String, CacheEntry> keyToEntry) throws TransactionException {
-        for (CacheEntry cacheEntry : keyToEntry.values()) {
+        for (Map.Entry<String, CacheEntry> entry : keyToEntry.entrySet()) {
+            String key = entry.getKey();
+            CacheEntry cacheEntry = entry.getValue();
             if (cacheEntry.getState() == CacheEntryState.UPDATED) {
                 ObjectInfoEntry objectInfoEntry = cacheEntry.getExclusiveObjectInfoEntry();
                 ObjectInfo newObjectInfo = cacheEntry.getObjectInfo();
                 objectInfoEntry.getObjectInfo().merge(newObjectInfo);
+
+                replicateState(key);
             }
+        }
+    }
+
+    protected void replicateState(String key) {
+        try {
+            manager.contextualise(new CacheInvocation(key, AcquisitionInfo.EXCLUSIVE_LOCAL_INFO));
+        } catch (InvocationException e) {
         }
     }
 
