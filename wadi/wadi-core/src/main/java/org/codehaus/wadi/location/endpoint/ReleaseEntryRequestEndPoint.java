@@ -19,7 +19,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.core.Lifecycle;
 import org.codehaus.wadi.core.contextualiser.Contextualiser;
-import org.codehaus.wadi.core.motable.AbstractChainedEmoter;
+import org.codehaus.wadi.core.motable.BaseEmoter;
 import org.codehaus.wadi.core.motable.Emoter;
 import org.codehaus.wadi.core.motable.Immoter;
 import org.codehaus.wadi.core.motable.Motable;
@@ -88,7 +88,7 @@ public class ReleaseEntryRequestEndPoint implements Lifecycle, ReleaseEntryReque
      * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
      * @version $Revision: 2175 $
      */
-    class ReleaseEntryRequestEmoter extends AbstractChainedEmoter {
+    class ReleaseEntryRequestEmoter extends BaseEmoter {
         protected final Envelope _message;
 
         public ReleaseEntryRequestEmoter(Envelope message) {

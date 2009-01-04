@@ -25,7 +25,7 @@ import org.codehaus.wadi.core.ConcurrentMotableMap;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class BaseMappedEmoter extends AbstractChainedEmoter {
+public class BaseMappedEmoter extends BaseEmoter {
 	private final ConcurrentMotableMap map;
 
 	public BaseMappedEmoter(ConcurrentMotableMap map) {
