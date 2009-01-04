@@ -17,7 +17,7 @@
 package org.codehaus.wadi.core.contextualiser;
 
 import org.codehaus.wadi.core.manager.SessionMonitor;
-import org.codehaus.wadi.core.motable.AbstractChainedEmoter;
+import org.codehaus.wadi.core.motable.BaseEmoter;
 import org.codehaus.wadi.core.motable.AbstractImmoter;
 import org.codehaus.wadi.core.motable.Emoter;
 import org.codehaus.wadi.core.motable.Immoter;
@@ -65,7 +65,7 @@ public class SharedStoreContextualiser extends AbstractSharedContextualiser {
         this.sessionMonitor = sessionMonitor;
         
         immoter = new SharedImmoter();
-        emoter = new AbstractChainedEmoter();
+        emoter = new BaseEmoter();
     }
 
     public Immoter getImmoter() {

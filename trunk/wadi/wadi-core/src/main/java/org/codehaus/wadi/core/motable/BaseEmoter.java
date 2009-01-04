@@ -21,12 +21,9 @@ import org.apache.commons.logging.LogFactory;
 
 
 /**
- * A basic Emoter for ChainedContextualisers
- *
- * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision$
  */
-public class AbstractChainedEmoter implements Emoter {
+public class BaseEmoter implements Emoter {
 	protected final Log _log = LogFactory.getLog(getClass());
 
     public boolean emote(Motable emotable, Motable immotable) {
