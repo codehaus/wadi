@@ -23,12 +23,9 @@ import org.codehaus.wadi.cache.basic.ObjectInfo;
 import org.codehaus.wadi.cache.basic.ObjectInfoEntry;
 import org.codehaus.wadi.core.contextualiser.AbstractSharedContextualiser;
 import org.codehaus.wadi.core.contextualiser.Contextualiser;
-import org.codehaus.wadi.core.contextualiser.Invocation;
-import org.codehaus.wadi.core.contextualiser.InvocationException;
-import org.codehaus.wadi.core.motable.AbstractChainedEmoter;
+import org.codehaus.wadi.core.motable.BaseEmoter;
 import org.codehaus.wadi.core.motable.Emoter;
 import org.codehaus.wadi.core.motable.Immoter;
-import org.codehaus.wadi.core.motable.Motable;
 
 /**
  *
@@ -36,6 +33,7 @@ import org.codehaus.wadi.core.motable.Motable;
  */
 public class ObjectStoreContextualiser extends AbstractSharedContextualiser {
     private final ObjectLoader objectLoader;
+    private final Emoter emoter;
     
     public ObjectStoreContextualiser(Contextualiser next, ObjectLoader objectLoader) {
         super(next);
@@ -43,10 +41,12 @@ public class ObjectStoreContextualiser extends AbstractSharedContextualiser {
             throw new IllegalArgumentException("objectStore is required");
         }
         this.objectLoader = objectLoader;
+        
+        emoter = new BaseEmoter();
     }
 
     @Override
-    protected Motable get(String id, boolean exclusiveOnly) {
+    protected ObjectMotable get(String id, boolean exclusiveOnly) {
         ObjectInfoEntry objectInfoEntry;
         Object object = objectLoader.load(id);
         if (null == object) {
@@ -58,26 +58,18 @@ public class ObjectStoreContextualiser extends AbstractSharedContextualiser {
     }
 
     @Override
+    public Immoter getSharedDemoter() {
+        return next.getSharedDemoter();
+    }
+    
+    @Override
     protected Emoter getEmoter() {
-        return new AbstractChainedEmoter();
+        return emoter;
     }
 
     @Override
     protected Immoter getImmoter() {
-        return new Immoter() {
-            public boolean contextualise(Invocation invocation, String id, Motable immotable)
-                    throws InvocationException {
-                return false;
-            }
-
-            public boolean immote(Motable emotable, Motable immotable) {
-                return false;
-            }
-
-            public Motable newMotable(Motable emotable) {
-                return new ObjectMotable(null);
-            }
-        };
+        throw new UnsupportedOperationException();
     }
 
 }

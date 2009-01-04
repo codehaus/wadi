@@ -33,8 +33,11 @@ import org.codehaus.wadi.cache.basic.entry.BasicAccessListener;
 import org.codehaus.wadi.cache.policy.OptimisticAcquisitionPolicy;
 import org.codehaus.wadi.cache.policy.PessimisticAcquisitionPolicy;
 import org.codehaus.wadi.cache.policy.ReadOnlyAcquisitionPolicy;
+import org.codehaus.wadi.cache.store.ObjectLoaderSupport;
+import org.codehaus.wadi.cache.store.ObjectStoreContextualiser;
 import org.codehaus.wadi.cache.util.TxDecoratorCache;
 import org.codehaus.wadi.core.assembler.StackContext;
+import org.codehaus.wadi.core.contextualiser.Contextualiser;
 import org.codehaus.wadi.core.manager.Manager;
 import org.codehaus.wadi.core.util.SimpleStreamer;
 import org.codehaus.wadi.core.util.Streamer;
@@ -47,6 +50,9 @@ import org.codehaus.wadi.web.impl.URIEndPoint;
 
 public class Main {
 
+    private static final POJO OBJECT_STORE_OBJECT = new POJO();
+    private static final String OBJECT_STORE_OBJECT_KEY = "key2";
+    
     private VMBroker broker;
 
     public static void main(String[] args) throws Exception {
@@ -56,10 +62,12 @@ public class Main {
     public void doMain(String[] args) throws Exception {
         broker = new VMBroker("broker");
         broker.start();
-
+        
         Cache cacheOnNode1 = newCache("node1");
         Cache cacheOnNode2 = newCache("node2");
-        
+
+        loadFromObjectStoreContextualiser(cacheOnNode1);
+            
         String key1 = "key1";
 
         CacheTransaction cacheTxOnNode1 = cacheOnNode1.getCacheTransaction();
@@ -106,11 +114,33 @@ public class Main {
         System.out.println("END");
     }
 
+    protected void loadFromObjectStoreContextualiser(Cache cacheOnNode1) {
+        CacheTransaction cacheTxOnNode1 = cacheOnNode1.getCacheTransaction();
+        cacheTxOnNode1.begin();
+        Object actualObject = cacheOnNode1.get(OBJECT_STORE_OBJECT_KEY, ReadOnlyAcquisitionPolicy.DEFAULT);
+        cacheTxOnNode1.commit();
+        if (actualObject != OBJECT_STORE_OBJECT) {
+            throw new AssertionError();
+        }
+    }
+
     protected Cache newCache(String nodeName) throws Exception {
         VMDispatcher dispatcher = new VMDispatcher(broker, nodeName, new URIEndPoint(new URI("uri")));
         dispatcher.start();
         
-        StackContext stackContext = new StackContext(new ServiceSpaceName(new URI("/name")), dispatcher);
+        StackContext stackContext = new StackContext(new ServiceSpaceName(new URI("/name")), dispatcher, 2) {
+            @Override
+            protected Contextualiser newSharedStoreContextualiser(Contextualiser next) {
+                return new ObjectStoreContextualiser(next, new ObjectLoaderSupport() {
+                    public Object load(String key) {
+                        if (key.equals(OBJECT_STORE_OBJECT_KEY)) {
+                            return OBJECT_STORE_OBJECT;
+                        }
+                        return null;
+                    }
+                });
+            }  
+        };
         stackContext.setDisableReplication(true);
         stackContext.build();
 

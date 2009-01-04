@@ -19,28 +19,46 @@
 
 package org.codehaus.wadi.cache.store;
 
+import org.codehaus.wadi.cache.basic.ObjectInfoEntry;
+import org.codehaus.wadi.cache.basic.SessionUtil;
 import org.codehaus.wadi.core.motable.AbstractMotable;
+import org.codehaus.wadi.core.motable.Motable;
+import org.codehaus.wadi.core.session.Session;
 
 /**
  *
  * @version $Rev:$ $Date:$
  */
 public class ObjectMotable extends AbstractMotable {
-    private final Object object;
+    private final ObjectInfoEntry objectInfoEntry;
     
-    public ObjectMotable(Object object) {
-        this.object = object;
+    public ObjectMotable(ObjectInfoEntry objectInfoEntry) {
+        if (null == objectInfoEntry) {
+            throw new IllegalArgumentException("objectInfoEntry is required");
+        }
+        this.objectInfoEntry = objectInfoEntry;
+        
+        getAbstractMotableMemento().setName(objectInfoEntry.getKey());
+    }
+
+    public ObjectInfoEntry getObjectInfoEntry() {
+        return objectInfoEntry;
+    }
+    
+    public synchronized void mote(Motable recipient) throws Exception {
+        if (!(recipient instanceof Session)) {
+            throw new IllegalArgumentException("recipient must be an instance of " + Session.class.getName());
+        }
+        Session session = (Session) recipient;
+        SessionUtil.setObjectInfoEntry(session, objectInfoEntry);
     }
 
     public byte[] getBodyAsByteArray() throws Exception {
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     public void setBodyAsByteArray(byte[] bytes) throws Exception {
-    }
-
-    public Object getObject() {
-        return object;
+        throw new UnsupportedOperationException();
     }
 
 }
