@@ -19,16 +19,35 @@ public class BasicInvocationTest extends RMockTestCase {
         invocation.setSession(session);
     }
     
-    public void testExecuteOnEndProcessing() throws Exception {
+    public void testExecuteOnEndProcessingWithExistingSession() throws Exception {
         session.onEndProcessing();
-        session.onEndProcessing();
+        modify().multiplicity(expect.exactly(2));
+        
         startVerification();
         
         invocation.invoke();
         invocation.invoke(invocationContext);
     }
     
+    public void testExecuteOnEndProcessingWithNewSession() throws Exception {
+        session.isNew();
+        modify().multiplicity(expect.exactly(2)).returnValue(true);
+
+        session.onEndProcessing();
+        modify().multiplicity(expect.exactly(2));
+
+        startVerification();
+        
+        invocation.setDoNotExecuteOnEndProcessing(true);
+        
+        invocation.invoke();
+        invocation.invoke(invocationContext);
+    }
+    
     public void testDoNotExecuteOnEndProcessing() throws Exception {
+        session.isNew();
+        modify().multiplicity(expect.exactly(2)).returnValue(false);
+
         startVerification();
         
         invocation.setDoNotExecuteOnEndProcessing(true);
