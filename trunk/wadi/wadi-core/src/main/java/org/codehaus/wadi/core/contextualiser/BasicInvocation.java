@@ -61,9 +61,7 @@ public class BasicInvocation implements Invocation {
             }
             throw new InvocationException(e);
         } finally {
-            if (!doNotExecuteOnEndProcessing && null != session) {
-                session.onEndProcessing();
-            }
+            invokeOnEndProcessing();
         }
     }
 
@@ -76,12 +74,16 @@ public class BasicInvocation implements Invocation {
             }
             throw new InvocationException(e);
         } finally {
-            if (!doNotExecuteOnEndProcessing && null != session) {
-                session.onEndProcessing();
-            }
+            invokeOnEndProcessing();
         }
     }
 
+    protected void invokeOnEndProcessing() {
+        if (null != session && (!doNotExecuteOnEndProcessing || session.isNew())) {
+            session.onEndProcessing();
+        }
+    }
+    
     protected void doInvoke() throws InvocationException {
     }
     
