@@ -50,29 +50,6 @@ public class SimpleMotable extends AbstractMotable {
         oo.writeObject(_bytes);
     }
 
-    public boolean equals(Object object) {
-        if (this==object)
-            return true;
-        if (!(object instanceof Motable))
-            return false;
-        try {
-            Motable motable = (Motable) object;
-            byte[] bytes=motable.getBodyAsByteArray();
-            int l=_bytes.length;
-            if (l!=bytes.length)
-                return false;
-            else {
-                for (int i=0; i<l; i++)
-                    if (_bytes[i]!=bytes[i])
-                        return false;
-                return true;
-            }
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            return false;
-        }
-    }
 }
 
 
