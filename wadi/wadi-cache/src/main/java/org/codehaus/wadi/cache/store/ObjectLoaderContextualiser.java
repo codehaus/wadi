@@ -31,11 +31,11 @@ import org.codehaus.wadi.core.motable.Immoter;
  *
  * @version $Rev:$ $Date:$
  */
-public class ObjectStoreContextualiser extends AbstractSharedContextualiser {
+public class ObjectLoaderContextualiser extends AbstractSharedContextualiser {
     private final ObjectLoader objectLoader;
     private final Emoter emoter;
     
-    public ObjectStoreContextualiser(Contextualiser next, ObjectLoader objectLoader) {
+    public ObjectLoaderContextualiser(Contextualiser next, ObjectLoader objectLoader) {
         super(next);
         if (null == objectLoader) {
             throw new IllegalArgumentException("objectStore is required");

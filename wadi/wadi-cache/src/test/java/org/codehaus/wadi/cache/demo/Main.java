@@ -33,8 +33,8 @@ import org.codehaus.wadi.cache.basic.entry.BasicAccessListener;
 import org.codehaus.wadi.cache.policy.OptimisticAcquisitionPolicy;
 import org.codehaus.wadi.cache.policy.PessimisticAcquisitionPolicy;
 import org.codehaus.wadi.cache.policy.ReadOnlyAcquisitionPolicy;
+import org.codehaus.wadi.cache.store.ObjectLoaderContextualiser;
 import org.codehaus.wadi.cache.store.ObjectLoaderSupport;
-import org.codehaus.wadi.cache.store.ObjectStoreContextualiser;
 import org.codehaus.wadi.cache.util.TxDecoratorCache;
 import org.codehaus.wadi.core.assembler.StackContext;
 import org.codehaus.wadi.core.contextualiser.Contextualiser;
@@ -131,7 +131,7 @@ public class Main {
         StackContext stackContext = new StackContext(new ServiceSpaceName(new URI("/name")), dispatcher, 2) {
             @Override
             protected Contextualiser newSharedStoreContextualiser(Contextualiser next) {
-                return new ObjectStoreContextualiser(next, new ObjectLoaderSupport() {
+                return new ObjectLoaderContextualiser(next, new ObjectLoaderSupport() {
                     public Object load(String key) {
                         if (key.equals(OBJECT_STORE_OBJECT_KEY)) {
                             return OBJECT_STORE_OBJECT;
