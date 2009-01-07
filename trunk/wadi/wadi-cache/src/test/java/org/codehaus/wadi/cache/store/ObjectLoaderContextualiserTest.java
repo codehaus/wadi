@@ -30,17 +30,17 @@ import com.agical.rmock.extension.junit.RMockTestCase;
  *
  * @version $Rev:$ $Date:$
  */
-public class ObjectStoreContextualiserTest extends RMockTestCase {
+public class ObjectLoaderContextualiserTest extends RMockTestCase {
 
     private Contextualiser next;
     private ObjectLoader loader;
-    private ObjectStoreContextualiser contextualiser;
+    private ObjectLoaderContextualiser contextualiser;
 
     @Override
     protected void setUp() throws Exception {
         next = (Contextualiser) mock(Contextualiser.class);
         loader = (ObjectLoader) mock(ObjectLoader.class);
-        contextualiser = new ObjectStoreContextualiser(next, loader);
+        contextualiser = new ObjectLoaderContextualiser(next, loader);
     }
 
     public void testGetSharedDemoterReturnsNextSharedDemoter() throws Exception {
