@@ -25,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.codehaus.wadi.cache.Cache;
 import org.codehaus.wadi.cache.CacheTransaction;
+import org.codehaus.wadi.cache.assembler.CacheStackContext;
 import org.codehaus.wadi.cache.basic.core.BasicCache;
 import org.codehaus.wadi.cache.basic.core.BasicGlobalObjectStore;
 import org.codehaus.wadi.cache.basic.core.BasicInTxCacheFactory;
@@ -33,15 +34,10 @@ import org.codehaus.wadi.cache.basic.entry.BasicAccessListener;
 import org.codehaus.wadi.cache.policy.OptimisticAcquisitionPolicy;
 import org.codehaus.wadi.cache.policy.PessimisticAcquisitionPolicy;
 import org.codehaus.wadi.cache.policy.ReadOnlyAcquisitionPolicy;
-import org.codehaus.wadi.cache.store.ObjectLoaderContextualiser;
-import org.codehaus.wadi.cache.store.ObjectWriterContextualiser;
 import org.codehaus.wadi.cache.util.TxDecoratorCache;
-import org.codehaus.wadi.core.assembler.StackContext;
-import org.codehaus.wadi.core.contextualiser.Contextualiser;
 import org.codehaus.wadi.core.manager.Manager;
 import org.codehaus.wadi.core.util.SimpleStreamer;
 import org.codehaus.wadi.core.util.Streamer;
-import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.vm.VMBroker;
 import org.codehaus.wadi.group.vm.VMDispatcher;
@@ -72,10 +68,6 @@ public class Main {
 
         readAndWriteThroughCacheAccess(cacheOnNode1);
         
-        if (true) {
-            return;
-        }
-            
         String key1 = "key1";
 
         CacheTransaction cacheTxOnNode1 = cacheOnNode1.getCacheTransaction();
@@ -140,7 +132,16 @@ public class Main {
         VMDispatcher dispatcher = new VMDispatcher(broker, nodeName, new URIEndPoint(new URI("uri")));
         dispatcher.start();
         
-        StackContext stackContext = new CacheStackContext(dispatcher, waitForObjectWriteLatch);
+        StubbedObjectLoaderWriter objectLoaderWriter = new StubbedObjectLoaderWriter(waitForObjectWriteLatch);
+        CacheStackContext stackContext = new CacheStackContext(Thread.currentThread().getContextClassLoader(),
+                new ServiceSpaceName(new URI("/name")),
+                dispatcher,
+                1,
+                24,
+                10,
+                new RoundRobinBackingStrategyFactory(1));
+        stackContext.setObjectWriter(objectLoaderWriter);
+        stackContext.setObjectLoader(objectLoaderWriter);
         stackContext.setDisableReplication(true);
         stackContext.build();
 
@@ -158,36 +159,6 @@ public class Main {
         Cache cache = new BasicCache(globalObjectStore, inTxCacheFactory);
         cache = new TxDecoratorCache(cache);
         return cache;
-    }
-
-    protected static final class CacheStackContext extends StackContext {
-        private final StubbedObjectLoaderWriter objectLoaderWriter;
-
-        protected CacheStackContext(Dispatcher underlyingDispatcher, CountDownLatch waitForObjectWriteLatch)
-                throws Exception {
-            super(Thread.currentThread().getContextClassLoader(),
-                    new ServiceSpaceName(new URI("/name")),
-                    underlyingDispatcher,
-                    0,
-                    24,
-                    10,
-                    new RoundRobinBackingStrategyFactory(1));
-            objectLoaderWriter = new StubbedObjectLoaderWriter(waitForObjectWriteLatch);
-        }
-
-        @Override
-        protected Contextualiser newSharedStoreContextualiser(Contextualiser next) {
-            next = new ObjectWriterContextualiser(next,
-                    objectLoaderWriter,
-                    sessionFactory,
-                    stateManager,
-                    replicationManager);
-            return new ObjectLoaderContextualiser(next,
-                    objectLoaderWriter,
-                    sessionFactory,
-                    sessionMonitor,
-                    stateManager);
-        }
     }
 
     public static class UpdatePessimistic extends Thread {
