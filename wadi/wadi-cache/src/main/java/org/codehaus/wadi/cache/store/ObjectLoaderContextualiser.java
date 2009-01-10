@@ -70,20 +70,20 @@ public class ObjectLoaderContextualiser extends AbstractSharedContextualiser {
     @Override
     protected Motable get(String id, boolean exclusiveOnly) {
         ObjectInfoEntry objectInfoEntry = loadObjectInfoEntry(id);
+        if (null == objectInfoEntry) {
+            return null;
+        }
         
         stateManager.insert(id);
-        
         Session session = createSession(id, objectInfoEntry);
-        
         sessionMonitor.notifySessionCreation(session);
-        
         return session;
     }
 
     protected ObjectInfoEntry loadObjectInfoEntry(String id) {
         Object object = objectLoader.load(id);
         if (null == object) {
-            return new ObjectInfoEntry(id, new ObjectInfo());
+            return null;
         }
         return new ObjectInfoEntry(id, new ObjectInfo(object));
     }

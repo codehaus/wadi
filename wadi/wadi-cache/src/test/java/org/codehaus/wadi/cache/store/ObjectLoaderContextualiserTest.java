@@ -89,12 +89,10 @@ public class ObjectLoaderContextualiserTest extends RMockTestCase {
         
         loader.load(key);
 
-        Session session = recordNotifyObjectLoad(key, null);
-
         startVerification();
         
         Motable motable = contextualiser.get(key, false);
-        assertSame(session, motable);
+        assertNull(motable);
     }
     
     private Session recordNotifyObjectLoad(String key, final Object expectedObject) {
