@@ -125,7 +125,7 @@ public class StackContext {
     protected ConcurrentMotableMap memoryMap;
     protected Router router;
     private SimplePartitionManagerTiming simplePartitionManagerTiming;
-    private SessionMonitor sessionMonitor;
+    protected SessionMonitor sessionMonitor;
     private ReplicationManagerFactory repManagerFactory;
     private ReplicaStorageFactory repStorageFactory;
     protected ObjectStateHandler stateHandler;
