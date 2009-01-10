@@ -19,11 +19,22 @@
 
 package org.codehaus.wadi.cache.store;
 
+import java.io.IOException;
+
 import org.codehaus.wadi.cache.basic.ObjectInfo;
 import org.codehaus.wadi.cache.basic.ObjectInfoEntry;
+import org.codehaus.wadi.cache.basic.SessionUtil;
 import org.codehaus.wadi.core.contextualiser.Contextualiser;
+import org.codehaus.wadi.core.manager.SessionMonitor;
 import org.codehaus.wadi.core.motable.Immoter;
+import org.codehaus.wadi.core.motable.Motable;
+import org.codehaus.wadi.core.session.Session;
+import org.codehaus.wadi.core.session.SessionFactory;
+import org.codehaus.wadi.location.statemanager.StateManager;
 
+import com.agical.rmock.core.describe.ExpressionDescriber;
+import com.agical.rmock.core.match.Expression;
+import com.agical.rmock.core.match.operator.AbstractExpression;
 import com.agical.rmock.extension.junit.RMockTestCase;
 
 /**
@@ -35,12 +46,18 @@ public class ObjectLoaderContextualiserTest extends RMockTestCase {
     private Contextualiser next;
     private ObjectLoader loader;
     private ObjectLoaderContextualiser contextualiser;
+    private SessionFactory sessionFactory;
+    private SessionMonitor sessionMonitor;
+    private StateManager stateManager;
 
     @Override
     protected void setUp() throws Exception {
         next = (Contextualiser) mock(Contextualiser.class);
         loader = (ObjectLoader) mock(ObjectLoader.class);
-        contextualiser = new ObjectLoaderContextualiser(next, loader);
+        sessionFactory = (SessionFactory) mock(SessionFactory.class);
+        sessionMonitor = (SessionMonitor) mock(SessionMonitor.class);
+        stateManager = (StateManager) mock(StateManager.class);
+        contextualiser = new ObjectLoaderContextualiser(next, loader, sessionFactory, sessionMonitor, stateManager);
     }
 
     public void testGetSharedDemoterReturnsNextSharedDemoter() throws Exception {
@@ -59,25 +76,48 @@ public class ObjectLoaderContextualiserTest extends RMockTestCase {
         Object expectedObject = new Object();
         modify().returnValue(expectedObject);
         
+        Session session = recordNotifyObjectLoad(key, expectedObject);
+        
         startVerification();
         
-        ObjectMotable motable = contextualiser.get(key, false);
-        ObjectInfoEntry objectInfoEntry = motable.getObjectInfoEntry();
-        ObjectInfo objectInfo = objectInfoEntry.getObjectInfo();
-        assertSame(expectedObject, objectInfo.getObject());
+        Motable motable = contextualiser.get(key, false);
+        assertSame(session, motable);
     }
-    
+
     public void testGetLoadNullObject() throws Exception {
         String key = "key";
         
         loader.load(key);
-        
+
+        Session session = recordNotifyObjectLoad(key, null);
+
         startVerification();
         
-        ObjectMotable motable = contextualiser.get(key, false);
-        ObjectInfoEntry objectInfoEntry = motable.getObjectInfoEntry();
-        ObjectInfo objectInfo = objectInfoEntry.getObjectInfo();
-        assertSame(true, objectInfo.isUndefined());
+        Motable motable = contextualiser.get(key, false);
+        assertSame(session, motable);
+    }
+    
+    private Session recordNotifyObjectLoad(String key, final Object expectedObject) {
+        stateManager.insert(key);
+        
+        Session session = sessionFactory.create();
+        session.init(0, 0, 0, key);
+        modify().args(new Expression[] {is.gt(0l), is.gt(0l), is.AS_RECORDED, is.AS_RECORDED});
+        SessionUtil.setObjectInfoEntry(session, new ObjectInfoEntry(key, new ObjectInfo()));
+        modify().args(is.AS_RECORDED, new AbstractExpression() {
+            public void describeWith(ExpressionDescriber arg0) throws IOException {
+            }
+
+            public boolean passes(Object arg0) {
+                ObjectInfoEntry entry = (ObjectInfoEntry) arg0;
+                assertSame(expectedObject, entry.getObjectInfo().getObject());
+                return true;
+            }
+        });
+        
+        sessionMonitor.notifySessionCreation(session);
+        
+        return session;
     }
     
 }

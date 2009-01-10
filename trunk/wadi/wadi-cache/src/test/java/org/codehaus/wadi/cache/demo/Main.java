@@ -19,9 +19,9 @@
 
 package org.codehaus.wadi.cache.demo;
 
-import java.io.Serializable;
 import java.net.URI;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.codehaus.wadi.cache.Cache;
 import org.codehaus.wadi.cache.CacheTransaction;
@@ -34,26 +34,30 @@ import org.codehaus.wadi.cache.policy.OptimisticAcquisitionPolicy;
 import org.codehaus.wadi.cache.policy.PessimisticAcquisitionPolicy;
 import org.codehaus.wadi.cache.policy.ReadOnlyAcquisitionPolicy;
 import org.codehaus.wadi.cache.store.ObjectLoaderContextualiser;
-import org.codehaus.wadi.cache.store.ObjectLoaderSupport;
+import org.codehaus.wadi.cache.store.ObjectWriterContextualiser;
 import org.codehaus.wadi.cache.util.TxDecoratorCache;
 import org.codehaus.wadi.core.assembler.StackContext;
 import org.codehaus.wadi.core.contextualiser.Contextualiser;
 import org.codehaus.wadi.core.manager.Manager;
 import org.codehaus.wadi.core.util.SimpleStreamer;
 import org.codehaus.wadi.core.util.Streamer;
+import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.vm.VMBroker;
 import org.codehaus.wadi.group.vm.VMDispatcher;
+import org.codehaus.wadi.replication.strategy.RoundRobinBackingStrategyFactory;
 import org.codehaus.wadi.servicespace.ServiceSpace;
 import org.codehaus.wadi.servicespace.ServiceSpaceName;
 import org.codehaus.wadi.web.impl.URIEndPoint;
 
+/**
+ *
+ * @version $Rev:$ $Date:$
+ */
 public class Main {
 
-    private static final POJO OBJECT_STORE_OBJECT = new POJO();
-    private static final String OBJECT_STORE_OBJECT_KEY = "key2";
-    
     private VMBroker broker;
+    private CountDownLatch waitForObjectWriteLatch = new CountDownLatch(1);
 
     public static void main(String[] args) throws Exception {
         new Main().doMain(args);    
@@ -66,7 +70,11 @@ public class Main {
         Cache cacheOnNode1 = newCache("node1");
         Cache cacheOnNode2 = newCache("node2");
 
-        loadFromObjectStoreContextualiser(cacheOnNode1);
+        readAndWriteThroughCacheAccess(cacheOnNode1);
+        
+        if (true) {
+            return;
+        }
             
         String key1 = "key1";
 
@@ -114,12 +122,16 @@ public class Main {
         System.out.println("END");
     }
 
-    protected void loadFromObjectStoreContextualiser(Cache cacheOnNode1) {
+    protected void readAndWriteThroughCacheAccess(Cache cacheOnNode1) throws Exception {
         CacheTransaction cacheTxOnNode1 = cacheOnNode1.getCacheTransaction();
         cacheTxOnNode1.begin();
-        Object actualObject = cacheOnNode1.get(OBJECT_STORE_OBJECT_KEY, ReadOnlyAcquisitionPolicy.DEFAULT);
+        POJO actualObject = (POJO) cacheOnNode1.get(StubbedObjectLoaderWriter.OBJECT_STORE_OBJECT_KEY, ReadOnlyAcquisitionPolicy.DEFAULT);
         cacheTxOnNode1.commit();
-        if (actualObject != OBJECT_STORE_OBJECT) {
+        if (actualObject.field != StubbedObjectLoaderWriter.OBJECT_STORE_OBJECT.field) {
+            throw new AssertionError();
+        }
+        boolean success = waitForObjectWriteLatch.await(20, TimeUnit.SECONDS);
+        if (!success) {
             throw new AssertionError();
         }
     }
@@ -128,19 +140,7 @@ public class Main {
         VMDispatcher dispatcher = new VMDispatcher(broker, nodeName, new URIEndPoint(new URI("uri")));
         dispatcher.start();
         
-        StackContext stackContext = new StackContext(new ServiceSpaceName(new URI("/name")), dispatcher, 2) {
-            @Override
-            protected Contextualiser newSharedStoreContextualiser(Contextualiser next) {
-                return new ObjectLoaderContextualiser(next, new ObjectLoaderSupport() {
-                    public Object load(String key) {
-                        if (key.equals(OBJECT_STORE_OBJECT_KEY)) {
-                            return OBJECT_STORE_OBJECT;
-                        }
-                        return null;
-                    }
-                });
-            }  
-        };
+        StackContext stackContext = new CacheStackContext(dispatcher, waitForObjectWriteLatch);
         stackContext.setDisableReplication(true);
         stackContext.build();
 
@@ -160,10 +160,36 @@ public class Main {
         return cache;
     }
 
-    public static class POJO implements Serializable {
-        public int field;
+    protected static final class CacheStackContext extends StackContext {
+        private final StubbedObjectLoaderWriter objectLoaderWriter;
+
+        protected CacheStackContext(Dispatcher underlyingDispatcher, CountDownLatch waitForObjectWriteLatch)
+                throws Exception {
+            super(Thread.currentThread().getContextClassLoader(),
+                    new ServiceSpaceName(new URI("/name")),
+                    underlyingDispatcher,
+                    0,
+                    24,
+                    10,
+                    new RoundRobinBackingStrategyFactory(1));
+            objectLoaderWriter = new StubbedObjectLoaderWriter(waitForObjectWriteLatch);
+        }
+
+        @Override
+        protected Contextualiser newSharedStoreContextualiser(Contextualiser next) {
+            next = new ObjectWriterContextualiser(next,
+                    objectLoaderWriter,
+                    sessionFactory,
+                    stateManager,
+                    replicationManager);
+            return new ObjectLoaderContextualiser(next,
+                    objectLoaderWriter,
+                    sessionFactory,
+                    sessionMonitor,
+                    stateManager);
+        }
     }
-    
+
     public static class UpdatePessimistic extends Thread {
         private final Cache cache;
         private final String key;

@@ -19,12 +19,12 @@
 
 package org.codehaus.wadi.cache.store;
 
-import org.codehaus.wadi.cache.basic.ObjectInfo;
 import org.codehaus.wadi.cache.basic.ObjectInfoEntry;
 import org.codehaus.wadi.cache.basic.SessionUtil;
 import org.codehaus.wadi.core.contextualiser.AbstractSharedContextualiser;
 import org.codehaus.wadi.core.contextualiser.Contextualiser;
-import org.codehaus.wadi.core.manager.SessionMonitor;
+import org.codehaus.wadi.core.contextualiser.Invocation;
+import org.codehaus.wadi.core.contextualiser.InvocationException;
 import org.codehaus.wadi.core.motable.BaseEmoter;
 import org.codehaus.wadi.core.motable.Emoter;
 import org.codehaus.wadi.core.motable.Immoter;
@@ -32,75 +32,54 @@ import org.codehaus.wadi.core.motable.Motable;
 import org.codehaus.wadi.core.session.Session;
 import org.codehaus.wadi.core.session.SessionFactory;
 import org.codehaus.wadi.location.statemanager.StateManager;
+import org.codehaus.wadi.replication.manager.ReplicationManager;
 
 /**
  *
  * @version $Rev:$ $Date:$
  */
-public class ObjectLoaderContextualiser extends AbstractSharedContextualiser {
-    private final ObjectLoader objectLoader;
+public class ObjectWriterContextualiser extends AbstractSharedContextualiser {
+    private final ObjectWriter objectWriter;
     private final SessionFactory sessionFactory;
-    private final SessionMonitor sessionMonitor;
     private final StateManager stateManager;
+    private final ReplicationManager replicationManager;
     private final Emoter emoter;
+    private final Immoter immoter;
     
-    public ObjectLoaderContextualiser(Contextualiser next,
-            ObjectLoader objectLoader,
+    public ObjectWriterContextualiser(Contextualiser next,
+            ObjectWriter objectWriter,
             SessionFactory sessionFactory,
-            SessionMonitor sessionMonitor,
-            StateManager stateManager) {
+            StateManager stateManager,
+            ReplicationManager replicationManager) {
         super(next);
-        if (null == objectLoader) {
-            throw new IllegalArgumentException("objectStore is required");
+        if (null == objectWriter) {
+            throw new IllegalArgumentException("objectWriter is required");
         } else if (null == sessionFactory) {
             throw new IllegalArgumentException("sessionFactory is required");
-        } else if (null == sessionMonitor) {
-            throw new IllegalArgumentException("sessionMonitor is required");
         } else if (null == stateManager) {
             throw new IllegalArgumentException("stateManager is required");
+        } else if (null == replicationManager) {
+            throw new IllegalArgumentException("replicationManager is required");
         }
-        this.objectLoader = objectLoader;
+        this.objectWriter = objectWriter;
         this.sessionFactory = sessionFactory;
-        this.sessionMonitor = sessionMonitor;
         this.stateManager = stateManager;
+        this.replicationManager = replicationManager;
         
         emoter = new BaseEmoter();
+        immoter = new ObjectWriterContextualiserImmoter();
     }
 
     @Override
     protected Motable get(String id, boolean exclusiveOnly) {
-        ObjectInfoEntry objectInfoEntry = loadObjectInfoEntry(id);
-        
-        stateManager.insert(id);
-        
-        Session session = createSession(id, objectInfoEntry);
-        
-        sessionMonitor.notifySessionCreation(session);
-        
-        return session;
+        return null;
     }
 
-    protected ObjectInfoEntry loadObjectInfoEntry(String id) {
-        Object object = objectLoader.load(id);
-        if (null == object) {
-            return new ObjectInfoEntry(id, new ObjectInfo());
-        }
-        return new ObjectInfoEntry(id, new ObjectInfo(object));
-    }
-
-    protected Session createSession(String id, ObjectInfoEntry objectInfoEntry) {
-        Session session = sessionFactory.create();
-        long timeAsMs = System.currentTimeMillis();
-        session.init(timeAsMs, timeAsMs, 0, id);
-        SessionUtil.setObjectInfoEntry(session, objectInfoEntry);
-        return session;
+    @Override
+    public Immoter getDemoter(String name, Motable motable) {
+        return immoter;
     }
     
-    @Override
-    public Immoter getSharedDemoter() {
-        return next.getSharedDemoter();
-    }
-
     @Override
     protected Emoter getEmoter() {
         return emoter;
@@ -108,7 +87,28 @@ public class ObjectLoaderContextualiser extends AbstractSharedContextualiser {
 
     @Override
     protected Immoter getImmoter() {
-        throw new UnsupportedOperationException();
+        return immoter;
+    }
+
+    protected class ObjectWriterContextualiserImmoter implements Immoter {
+        public boolean contextualise(Invocation invocation, String id, Motable immotable) throws InvocationException {
+            throw new UnsupportedOperationException();
+        }
+
+        public boolean immote(Motable emotable, Motable immotable) {
+            Session session = (Session) immotable;
+            ObjectInfoEntry objectInfoEntry = SessionUtil.getObjectInfoEntry(session);
+            Object object = objectInfoEntry.getObjectInfo().getObject();
+            String key = session.getName();
+            objectWriter.write(key, object);
+            stateManager.remove(key);
+            replicationManager.destroy(key);
+            return true;
+        }
+
+        public Motable newMotable(Motable emotable) {
+            return sessionFactory.create();
+        }
     }
 
 }
