@@ -31,6 +31,16 @@ import org.codehaus.wadi.group.MessageExchangeException;
  * @version $Revision: 1603 $
  */
 public class VMBroker {
+    private static final Map<String, VMDispatcher> NODE_NAME_TO_BROKER = new HashMap<String, VMDispatcher>();
+
+    public static VMDispatcher getDisaptcherForNode(String nodeName) {
+        VMDispatcher dispatcher = NODE_NAME_TO_BROKER.get(nodeName);
+        if (null == dispatcher) {
+            throw new IllegalArgumentException("No dispatcher is defined for name [" + nodeName + "]");
+        }
+        return dispatcher;
+    }
+    
     protected final long inactiveTime = 5000;
 
     private final String name;
@@ -73,6 +83,8 @@ public class VMBroker {
 
         // notify new peer of existing members...
         listenerSupport.notifyMembershipChanged(localPeer, true);
+        
+        NODE_NAME_TO_BROKER.put(nodeName, dispatcher);
     }
 
     void unregisterDispatcher(VMDispatcher dispatcher) {
@@ -87,6 +99,8 @@ public class VMBroker {
         }
 
         listenerSupport.notifyMembershipChanged(localPeer, false);
+        
+        NODE_NAME_TO_BROKER.remove(nodeName);
     }
 
     void send(Address to, Envelope message) throws MessageExchangeException {
