@@ -110,4 +110,9 @@ public class JDK5ConcurrentMotableMap implements ConcurrentMotableMap {
         return motable.getReadWriteLock().writeLock();
     }
 
+    @Override
+    public String toString() {
+        return delegate.toString();
+    }
+    
 }
