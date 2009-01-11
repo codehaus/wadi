@@ -24,6 +24,8 @@ import org.codehaus.wadi.core.motable.Immoter;
 import org.codehaus.wadi.core.motable.Motable;
 import org.codehaus.wadi.core.session.Session;
 import org.codehaus.wadi.core.store.Store;
+import org.codehaus.wadi.core.util.CreateSessionOperation;
+import org.codehaus.wadi.core.util.InsertSessionOperation;
 import org.codehaus.wadi.core.util.Utils;
 import org.codehaus.wadi.location.statemanager.StateManager;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
@@ -104,17 +106,24 @@ public class SharedStoreContextualiser extends AbstractSharedContextualiser {
     protected class SharedPutter implements Store.Putter {
         protected final Emoter emoter;
         protected final Immoter immoter;
+        protected final InsertSessionOperation insertSessionOperation;
 
         public SharedPutter(Emoter emoter, Immoter immoter) {
             this.emoter = emoter;
             this.immoter = immoter;
+            
+            insertSessionOperation = new InsertSessionOperation(replicationManager,
+                    sessionMonitor,
+                    stateManager);
+
         }
 
-        public void put(String name, Motable motable) {
-            stateManager.insert(name);
-            Session session = (Session) Utils.mote(emoter, immoter, motable, name);
-            sessionMonitor.notifySessionCreation(session);
-            replicationManager.create(name, session);
+        public void put(final String name, final Motable motable) {
+            insertSessionOperation.insert(name, new CreateSessionOperation() {
+                public Session create() {
+                    return (Session) Utils.mote(emoter, immoter, motable, name);
+                }
+            });
         }
     }
 

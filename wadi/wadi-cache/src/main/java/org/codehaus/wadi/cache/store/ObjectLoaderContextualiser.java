@@ -31,6 +31,8 @@ import org.codehaus.wadi.core.motable.Immoter;
 import org.codehaus.wadi.core.motable.Motable;
 import org.codehaus.wadi.core.session.Session;
 import org.codehaus.wadi.core.session.SessionFactory;
+import org.codehaus.wadi.core.util.CreateSessionOperation;
+import org.codehaus.wadi.core.util.InsertSessionOperation;
 import org.codehaus.wadi.location.statemanager.StateManager;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
 
@@ -41,11 +43,9 @@ import org.codehaus.wadi.replication.manager.ReplicationManager;
 public class ObjectLoaderContextualiser extends AbstractSharedContextualiser {
     private final ObjectLoader objectLoader;
     private final SessionFactory sessionFactory;
-    private final SessionMonitor sessionMonitor;
-    private final StateManager stateManager;
-    private final ReplicationManager replicationManager;
+    private final InsertSessionOperation insertSessionOperation;
     private final Emoter emoter;
-    
+
     public ObjectLoaderContextualiser(Contextualiser next,
             ObjectLoader objectLoader,
             SessionFactory sessionFactory,
@@ -66,25 +66,23 @@ public class ObjectLoaderContextualiser extends AbstractSharedContextualiser {
         }
         this.objectLoader = objectLoader;
         this.sessionFactory = sessionFactory;
-        this.sessionMonitor = sessionMonitor;
-        this.stateManager = stateManager;
-        this.replicationManager = replicationManager;
         
+        insertSessionOperation = new InsertSessionOperation(replicationManager, sessionMonitor, stateManager);
         emoter = new BaseEmoter();
     }
 
     @Override
-    protected Motable get(String id, boolean exclusiveOnly) {
-        ObjectInfoEntry objectInfoEntry = loadObjectInfoEntry(id);
+    protected Motable get(final String id, boolean exclusiveOnly) {
+        final ObjectInfoEntry objectInfoEntry = loadObjectInfoEntry(id);
         if (null == objectInfoEntry) {
             return null;
         }
         
-        stateManager.insert(id);
-        Session session = createSession(id, objectInfoEntry);
-        sessionMonitor.notifySessionCreation(session);
-        
-        replicationManager.create(id, session);
+        Session session = insertSessionOperation.insert(id, new CreateSessionOperation() {
+            public Session create() {
+                return createSession(id, objectInfoEntry);
+            }
+        });
         
         return session;
     }
