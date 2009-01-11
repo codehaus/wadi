@@ -31,6 +31,7 @@ import org.codehaus.wadi.core.motable.Motable;
 import org.codehaus.wadi.core.session.Session;
 import org.codehaus.wadi.core.session.SessionFactory;
 import org.codehaus.wadi.location.statemanager.StateManager;
+import org.codehaus.wadi.replication.manager.ReplicationManager;
 
 import com.agical.rmock.core.describe.ExpressionDescriber;
 import com.agical.rmock.core.match.Expression;
@@ -49,6 +50,7 @@ public class ObjectLoaderContextualiserTest extends RMockTestCase {
     private SessionFactory sessionFactory;
     private SessionMonitor sessionMonitor;
     private StateManager stateManager;
+    private ReplicationManager replicationManager;
 
     @Override
     protected void setUp() throws Exception {
@@ -57,7 +59,13 @@ public class ObjectLoaderContextualiserTest extends RMockTestCase {
         sessionFactory = (SessionFactory) mock(SessionFactory.class);
         sessionMonitor = (SessionMonitor) mock(SessionMonitor.class);
         stateManager = (StateManager) mock(StateManager.class);
-        contextualiser = new ObjectLoaderContextualiser(next, loader, sessionFactory, sessionMonitor, stateManager);
+        replicationManager = (ReplicationManager) mock(ReplicationManager.class);
+        contextualiser = new ObjectLoaderContextualiser(next,
+                loader,
+                sessionFactory,
+                sessionMonitor,
+                stateManager,
+                replicationManager);
     }
 
     public void testGetSharedDemoterReturnsNextSharedDemoter() throws Exception {
@@ -114,6 +122,8 @@ public class ObjectLoaderContextualiserTest extends RMockTestCase {
         });
         
         sessionMonitor.notifySessionCreation(session);
+        
+        replicationManager.create(key, session);
         
         return session;
     }

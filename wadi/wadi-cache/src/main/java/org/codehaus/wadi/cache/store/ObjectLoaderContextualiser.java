@@ -32,6 +32,7 @@ import org.codehaus.wadi.core.motable.Motable;
 import org.codehaus.wadi.core.session.Session;
 import org.codehaus.wadi.core.session.SessionFactory;
 import org.codehaus.wadi.location.statemanager.StateManager;
+import org.codehaus.wadi.replication.manager.ReplicationManager;
 
 /**
  *
@@ -42,13 +43,15 @@ public class ObjectLoaderContextualiser extends AbstractSharedContextualiser {
     private final SessionFactory sessionFactory;
     private final SessionMonitor sessionMonitor;
     private final StateManager stateManager;
+    private final ReplicationManager replicationManager;
     private final Emoter emoter;
     
     public ObjectLoaderContextualiser(Contextualiser next,
             ObjectLoader objectLoader,
             SessionFactory sessionFactory,
             SessionMonitor sessionMonitor,
-            StateManager stateManager) {
+            StateManager stateManager,
+            ReplicationManager replicationManager) {
         super(next);
         if (null == objectLoader) {
             throw new IllegalArgumentException("objectStore is required");
@@ -58,11 +61,14 @@ public class ObjectLoaderContextualiser extends AbstractSharedContextualiser {
             throw new IllegalArgumentException("sessionMonitor is required");
         } else if (null == stateManager) {
             throw new IllegalArgumentException("stateManager is required");
+        } else if (null == replicationManager) {
+            throw new IllegalArgumentException("replicationManager is required");
         }
         this.objectLoader = objectLoader;
         this.sessionFactory = sessionFactory;
         this.sessionMonitor = sessionMonitor;
         this.stateManager = stateManager;
+        this.replicationManager = replicationManager;
         
         emoter = new BaseEmoter();
     }
@@ -77,6 +83,9 @@ public class ObjectLoaderContextualiser extends AbstractSharedContextualiser {
         stateManager.insert(id);
         Session session = createSession(id, objectInfoEntry);
         sessionMonitor.notifySessionCreation(session);
+        
+        replicationManager.create(id, session);
+        
         return session;
     }
 
