@@ -93,7 +93,8 @@ public class CacheStackContext extends StackContext {
                 objectLoader,
                 sessionFactory,
                 sessionMonitor,
-                stateManager);
+                stateManager,
+                replicationManager);
     }
 
     protected Contextualiser newObjectWriterContextualiser(Contextualiser next) {
