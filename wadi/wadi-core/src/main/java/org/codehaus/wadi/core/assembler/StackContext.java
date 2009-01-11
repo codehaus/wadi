@@ -35,6 +35,7 @@ import org.codehaus.wadi.core.eviction.Evicter;
 import org.codehaus.wadi.core.manager.BasicSessionMonitor;
 import org.codehaus.wadi.core.manager.ClusteredManager;
 import org.codehaus.wadi.core.manager.DummyManagerConfig;
+import org.codehaus.wadi.core.manager.LoggingSessionMonitor;
 import org.codehaus.wadi.core.manager.Manager;
 import org.codehaus.wadi.core.manager.Router;
 import org.codehaus.wadi.core.manager.SessionMonitor;
@@ -314,7 +315,7 @@ public class StackContext {
     }
 
     protected SessionMonitor newSessionMonitor() {
-        return new BasicSessionMonitor();
+        return new LoggingSessionMonitor(new BasicSessionMonitor());
     }
 
     protected void registerClusteredManager(ClusteredManager manager) throws ServiceAlreadyRegisteredException {
