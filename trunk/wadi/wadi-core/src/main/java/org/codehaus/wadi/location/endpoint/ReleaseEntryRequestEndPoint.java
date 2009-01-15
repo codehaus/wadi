@@ -31,6 +31,7 @@ import org.codehaus.wadi.group.impl.ServiceEndpointBuilder;
 import org.codehaus.wadi.location.session.ReleaseEntryRequest;
 import org.codehaus.wadi.location.session.ReleaseEntryResponse;
 import org.codehaus.wadi.location.statemanager.StateManager;
+import org.codehaus.wadi.replication.manager.ReplicationManager;
 import org.codehaus.wadi.servicespace.ServiceName;
 import org.codehaus.wadi.servicespace.ServiceSpace;
 
@@ -46,19 +47,26 @@ public class ReleaseEntryRequestEndPoint implements Lifecycle, ReleaseEntryReque
     private final ServiceSpace serviceSpace; 
     private final Contextualiser contextualiser;
     private final StateManager stateManager;
+    private final ReplicationManager replicationManager;
     private final ServiceEndpointBuilder endpointBuilder;
     
-    public ReleaseEntryRequestEndPoint(ServiceSpace serviceSpace, Contextualiser contextualiser, StateManager stateManager) {
+    public ReleaseEntryRequestEndPoint(ServiceSpace serviceSpace,
+            Contextualiser contextualiser,
+            StateManager stateManager,
+            ReplicationManager replicationManager) {
         if (null == serviceSpace) {
             throw new IllegalArgumentException("serviceSpace is required");
         } else if (null == contextualiser) {
             throw new IllegalArgumentException("contextualiser is required");
         } else if (null == stateManager) {
             throw new IllegalArgumentException("stateManager is required");
+        } else if (null == replicationManager) {
+            throw new IllegalArgumentException("replicationManager is required");
         }
         this.serviceSpace = serviceSpace;
         this.contextualiser = contextualiser;
         this.stateManager = stateManager;
+        this.replicationManager = replicationManager;
 
         endpointBuilder = new ServiceEndpointBuilder();
     }
@@ -77,8 +85,10 @@ public class ReleaseEntryRequestEndPoint implements Lifecycle, ReleaseEntryReque
         Emoter emoter = new ReleaseEntryRequestEmoter(message);
         Immoter immoter = contextualiser.getDemoter(name, emotable);
         immoter = new RehydrationImmoter(immoter);
-        Utils.mote(emoter, immoter, emotable, name);
+        Motable motable = Utils.mote(emoter, immoter, emotable, name);
+
         stateManager.relocate(name);
+        replicationManager.promoteToMaster(name, null, motable);
     }
     
     /**

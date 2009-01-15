@@ -68,17 +68,22 @@ public class LoggingReplicationManager implements ReplicationManager {
         delegate.insertReplicaInfo(key, replicaInfo);
     }
 
-    public ReplicaInfo releaseReplicaInfo(Object key, Peer newPrimary) throws ReplicationKeyNotFoundException {
+    public ReplicaInfo releaseReplicaInfo(Object key, Peer newPrimary) {
         LOG.debug(delegate + " - releaseReplicaInfo key [" + key + "]");
         return delegate.releaseReplicaInfo(key, newPrimary);
     }
 
-    public Motable retrieveReplica(Object key) throws ReplicationKeyNotFoundException,
-            InternalReplicationManagerException {
+    public Motable retrieveReplica(Object key) throws InternalReplicationManagerException {
         LOG.debug(delegate + " - retrieveReplica key [" + key + "]");
         return delegate.retrieveReplica(key);
     }
 
+    public void promoteToMaster(Object key, ReplicaInfo replicaInfo, Motable motable)
+            throws InternalReplicationManagerException {
+        LOG.debug(delegate + " - promoteToMaster key [" + key + "]");
+        delegate.promoteToMaster(key, replicaInfo, motable);
+    }
+    
     public void start() throws Exception {
         LOG.debug(delegate + " - start");
         delegate.start();
