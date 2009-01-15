@@ -39,7 +39,6 @@ import org.codehaus.wadi.location.session.MoveIMToSM;
 import org.codehaus.wadi.location.session.MovePMToIM;
 import org.codehaus.wadi.location.session.MovePMToIMInvocation;
 import org.codehaus.wadi.location.session.MoveSMToIM;
-import org.codehaus.wadi.replication.common.ReplicaInfo;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
 import org.codehaus.wadi.servicespace.ServiceSpace;
 
@@ -126,7 +125,7 @@ public class HybridRelocater implements Relocater {
     protected boolean handleUnknownSession(String sessionName) {
         // The Partition manager had no record of our session key - either the session
         // has already been destroyed, or never existed...
-        log.info("Unknown session [" + sessionName + "]");
+        log.debug("Unknown session [" + sessionName + "]");
         return false;
     }
 
@@ -152,11 +151,7 @@ public class HybridRelocater implements Relocater {
             log.warn("Session migration has not been acknowledged. SM has disappeared.", e);
         }
         
-        ReplicaInfo replicaInfo = req.getReplicaInfo();
-        if (null != replicaInfo) {
-            replicaInfo.setPayload(immotable);
-            replicationManager.insertReplicaInfo(name, replicaInfo);
-        }
+        replicationManager.promoteToMaster(name, req.getReplicaInfo(), immotable);
 
         return immoter.contextualise(invocation, name, immotable);
     }
