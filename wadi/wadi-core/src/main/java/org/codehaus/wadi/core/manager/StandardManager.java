@@ -149,7 +149,7 @@ public class StandardManager implements Lifecycle, Manager {
         String name = router.strip(key);
         boolean contextualised = contextualiser.contextualise(invocation, name, null, false);
         if (!contextualised) {
-            log.error("Could not acquire session [" + name + "]");
+            log.debug("Could not acquire session [" + name + "]");
             if (invocation.isErrorIfSessionNotAcquired()) {
                 invocation.sendError(503, "Session [" + name + "] is not known");
             } else {
