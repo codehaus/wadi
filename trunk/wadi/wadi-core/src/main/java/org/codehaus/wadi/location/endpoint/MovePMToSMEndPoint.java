@@ -21,7 +21,6 @@ import org.codehaus.wadi.core.Lifecycle;
 import org.codehaus.wadi.core.MotableBusyException;
 import org.codehaus.wadi.core.contextualiser.BasicInvocation;
 import org.codehaus.wadi.core.contextualiser.Contextualiser;
-import org.codehaus.wadi.core.contextualiser.Invocation;
 import org.codehaus.wadi.group.Dispatcher;
 import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.group.MessageExchangeException;
