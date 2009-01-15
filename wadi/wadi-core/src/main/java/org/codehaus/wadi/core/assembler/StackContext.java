@@ -337,7 +337,8 @@ public class StackContext {
             throws ServiceAlreadyRegisteredException {
         ReleaseEntryRequestEndPoint immigrationEndPoint = new ReleaseEntryRequestEndPoint(serviceSpace,
                 contextualiser,
-                stateManager);
+                stateManager,
+                replicationManager);
         
         ServiceRegistry serviceRegistry = serviceSpace.getServiceRegistry();
         serviceRegistry.register(ReleaseEntryRequestEndPoint.NAME, immigrationEndPoint);

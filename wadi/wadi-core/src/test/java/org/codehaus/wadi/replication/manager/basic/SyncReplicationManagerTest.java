@@ -270,15 +270,12 @@ public class SyncReplicationManagerTest extends RMockTestCase {
         manager.releaseReplicaInfo(key, peer3);
     }
     
-    public void testReleaseUnknownReplicaInfoFails() throws Exception {
+    public void testReleaseUnknownReplicaInfoRetunsNull() throws Exception {
         startVerification();
         
         SyncReplicationManager manager = newReplicationManager();
-        try {
-            manager.releaseReplicaInfo("key", localPeer);
-            fail();
-        } catch (ReplicationKeyNotFoundException e) {
-        }
+        ReplicaInfo replicaInfo = manager.releaseReplicaInfo("key", localPeer);
+        assertNull(replicaInfo);
     }
     
     public void testInsertReplicaInfo() throws Exception {
@@ -306,6 +303,21 @@ public class SyncReplicationManagerTest extends RMockTestCase {
             fail();
         } catch (ReplicationKeyAlreadyExistsException e) {
         }
+    }
+    
+    public void testPromoteToMasterWithReplicaInfoSetPayloadAndAddReplicaInfo() throws Exception {
+        Motable motable = (Motable) mock(Motable.class);
+        localReplicaStorage.mergeDestroyIfExist(key);
+        
+        startVerification();
+
+        ReplicaInfo replicaInfo = new ReplicaInfo(localPeer, new Peer[0], instance);
+        
+        SyncReplicationManager manager = newReplicationManager();
+        manager.promoteToMaster(key, replicaInfo, motable);
+        
+        assertSame(motable, replicaInfo.getPayload());
+        assertTrue(keyToReplicaInfo.containsKey(key));
     }
     
     protected SyncReplicationManager newReplicationManager() {

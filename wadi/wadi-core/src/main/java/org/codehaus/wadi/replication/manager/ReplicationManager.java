@@ -37,11 +37,13 @@ public interface ReplicationManager extends Lifecycle {
     
     void destroy(Object key);
 
-    Motable retrieveReplica(Object key) throws ReplicationKeyNotFoundException, InternalReplicationManagerException;
+    Motable retrieveReplica(Object key) throws InternalReplicationManagerException;
+
+    void promoteToMaster(Object key, ReplicaInfo replicaInfo, Motable motable) throws InternalReplicationManagerException;
 
     void insertReplicaInfo(Object key, ReplicaInfo replicaInfo) throws ReplicationKeyAlreadyExistsException;
     
-    ReplicaInfo releaseReplicaInfo(Object key, Peer newPrimary) throws ReplicationKeyNotFoundException;
+    ReplicaInfo releaseReplicaInfo(Object key, Peer newPrimary);
     
     Set<Object> getManagedReplicaInfoKeys();
 }

@@ -32,18 +32,21 @@ import org.codehaus.wadi.replication.manager.ReplicationManager;
  */
 public class NoOpReplicationManager implements ReplicationManager {
 
-    public ReplicaInfo releaseReplicaInfo(Object key, Peer newPrimary) throws ReplicationKeyNotFoundException {
+    public ReplicaInfo releaseReplicaInfo(Object key, Peer newPrimary) {
         return null;
     }
 
     public void insertReplicaInfo(Object key, ReplicaInfo replicaInfo) throws ReplicationKeyAlreadyExistsException {
     }
 
-    public Motable retrieveReplica(Object key) throws ReplicationKeyNotFoundException,
-            InternalReplicationManagerException {
+    public Motable retrieveReplica(Object key) throws InternalReplicationManagerException {
         return null;
     }
-
+    
+    public void promoteToMaster(Object key, ReplicaInfo replicaInfo, Motable motable)
+            throws InternalReplicationManagerException {
+    }
+    
     public void create(Object key, Motable tmp) throws ReplicationKeyAlreadyExistsException,
             InternalReplicationManagerException {
     }

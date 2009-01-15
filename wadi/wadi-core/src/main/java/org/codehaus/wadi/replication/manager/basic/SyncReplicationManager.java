@@ -171,35 +171,33 @@ public class SyncReplicationManager implements ReplicationManager {
             cascadeDestroy(key, replicaInfo);
         }
     }
-    
-    public Motable retrieveReplica(Object key) {
-        ReplicaInfo replicaInfo;
-        try {
-            ReplicaStorageInfo storageInfo = replicaStorageProxy.retrieveReplicaStorageInfo(key);
-            
-            replicaInfo = storageInfo.getReplicaInfo();
-            Motable target = stateHandler.restoreFromFullStateTransient(key, storageInfo.getSerializedPayload());
-            stateHandler.resetObjectState(target);
-            replicaInfo.setPayload(target);
-        } catch (ServiceInvocationException e) {
-            if (e.isMessageExchangeException()) {
-                return null;
-            } else {
-                throw new ReplicationKeyNotFoundException(key, e);
-            }
-        }
 
+    public Motable retrieveReplica(Object key) {
+        ReplicaInfo replicaInfo = retrieveReplicaInfo(key);
+        if (null == replicaInfo) {
+            return null;
+        }
         replicaInfo = replicaInfoReOrganizer.updateSecondariesFollowingRestoreFromSecondary(key, replicaInfo);
         return replicaInfo.getPayload();
     }
 
-    public ReplicaInfo releaseReplicaInfo(Object key, Peer newPrimary) throws ReplicationKeyNotFoundException {
+    public void promoteToMaster(Object key, ReplicaInfo replicaInfo, Motable motable)
+            throws InternalReplicationManagerException {
+        if (null != replicaInfo) {
+            replicaInfo.setPayload(motable);
+            insertReplicaInfo(key, replicaInfo);
+        } else {
+            promoteToMasterWithoutProvidedReplicaInfo(key, motable);
+        }
+    }
+    
+    public ReplicaInfo releaseReplicaInfo(Object key, Peer newPrimary) {
         ReplicaInfo replicaInfo;
         synchronized (keyToReplicaInfo) {
             replicaInfo = keyToReplicaInfo.remove(key);
         }
         if (null == replicaInfo) {
-            throw new ReplicationKeyNotFoundException(key);
+            return null;
         }
 
         Peer[] secondaries = replicaInfo.getSecondaries();
@@ -230,6 +228,33 @@ public class SyncReplicationManager implements ReplicationManager {
         synchronized (keyToReplicaInfo) {
             return new HashSet<Object>(keyToReplicaInfo.keySet());
         }
+    }
+    
+    protected void promoteToMasterWithoutProvidedReplicaInfo(Object key, Motable motable) {
+        ReplicaInfo replicaInfo = retrieveReplicaInfo(key);
+        if (null == replicaInfo) {
+            create(key, motable);
+        } else {
+            replicaInfo = new ReplicaInfo(replicaInfo, localPeer, replicaInfo.getSecondaries());
+            replicaInfoReOrganizer.updateSecondariesFollowingRestoreFromSecondary(key, replicaInfo);
+        }
+    }
+
+    protected ReplicaInfo retrieveReplicaInfo(Object key) {
+        ReplicaStorageInfo storageInfo;
+        try {
+            storageInfo = replicaStorageProxy.retrieveReplicaStorageInfo(key);
+        } catch (ServiceInvocationException e) {
+            return null;
+        }
+
+        ReplicaInfo replicaInfo = storageInfo.getReplicaInfo();
+
+        Motable target = stateHandler.restoreFromFullStateTransient(key, storageInfo.getSerializedPayload());
+        stateHandler.resetObjectState(target);
+        replicaInfo.setPayload(target);
+
+        return replicaInfo;
     }
     
     protected void cascadeCreate(Object key, ReplicaInfo replicaInfo, byte[] fullState, BackOffCapableTask task) {

@@ -92,15 +92,14 @@ public class HybridRelocaterTest extends RMockTestCase {
         Envelope envelope = (Envelope) mock(Envelope.class);
         modify().returnValue(envelope);
         envelope.getPayload();
-        
-        ReplicaInfo replicaInfo = (ReplicaInfo) intercept(ReplicaInfo.class, new Object[] {localPeer, new Peer[0], relocatedMotable}, "ReplicaInfo");
+        ReplicaInfo replicaInfo = new ReplicaInfo(localPeer, new Peer[0], relocatedMotable);
         modify().returnValue(new MoveSMToIM(relocatedMotable, replicaInfo));
 
         Motable motedNewMotable = sessionRelocationImmoter.newMotable(relocatedMotable);
         
         recordReplyToSM(envelope, true);
         
-        replicationManager.insertReplicaInfo(key, replicaInfo);
+        replicationManager.promoteToMaster(key, replicaInfo, motedNewMotable);
         
         sessionRelocationImmoter.contextualise(invocation, key, motedNewMotable);
         modify().returnValue(true);
@@ -113,35 +112,6 @@ public class HybridRelocaterTest extends RMockTestCase {
         assertTrue(relocated);
     }
 
-    public void testSuccessfulRelocationWithoutReplicaInfo() throws Exception {
-        boolean shuttingDown = false;
-        boolean relocatable = true;
-        
-        Motable relocatedMotable = (Motable) mock(Motable.class);
-        
-        Partition partition = partitionManager.getPartition(key);
-        recordPartitionExchange(shuttingDown, relocatable, partition);
-        Envelope envelope = (Envelope) mock(Envelope.class);
-        modify().returnValue(envelope);
-        envelope.getPayload();
-        
-        modify().returnValue(new MoveSMToIM(relocatedMotable, null));
-        
-        Motable motedNewMotable = sessionRelocationImmoter.newMotable(relocatedMotable);
-        
-        recordReplyToSM(envelope, true);
-        
-        sessionRelocationImmoter.contextualise(invocation, key, motedNewMotable);
-        modify().returnValue(true);
-
-        startVerification();
-        
-        HybridRelocater relocater = newMockedHybridRelocater();
-        boolean relocated = relocater.relocate(invocation, key, immoter, shuttingDown);
-
-        assertTrue(relocated);
-    }
-    
     public void testRelocatedSessionIsNull() throws Exception {
         boolean shuttingDown = false;
         boolean relocatable = true;
