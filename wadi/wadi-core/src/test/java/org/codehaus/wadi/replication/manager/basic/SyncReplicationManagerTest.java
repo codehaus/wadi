@@ -16,7 +16,6 @@
 package org.codehaus.wadi.replication.manager.basic;
 
 import java.io.IOException;
-import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,20 +29,13 @@ import org.codehaus.wadi.group.vm.VMPeer;
 import org.codehaus.wadi.replication.common.ReplicaInfo;
 import org.codehaus.wadi.replication.common.ReplicaStorageInfo;
 import org.codehaus.wadi.replication.manager.ReplicationKeyAlreadyExistsException;
-import org.codehaus.wadi.replication.manager.ReplicationKeyNotFoundException;
 import org.codehaus.wadi.replication.storage.ReplicaStorage;
 import org.codehaus.wadi.replication.strategy.BackingStrategy;
-import org.codehaus.wadi.servicespace.LifecycleState;
 import org.codehaus.wadi.servicespace.ServiceInvocationException;
-import org.codehaus.wadi.servicespace.ServiceLifecycleEvent;
-import org.codehaus.wadi.servicespace.ServiceListener;
 import org.codehaus.wadi.servicespace.ServiceMonitor;
 import org.codehaus.wadi.servicespace.ServiceProxyFactory;
 import org.codehaus.wadi.servicespace.ServiceSpace;
-import org.codehaus.wadi.servicespace.ServiceSpaceName;
 
-import com.agical.rmock.core.Action;
-import com.agical.rmock.core.MethodHandle;
 import com.agical.rmock.core.describe.ExpressionDescriber;
 import com.agical.rmock.core.match.operator.AbstractExpression;
 import com.agical.rmock.extension.junit.RMockTestCase;
@@ -53,12 +45,9 @@ public class SyncReplicationManagerTest extends RMockTestCase {
     private LocalPeer localPeer;
     private Peer peer2;
     private Peer peer3;
-    private Peer peer4;
     private ServiceSpace serviceSpace;
     private ServiceMonitor storageMonitor;
-    private ServiceListener serviceListener;
     private BackingStrategy backingStrategy;
-    private ServiceSpaceName serviceSpaceName;
     private ObjectStateHandler stateHandler;
     private ProxyFactory proxyFactory;
     private ServiceProxyFactory replicaStorageServiceProxyFactory;
@@ -75,7 +64,6 @@ public class SyncReplicationManagerTest extends RMockTestCase {
         localPeer = new VMLocalPeer("peer1");
         peer2 = new VMPeer("peer2", null);
         peer3 = new VMPeer("peer3", null);
-        peer4 = new VMPeer("peer4", null);
 
         proxyFactory = (ProxyFactory) mock(ProxyFactory.class);
         replicaStorageServiceProxyFactory = proxyFactory.newReplicaStorageServiceProxyFactory();
@@ -85,18 +73,9 @@ public class SyncReplicationManagerTest extends RMockTestCase {
         serviceSpace.getLocalPeer();
         modify().returnValue(localPeer);
         
-        serviceSpaceName = new ServiceSpaceName(new URI("name"));
         storageMonitor = serviceSpace.getServiceMonitor(ReplicaStorage.NAME);
         storageMonitor.addServiceLifecycleListener(null);
         modify().args(is.NOT_NULL);
-        modify().perform(new Action() {
-
-            public Object invocation(Object[] arguments, MethodHandle methodHandle) throws Throwable {
-                serviceListener = (ServiceListener) arguments[0];
-                return null;
-            }
-            
-        });
         
         backingStrategy = (BackingStrategy) mock(BackingStrategy.class);
         stateHandler = (ObjectStateHandler) mock(ObjectStateHandler.class);
@@ -123,81 +102,6 @@ public class SyncReplicationManagerTest extends RMockTestCase {
         manager.start();
     }
     
-    public void testStorageListener() throws Exception {
-        beginSection(s.ordered("ordered secondary un/registration"));
-        backingStrategy.addSecondary(peer3);
-        secondaryManager.updateSecondariesFollowingJoiningPeer(peer3);
-        
-        backingStrategy.addSecondary(peer4);
-        secondaryManager.updateSecondariesFollowingJoiningPeer(peer4);
-
-        backingStrategy.removeSecondary(peer3);
-        secondaryManager.updateSecondariesFollowingLeavingPeer(peer3);
-        
-        backingStrategy.removeSecondary(peer4);
-        secondaryManager.updateSecondariesFollowingLeavingPeer(peer4);
-        endSection();
-        startVerification();
-        
-        newReplicationManager();
-        
-        receiveEvent(peer3, LifecycleState.AVAILABLE);
-        receiveEvent(peer4, LifecycleState.STARTED);
-        receiveEvent(peer3, LifecycleState.STOPPING);
-        receiveEvent(peer4, LifecycleState.FAILED);
-    }
-    
-    public void testCreate() throws Exception {
-        Peer[] targets = new Peer[] {peer2};
-        
-        recordCreate(key, instance, targets);
-
-        ReplicaStorage newReplicaStorageProxy = proxyFactory.newReplicaStorageProxy(targets);
-        newReplicaStorageProxy.mergeCreate(key, null);
-        modify().args(is.AS_RECORDED, is.ANYTHING);
-        
-        startVerification();
-        
-        SyncReplicationManager manager = newReplicationManager();
-        manager.create(key, instance);
-        assertTrue(manager.getManagedReplicaInfoKeys().contains(key));
-    }
-
-    public void testUpdate() throws Exception {
-        Peer[] targets = new Peer[] {peer2};
-        Motable newInstance = (Motable) mock(Motable.class);
-
-        keyToReplicaInfo.put(key, new ReplicaInfo(localPeer, targets, instance));
-        
-        beginSection(s.ordered("Extract Uupdate; Reset state; Elect Secondaries"));
-        stateHandler.extractUpdatedState(key, newInstance);
-        modify().returnValue(new byte[0]);
-        
-        stateHandler.resetObjectState(newInstance);
-        
-        ReplicaStorage newReplicaStorageProxy = proxyFactory.newReplicaStorageProxy(targets);
-        newReplicaStorageProxy.mergeUpdate(key, null);
-        modify().args(is.AS_RECORDED, is.ANYTHING);
-        
-        endSection();
-        
-        startVerification();
-        
-        SyncReplicationManager manager = newReplicationManager();
-        manager.update(key, newInstance);
-        assertTrue(manager.getManagedReplicaInfoKeys().contains(key));
-    }
-    
-    public void testDelete() throws Exception {
-        keyToReplicaInfo.put(key, new ReplicaInfo(localPeer, new Peer[0], instance));
-
-        startVerification();
-        
-        SyncReplicationManager manager = newReplicationManager();
-        manager.destroy(key);
-        assertFalse(manager.getManagedReplicaInfoKeys().contains(key));
-    }
-
     public void testRetrieveReplicaWithNoReplicaReturnsNull() throws Exception {
         Object key = new Object();
         replicaStorageProxy.retrieveReplicaStorageInfo(key);
@@ -336,22 +240,4 @@ public class SyncReplicationManagerTest extends RMockTestCase {
             }
         };
     }
-    
-    protected void recordCreate(Object key, Motable instance, Peer[] targets) {
-        beginSection(s.ordered("Extract State; Reset state; Elect Secondaries; mergeCreate"));
-        stateHandler.extractFullState(key, instance);
-        modify().returnValue(new byte[0]);
-        
-        stateHandler.resetObjectState(instance);
-        
-        backingStrategy.electSecondaries(key);
-        modify().returnValue(targets);
-        endSection();
-    }
-
-    private void receiveEvent(Peer peer, LifecycleState state) {
-        serviceListener.receive(new ServiceLifecycleEvent(serviceSpaceName, ReplicaStorage.NAME, peer, state), 
-                Collections.EMPTY_SET);
-    }
-    
 }
