@@ -20,8 +20,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.codehaus.wadi.core.motable.Motable;
 import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.Peer;
@@ -29,13 +27,10 @@ import org.codehaus.wadi.replication.common.ReplicaInfo;
 import org.codehaus.wadi.replication.common.ReplicaStorageInfo;
 import org.codehaus.wadi.replication.manager.InternalReplicationManagerException;
 import org.codehaus.wadi.replication.manager.ReplicationKeyAlreadyExistsException;
-import org.codehaus.wadi.replication.manager.ReplicationKeyNotFoundException;
 import org.codehaus.wadi.replication.manager.ReplicationManager;
 import org.codehaus.wadi.replication.storage.ReplicaStorage;
 import org.codehaus.wadi.replication.strategy.BackingStrategy;
-import org.codehaus.wadi.servicespace.LifecycleState;
 import org.codehaus.wadi.servicespace.ServiceInvocationException;
-import org.codehaus.wadi.servicespace.ServiceLifecycleEvent;
 import org.codehaus.wadi.servicespace.ServiceListener;
 import org.codehaus.wadi.servicespace.ServiceMonitor;
 import org.codehaus.wadi.servicespace.ServiceProxyFactory;
@@ -46,8 +41,6 @@ import org.codehaus.wadi.servicespace.ServiceSpace;
  * @version $Revision$
  */
 public class SyncReplicationManager implements ReplicationManager {
-    private static final Log log = LogFactory.getLog(SyncReplicationManager.class);
-    
     private final ObjectStateHandler stateHandler;
     private final ReplicaStorage localReplicaStorage;
     private final BackingStrategy backingStrategy;
@@ -89,9 +82,6 @@ public class SyncReplicationManager implements ReplicationManager {
         this.proxyFactory = proxyFactory;
         
         localPeer = serviceSpace.getLocalPeer();
-
-        storageMonitor = serviceSpace.getServiceMonitor(ReplicaStorage.NAME);
-        storageMonitor.addServiceLifecycleListener(new UpdateBackingStrategyListener(backingStrategy));
         
         replicaStorageServiceProxy = proxyFactory.newReplicaStorageServiceProxyFactory();
         replicaStorageProxy = proxyFactory.newReplicaStorageProxy();
@@ -99,6 +89,10 @@ public class SyncReplicationManager implements ReplicationManager {
         keyToReplicaInfo = newKeyToReplicaInfo();
         
         replicaInfoReOrganizer = newSecondaryManager();
+
+        storageMonitor = serviceSpace.getServiceMonitor(ReplicaStorage.NAME);
+        ServiceListener listener = new ReOrganizeSecondariesListener(backingStrategy, replicaInfoReOrganizer);
+        storageMonitor.addServiceLifecycleListener(listener);
     }
 
     protected SecondaryManager newSecondaryManager() {
@@ -125,51 +119,28 @@ public class SyncReplicationManager implements ReplicationManager {
     }
     
     public void create(Object key, Motable tmp) {
-        synchronized (keyToReplicaInfo) {
-            if (keyToReplicaInfo.containsKey(key)) {
-                throw new ReplicationKeyAlreadyExistsException(key);
-            }
-        }
-
-        byte[] fullState = stateHandler.extractFullState(key, tmp);
-        stateHandler.resetObjectState(tmp);
-        
-        CreateReplicaTask backOffCapableTask = new CreateReplicaTask(key, tmp, fullState);
-        backOffCapableTask.attempt();
+        CreateReplicationCommand command = new CreateReplicationCommand(keyToReplicaInfo,
+                stateHandler,
+                proxyFactory,
+                backingStrategy,
+                localPeer,
+                key,
+                tmp);
+        command.run();
     }
 
     public void update(Object key, Motable tmp) {
-        ReplicaInfo replicaInfo;
-        synchronized (keyToReplicaInfo) {
-            replicaInfo = keyToReplicaInfo.get(key);
-        }
-        if (null == replicaInfo) {
-            throw new ReplicationKeyNotFoundException(key);
-        }
-        
-        byte[] updatedState = stateHandler.extractUpdatedState(key, tmp);
-        stateHandler.resetObjectState(tmp);
-        
-        replicaInfo.increaseVersion();
-        
-        if (replicaInfo.getSecondaries().length != 0) {
-            cascadeUpdate(key, replicaInfo, updatedState);
-        }
+        UpdateReplicationCommand command = new UpdateReplicationCommand(keyToReplicaInfo,
+                stateHandler,
+                proxyFactory,
+                key,
+                tmp);
+        command.run();
     }
 
     public void destroy(Object key) {
-        ReplicaInfo replicaInfo;
-        synchronized (keyToReplicaInfo) {
-            replicaInfo = keyToReplicaInfo.remove(key);
-        }
-        if (null == replicaInfo) {
-            log.warn("Key [" + key + "] is not defined; cannot destroy it.");
-            return;
-        }
-        
-        if (replicaInfo.getSecondaries().length != 0) {
-            cascadeDestroy(key, replicaInfo);
-        }
+        DeleteReplicationCommand command = new DeleteReplicationCommand(keyToReplicaInfo, proxyFactory, key);
+        command.run();
     }
 
     public Motable retrieveReplica(Object key) {
@@ -257,39 +228,6 @@ public class SyncReplicationManager implements ReplicationManager {
         return replicaInfo;
     }
     
-    protected void cascadeCreate(Object key, ReplicaInfo replicaInfo, byte[] fullState, BackOffCapableTask task) {
-        ReplicaStorage storage = proxyFactory.newReplicaStorageProxy(replicaInfo.getSecondaries());
-        try {
-            storage.mergeCreate(key, new ReplicaStorageInfo(replicaInfo, fullState));
-            task.complete();
-        } catch (ServiceInvocationException e) {
-            if (e.isMessageExchangeException()) {
-                task.backoff();
-            } else {
-                throw e;
-            }
-        }
-    }
-    
-    protected void cascadeUpdate(Object key, ReplicaInfo replicaInfo, byte[] updatedState) {
-        ReplicaStorage storage = proxyFactory.newReplicaStorageProxy(replicaInfo.getSecondaries());
-        try {
-            storage.mergeUpdate(key, new ReplicaStorageInfo(replicaInfo, updatedState));
-        } catch (ServiceInvocationException e) {
-            if (e.isMessageExchangeException()) {
-                log.warn("Update has not been properly cascaded due to a communication failure. If a targeted node " +
-                        "has been lost, state will be re-balanced automatically.", e);
-            } else {
-                throw new InternalReplicationManagerException(e);
-            }
-        }
-    }
-    
-    protected void cascadeDestroy(Object key, ReplicaInfo replicaInfo) {
-        ReplicaStorage storage = proxyFactory.newReplicaStorageProxyForDelete(replicaInfo.getSecondaries());
-        storage.mergeDestroy(key);
-    }
-
     protected void startStorageMonitoring() throws Exception {
         storageMonitor.start();
         Set<Peer> storagePeers = storageMonitor.getHostingPeers();
@@ -300,90 +238,4 @@ public class SyncReplicationManager implements ReplicationManager {
         storageMonitor.stop();
         backingStrategy.reset();
     }
-    
-    protected class UpdateBackingStrategyListener implements ServiceListener {
-        private final BackingStrategy backingStrategy;
-        
-        public UpdateBackingStrategyListener(BackingStrategy backingStrategy) {
-            this.backingStrategy = backingStrategy;
-        }
-
-        public void receive(ServiceLifecycleEvent event, Set newHostingPeers) {
-            LifecycleState state = event.getState();
-            if (state == LifecycleState.AVAILABLE || state == LifecycleState.STARTED) {
-                Peer hostingPeer = event.getHostingPeer();
-                backingStrategy.addSecondary(hostingPeer);
-                replicaInfoReOrganizer.updateSecondariesFollowingJoiningPeer(hostingPeer);
-            } else if (state == LifecycleState.STOPPING || state == LifecycleState.FAILED) {
-                Peer hostingPeer = event.getHostingPeer();
-                backingStrategy.removeSecondary(hostingPeer);
-                replicaInfoReOrganizer.updateSecondariesFollowingLeavingPeer(hostingPeer);
-            }
-        }
-    }
-
-    protected interface BackOffCapableTask {
-        void attempt();
-        
-        void backoff();
-        
-        void complete();
-    }
-    
-    protected class CreateReplicaTask implements BackOffCapableTask {
-        private static final int NB_ATTEMPT = 4;
-        private static final long BACK_OFF_PERIOD = 1000;
-
-        protected final Object key;
-        private final Motable tmp;
-        private final byte[] fullState;
-        private volatile int currentAttempt;
-        private volatile ReplicaInfo replicaInfo;
-
-        private CreateReplicaTask(Object key, Motable tmp, byte[] fullState) {
-            this.key = key;
-            this.tmp = tmp;
-            this.fullState = fullState;
-        }
-
-        public void backoff() {
-            if (currentAttempt == NB_ATTEMPT) {
-                throw new InternalReplicationManagerException("Backoff failure for key [" + key + "]");
-            }
-            try {
-                Thread.sleep(BACK_OFF_PERIOD);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                throw new InternalReplicationManagerException("Backoff cancelled");
-            }
-            attempt();
-        }
-        
-        public void attempt() {
-            currentAttempt++;
-            doAttempt();
-        }
-
-        public void doAttempt() {
-            Peer secondaries[] = backingStrategy.electSecondaries(key);
-            if (null == replicaInfo) {
-                replicaInfo = new ReplicaInfo(localPeer, secondaries, tmp);
-            } else {
-                replicaInfo.updateSecondaries(secondaries);
-            }
-            if (secondaries.length != 0) {
-                cascadeCreate(key, replicaInfo, fullState, this);
-            } else {
-                complete();
-            }
-        }
-
-        public void complete() {
-            synchronized (keyToReplicaInfo) {
-                keyToReplicaInfo.put(key, replicaInfo);
-            }
-        }
-
-    }
-
 }
