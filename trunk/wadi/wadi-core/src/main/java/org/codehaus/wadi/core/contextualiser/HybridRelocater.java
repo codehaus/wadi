@@ -151,7 +151,7 @@ public class HybridRelocater implements Relocater {
             log.warn("Session migration has not been acknowledged. SM has disappeared.", e);
         }
         
-        replicationManager.promoteToMaster(name, req.getReplicaInfo(), immotable);
+        replicationManager.promoteToMaster(name, req.getReplicaInfo(), immotable, null);
 
         return immoter.contextualise(invocation, name, immotable);
     }

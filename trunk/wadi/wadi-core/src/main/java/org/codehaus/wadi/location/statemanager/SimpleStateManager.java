@@ -34,6 +34,7 @@ import org.codehaus.wadi.location.session.InsertPMToIM;
 import org.codehaus.wadi.location.session.MoveIMToPM;
 import org.codehaus.wadi.location.session.ReleaseEntryRequest;
 import org.codehaus.wadi.location.session.ReleaseEntryResponse;
+import org.codehaus.wadi.replication.common.ReplicaInfo;
 import org.codehaus.wadi.servicespace.ServiceSpace;
 
 public class SimpleStateManager implements StateManager, StateManagerMessageListener {
@@ -120,23 +121,25 @@ public class SimpleStateManager implements StateManager, StateManagerMessageList
         partitionManager.getPartition(request.getKey()).onMessage(envelope, request);
     }
 
-    public boolean offerEmigrant(Motable emotable) {
+    public boolean offerEmigrant(Motable emotable, ReplicaInfo replicaInfo) {
+
         String key = emotable.getName();
         Partition partition = partitionManager.getPartition(key);
-        ReleaseEntryRequest pojo = new ReleaseEntryRequest(emotable);
+        ReleaseEntryRequest pojo = new ReleaseEntryRequest(emotable, localPeer, replicaInfo);
+
         Envelope response = null;
         try {
             response = partition.exchange(pojo, inactiveTime);
-            ReleaseEntryResponse releaseResponse = (ReleaseEntryResponse) response.getPayload();
-            if (log.isTraceEnabled()) {
-                log.trace("received acknowledgement (" + (releaseResponse.isSuccess() ? "good" : "bad")
-                        + ") within timeframe (" + inactiveTime + " millis): " + key);
-            }
-            return releaseResponse.isSuccess();
         } catch (Exception e) {
             log.error("no acknowledgement within timeframe (" + inactiveTime + " millis): " + key, e);
             return false;
         }
+        ReleaseEntryResponse releaseResponse = (ReleaseEntryResponse) response.getPayload();
+        if (log.isTraceEnabled()) {
+            log.trace("received acknowledgement (" + (releaseResponse.isSuccess() ? "good" : "bad")
+                    + ") within timeframe (" + inactiveTime + " millis): " + key);
+        }
+        return releaseResponse.isSuccess();
     }
 
 }

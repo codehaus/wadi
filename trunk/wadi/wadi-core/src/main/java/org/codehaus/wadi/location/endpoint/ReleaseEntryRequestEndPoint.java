@@ -88,7 +88,7 @@ public class ReleaseEntryRequestEndPoint implements Lifecycle, ReleaseEntryReque
         Motable motable = Utils.mote(emoter, immoter, emotable, name);
 
         stateManager.relocate(name);
-        replicationManager.promoteToMaster(name, null, motable);
+        replicationManager.promoteToMaster(name, request.getReplicaInfo(), motable, request.getReleasingPeer());
     }
     
     /**

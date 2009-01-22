@@ -22,9 +22,12 @@ package org.codehaus.wadi.location.statemanager;
 import org.codehaus.wadi.core.motable.Motable;
 import org.codehaus.wadi.group.Cluster;
 import org.codehaus.wadi.group.Dispatcher;
+import org.codehaus.wadi.group.Envelope;
 import org.codehaus.wadi.location.partitionmanager.Partition;
 import org.codehaus.wadi.location.partitionmanager.PartitionManager;
 import org.codehaus.wadi.location.session.ReleaseEntryRequest;
+import org.codehaus.wadi.location.session.ReleaseEntryResponse;
+import org.codehaus.wadi.replication.common.ReplicaInfo;
 import org.codehaus.wadi.servicespace.ServiceSpace;
 
 import com.agical.rmock.extension.junit.RMockTestCase;
@@ -61,14 +64,19 @@ public class SimpleStateManagerTest extends RMockTestCase {
         
         Partition partition = partitionManager.getPartition(key);
         partition.exchange(null, inactiveTime);
-        modify().args(is.instanceOf(ReleaseEntryRequest.class), is.AS_RECORDED);
+        Envelope responseEnvelope = (Envelope) mock(Envelope.class);
+        modify().args(is.instanceOf(ReleaseEntryRequest.class), is.AS_RECORDED).returnValue(responseEnvelope);
+        ReleaseEntryResponse response = new ReleaseEntryResponse(true);
+        responseEnvelope.getPayload();
+        modify().returnValue(response);
         
         startVerification();
         
         SimpleStateManager stateManager = new SimpleStateManager(serviceSpace,
                 partitionManager,
                 inactiveTime);
-        stateManager.offerEmigrant(emotable);
+        boolean success = stateManager.offerEmigrant(emotable, new ReplicaInfo());
+        assertTrue(success);
     }
 
 }

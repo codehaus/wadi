@@ -24,6 +24,8 @@ import org.codehaus.wadi.core.motable.Motable;
 import org.codehaus.wadi.core.motable.SimpleMotable;
 import org.codehaus.wadi.location.partitionmanager.PartitionManager;
 import org.codehaus.wadi.location.statemanager.StateManager;
+import org.codehaus.wadi.replication.common.ReplicaInfo;
+import org.codehaus.wadi.replication.manager.ReplicationManager;
 
 /**
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
@@ -33,6 +35,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser {
     private final Relocater relocater;
     private final PartitionManager partitionManager;
     private final StateManager stateManager;
+    private final ReplicationManager replicationManager;
     private final AtomicBoolean shuttingDown;
     private final Immoter immoter;
     private final Emoter emoter;
@@ -41,6 +44,7 @@ public class ClusterContextualiser extends AbstractSharedContextualiser {
             Relocater relocater,
             PartitionManager partitionManager,
             StateManager stateManager,
+            ReplicationManager replicationManager,
             AtomicBoolean shuttingDown) {
 		super(next);
         if (null == relocater) {
@@ -49,12 +53,15 @@ public class ClusterContextualiser extends AbstractSharedContextualiser {
             throw new IllegalArgumentException("partitionManager is required");
         } else if (null == stateManager) {
             throw new IllegalArgumentException("stateManager is required");
+        } else if (null == replicationManager) {
+            throw new IllegalArgumentException("replicationManager is required");
         } else if (null == shuttingDown) {
             throw new IllegalArgumentException("shuttingDown is required");
         }
         this.relocater = relocater;
         this.partitionManager = partitionManager;
         this.stateManager = stateManager;
+        this.replicationManager = replicationManager;
         this.shuttingDown = shuttingDown;
         
         immoter = new EmigrationImmoter();
@@ -109,7 +116,8 @@ public class ClusterContextualiser extends AbstractSharedContextualiser {
         }
 
         public boolean immote(Motable emotable, Motable immotable) {
-            return stateManager.offerEmigrant(immotable);
+            ReplicaInfo replicaInfo = replicationManager.releaseReplicaInfo(immotable.getName(), null);
+            return stateManager.offerEmigrant(immotable, replicaInfo);
         }
 
         public boolean contextualise(Invocation invocation, String id, Motable immotable)

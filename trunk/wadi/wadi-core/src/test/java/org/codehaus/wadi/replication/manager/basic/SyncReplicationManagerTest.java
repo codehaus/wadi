@@ -218,7 +218,7 @@ public class SyncReplicationManagerTest extends RMockTestCase {
         ReplicaInfo replicaInfo = new ReplicaInfo(localPeer, new Peer[0], instance);
         
         SyncReplicationManager manager = newReplicationManager();
-        manager.promoteToMaster(key, replicaInfo, motable);
+        manager.promoteToMaster(key, replicaInfo, motable, null);
         
         assertSame(motable, replicaInfo.getPayload());
         assertTrue(keyToReplicaInfo.containsKey(key));

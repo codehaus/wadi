@@ -99,7 +99,7 @@ public class CreateReplicationCommand implements Runnable {
             if (e.isMessageExchangeException()) {
                 task.backoff();
             } else {
-                throw e;
+                throw new InternalReplicationManagerException(e);
             }
         }
     }

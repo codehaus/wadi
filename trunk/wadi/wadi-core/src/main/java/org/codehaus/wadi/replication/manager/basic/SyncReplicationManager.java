@@ -152,13 +152,13 @@ public class SyncReplicationManager implements ReplicationManager {
         return replicaInfo.getPayload();
     }
 
-    public void promoteToMaster(Object key, ReplicaInfo replicaInfo, Motable motable)
+    public void promoteToMaster(Object key, ReplicaInfo replicaInfo, Motable motable, Peer blackListedSecondary)
             throws InternalReplicationManagerException {
-        if (null != replicaInfo) {
-            replicaInfo.setPayload(motable);
+        replicaInfo.setPayload(motable);
+        if (null == blackListedSecondary) {
             insertReplicaInfo(key, replicaInfo);
         } else {
-            promoteToMasterWithoutProvidedReplicaInfo(key, motable);
+            promoteToMaster(key, replicaInfo, blackListedSecondary);
         }
     }
     
@@ -169,6 +169,8 @@ public class SyncReplicationManager implements ReplicationManager {
         }
         if (null == replicaInfo) {
             return null;
+        } else if (null == newPrimary) {
+            return replicaInfo;
         }
 
         Peer[] secondaries = replicaInfo.getSecondaries();
@@ -201,14 +203,9 @@ public class SyncReplicationManager implements ReplicationManager {
         }
     }
     
-    protected void promoteToMasterWithoutProvidedReplicaInfo(Object key, Motable motable) {
-        ReplicaInfo replicaInfo = retrieveReplicaInfo(key);
-        if (null == replicaInfo) {
-            create(key, motable);
-        } else {
-            replicaInfo = new ReplicaInfo(replicaInfo, localPeer, replicaInfo.getSecondaries());
-            replicaInfoReOrganizer.updateSecondariesFollowingRestoreFromSecondary(key, replicaInfo);
-        }
+    protected void promoteToMaster(Object key, ReplicaInfo replicaInfo, Peer blackListedSecondary) {
+        replicaInfo = new ReplicaInfo(replicaInfo, localPeer, replicaInfo.getSecondaries());
+        replicaInfoReOrganizer.updateSecondariesWithBlackListedSecondary(key, replicaInfo, blackListedSecondary);
     }
 
     protected ReplicaInfo retrieveReplicaInfo(Object key) {

@@ -99,7 +99,7 @@ public class HybridRelocaterTest extends RMockTestCase {
         
         recordReplyToSM(envelope, true);
         
-        replicationManager.promoteToMaster(key, replicaInfo, motedNewMotable);
+        replicationManager.promoteToMaster(key, replicaInfo, motedNewMotable, null);
         
         sessionRelocationImmoter.contextualise(invocation, key, motedNewMotable);
         modify().returnValue(true);

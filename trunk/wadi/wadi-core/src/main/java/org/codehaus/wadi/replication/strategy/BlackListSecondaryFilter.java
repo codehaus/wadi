@@ -17,21 +17,36 @@
  * under the License.
  */
 
-package org.codehaus.wadi.replication.manager.basic;
+package org.codehaus.wadi.replication.strategy;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 import org.codehaus.wadi.group.Peer;
-import org.codehaus.wadi.replication.common.ReplicaInfo;
 
 /**
- * 
- * @version $Revision: 2340 $
+ *
+ * @version $Rev:$ $Date:$
  */
-public interface SecondaryManager {
-    ReplicaInfo updateSecondariesFollowingRestoreFromSecondary(Object key, ReplicaInfo replicaInfo);
+public class BlackListSecondaryFilter implements SecondaryFilter {
+    private final Set<Peer> blackListed;
+    
+    public BlackListSecondaryFilter(Peer blackListed) {
+        this(Collections.singleton(blackListed));
+    }
 
-    ReplicaInfo updateSecondariesWithBlackListedSecondary(Object key, ReplicaInfo replicaInfo, Peer blackListedSecondary);
-
-    void updateSecondariesFollowingJoiningPeer(Peer joiningPeer);
-
-    void updateSecondariesFollowingLeavingPeer(Peer leavingPeer);
+    public BlackListSecondaryFilter(Set<Peer> blackListed) {
+        if (null == blackListed) {
+            throw new IllegalArgumentException("blackListed is required");
+        }
+        this.blackListed = blackListed;
+    }
+    
+    public List<Peer> filter(List<Peer> secondaries) {
+        List<Peer> filteredList = new ArrayList<Peer>(secondaries);
+        filteredList.removeAll(blackListed);
+        return filteredList;
+    }
 }

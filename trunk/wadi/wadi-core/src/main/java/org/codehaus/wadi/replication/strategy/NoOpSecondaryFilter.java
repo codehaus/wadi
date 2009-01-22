@@ -17,21 +17,24 @@
  * under the License.
  */
 
-package org.codehaus.wadi.replication.manager.basic;
+package org.codehaus.wadi.replication.strategy;
+
+import java.util.List;
 
 import org.codehaus.wadi.group.Peer;
-import org.codehaus.wadi.replication.common.ReplicaInfo;
 
 /**
- * 
- * @version $Revision: 2340 $
+ *
+ * @version $Rev:$ $Date:$
  */
-public interface SecondaryManager {
-    ReplicaInfo updateSecondariesFollowingRestoreFromSecondary(Object key, ReplicaInfo replicaInfo);
+public class NoOpSecondaryFilter implements SecondaryFilter {
+    public static final SecondaryFilter SINGLETON = new NoOpSecondaryFilter();
 
-    ReplicaInfo updateSecondariesWithBlackListedSecondary(Object key, ReplicaInfo replicaInfo, Peer blackListedSecondary);
+    private NoOpSecondaryFilter() {
+    }
+    
+    public List<Peer> filter(List<Peer> secondaries) {
+        return secondaries;
+    }
 
-    void updateSecondariesFollowingJoiningPeer(Peer joiningPeer);
-
-    void updateSecondariesFollowingLeavingPeer(Peer leavingPeer);
 }

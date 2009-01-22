@@ -444,6 +444,7 @@ public class StackContext {
                 new HybridRelocater(serviceSpace, partitionManager, replicationManager),
                 partitionManager, 
                 stateManager, 
+                replicationManager,
                 new AtomicBoolean(false));
     }
 
