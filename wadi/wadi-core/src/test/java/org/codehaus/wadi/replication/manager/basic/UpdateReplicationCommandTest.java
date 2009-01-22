@@ -58,7 +58,8 @@ public class UpdateReplicationCommandTest extends RMockTestCase {
         Peer[] targets = new Peer[] {localPeer};
         Motable currentInstance = (Motable) mock(Motable.class);
 
-        keyToReplicaInfo.put(key, new ReplicaInfo(localPeer, targets, currentInstance));
+        ReplicaInfo replicaInfo = new ReplicaInfo(localPeer, targets, currentInstance);
+        keyToReplicaInfo.put(key, replicaInfo);
         
         beginSection(s.ordered("Extract Update; Reset state; Elect Secondaries"));
         stateHandler.extractUpdatedState(key, instance);
@@ -75,6 +76,8 @@ public class UpdateReplicationCommandTest extends RMockTestCase {
         startVerification();
         
         command.run();
+        
+        assertSame(instance, replicaInfo.getPayload());
     }
 
 }

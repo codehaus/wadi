@@ -76,6 +76,7 @@ public class UpdateReplicationCommand implements Runnable {
             throw new ReplicationKeyNotFoundException(key);
         }
         
+        replicaInfo.setPayload(payload);
         byte[] updatedState = stateHandler.extractUpdatedState(key, payload);
         stateHandler.resetObjectState(payload);
         
