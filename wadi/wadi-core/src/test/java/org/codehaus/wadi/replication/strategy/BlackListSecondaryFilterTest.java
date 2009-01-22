@@ -17,21 +17,33 @@
  * under the License.
  */
 
-package org.codehaus.wadi.replication.manager.basic;
+package org.codehaus.wadi.replication.strategy;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import org.codehaus.wadi.group.Peer;
-import org.codehaus.wadi.replication.common.ReplicaInfo;
+
+import com.agical.rmock.extension.junit.RMockTestCase;
 
 /**
- * 
- * @version $Revision: 2340 $
+ *
+ * @version $Rev:$ $Date:$
  */
-public interface SecondaryManager {
-    ReplicaInfo updateSecondariesFollowingRestoreFromSecondary(Object key, ReplicaInfo replicaInfo);
+public class BlackListSecondaryFilterTest extends RMockTestCase {
 
-    ReplicaInfo updateSecondariesWithBlackListedSecondary(Object key, ReplicaInfo replicaInfo, Peer blackListedSecondary);
-
-    void updateSecondariesFollowingJoiningPeer(Peer joiningPeer);
-
-    void updateSecondariesFollowingLeavingPeer(Peer leavingPeer);
+    public void testFilter() throws Exception {
+        Peer blacklisted = (Peer) mock(Peer.class);
+        Peer peer = (Peer) mock(Peer.class);
+        
+        List<Peer> peersToFilter = new ArrayList<Peer>();
+        peersToFilter.add(peer);
+        peersToFilter.add(blacklisted);
+        
+        BlackListSecondaryFilter filter = new BlackListSecondaryFilter(blacklisted);
+        List<Peer> filteredPeer = filter.filter(peersToFilter);
+        assertEquals(1, filteredPeer.size());
+        assertTrue(filteredPeer.contains(peer));
+    }
+    
 }

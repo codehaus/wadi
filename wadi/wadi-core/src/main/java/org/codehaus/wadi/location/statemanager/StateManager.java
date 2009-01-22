@@ -19,6 +19,7 @@ package org.codehaus.wadi.location.statemanager;
 
 import org.codehaus.wadi.core.Lifecycle;
 import org.codehaus.wadi.core.motable.Motable;
+import org.codehaus.wadi.replication.common.ReplicaInfo;
 import org.codehaus.wadi.servicespace.ServiceName;
 
 /**
@@ -28,7 +29,7 @@ import org.codehaus.wadi.servicespace.ServiceName;
 public interface StateManager extends Lifecycle {
     ServiceName NAME = new ServiceName("StateManager");
     
-    boolean offerEmigrant(Motable emotable);
+    boolean offerEmigrant(Motable emotable, ReplicaInfo replicaInfo);
 
     boolean insert(String name);
 

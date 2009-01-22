@@ -49,44 +49,18 @@ public class RoundRobinBackingStrategy implements BackingStrategy {
     }
 
     public Peer[] electSecondaries(Object key) {
-        Peer[] result = new Peer[nbReplica];
-        int resultIndex = 0;
-        int initialReplicaIndex =  lastReplicaIndex;
-        boolean looped = false;
-        synchronized (secondaries) {
-            if (0 == secondaries.size()) {
-                return EMPTY_NODES;
-            }
-            while (resultIndex < nbReplica) {
-                if (lastReplicaIndex >= secondaries.size()) {
-                    lastReplicaIndex = 0;
-                    if (looped) {
-                        break;
-                    }
-                    looped = true;
-                }
-                if (lastReplicaIndex == initialReplicaIndex && looped) {
-                    break;
-                }
-                result[resultIndex++] = secondaries.get(lastReplicaIndex++);
-            }
-        }
-        
-        if (resultIndex < nbReplica) {
-            Peer[] resizedResult = new Peer[resultIndex];
-            System.arraycopy(result, 0, resizedResult, 0, resultIndex);
-            result = resizedResult;
-        }
-        
-        return result;
+        return electSecondariesWithSecondaries(secondaries, NoOpSecondaryFilter.SINGLETON);
     }
 
-    public Peer[] reElectSecondaries(Object key, Peer primary, Peer[] secondaries) {
-        return electSecondaries(key);
+    public Peer[] reElectSecondaries(Object key, Peer primary, Peer[] oldSecondaries, SecondaryFilter secondaryFilter) {
+        if (null == secondaryFilter) {
+            secondaryFilter = NoOpSecondaryFilter.SINGLETON;
+        }
+        return electSecondariesWithSecondaries(secondaries, secondaryFilter);
     }
 
-    public Peer[] reElectSecondariesForSwap(Object key, Peer newPrimary, Peer[] secondaries) {
-        Peer[] newSecondaries = secondaries;
+    public Peer[] reElectSecondariesForSwap(Object key, Peer newPrimary, Peer[] currentSecondaries) {
+        Peer[] newSecondaries = currentSecondaries;
         
         boolean newPrimaryWasSecondary = false;
         for (int i = 0; i < newSecondaries.length; i++) {
@@ -135,4 +109,37 @@ public class RoundRobinBackingStrategy implements BackingStrategy {
         }
     }
     
+    protected Peer[] electSecondariesWithSecondaries(List<Peer> secondaries, SecondaryFilter secondaryFilter) {
+        Peer[] result = new Peer[nbReplica];
+        int resultIndex = 0;
+        int initialReplicaIndex =  lastReplicaIndex;
+        boolean looped = false;
+        synchronized (secondaries) {
+            secondaries = secondaryFilter.filter(secondaries);
+            if (0 == secondaries.size()) {
+                return EMPTY_NODES;
+            }
+            while (resultIndex < nbReplica) {
+                if (lastReplicaIndex >= secondaries.size()) {
+                    lastReplicaIndex = 0;
+                    if (looped) {
+                        break;
+                    }
+                    looped = true;
+                }
+                if (lastReplicaIndex == initialReplicaIndex && looped) {
+                    break;
+                }
+                result[resultIndex++] = secondaries.get(lastReplicaIndex++);
+            }
+        }
+        
+        if (resultIndex < nbReplica) {
+            Peer[] resizedResult = new Peer[resultIndex];
+            System.arraycopy(result, 0, resizedResult, 0, resultIndex);
+            result = resizedResult;
+        }
+        
+        return result;
+    }
 }

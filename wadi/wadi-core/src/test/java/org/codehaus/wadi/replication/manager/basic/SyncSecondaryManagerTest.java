@@ -75,7 +75,7 @@ public class SyncSecondaryManagerTest extends RMockTestCase {
     }
     
     public void testUpdateSecondariesFollowingJoiningPeer() throws Exception {
-        backingStrategy.reElectSecondaries(key, localPeer, replicaInfoForKey.getSecondaries());
+        backingStrategy.reElectSecondaries(key, localPeer, replicaInfoForKey.getSecondaries(), null);
         final Peer[] newSecondaries = new Peer[] {peer2, peer3};
         modify().returnValue(newSecondaries);
         
@@ -99,7 +99,7 @@ public class SyncSecondaryManagerTest extends RMockTestCase {
     }
     
     public void testUpdateSecondariesFollowingLeavingPeer() throws Exception {
-        backingStrategy.reElectSecondaries(key, localPeer, replicaInfoForKey.getSecondaries());
+        backingStrategy.reElectSecondaries(key, localPeer, replicaInfoForKey.getSecondaries(), null);
         final Peer[] newSecondaries = new Peer[0];
         modify().returnValue(newSecondaries);
         

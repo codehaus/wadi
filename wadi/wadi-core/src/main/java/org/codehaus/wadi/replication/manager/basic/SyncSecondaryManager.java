@@ -19,6 +19,7 @@
 
 package org.codehaus.wadi.replication.manager.basic;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -26,6 +27,8 @@ import org.codehaus.wadi.group.LocalPeer;
 import org.codehaus.wadi.group.Peer;
 import org.codehaus.wadi.replication.common.ReplicaInfo;
 import org.codehaus.wadi.replication.strategy.BackingStrategy;
+import org.codehaus.wadi.replication.strategy.BlackListSecondaryFilter;
+import org.codehaus.wadi.replication.strategy.SecondaryFilter;
 import org.codehaus.wadi.servicespace.ServiceProxyFactory;
 
 /**
@@ -90,9 +93,23 @@ public class SyncSecondaryManager implements SecondaryManager {
         return updateSecondaries(key, replicaInfo);
     }
 
+    public ReplicaInfo updateSecondariesWithBlackListedSecondary(Object key,
+            ReplicaInfo replicaInfo,
+            Peer blackListedSecondary) {
+        SecondaryFilter secondaryFilter = new BlackListSecondaryFilter(blackListedSecondary);
+        return updateSecondaries(key, replicaInfo, secondaryFilter);
+    }
+    
     protected ReplicaInfo updateSecondaries(Object key, ReplicaInfo replicaInfo) {
+        return updateSecondaries(key, replicaInfo, (SecondaryFilter) null);
+    }
+
+    protected ReplicaInfo updateSecondaries(Object key, ReplicaInfo replicaInfo, SecondaryFilter secondaryFilter) {
         Peer oldSecondaries[] = replicaInfo.getSecondaries();
-        Peer newSecondaries[] = backingStrategy.reElectSecondaries(key, replicaInfo.getPrimary(), oldSecondaries);
+        Peer newSecondaries[] = backingStrategy.reElectSecondaries(key,
+                replicaInfo.getPrimary(),
+                oldSecondaries,
+                secondaryFilter);
 
         replicaInfo = new ReplicaInfo(replicaInfo, localPeer, newSecondaries);
         updateSecondaries(key, replicaInfo, oldSecondaries);
@@ -108,7 +125,7 @@ public class SyncSecondaryManager implements SecondaryManager {
             ReplicaInfo replicaInfo,
             Peer leavingPeer) {
         Peer oldSecondaries[] = replicaInfo.getSecondaries();
-        Peer newSecondaries[] = backingStrategy.reElectSecondaries(key, replicaInfo.getPrimary(), oldSecondaries);
+        Peer newSecondaries[] = backingStrategy.reElectSecondaries(key, replicaInfo.getPrimary(), oldSecondaries, null);
 
         replicaInfo = new ReplicaInfo(replicaInfo, localPeer, newSecondaries);
         oldSecondaries = filterLeavingPeer(leavingPeer, oldSecondaries);

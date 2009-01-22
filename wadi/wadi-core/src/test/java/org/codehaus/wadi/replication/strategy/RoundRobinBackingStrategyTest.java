@@ -16,6 +16,7 @@
 package org.codehaus.wadi.replication.strategy;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 
 import org.codehaus.wadi.group.LocalPeer;
@@ -32,27 +33,34 @@ public class RoundRobinBackingStrategyTest extends RMockTestCase {
     private Peer peer3;
     private Peer peer4;
     private LocalPeer localPeer;
+    private SecondaryFilter secondaryFilter;
 
     protected void setUp() throws Exception {
         ServiceSpace serviceSpace = (ServiceSpace) mock(ServiceSpace.class);
         localPeer = serviceSpace.getLocalPeer();
-        startVerification();
-        
-        strategy = new RoundRobinBackingStrategy(serviceSpace, 2);
+
         peer1 = new VMPeer("peer1", null);
         peer2 = new VMPeer("peer2", null);
         peer3 = new VMPeer("peer3", null);
         peer4 = new VMPeer("peer4", null);
+        
+        secondaryFilter = (SecondaryFilter) mock(SecondaryFilter.class);
+        secondaryFilter.filter(null);
+        modify().multiplicity(expect.from(0)).args(is.NOT_NULL).returnValue(Collections.singletonList(peer4));
+
+        startVerification();
+
+        strategy = new RoundRobinBackingStrategy(serviceSpace, 2);
     }
     
-    public void testLocalPeerIsNotIgnoredByAddSecondaries() {
+    public void testLocalPeerIsIgnoredByAddSecondaries() {
         strategy.addSecondaries(new Peer[] {localPeer});
         
         Peer[] actualSecondaries = strategy.electSecondaries(null);
         assertSecondaries(new Peer[0], actualSecondaries);
    }
 
-    public void testLocalPeerIsNotIgnoredByAddSecondary() {
+    public void testLocalPeerIsIgnoredByAddSecondary() {
         strategy.addSecondary(localPeer);
         
         Peer[] actualSecondaries = strategy.electSecondaries(null);
@@ -75,6 +83,13 @@ public class RoundRobinBackingStrategyTest extends RMockTestCase {
         
         actualSecondaries = strategy.electSecondaries(null);
         assertSecondaries(new Peer[] {peer4, peer1}, actualSecondaries);
+    }
+    
+    public void testReElectSecondariesWithFilter() throws Exception {
+        strategy.addSecondaries(new Peer[] {peer1, peer2, peer3, peer4});
+        
+        Peer[] actualSecondaries = strategy.reElectSecondaries(null, null, new Peer[0], secondaryFilter);
+        assertSecondaries(new Peer[] {peer4}, actualSecondaries);
     }
     
     public void testSwapWhenNewPrimaryWasSecondary() throws Exception {

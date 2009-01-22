@@ -43,7 +43,7 @@ public class NoOpReplicationManager implements ReplicationManager {
         return null;
     }
     
-    public void promoteToMaster(Object key, ReplicaInfo replicaInfo, Motable motable)
+    public void promoteToMaster(Object key, ReplicaInfo replicaInfo, Motable motable, Peer blackListedSecondary)
             throws InternalReplicationManagerException {
     }
     

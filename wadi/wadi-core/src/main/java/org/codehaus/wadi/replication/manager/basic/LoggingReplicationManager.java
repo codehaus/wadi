@@ -78,10 +78,10 @@ public class LoggingReplicationManager implements ReplicationManager {
         return delegate.retrieveReplica(key);
     }
 
-    public void promoteToMaster(Object key, ReplicaInfo replicaInfo, Motable motable)
+    public void promoteToMaster(Object key, ReplicaInfo replicaInfo, Motable motable, Peer blackListedSecondary)
             throws InternalReplicationManagerException {
         LOG.debug(delegate + " - promoteToMaster key [" + key + "]");
-        delegate.promoteToMaster(key, replicaInfo, motable);
+        delegate.promoteToMaster(key, replicaInfo, motable, blackListedSecondary);
     }
     
     public void start() throws Exception {

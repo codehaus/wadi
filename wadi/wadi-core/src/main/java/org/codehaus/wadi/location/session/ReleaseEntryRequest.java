@@ -19,6 +19,8 @@ package org.codehaus.wadi.location.session;
 import java.io.Serializable;
 
 import org.codehaus.wadi.core.motable.Motable;
+import org.codehaus.wadi.group.Peer;
+import org.codehaus.wadi.replication.common.ReplicaInfo;
 
 /**
  * A request for the emigration of the enclosed session - The response
@@ -28,20 +30,39 @@ import org.codehaus.wadi.core.motable.Motable;
  * @version $Revision:1815 $
  */
 public class ReleaseEntryRequest implements SessionRequestMessage, Serializable {
-	protected final Motable _motable;
+	protected final Motable motable;
+	protected final Peer releasingPeer;
+	private final ReplicaInfo replicaInfo;
     private int version;
     private int numberOfExpectedMerge;
 
-	public ReleaseEntryRequest(Motable motable) {
-		_motable=motable;
+	public ReleaseEntryRequest(Motable motable, Peer releasingPeer, ReplicaInfo replicaInfo) {
+        if (null == motable) {
+            throw new IllegalArgumentException("motable is required");
+        } else if (null == releasingPeer) {
+            throw new IllegalArgumentException("releasingPeer is required");
+        } else if (null == replicaInfo) {
+            throw new IllegalArgumentException("replicaInfo is required");
+        }
+		this.motable = motable;
+        this.releasingPeer = releasingPeer;
+        this.replicaInfo = replicaInfo;
 	}
 
 	public Motable getMotable() {
-		return _motable;
+		return motable;
 	}
 
+	public Peer getReleasingPeer() {
+	    return releasingPeer;
+	}
+	
+    public ReplicaInfo getReplicaInfo() {
+        return replicaInfo;
+    }
+
     public Object getKey() {
-        return _motable.getName();
+        return motable.getName();
     }
 
     public int getVersion() {
@@ -65,7 +86,7 @@ public class ReleaseEntryRequest implements SessionRequestMessage, Serializable 
     }
     
     public String toString() {
-        return "<ReleaseEntryRequest: " + _motable.getName() + ">";
+        return "<ReleaseEntryRequest: " + motable.getName() + ">";
     }
 
 }
