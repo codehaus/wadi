@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<web-app xmlns="http://geronimo.apache.org/xml/ns/j2ee/web/jetty-1.2"
+    xmlns:wadi="http://geronimo.apache.org/xml/ns/clustering-wadi-1.2">
+
+    <environment>
+        <moduleId>
+            <groupId>org.codehaus.wadi</groupId>
+            <artifactId>wadi-webapp</artifactId>
+            <version>2.2-SNAPSHOT</version>
+            <type>war</type>
+        </moduleId>
+    </environment>
+
+   <context-root>/wadi-webapp</context-root>
+
+   <wadi:clustering-wadi>
+       <wadi:deltaReplication>false</wadi:deltaReplication>
+   </wadi:clustering-wadi>
+
+</web-app>
