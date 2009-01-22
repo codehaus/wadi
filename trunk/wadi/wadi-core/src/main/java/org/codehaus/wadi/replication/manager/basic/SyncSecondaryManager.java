@@ -19,7 +19,6 @@
 
 package org.codehaus.wadi.replication.manager.basic;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
