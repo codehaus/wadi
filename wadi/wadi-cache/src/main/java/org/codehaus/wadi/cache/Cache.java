@@ -27,25 +27,25 @@ import java.util.Map;
  * @version $Rev:$ $Date:$
  */
 public interface Cache {
-	Object get(String key, AcquisitionPolicy policy) throws CacheException;
+	Object get(Object key, AcquisitionPolicy policy) throws CacheException;
 	
-	Map<String, Object> get(Collection<String> keys, AcquisitionPolicy policy) throws CacheException;
+	Map<Object, Object> get(Collection<Object> keys, AcquisitionPolicy policy) throws CacheException;
 	
-    void insert(String key, Object value, PutPolicy policy) throws CacheException;
+    void insert(Object key, Object value, PutPolicy policy) throws CacheException;
     
-    void insert(Map<String, Object> keyToValue, PutPolicy policy) throws CacheException;
+    void insert(Map<Object, Object> keyToValue, PutPolicy policy) throws CacheException;
 
-    void update(String key) throws CacheException;
+    void update(Object key) throws CacheException;
     
-    void update(Collection<String> keys) throws CacheException;
+    void update(Collection<Object> keys) throws CacheException;
     
-    void update(String key, Object value) throws CacheException;
+    void update(Object key, Object value) throws CacheException;
     
-    void update(Map<String, Object> keyToValues) throws CacheException;
+    void update(Map<Object, Object> keyToValues) throws CacheException;
 
-    void delete(String key, UpdateAcquisitionPolicy policy) throws CacheException;
+    void delete(Object key, UpdateAcquisitionPolicy policy) throws CacheException;
     
-    void delete(Collection<String> keys, UpdateAcquisitionPolicy policy) throws CacheException;
+    void delete(Collection<Object> keys, UpdateAcquisitionPolicy policy) throws CacheException;
 
     CacheTransaction getCacheTransaction();
 }

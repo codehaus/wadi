@@ -31,7 +31,7 @@ import org.codehaus.wadi.cache.basic.entry.CacheEntryState;
  */
 public class UnLockExclusivePhase implements CommitPhase {
 
-    public void execute(Map<String, CacheEntry> keyToEntry) throws TransactionException {
+    public void execute(Map<Object, CacheEntry> keyToEntry) throws TransactionException {
         for (CacheEntry cacheEntry : keyToEntry.values()) {
             CacheEntryState state = cacheEntry.getState();
             if (state.isDirty() || state == CacheEntryState.INSERTED) {

@@ -47,11 +47,11 @@ public class InsertPhase implements CommitPhase {
         this.manager = manager;
     }
 
-    public void execute(Map<String, CacheEntry> keyToEntry) throws TransactionException {
+    public void execute(Map<Object, CacheEntry> keyToEntry) throws TransactionException {
         Set<Session> createdSessions = new HashSet<Session>();
         try {
-            for (Map.Entry<String, CacheEntry> entry : keyToEntry.entrySet()) {
-                String key = entry.getKey();
+            for (Map.Entry<Object, CacheEntry> entry : keyToEntry.entrySet()) {
+                Object key = entry.getKey();
                 CacheEntry cacheEntry = entry.getValue();
                 if (cacheEntry.getState() == CacheEntryState.INSERTED) {
                     Session session = manager.createWithName(key);

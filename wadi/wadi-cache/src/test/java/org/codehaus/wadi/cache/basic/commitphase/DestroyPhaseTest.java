@@ -69,7 +69,7 @@ public class DestroyPhaseTest extends RMockTestCase {
         
         startVerification();
         
-        phase.execute(Collections.singletonMap("key", entry));
+        phase.execute(Collections.singletonMap((Object) "key", entry));
     }
     
     public void testIEUponDestroyAreIgnored() throws Exception {
@@ -80,7 +80,7 @@ public class DestroyPhaseTest extends RMockTestCase {
         
         startVerification();
         
-        phase.execute(Collections.singletonMap("key", entry));
+        phase.execute(Collections.singletonMap((Object) "key", entry));
     }
     
     private void executeDoesNotDestroy(CacheEntryState state) {
@@ -88,7 +88,7 @@ public class DestroyPhaseTest extends RMockTestCase {
 
         startVerification();
         
-        phase.execute(Collections.singletonMap("key", entry));
+        phase.execute(Collections.singletonMap((Object) "key", entry));
     }
 
     private void recordState(CacheEntryState state) {

@@ -71,7 +71,7 @@ public class MergePhaseTest extends RMockTestCase {
 
         startVerification();
         
-        phase.execute(Collections.singletonMap("key", entry));
+        phase.execute(Collections.singletonMap((Object) "key", entry));
     }
 
     private void executeMerges(CacheEntryState state) throws Exception {
@@ -90,7 +90,7 @@ public class MergePhaseTest extends RMockTestCase {
         
         startVerification();
         
-        phase.execute(Collections.singletonMap("key", entry));
+        phase.execute(Collections.singletonMap((Object) "key", entry));
     }
 
     private void recordState(CacheEntryState state) {

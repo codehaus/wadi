@@ -28,7 +28,7 @@ import org.codehaus.wadi.cache.basic.CacheInvocation;
  */
 public class AcquireExclusiveLockInvocation extends CacheInvocation {
 
-    public AcquireExclusiveLockInvocation(String sessionKey, AcquisitionInfo acquisitionInfo) {
+    public AcquireExclusiveLockInvocation(Object sessionKey, AcquisitionInfo acquisitionInfo) {
         super(sessionKey, acquisitionInfo);
         
         setWithExclusiveLock(true);

@@ -32,7 +32,7 @@ public class CacheInvocation extends BasicInvocation {
 
     private ObjectInfoEntry objectInfoEntry;
     
-    public CacheInvocation(String sessionKey, AcquisitionInfo acquisitionInfo) {
+    public CacheInvocation(Object sessionKey, AcquisitionInfo acquisitionInfo) {
         super(sessionKey, acquisitionInfo.getCacheEntryAccessWaitTime());
     }
 

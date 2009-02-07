@@ -29,5 +29,5 @@ import org.codehaus.wadi.cache.basic.entry.CacheEntry;
  * @version $Rev:$ $Date:$
  */
 public interface CommitPhase {
-    void execute(Map<String, CacheEntry> keyToEntry) throws TransactionException;
+    void execute(Map<Object, CacheEntry> keyToEntry) throws TransactionException;
 }

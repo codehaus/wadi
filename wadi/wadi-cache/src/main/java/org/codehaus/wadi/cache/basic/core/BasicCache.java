@@ -58,7 +58,7 @@ public class BasicCache implements Cache {
         cacheTransaction = newCacheTransaction(inTxCacheFactory);
     }
 
-    public Object get(String key, AcquisitionPolicy policy) throws CacheException {
+    public Object get(Object key, AcquisitionPolicy policy) throws CacheException {
     	InTxCache inTxCache = cacheTransaction.getInTxCache();
     	CacheEntry entry = inTxCache.getEntry(key);
 
@@ -73,16 +73,16 @@ public class BasicCache implements Cache {
         return entry.getObjectInfo().getObject();
     }
 
-    public Map<String, Object> get(Collection<String> keys, AcquisitionPolicy policy) throws CacheException {
-        Map<String, Object> result = new HashMap<String, Object>();
-        for (String key : keys) {
+    public Map<Object, Object> get(Collection<Object> keys, AcquisitionPolicy policy) throws CacheException {
+        Map<Object, Object> result = new HashMap<Object, Object>();
+        for (Object key : keys) {
             Object object = get(key, policy);
             result.put(key, object);
         }
         return result;
     }
     
-    public void insert(String key, Object value, PutPolicy policy) throws CacheException {
+    public void insert(Object key, Object value, PutPolicy policy) throws CacheException {
         InTxCache inTxCache = cacheTransaction.getInTxCache();
         CacheEntry entry = inTxCache.getEntry(key);
 
@@ -96,37 +96,37 @@ public class BasicCache implements Cache {
         }
     }
 
-    public void insert(Map<String, Object> keyToValue, PutPolicy policy) throws CacheException {
-        for (Map.Entry<String, Object> entry : keyToValue.entrySet()) {
+    public void insert(Map<Object, Object> keyToValue, PutPolicy policy) throws CacheException {
+        for (Map.Entry<Object, Object> entry : keyToValue.entrySet()) {
             insert(entry.getKey(), entry.getValue(), policy);
         }
     }
     
-    public void update(String key) throws CacheException {
+    public void update(Object key) throws CacheException {
         update(Collections.singleton(key));
     }
     
-    public void update(Collection<String> keys) throws CacheException {
+    public void update(Collection<Object> keys) throws CacheException {
         InTxCache inTxCache = cacheTransaction.getInTxCache();
-        for (String key : keys) {
+        for (Object key : keys) {
             CacheEntry cacheEntry = inTxCache.getRequiredEntry(key);
             cacheEntry.update();
         }
     }
     
-    public void update(String key, Object value) throws CacheException {
+    public void update(Object key, Object value) throws CacheException {
         update(Collections.singletonMap(key, value));
     }
 
-    public void update(Map<String, Object> keyToValues) throws CacheException {
+    public void update(Map<Object, Object> keyToValues) throws CacheException {
         InTxCache inTxCache = cacheTransaction.getInTxCache();
-        for (Map.Entry<String, Object> entry : keyToValues.entrySet()) {
+        for (Map.Entry<Object, Object> entry : keyToValues.entrySet()) {
             CacheEntry cacheEntry = inTxCache.getRequiredEntry(entry.getKey());
             cacheEntry.update(entry.getValue());
         }
     }
 
-    public void delete(String key, UpdateAcquisitionPolicy policy) throws CacheException {
+    public void delete(Object key, UpdateAcquisitionPolicy policy) throws CacheException {
         InTxCache inTxCache = cacheTransaction.getInTxCache();
         CacheEntry entry = inTxCache.getEntry(key);
 
@@ -141,8 +141,8 @@ public class BasicCache implements Cache {
         entry.delete();
     }
     
-    public void delete(Collection<String> keys, UpdateAcquisitionPolicy policy) throws CacheException {
-        for (String key : keys) {
+    public void delete(Collection<Object> keys, UpdateAcquisitionPolicy policy) throws CacheException {
+        for (Object key : keys) {
             delete(key, policy);
         }
     }

@@ -66,7 +66,7 @@ public class UnLockExclusivePhaseTest extends RMockTestCase {
 
         startVerification();
         
-        phase.execute(Collections.singletonMap("key", entry));
+        phase.execute(Collections.singletonMap((Object) "key", entry));
     }
 
     private void executeReleasesExclusiveLock(CacheEntryState state) {
@@ -76,7 +76,7 @@ public class UnLockExclusivePhaseTest extends RMockTestCase {
         
         startVerification();
         
-        phase.execute(Collections.singletonMap("key", entry));
+        phase.execute(Collections.singletonMap((Object) "key", entry));
     }
     
     private void recordState(CacheEntryState state) {

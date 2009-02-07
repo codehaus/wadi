@@ -31,7 +31,7 @@ import org.codehaus.wadi.core.contextualiser.InvocationException;
  */
 public class DestroyCacheEntryInvocation extends CacheInvocation {
 
-    public DestroyCacheEntryInvocation(String sessionKey, AcquisitionInfo acquisitionInfo) {
+    public DestroyCacheEntryInvocation(Object sessionKey, AcquisitionInfo acquisitionInfo) {
         super(sessionKey, acquisitionInfo);
         
         setWithExclusiveLock(true);

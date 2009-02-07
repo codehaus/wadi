@@ -44,7 +44,7 @@ public class TxDecoratorCache implements Cache {
         this.cache = cache;
     }
 
-    public Object get(final String key, final AcquisitionPolicy policy) throws CacheException {
+    public Object get(final Object key, final AcquisitionPolicy policy) throws CacheException {
         TransactionalOperation<Object> txOperation = new TransactionalOperation<Object>(cache) {
             @Override
             public Object doExecute() {
@@ -54,17 +54,17 @@ public class TxDecoratorCache implements Cache {
         return txOperation.execute();
     }
 
-    public Map<String, Object> get(final Collection<String> keys, final AcquisitionPolicy policy) throws CacheException {
-        TransactionalOperation<Map<String, Object>> txOperation = new TransactionalOperation<Map<String, Object>>(cache) {
+    public Map<Object, Object> get(final Collection<Object> keys, final AcquisitionPolicy policy) throws CacheException {
+        TransactionalOperation<Map<Object, Object>> txOperation = new TransactionalOperation<Map<Object, Object>>(cache) {
             @Override
-            public Map<String, Object> doExecute() {
+            public Map<Object, Object> doExecute() {
                 return cache.get(keys, policy);
             }
         };
         return txOperation.execute();
     }
     
-    public void insert(final String key, final Object value, final PutPolicy policy) throws CacheException {
+    public void insert(final Object key, final Object value, final PutPolicy policy) throws CacheException {
         TransactionalOperation<Object> txOperation = new TransactionalOperation<Object>(cache) {
             @Override
             public Object doExecute() {
@@ -75,7 +75,7 @@ public class TxDecoratorCache implements Cache {
         txOperation.execute();
     }
 
-    public void insert(final Map<String, Object> keyToValue, final PutPolicy policy) throws CacheException {
+    public void insert(final Map<Object, Object> keyToValue, final PutPolicy policy) throws CacheException {
         TransactionalOperation<Object> txOperation = new TransactionalOperation<Object>(cache) {
             @Override
             public Object doExecute() {
@@ -86,7 +86,7 @@ public class TxDecoratorCache implements Cache {
         txOperation.execute();
     }
     
-    public void update(final String key) throws CacheException {
+    public void update(final Object key) throws CacheException {
         TransactionalOperation<Object> txOperation = new TransactionalOperation<Object>(cache) {
             @Override
             public Object doExecute() {
@@ -97,7 +97,7 @@ public class TxDecoratorCache implements Cache {
         txOperation.execute();
     }
     
-    public void update(final Collection<String> keys) throws CacheException {
+    public void update(final Collection<Object> keys) throws CacheException {
         TransactionalOperation<Object> txOperation = new TransactionalOperation<Object>(cache) {
             @Override
             public Object doExecute() {
@@ -108,7 +108,7 @@ public class TxDecoratorCache implements Cache {
         txOperation.execute();
     }
     
-    public void update(final String key, final Object value) throws CacheException {
+    public void update(final Object key, final Object value) throws CacheException {
         TransactionalOperation<Object> txOperation = new TransactionalOperation<Object>(cache) {
             @Override
             public Object doExecute() {
@@ -119,7 +119,7 @@ public class TxDecoratorCache implements Cache {
         txOperation.execute();
     }
 
-    public void update(final Map<String, Object> keyToValues) throws CacheException {
+    public void update(final Map<Object, Object> keyToValues) throws CacheException {
         TransactionalOperation<Object> txOperation = new TransactionalOperation<Object>(cache) {
             @Override
             public Object doExecute() {
@@ -130,7 +130,7 @@ public class TxDecoratorCache implements Cache {
         txOperation.execute();
     }
 
-    public void delete(final String key, final UpdateAcquisitionPolicy policy) throws CacheException {
+    public void delete(final Object key, final UpdateAcquisitionPolicy policy) throws CacheException {
         TransactionalOperation<Object> txOperation = new TransactionalOperation<Object>(cache) {
             @Override
             protected Object doExecute() {
@@ -141,7 +141,7 @@ public class TxDecoratorCache implements Cache {
         txOperation.execute();
     }
     
-    public void delete(final Collection<String> keys, final UpdateAcquisitionPolicy policy) throws CacheException {
+    public void delete(final Collection<Object> keys, final UpdateAcquisitionPolicy policy) throws CacheException {
         TransactionalOperation<Object> txOperation = new TransactionalOperation<Object>(cache) {
             @Override
             protected Object doExecute() {

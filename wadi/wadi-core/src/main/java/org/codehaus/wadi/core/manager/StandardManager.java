@@ -93,9 +93,9 @@ public class StandardManager implements Lifecycle, Manager {
         contextualiser.stop();
     }
 
-    public Session createWithName(String name) throws SessionAlreadyExistException {
+    public Session createWithName(Object name) throws SessionAlreadyExistException {
         if (!validateSessionName(name)) {
-            throw new SessionAlreadyExistException(name);
+            throw new SessionAlreadyExistException("Session [" + name + "] already exists");
         }
         return createSession(name);
     }
@@ -173,11 +173,11 @@ public class StandardManager implements Lifecycle, Manager {
         return true;
     }
 
-    protected boolean validateSessionName(String name) {
+    protected boolean validateSessionName(Object name) {
         return true;
     }
 
-    protected Session createSession(String name) {
+    protected Session createSession(Object name) {
         Session session = sessionFactory.create();
         long time = System.currentTimeMillis();
         session.init(time, time, maxInactiveInterval, name);

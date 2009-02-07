@@ -36,7 +36,7 @@ import org.codehaus.wadi.cache.basic.tx.InTxCache;
  */
 public class BasicInTxCache implements InTxCache {
     private final GlobalObjectStore globalObjectStore;
-    private final Map<String, CacheEntry> keyToEntry;
+    private final Map<Object, CacheEntry> keyToEntry;
 
     public BasicInTxCache(GlobalObjectStore globalObjectStore) {
         if (null == globalObjectStore) {
@@ -44,7 +44,7 @@ public class BasicInTxCache implements InTxCache {
         }
         this.globalObjectStore = globalObjectStore;
 
-        keyToEntry = new HashMap<String, CacheEntry>();
+        keyToEntry = new HashMap<Object, CacheEntry>();
     }
 
     public void commit() throws TimeoutException, OptimisticUpdateException {
@@ -55,7 +55,7 @@ public class BasicInTxCache implements InTxCache {
         globalObjectStore.rollback(keyToEntry);
     }
 
-    public CacheEntry getRequiredEntry(String key) throws CacheEntryException {
+    public CacheEntry getRequiredEntry(Object key) throws CacheEntryException {
         CacheEntry entry = keyToEntry.get(key);
         if (null == entry) {
             throw new CacheEntryException("Key [" + key + "] is not bound to InTxCache");
@@ -63,18 +63,18 @@ public class BasicInTxCache implements InTxCache {
         return entry;
     }
 
-    public CacheEntry getEntry(String key) throws CacheEntryException {
+    public CacheEntry getEntry(Object key) throws CacheEntryException {
     	return keyToEntry.get(key);
     }
     
-    public void addEntry(String key, CacheEntry entry) throws CacheEntryException {
+    public void addEntry(Object key, CacheEntry entry) throws CacheEntryException {
         if (keyToEntry.containsKey(key)) {
             throw new CacheEntryException("Key [" + key + "] is already bound to InTxCache");
         }
         keyToEntry.put(key, entry);
     }
     
-    public void updateEntry(String key, CacheEntry entry) {
+    public void updateEntry(Object key, CacheEntry entry) {
         if (!keyToEntry.containsKey(key)) {
             throw new CacheEntryException("Key [" + key + "] is not bound to InTxCache");
         }

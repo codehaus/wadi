@@ -60,7 +60,7 @@ public class OptimisticCacheEntryTest extends BaseCacheEntryTestCase {
         final ObjectInfoEntry objectInfoEntry = new ObjectInfoEntry("key", new ObjectInfo(1, new Object()));
         entry = new OptimisticCacheEntry(prototype, new ObjectInfo(1, new Object())) {
             @Override
-            protected ObjectInfoEntry acquirePessimistic(String key, AcquisitionInfo acquisitionInfo) {
+            protected ObjectInfoEntry acquirePessimistic(Object key, AcquisitionInfo acquisitionInfo) {
                 return objectInfoEntry;
             }
         };

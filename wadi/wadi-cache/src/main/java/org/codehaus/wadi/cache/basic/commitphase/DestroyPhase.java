@@ -42,9 +42,9 @@ public class DestroyPhase implements CommitPhase {
         this.manager = manager;
     }
 
-    public void execute(Map<String, CacheEntry> keyToEntry) throws TransactionException {
-        for (Map.Entry<String, CacheEntry> entry : keyToEntry.entrySet()) {
-            String key = entry.getKey();
+    public void execute(Map<Object, CacheEntry> keyToEntry) throws TransactionException {
+        for (Map.Entry<Object, CacheEntry> entry : keyToEntry.entrySet()) {
+            Object key = entry.getKey();
             CacheEntry cacheEntry = entry.getValue();
             if (cacheEntry.getState() == CacheEntryState.DELETED) {
                 try {
