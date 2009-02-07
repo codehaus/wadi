@@ -33,8 +33,8 @@ public abstract class AbstractDelegatingContextualiser extends AbstractChainedCo
         super(next);
     }
 
-    public Immoter getDemoter(String name, Motable motable) {
-        return next.getDemoter(name, motable);
+    public Immoter getDemoter(Object id, Motable motable) {
+        return next.getDemoter(id, motable);
     }
 
     public Immoter getSharedDemoter() {

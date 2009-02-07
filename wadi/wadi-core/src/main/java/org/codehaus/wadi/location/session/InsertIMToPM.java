@@ -27,8 +27,8 @@ import org.codehaus.wadi.group.Peer;
 public class InsertIMToPM extends SessionRequestImpl implements Serializable {
     private final Peer peer;
     
-    public InsertIMToPM(String name, Peer peer) {
-        super(name);
+    public InsertIMToPM(Object id, Peer peer) {
+        super(id);
         if (null == peer) {
             throw new IllegalArgumentException("peer is required");
         }
@@ -44,7 +44,7 @@ public class InsertIMToPM extends SessionRequestImpl implements Serializable {
     }
     
     public String toString() {
-        return "InsertIMToPM [" + _key + "]";
+        return "InsertIMToPM [" + id + "]";
     }
     
 }

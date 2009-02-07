@@ -71,12 +71,12 @@ public class ObjectWriterContextualiser extends AbstractSharedContextualiser {
     }
 
     @Override
-    protected Motable get(String id, boolean exclusiveOnly) {
+    protected Motable get(Object id, boolean exclusiveOnly) {
         return null;
     }
 
     @Override
-    public Immoter getDemoter(String name, Motable motable) {
+    public Immoter getDemoter(Object id, Motable motable) {
         return immoter;
     }
     
@@ -91,7 +91,7 @@ public class ObjectWriterContextualiser extends AbstractSharedContextualiser {
     }
 
     protected class ObjectWriterContextualiserImmoter implements Immoter {
-        public boolean contextualise(Invocation invocation, String id, Motable immotable) throws InvocationException {
+        public boolean contextualise(Invocation invocation, Object id, Motable immotable) throws InvocationException {
             throw new UnsupportedOperationException();
         }
 
@@ -99,10 +99,10 @@ public class ObjectWriterContextualiser extends AbstractSharedContextualiser {
             Session session = (Session) immotable;
             ObjectInfoEntry objectInfoEntry = SessionUtil.getObjectInfoEntry(session);
             Object object = objectInfoEntry.getObjectInfo().getObject();
-            String key = session.getName();
-            objectWriter.write(key, object);
-            stateManager.remove(key);
-            replicationManager.destroy(key);
+            Object id = session.getId();
+            objectWriter.write(id, object);
+            stateManager.remove(id);
+            replicationManager.destroy(id);
             return true;
         }
 

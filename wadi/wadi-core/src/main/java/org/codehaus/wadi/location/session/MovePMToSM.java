@@ -29,8 +29,8 @@ public class MovePMToSM extends SessionRequestImpl implements Serializable {
     protected final String imCorrelationId;
     private final long exclusiveSessionLockWaitTime;
 
-    public MovePMToSM(Object key, Peer im, String imCorrelationId, long exclusiveSessionLockWaitTime) {
-        super(key);
+    public MovePMToSM(Object id, Peer im, String imCorrelationId, long exclusiveSessionLockWaitTime) {
+        super(id);
         if (null == im) {
             throw new IllegalArgumentException("im is required");
         } else if (null == imCorrelationId) {
@@ -58,7 +58,7 @@ public class MovePMToSM extends SessionRequestImpl implements Serializable {
     }
 
     public String toString() {
-        return "<MovePMToSM:" + _key + ">";
+        return "<MovePMToSM:" + id + ">";
     }
     
 }

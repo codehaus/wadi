@@ -24,12 +24,12 @@ import org.codehaus.wadi.core.contextualiser.Invocation;
  */
 public class DummyRouter implements Router {
 
-	public String strip(String session) {
-		return session;
+	public Object strip(Object id) {
+		return id;
 	}
 
-	public String augment(String session) {
-		return session;
+	public Object augment(Object id) {
+		return id;
 	}
 
 	public boolean reroute(Invocation invocation) {

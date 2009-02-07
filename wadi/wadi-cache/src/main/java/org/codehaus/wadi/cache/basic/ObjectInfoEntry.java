@@ -31,17 +31,17 @@ import org.codehaus.wadi.group.Peer;
  * @version $Rev:$ $Date:$
  */
 public class ObjectInfoEntry implements Serializable {
-    private final String key;
+    private final Object id;
     private final ObjectInfo objectInfo;
     private final Set<Peer> readOnlyPeers;
     
-    public ObjectInfoEntry(String key, ObjectInfo objectInfo) {
-        if (null == key) {
+    public ObjectInfoEntry(Object id, ObjectInfo objectInfo) {
+        if (null == id) {
             throw new IllegalArgumentException("key is required");
         } else if (null == objectInfo) {
             throw new IllegalArgumentException("objectInfo is required");
         }
-        this.key = key;
+        this.id = id;
         this.objectInfo = objectInfo;
 
         readOnlyPeers = new CopyOnWriteArraySet<Peer>();
@@ -63,8 +63,8 @@ public class ObjectInfoEntry implements Serializable {
         return objectInfo;
     }
 
-    public String getKey() {
-        return key;
+    public Object getId() {
+        return id;
     }
 
 }

@@ -59,13 +59,13 @@ public abstract class AbstractReplicationContextualiserTest extends TestCase {
 		String attrName = "foo";
         session.addState(attrName, attrValue);
         session.onEndProcessing();
-		String sessionName = session.getName();
+		Object sessionId = session.getId();
 
         nodeInfo1.serviceSpace.stop();
         
-        promoteNode(nodeInfo2, sessionName);
+        promoteNode(nodeInfo2, sessionId);
         
-        Session node2Session = (Session) nodeInfo2.mmap.acquire(sessionName);
+        Session node2Session = (Session) nodeInfo2.mmap.acquire(sessionId);
         assertNotNull(node2Session);
         String actualAttrValue = (String) node2Session.getState(attrName);
         assertEquals(attrValue, actualAttrValue);
@@ -73,7 +73,7 @@ public abstract class AbstractReplicationContextualiserTest extends TestCase {
         assertNull(nodeInfo1.mmap.acquire(attrName));
     }
 
-    private void promoteNode(NodeInfo nodeInfo, String sessionId) throws InvocationException {
+    private void promoteNode(NodeInfo nodeInfo, Object sessionId) throws InvocationException {
         nodeInfo.manager.contextualise(new ThrowExceptionIfNoSessionInvocation(sessionId, 500));
     }
 

@@ -69,7 +69,7 @@ public class ClusteredManager extends DistributableManager {
 
     protected void onSessionDestruction(Session session) {
         super.onSessionDestruction(session);
-        stateManager.remove(session.getName());
+        stateManager.remove(session.getId());
     }
 
     protected boolean validateSessionName(String name) {

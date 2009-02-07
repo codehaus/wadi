@@ -24,7 +24,7 @@ import org.codehaus.wadi.core.motable.Motable;
  */
 public interface Store {
     interface Putter {
-        void put(String name, Motable motable);
+        void put(Object id, Motable motable);
     }
 
     void clean();

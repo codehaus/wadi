@@ -48,11 +48,11 @@ public class InsertSessionOperation {
         this.stateManager = stateManager;
     }
 
-    public Session insert(String key, CreateSessionOperation createSessionOperation) {
-        stateManager.insert(key);
+    public Session insert(Object id, CreateSessionOperation createSessionOperation) {
+        stateManager.insert(id);
         Session session = createSessionOperation.create();
         sessionMonitor.notifySessionCreation(session);
-        replicationManager.create(key, session);
+        replicationManager.create(id, session);
         return session;
     }
 }

@@ -48,10 +48,9 @@ public class Utils {
 	 * @param emoter - delegate for the source Contextualiser
 	 * @param immoter - delegate for the target Contextualiser
 	 * @param emotable - data to be moved
-	 * @param name - the id of said data
 	 * @return - the resulting immotable - in other words - the data's new representation in the target Contextualiser
 	 */
-	public static Motable mote(Emoter emoter, Immoter immoter, Motable emotable, String name) {
+	public static Motable mote(Emoter emoter, Immoter immoter, Motable emotable) {
         Motable immotable = immoter.newMotable(emotable);
         boolean success = emoter.emote(emotable, immotable);
         if (!success) {

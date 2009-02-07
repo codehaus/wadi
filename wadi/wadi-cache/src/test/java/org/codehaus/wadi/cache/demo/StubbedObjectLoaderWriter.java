@@ -44,18 +44,18 @@ public class StubbedObjectLoaderWriter implements ObjectLoader, ObjectWriter {
         this.waitForObjectWriteLatch = waitForObjectWriteLatch;
     }
 
-    public Object load(String key) {
-        if (key.equals(OBJECT_STORE_OBJECT_KEY)) {
+    public Object load(Object id) {
+        if (id.equals(OBJECT_STORE_OBJECT_KEY)) {
             return OBJECT_STORE_OBJECT;
         }
         return null;
     }
 
-    public Map<String, Object> load(Set<String> keys) {
+    public Map<Object, Object> load(Set<Object> ids) {
         throw new UnsupportedOperationException();
     }
 
-    public void write(String key, Object object) {
+    public void write(Object id, Object object) {
         POJO pojo = (POJO) object;
         if (pojo.field == OBJECT_STORE_OBJECT.field) {
             waitForObjectWriteLatch.countDown();

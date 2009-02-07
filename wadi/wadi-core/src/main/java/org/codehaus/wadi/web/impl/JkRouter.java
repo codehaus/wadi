@@ -32,26 +32,34 @@ public class JkRouter implements Router {
         suffix = "." + info;
     }
 
-    public String strip(String session) {
-        int i = session.lastIndexOf(".");
+    public Object strip(Object id) {
+        if (!(id instanceof String)) {
+            return id;
+        }
+        String newId = (String) id;
+        int i = newId.lastIndexOf(".");
         if (i < 0) {
-            return session;
+            return newId;
         } else {
-            return session.substring(0, i);
+            return newId.substring(0, i);
         }
     }
 
-    public String augment(String id) {
-        int i = id.lastIndexOf(".");
+    public Object augment(Object id) {
+        if (!(id instanceof String)) {
+            return id;
+        }
+        String newId = (String) id;
+        int i = newId.lastIndexOf(".");
         if (i < 0) {
-            return id + suffix;
+            return newId + suffix;
         } else {
-            if (id.endsWith(suffix)) {
+            if (newId.endsWith(suffix)) {
                 // it's our routing info - leave it
-                return id;
+                return newId;
             } else {
                 // it's someone else's - replace it
-                return id.substring(0, i) + suffix; 
+                return newId.substring(0, i) + suffix; 
             }
         }
     }

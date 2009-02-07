@@ -23,8 +23,8 @@ import org.codehaus.wadi.core.session.Session;
  */
 public class ThrowExceptionIfNoSessionInvocation extends BasicInvocation {
 
-    public ThrowExceptionIfNoSessionInvocation(String sessionKey, long exclusiveSessionLockWaitTime) {
-        super(sessionKey, exclusiveSessionLockWaitTime);
+    public ThrowExceptionIfNoSessionInvocation(Object sessionId, long exclusiveSessionLockWaitTime) {
+        super(sessionId, exclusiveSessionLockWaitTime);
     }
 
     @Override

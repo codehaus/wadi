@@ -73,9 +73,9 @@ public class HybridRelocater implements Relocater {
         localPeer = dispatcher.getCluster().getLocalPeer();
     }
 
-    public boolean relocate(Invocation invocation, String name, Immoter immoter, boolean shuttingDown) throws InvocationException {
+    public boolean relocate(Invocation invocation, Object id, Immoter immoter, boolean shuttingDown) throws InvocationException {
         try {
-            return doRelocate(invocation, name, immoter, shuttingDown);
+            return doRelocate(invocation, id, immoter, shuttingDown);
         } catch (MotableBusyException e) {
             throw e;
         } catch (Exception e) {
@@ -84,16 +84,16 @@ public class HybridRelocater implements Relocater {
         }
     }
     
-    protected boolean doRelocate(Invocation invocation, String name, Immoter immoter, boolean shuttingDown) throws Exception {
+    protected boolean doRelocate(Invocation invocation, Object id, Immoter immoter, boolean shuttingDown) throws Exception {
         long exclusiveSessionLockWaitTime = invocation.getExclusiveSessionLockWaitTime();
         MoveIMToPM request = new MoveIMToPM(localPeer, 
-            name,
+            id,
             !shuttingDown, 
             invocation.isRelocatable(),
             exclusiveSessionLockWaitTime);
         Envelope message;
         try {
-            message = partitionManager.getPartition(name).exchange(request, exclusiveSessionLockWaitTime + 10000);
+            message = partitionManager.getPartition(id).exchange(request, exclusiveSessionLockWaitTime + 10000);
         } catch (MessageExchangeException e) {
             throw new WADIRuntimeException(e);
         }
@@ -104,9 +104,9 @@ public class HybridRelocater implements Relocater {
 
         Serializable dm = message.getPayload();
         if (dm instanceof MoveSMToIM) {
-            return handleSessionRelocation(invocation, name, immoter, message, (MoveSMToIM) dm);
+            return handleSessionRelocation(invocation, id, immoter, message, (MoveSMToIM) dm);
         } else if (dm instanceof MovePMToIM) {
-            return handleUnknownSession(name);
+            return handleUnknownSession(id);
         } else if (dm instanceof MovePMToIMInvocation) {
             return handleInvocationRelocation(invocation, (MovePMToIMInvocation) dm);
         } else {
@@ -122,19 +122,19 @@ public class HybridRelocater implements Relocater {
         return true;
     }
 
-    protected boolean handleUnknownSession(String sessionName) {
+    protected boolean handleUnknownSession(Object id) {
         // The Partition manager had no record of our session key - either the session
         // has already been destroyed, or never existed...
-        log.debug("Unknown session [" + sessionName + "]");
+        log.debug("Unknown session [" + id + "]");
         return false;
     }
 
-    protected boolean handleSessionRelocation(Invocation invocation, String name, Immoter immoter, Envelope message, MoveSMToIM req) throws InvocationException {
+    protected boolean handleSessionRelocation(Invocation invocation, Object id, Immoter immoter, Envelope message, MoveSMToIM req) throws InvocationException {
         Motable emotable = req.getMotable();
         if (null == emotable) {
-            log.warn("Failed relocation for [" + name + "]");
+            log.warn("Failed relocation for [" + id + "]");
             if (req.isSessionBuzy()) {
-                throw new MotableBusyException("Motable [" + name + "] buzy. Session relocation has been aborted.");
+                throw new MotableBusyException("Motable [" + id + "] buzy. Session relocation has been aborted.");
             }
             return false;
         }
@@ -142,7 +142,7 @@ public class HybridRelocater implements Relocater {
         // We are receiving an incoming state migration. Insert motable into contextualiser stack...
         Emoter emoter = newSessionRelocationEmoter();
         immoter = newSessionRelocationImmoter(invocation, immoter);
-        Motable immotable = mote(name, immoter, emotable, emoter);
+        Motable immotable = mote(immoter, emotable, emoter);
 
         MoveIMToSM response = new MoveIMToSM(true);
         try {
@@ -151,13 +151,13 @@ public class HybridRelocater implements Relocater {
             log.warn("Session migration has not been acknowledged. SM has disappeared.", e);
         }
         
-        replicationManager.promoteToMaster(name, req.getReplicaInfo(), immotable, null);
+        replicationManager.promoteToMaster(id, req.getReplicaInfo(), immotable, null);
 
-        return immoter.contextualise(invocation, name, immotable);
+        return immoter.contextualise(invocation, id, immotable);
     }
 
-    protected Motable mote(String name, Immoter immoter, Motable emotable, Emoter emoter) {
-        return Utils.mote(emoter, immoter, emotable, name);
+    protected Motable mote(Immoter immoter, Motable emotable, Emoter emoter) {
+        return Utils.mote(emoter, immoter, emotable);
     }
 
     protected Immoter newSessionRelocationImmoter(Invocation invocation, Immoter immoter) {

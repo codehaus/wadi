@@ -122,7 +122,7 @@ public class DiscStore implements Store {
     }
 
     public void delete(Motable motable) {
-        File file = new File(sessionStoreDir, motable.getName() + streamer.getSuffixWithDot());
+        File file = new File(sessionStoreDir, motable.getId() + streamer.getSuffixWithDot());
         if (file.exists()) {
             file.delete();
             if (log.isTraceEnabled()) {
@@ -132,7 +132,7 @@ public class DiscStore implements Store {
     }
 
     public void insert(Motable motable) throws Exception {
-        File file = new File(sessionStoreDir, motable.getName() + streamer.getSuffixWithDot());
+        File file = new File(sessionStoreDir, motable.getId() + streamer.getSuffixWithDot());
 
         ObjectOutputStream oos = null;
         FileOutputStream fos = null;
@@ -143,7 +143,7 @@ public class DiscStore implements Store {
             oos.writeLong(motable.getCreationTime());
             oos.writeLong(motable.getLastAccessedTime());
             oos.writeInt(motable.getMaxInactiveInterval());
-            oos.writeObject(motable.getName());
+            oos.writeObject(motable.getId());
             byte[] bodyAsByteArray = motable.getBodyAsByteArray();
             oos.writeInt(bodyAsByteArray.length);
             oos.flush();
@@ -168,7 +168,7 @@ public class DiscStore implements Store {
     }
 
     public byte[] loadBody(Motable motable) throws Exception {
-        File file = new File(sessionStoreDir, motable.getName() + streamer.getSuffixWithDot());
+        File file = new File(sessionStoreDir, motable.getId() + streamer.getSuffixWithDot());
 
         FileInputStream fis = null;
         try {

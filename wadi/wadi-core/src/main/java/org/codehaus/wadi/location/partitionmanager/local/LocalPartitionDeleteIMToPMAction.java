@@ -36,7 +36,7 @@ public class LocalPartitionDeleteIMToPMAction  extends AbstractLocalPartitionAct
     }
 
     public void onMessage(Envelope message, DeleteIMToPM request) {
-        Object key = request.getKey();
+        Object key = request.getId();
         Location location;
         synchronized (nameToLocation) {
             location = (Location) nameToLocation.remove(key);

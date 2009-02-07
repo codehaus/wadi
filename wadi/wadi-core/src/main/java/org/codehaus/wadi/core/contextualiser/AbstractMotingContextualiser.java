@@ -33,12 +33,12 @@ public abstract class AbstractMotingContextualiser extends AbstractChainedContex
 		super(next);
 	}
 	
-	public boolean contextualise(Invocation invocation, String key, Immoter immoter, boolean exclusiveOnly) throws InvocationException {
-        boolean handled = handle(invocation, key, immoter, exclusiveOnly);
+	public boolean contextualise(Invocation invocation, Object id, Immoter immoter, boolean exclusiveOnly) throws InvocationException {
+        boolean handled = handle(invocation, id, immoter, exclusiveOnly);
         if (handled) {
             return true;
         }
-        return next.contextualise(invocation, key, getPromoter(immoter), exclusiveOnly);
+        return next.contextualise(invocation, id, getPromoter(immoter), exclusiveOnly);
 	}
 	
     /**
@@ -56,9 +56,9 @@ public abstract class AbstractMotingContextualiser extends AbstractChainedContex
         return immoter; 
     }
 
-    protected abstract Motable get(String id, boolean exclusiveOnly);
+    protected abstract Motable get(Object id, boolean exclusiveOnly);
 
-    protected boolean handle(Invocation invocation, String id, Immoter immoter, boolean exclusiveOnly) throws InvocationException {
+    protected boolean handle(Invocation invocation, Object id, Immoter immoter, boolean exclusiveOnly) throws InvocationException {
 		if (null != immoter) {
             Motable emotable = get(id, exclusiveOnly);
             if (null != emotable) {
@@ -68,9 +68,9 @@ public abstract class AbstractMotingContextualiser extends AbstractChainedContex
         return false;
 	}
 
-    protected boolean promote(Invocation invocation, String id, Immoter immoter, Motable emotable) throws InvocationException {
+    protected boolean promote(Invocation invocation, Object id, Immoter immoter, Motable emotable) throws InvocationException {
         Emoter emoter = getEmoter();
-        Motable immotable = Utils.mote(emoter, immoter, emotable, id);
+        Motable immotable = Utils.mote(emoter, immoter, emotable);
         if (immotable != null) {
             return immoter.contextualise(invocation, id, immotable);
         } else {

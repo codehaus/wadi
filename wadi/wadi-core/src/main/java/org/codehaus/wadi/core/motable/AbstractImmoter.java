@@ -32,7 +32,7 @@ public abstract class AbstractImmoter implements Immoter {
         return true;
     }
     
-	public boolean contextualise(Invocation invocation, String id, Motable immotable) throws InvocationException {
+	public boolean contextualise(Invocation invocation, Object id, Motable immotable) throws InvocationException {
 		// most Contextualisers cannot contextualise locally...
 		return false;
 	}

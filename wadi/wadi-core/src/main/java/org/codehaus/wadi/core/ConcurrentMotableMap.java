@@ -24,15 +24,15 @@ import org.codehaus.wadi.core.motable.Motable;
  * @version $Revision: 1538 $
  */
 public interface ConcurrentMotableMap {
-    void put(String name, Motable motable);
+    void put(Object id, Motable motable);
 
-    void remove(String name);
+    void remove(Object id);
 
-    Motable get(String id);
+    Motable get(Object id);
 
-    Motable acquire(String id);
+    Motable acquire(Object id);
 
-    Motable acquireExclusive(String id, long exclusiveSessionLockWaitTime) throws MotableBusyException;
+    Motable acquireExclusive(Object id, long exclusiveSessionLockWaitTime) throws MotableBusyException;
 
     void release(Motable motable);
 
@@ -42,5 +42,5 @@ public interface ConcurrentMotableMap {
 
     boolean isEmpty();
 
-    Set getNames();
+    Set<Object> getIds();
 }

@@ -41,7 +41,7 @@ public class MemoryContextualiserTest extends RMockTestCase {
         
         Motable motable = (Motable) mock(Motable.class);
         String name = "name";
-        motable.getName();
+        motable.getId();
         modify().returnValue(name);
 
         motable.getTimeToLive(0);

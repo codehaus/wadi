@@ -44,7 +44,7 @@ public class ClusteredManagerTest extends RMockTestCase {
         InvocationProxy proxy = (InvocationProxy) mock(InvocationProxy.class);
         Session session = (Session) mock(Session.class);
         String name = "name";
-        session.getName();
+        session.getId();
         modify().multiplicity(expect.from(0)).returnValue(name);
         
         sessionFactory.setManager(null);

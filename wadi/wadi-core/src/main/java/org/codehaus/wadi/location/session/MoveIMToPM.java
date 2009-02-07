@@ -31,11 +31,11 @@ public class MoveIMToPM extends SessionRequestImpl implements Serializable {
     private final long exclusiveSessionLockWaitTime;
 
     public MoveIMToPM(Peer peer,
-            String sessionName,
+            Object sessionId,
             boolean relocateSession,
             boolean relocateInvocation,
             long exclusiveSessionLockWaitTime) {
-        super(sessionName);
+        super(sessionId);
         if (null == peer) {
             throw new IllegalArgumentException("peer is required");
         }
@@ -66,7 +66,7 @@ public class MoveIMToPM extends SessionRequestImpl implements Serializable {
     }
 
     public String toString() {
-        return "MoveIMToPM [" + _key + "]->[" + peer + "]";
+        return "MoveIMToPM [" + id + "]->[" + peer + "]";
     }
     
 }

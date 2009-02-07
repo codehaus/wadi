@@ -157,7 +157,7 @@ public class HybridRelocaterTest extends RMockTestCase {
                 return sessionRelocationImmoter;
             }
             @Override
-            protected Motable mote(String name, Immoter immoter, Motable emotable, Emoter emoter) {
+            protected Motable mote(Immoter immoter, Motable emotable, Emoter emoter) {
                 return immoter.newMotable(emotable);
             }
         };
@@ -194,7 +194,7 @@ public class HybridRelocaterTest extends RMockTestCase {
                 MoveIMToPM arg= (MoveIMToPM) arg0;
                 if (arg.getIMPeer() != localPeer) {
                     return false;
-                } else if (!arg.getKey().equals(key)) {
+                } else if (!arg.getId().equals(key)) {
                     return false;
                 }
                 return true;

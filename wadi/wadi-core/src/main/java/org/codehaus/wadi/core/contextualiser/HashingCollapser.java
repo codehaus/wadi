@@ -65,7 +65,7 @@ public class HashingCollapser implements Collapser {
         }
     }
 
-    public Lock getLock(String id) {
+    public Lock getLock(Object id) {
         // Jetty seems to generate negative session id hashcodes...
         int index = Math.abs(id.hashCode() % locks.length); 
         if (_log.isTraceEnabled()) {

@@ -72,7 +72,7 @@ public class WebInvocation implements Invocation {
         this.proxy=proxy;
     }
     
-    public String getSessionKey() {
+    public Object getSessionId() {
         return hreq.getRequestedSessionId();
     }
 

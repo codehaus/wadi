@@ -22,17 +22,17 @@ package org.codehaus.wadi.core.util;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 
-import org.codehaus.wadi.core.util.LoggingLock.NameAccessor;
+import org.codehaus.wadi.core.util.LoggingLock.IdAccessor;
 
 /**
  *
  * @version $Rev:$ $Date:$
  */
 public class LoggingReadWriteLock implements ReadWriteLock {
-    private final NameAccessor accessor;
+    private final IdAccessor accessor;
     private final ReadWriteLock delegate;
 
-    public LoggingReadWriteLock(NameAccessor accessor, ReadWriteLock delegate) {
+    public LoggingReadWriteLock(IdAccessor accessor, ReadWriteLock delegate) {
         if (null == accessor) {
             throw new IllegalArgumentException("accessor is required");
         } else if (null == delegate) {
@@ -43,11 +43,11 @@ public class LoggingReadWriteLock implements ReadWriteLock {
     }
 
     public Lock readLock() {
-        return new LoggingLock("ReadLock[" + accessor.getName() + "]", delegate.readLock());
+        return new LoggingLock("ReadLock[" + accessor.getId() + "]", delegate.readLock());
     }
 
     public Lock writeLock() {
-        return new LoggingLock("WriteLock[" + accessor.getName() + "]", delegate.writeLock());
+        return new LoggingLock("WriteLock[" + accessor.getId() + "]", delegate.writeLock());
     }
     
     

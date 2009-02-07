@@ -82,7 +82,7 @@ public class BasicWebSession extends AtomicallyReplicableSession implements WADI
     }
 
     public String getId() {
-        return router.augment(getAbstractMotableMemento().getName());
+        return (String) router.augment(getAbstractMotableMemento().getId());
     }
     
     public synchronized Object getAttribute(String name) {

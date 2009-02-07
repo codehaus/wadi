@@ -26,16 +26,16 @@ public interface Router {
     /**
      * Strip any routing info from this session id.
      *
-     * @param session a <code>String</code> value
+     * @param id a <code>String</code> value
      * @return a <code>String</code> value
      */
-    String strip(String session);
+    Object strip(Object id);
 
     /**
      * Add our routing info to this session id.
      *
-     * @param session a <code>String</code> value
+     * @param id a <code>String</code> value
      * @return a <code>String</code> value
      */
-    String augment(String session);
+    Object augment(Object id);
 }

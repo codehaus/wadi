@@ -40,7 +40,7 @@ public class LocalPartitionEvacuateIMToPMAction extends AbstractLocalPartitionAc
 
     public void onMessage(Envelope message, EvacuateIMToPM request) {
         Peer newPeer = request.getPeer();
-        Object key = request.getKey();
+        Object key = request.getId();
         Location location;
         synchronized (nameToLocation) {
             location = (Location) nameToLocation.get(key);
@@ -60,7 +60,7 @@ public class LocalPartitionEvacuateIMToPMAction extends AbstractLocalPartitionAc
                     } else {
                         location.setPeer(newPeer);
                         if (log.isDebugEnabled()) {
-                            log.debug("evacuate [" + request.getKey() + "] [" + oldPeer + "]->[" + newPeer + "]");
+                            log.debug("evacuate [" + request.getId() + "] [" + oldPeer + "]->[" + newPeer + "]");
                         }
                         success = true;
                     }

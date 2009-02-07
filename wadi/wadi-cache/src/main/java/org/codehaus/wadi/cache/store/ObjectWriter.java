@@ -25,5 +25,5 @@ package org.codehaus.wadi.cache.store;
  * @version $Rev:$ $Date:$
  */
 public interface ObjectWriter {
-    void write(String key, Object object);
+    void write(Object id, Object object);
 }

@@ -56,7 +56,7 @@ public class ReplicaAwareContextualiser extends AbstractSharedContextualiser {
         return next.getSharedDemoter();
     }
     
-    protected Motable get(String id, boolean exclusiveOnly) {
+    protected Motable get(Object id, boolean exclusiveOnly) {
         Motable motable;
         try {
             motable = replicationManager.retrieveReplica(id);
@@ -64,7 +64,7 @@ public class ReplicaAwareContextualiser extends AbstractSharedContextualiser {
             return null;
         }
         if (null != motable) {
-            stateManager.insert(motable.getName());
+            stateManager.insert(motable.getId());
         }
         return motable;
     }
@@ -75,7 +75,7 @@ public class ReplicaAwareContextualiser extends AbstractSharedContextualiser {
                 immotable.restore(emotable.getCreationTime(), 
                         emotable.getLastAccessedTime(),
                         emotable.getMaxInactiveInterval(),
-                        emotable.getName(),
+                        emotable.getId(),
                         emotable.getBodyAsByteArray());
             } catch (Exception e) {
                 log.warn("Problem emoting [" + emotable + "]", e);

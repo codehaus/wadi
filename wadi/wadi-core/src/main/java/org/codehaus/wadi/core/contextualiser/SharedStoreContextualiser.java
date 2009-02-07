@@ -81,7 +81,7 @@ public class SharedStoreContextualiser extends AbstractSharedContextualiser {
     /**
      * Shared Contextualisers do nothing at runtime. They exist only to load data at startup and store it at shutdown.
      */
-    protected Motable get(String id, boolean exclusiveOnly) {
+    protected Motable get(Object id, boolean exclusiveOnly) {
         return null;
     }
 
@@ -118,10 +118,10 @@ public class SharedStoreContextualiser extends AbstractSharedContextualiser {
 
         }
 
-        public void put(final String name, final Motable motable) {
-            insertSessionOperation.insert(name, new CreateSessionOperation() {
+        public void put(final Object id, final Motable motable) {
+            insertSessionOperation.insert(id, new CreateSessionOperation() {
                 public Session create() {
-                    return (Session) Utils.mote(emoter, immoter, motable, name);
+                    return (Session) Utils.mote(emoter, immoter, motable);
                 }
             });
         }

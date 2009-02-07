@@ -45,7 +45,7 @@ public interface Invocation {
      * 
      * @return the key
      */
-    String getSessionKey();
+    Object getSessionId();
 
     Session getSession();
 

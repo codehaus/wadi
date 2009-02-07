@@ -72,15 +72,15 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
     }
     
     public Set getSessionNames() {
-        return map.getNames();
+        return map.getIds();
     }
     
-    protected Motable get(String id, boolean exclusiveOnly) {
+    protected Motable get(Object id, boolean exclusiveOnly) {
         throw new UnsupportedOperationException();
     }
     
     public final boolean handle(Invocation invocation,
-            String id,
+            Object id,
             Immoter immoter,
             boolean exclusiveOnly) throws InvocationException {
         Motable emotable = lockHandler.acquire(invocation, id);
@@ -112,17 +112,17 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
         evicter.cancel(evictionTask);
     }
 
-    public Immoter getDemoter(String name, Motable motable) {
+    public Immoter getDemoter(Object id, Motable motable) {
         long time = System.currentTimeMillis();
         if (evicter.testForDemotion(motable, time, motable.getTimeToLive(time))) {
-            return next.getDemoter(name, motable);
+            return next.getDemoter(id, motable);
         } else {
             return getImmoter();
         }
     }
 
     protected void doFindRelevantSessionNames(PartitionMapper mapper, Map keyToSessionNames) {
-        for (Iterator i = map.getNames().iterator(); i.hasNext();) {
+        for (Iterator i = map.getIds().iterator(); i.hasNext();) {
             String name = (String) i.next();
             int key = mapper.map(name);
             Collection sessionNames = (Collection) keyToSessionNames.get(new Integer(key));
@@ -132,7 +132,7 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
         }
     }
 
-    protected boolean handleLocally(Invocation invocation, String id, Motable motable) throws InvocationException {
+    protected boolean handleLocally(Invocation invocation, Object id, Motable motable) throws InvocationException {
         return false;
     }
 
@@ -140,7 +140,7 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
         Emoter emoter = getEmoter();
 
         int i = 0;
-        for (Iterator iter = map.getNames().iterator(); iter.hasNext();) {
+        for (Iterator iter = map.getIds().iterator(); iter.hasNext();) {
             String id = (String) iter.next();
             Motable motable = map.acquireExclusive(id, Long.MAX_VALUE);
             if (null == motable) {
@@ -149,7 +149,7 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
             try {
                 try {
                     Immoter immoter = next.getSharedDemoter();
-                    Utils.mote(emoter, immoter, motable, id);
+                    Utils.mote(emoter, immoter, motable);
                     i++;
                 } catch (Exception e) {
                     log.warn("unexpected problem while unloading session", e);
@@ -165,10 +165,10 @@ public abstract class AbstractExclusiveContextualiser extends AbstractMotingCont
     protected class BasicEvictionStrategy implements EvictionStrategy {
 
         public void demote(Motable motable) {
-            String id = motable.getName();
+            Object id = motable.getId();
             Immoter immoter = next.getDemoter(id, motable);
             Emoter emoter = getEmoter();
-            Utils.mote(emoter, immoter, motable, id);
+            Utils.mote(emoter, immoter, motable);
         }
 
     }

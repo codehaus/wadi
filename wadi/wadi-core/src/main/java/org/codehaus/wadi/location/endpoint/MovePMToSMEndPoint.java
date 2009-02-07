@@ -78,7 +78,7 @@ public class MovePMToSMEndPoint implements Lifecycle, MovePMToSMEndPointMessageL
     public void onMessage(Envelope message, MovePMToSM request) {
         boolean successfulRelocation = false;
         boolean sessionBuzy = false;
-        Object key = request.getKey();
+        Object key = request.getId();
         try {
             RelocationImmoter promoter = new RelocationImmoter(dispatcher,
                     request,

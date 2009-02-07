@@ -30,10 +30,10 @@ public interface Relocater {
     /**
 	 * Either relocate the request to the session by proxying/redirection, or the session to the request, by migration...
      * @param invocation
-	 * @param name
+	 * @param id
 	 * @param immoter
 	 * @param b 
 	 * @return - whether, or not, the request was contextualised
 	 */
-    boolean relocate(Invocation invocation, String name, Immoter immoter, boolean shuttingDown) throws InvocationException;
+    boolean relocate(Invocation invocation, Object id, Immoter immoter, boolean shuttingDown) throws InvocationException;
 }

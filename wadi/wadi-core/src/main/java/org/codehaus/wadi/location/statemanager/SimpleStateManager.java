@@ -68,10 +68,10 @@ public class SimpleStateManager implements StateManager, StateManagerMessageList
         endpointBuilder.dispose(10, 500);
     }
 
-    public boolean insert(String name) {
+    public boolean insert(Object id) {
         try {
-            InsertIMToPM request = new InsertIMToPM(name, localPeer);
-            Partition partition = partitionManager.getPartition(name);
+            InsertIMToPM request = new InsertIMToPM(id, localPeer);
+            Partition partition = partitionManager.getPartition(id);
             Envelope reply = partition.exchange(request, inactiveTime);
             return ((InsertPMToIM) reply.getPayload()).getSuccess();
         } catch (MessageExchangeException e) {
@@ -83,10 +83,10 @@ public class SimpleStateManager implements StateManager, StateManagerMessageList
         }
     }
 
-    public void remove(String name) {
+    public void remove(Object id) {
         try {
-            DeleteIMToPM request = new DeleteIMToPM(name);
-            partitionManager.getPartition(name).exchange(request, inactiveTime);
+            DeleteIMToPM request = new DeleteIMToPM(id);
+            partitionManager.getPartition(id).exchange(request, inactiveTime);
         } catch (MessageExchangeException e) {
             log.error("See nested", e);
         } catch (PartitionFacadeException e) {
@@ -94,10 +94,10 @@ public class SimpleStateManager implements StateManager, StateManagerMessageList
         }
     }
 
-    public void relocate(String name) {
+    public void relocate(Object id) {
         try {
-            EvacuateIMToPM request = new EvacuateIMToPM(name, localPeer);
-            partitionManager.getPartition(name).exchange(request, inactiveTime);
+            EvacuateIMToPM request = new EvacuateIMToPM(id, localPeer);
+            partitionManager.getPartition(id).exchange(request, inactiveTime);
         } catch (MessageExchangeException e) {
             log.info("See nested", e);
         } catch (PartitionFacadeException e) {
@@ -106,38 +106,37 @@ public class SimpleStateManager implements StateManager, StateManagerMessageList
     }
 
     public void onInsertIMToPM(Envelope envelope, InsertIMToPM request) {
-        partitionManager.getPartition(request.getKey()).onMessage(envelope, request);
+        partitionManager.getPartition(request.getId()).onMessage(envelope, request);
     }
 
     public void onDeleteIMToPM(Envelope envelope, DeleteIMToPM request) {
-        partitionManager.getPartition(request.getKey()).onMessage(envelope, request);
+        partitionManager.getPartition(request.getId()).onMessage(envelope, request);
     }
 
     public void onEvacuateIMToPM(Envelope envelope, EvacuateIMToPM request) {
-        partitionManager.getPartition(request.getKey()).onMessage(envelope, request);
+        partitionManager.getPartition(request.getId()).onMessage(envelope, request);
     }
 
     public void onMoveIMToPM(Envelope envelope, MoveIMToPM request) {
-        partitionManager.getPartition(request.getKey()).onMessage(envelope, request);
+        partitionManager.getPartition(request.getId()).onMessage(envelope, request);
     }
 
     public boolean offerEmigrant(Motable emotable, ReplicaInfo replicaInfo) {
-
-        String key = emotable.getName();
-        Partition partition = partitionManager.getPartition(key);
+        Object id = emotable.getId();
+        Partition partition = partitionManager.getPartition(id);
         ReleaseEntryRequest pojo = new ReleaseEntryRequest(emotable, localPeer, replicaInfo);
 
         Envelope response = null;
         try {
             response = partition.exchange(pojo, inactiveTime);
         } catch (Exception e) {
-            log.error("no acknowledgement within timeframe (" + inactiveTime + " millis): " + key, e);
+            log.error("no acknowledgement within timeframe (" + inactiveTime + " millis): " + id, e);
             return false;
         }
         ReleaseEntryResponse releaseResponse = (ReleaseEntryResponse) response.getPayload();
         if (log.isTraceEnabled()) {
             log.trace("received acknowledgement (" + (releaseResponse.isSuccess() ? "good" : "bad")
-                    + ") within timeframe (" + inactiveTime + " millis): " + key);
+                    + ") within timeframe (" + inactiveTime + " millis): " + id);
         }
         return releaseResponse.isSuccess();
     }

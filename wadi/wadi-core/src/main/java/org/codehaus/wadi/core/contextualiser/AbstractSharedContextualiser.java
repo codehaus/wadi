@@ -33,12 +33,12 @@ public abstract class AbstractSharedContextualiser extends AbstractMotingContext
         super(next);
     }
 
-    public boolean contextualise(Invocation invocation, String key, Immoter immoter, boolean exclusiveOnly)
+    public boolean contextualise(Invocation invocation, Object id, Immoter immoter, boolean exclusiveOnly)
             throws InvocationException {
         if (exclusiveOnly) {
             return false;
         }
-        return super.contextualise(invocation, key, immoter, exclusiveOnly);
+        return super.contextualise(invocation, id, immoter, exclusiveOnly);
     }
     
     public void promoteToExclusive(Immoter immoter) {
@@ -51,8 +51,8 @@ public abstract class AbstractSharedContextualiser extends AbstractMotingContext
         return getImmoter();
     }
     
-    public Immoter getDemoter(String name, Motable motable) {
-        return next.getDemoter(name, motable);
+    public Immoter getDemoter(Object id, Motable motable) {
+        return next.getDemoter(id, motable);
     }
 
     public Set getSessionNames() {

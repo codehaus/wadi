@@ -134,7 +134,7 @@ public class LocalPartitionMoveIMToPMActionTest extends AbstractLocalPartitionAc
 
             public boolean passes(Object arg0) {
                 MovePMToSM msg = (MovePMToSM) arg0;
-                if (!msg.getKey().equals(key)) {
+                if (!msg.getId().equals(key)) {
                     return false;
                 } else if (msg.getIMPeer() != peer2) {
                     return false;

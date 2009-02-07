@@ -29,7 +29,7 @@ public class TestAbstractBestEffortEvicterTest extends RMockTestCase {
         };
 
         beginSection(s.ordered("Demote"));
-        idToEvictable.getNames();
+        idToEvictable.getIds();
         String id = "id";
         modify().returnValue(Collections.singleton(id));
 
@@ -57,7 +57,7 @@ public class TestAbstractBestEffortEvicterTest extends RMockTestCase {
         };
 
         beginSection(s.ordered("Expire"));
-        idToEvictable.getNames();
+        idToEvictable.getIds();
         String id = "id";
         modify().returnValue(Collections.singleton(id));
 
@@ -78,7 +78,7 @@ public class TestAbstractBestEffortEvicterTest extends RMockTestCase {
         };
 
         beginSection(s.ordered("Do nothing"));
-        idToEvictable.getNames();
+        idToEvictable.getIds();
         String id = "id";
         modify().returnValue(Collections.singleton(id));
 
