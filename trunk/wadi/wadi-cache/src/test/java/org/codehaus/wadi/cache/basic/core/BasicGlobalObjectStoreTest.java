@@ -54,7 +54,7 @@ public class BasicGlobalObjectStoreTest extends RMockTestCase {
         entry = (CacheEntry) mock(CacheEntry.class);
         store = new BasicGlobalObjectStore(accessListener, manager, streamer) {
             @Override
-            protected CacheEntry newCacheEntry(String key) {
+            protected CacheEntry newCacheEntry(Object key) {
                 return entry;
             }
         };
@@ -72,7 +72,7 @@ public class BasicGlobalObjectStoreTest extends RMockTestCase {
     }
 
     public void testCommit() throws Exception {
-        LinkedHashMap<String, CacheEntry> keyToEntry = new LinkedHashMap<String, CacheEntry>();
+        LinkedHashMap<Object, CacheEntry> keyToEntry = new LinkedHashMap<Object, CacheEntry>();
 
         CacheEntry entry2 = (CacheEntry) mock(CacheEntry.class);
         CacheEntry entry1 = (CacheEntry) mock(CacheEntry.class);
@@ -81,7 +81,7 @@ public class BasicGlobalObjectStoreTest extends RMockTestCase {
         
         final CommitPhase commitPhase = (CommitPhase) mock(CommitPhase.class);
         
-        commitPhase.execute(new TreeMap<String, CacheEntry>(keyToEntry));
+        commitPhase.execute(new TreeMap<Object, CacheEntry>(keyToEntry));
         
         entry2.releaseExclusiveLock();
         entry1.releaseExclusiveLock();
@@ -102,7 +102,7 @@ public class BasicGlobalObjectStoreTest extends RMockTestCase {
         
         startVerification();
         
-        store.rollback(Collections.singletonMap("key", entry));
+        store.rollback(Collections.singletonMap((Object) "key", entry));
     }
     
 }

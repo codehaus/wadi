@@ -33,7 +33,7 @@ import org.codehaus.wadi.cache.basic.entry.CacheEntry;
  */
 public class CheckConflictPhase implements CommitPhase {
 
-    public void execute(Map<String, CacheEntry> keyToEntry) throws TransactionException {
+    public void execute(Map<Object, CacheEntry> keyToEntry) throws TransactionException {
         for (CacheEntry cacheEntry : keyToEntry.values()) {
             if (cacheEntry.getState().isDirty()) {
                 ObjectInfoEntry objectInfoEntry = cacheEntry.getExclusiveObjectInfoEntry();

@@ -46,9 +46,9 @@ public class MergePhase implements CommitPhase {
         this.manager = manager;
     }
 
-    public void execute(Map<String, CacheEntry> keyToEntry) throws TransactionException {
-        for (Map.Entry<String, CacheEntry> entry : keyToEntry.entrySet()) {
-            String key = entry.getKey();
+    public void execute(Map<Object, CacheEntry> keyToEntry) throws TransactionException {
+        for (Map.Entry<Object, CacheEntry> entry : keyToEntry.entrySet()) {
+            Object key = entry.getKey();
             CacheEntry cacheEntry = entry.getValue();
             if (cacheEntry.getState() == CacheEntryState.UPDATED) {
                 ObjectInfoEntry objectInfoEntry = cacheEntry.getExclusiveObjectInfoEntry();
@@ -60,7 +60,7 @@ public class MergePhase implements CommitPhase {
         }
     }
 
-    protected void replicateState(String key) {
+    protected void replicateState(Object key) {
         try {
             manager.contextualise(new CacheInvocation(key, AcquisitionInfo.EXCLUSIVE_LOCAL_INFO));
         } catch (InvocationException e) {

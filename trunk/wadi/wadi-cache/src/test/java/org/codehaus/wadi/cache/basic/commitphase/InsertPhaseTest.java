@@ -84,7 +84,7 @@ public class InsertPhaseTest extends RMockTestCase {
         
         startVerification();
         
-        phase.execute(Collections.singletonMap("key", entry));
+        phase.execute(Collections.singletonMap((Object) "key", entry));
     }
     
     public void testExecuteDoesNotInsertUpdatedEntry() throws Exception {
@@ -100,7 +100,7 @@ public class InsertPhaseTest extends RMockTestCase {
 
         startVerification();
         
-        phase.execute(Collections.singletonMap("key", entry));
+        phase.execute(Collections.singletonMap((Object) "key", entry));
     }
 
     private void recordState(CacheEntryState state) {

@@ -39,7 +39,7 @@ public interface Manager extends Lifecycle {
      */
     void init(ManagerConfig config);
 
-    Session createWithName(String name) throws SessionAlreadyExistException;
+    Session createWithName(Object name) throws SessionAlreadyExistException;
 
     /**
      * Create a new Session

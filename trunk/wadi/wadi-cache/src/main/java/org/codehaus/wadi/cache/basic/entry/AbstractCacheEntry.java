@@ -36,7 +36,7 @@ public abstract class AbstractCacheEntry implements CacheEntry {
     protected final Manager manager;
     protected final AccessListener accessListener;
     protected final GlobalObjectStore globalObjectStore;
-    protected final String key;
+    protected final Object key;
     protected ObjectInfo objectInfo;
     protected CacheEntryState state;
     protected ObjectInfoEntry exclusiveObjectInfoEntry;
@@ -44,7 +44,7 @@ public abstract class AbstractCacheEntry implements CacheEntry {
     public AbstractCacheEntry(Manager manager,
             AccessListener accessListener,
             GlobalObjectStore globalObjectStore,
-            String key,
+            Object key,
             CacheEntryState state) {
         if (null == manager) {
             throw new IllegalArgumentException("manager is required");
@@ -110,7 +110,7 @@ public abstract class AbstractCacheEntry implements CacheEntry {
         return exclusiveObjectInfoEntry;
     }
 
-    protected ObjectInfoEntry acquirePessimistic(String key, AcquisitionInfo acquisitionInfo) {
+    protected ObjectInfoEntry acquirePessimistic(Object key, AcquisitionInfo acquisitionInfo) {
         CacheInvocation invocation = new AcquireExclusiveLockInvocation(key, acquisitionInfo);
         ObjectInfoEntry objectInfoEntry = fetchObjectInfoEntry(invocation);
         

@@ -64,13 +64,13 @@ public class BasicGlobalObjectStore implements GlobalObjectStore {
         commitPhases = newCommitPhases();
     }
 
-    public CacheEntry acquire(String key, AcquisitionPolicy policy) {
+    public CacheEntry acquire(Object key, AcquisitionPolicy policy) {
         CacheEntry entry = newCacheEntry(key);
         return entry.acquire(policy);
     }
 
-    public void commit(Map<String, CacheEntry> keyToEntry) throws TimeoutException, OptimisticUpdateException {
-        keyToEntry = new TreeMap<String, CacheEntry>(keyToEntry);        
+    public void commit(Map<Object, CacheEntry> keyToEntry) throws TimeoutException, OptimisticUpdateException {
+        keyToEntry = new TreeMap<Object, CacheEntry>(keyToEntry);        
         try {
             for (CommitPhase commitPhase : commitPhases) {
                 commitPhase.execute(keyToEntry);
@@ -82,13 +82,13 @@ public class BasicGlobalObjectStore implements GlobalObjectStore {
         }
     }
 
-    public void rollback(Map<String, CacheEntry> keyToEntry) {
+    public void rollback(Map<Object, CacheEntry> keyToEntry) {
         for (CacheEntry cacheEntry : keyToEntry.values()) {
             cacheEntry.releaseExclusiveLock();
         }
     }
 
-    protected CacheEntry newCacheEntry(String key) {
+    protected CacheEntry newCacheEntry(Object key) {
         return new ReadOnlyCacheEntry(manager, accessListener, this, streamer, key);
     }
 

@@ -72,7 +72,7 @@ public class ClusteredManager extends DistributableManager {
         stateManager.remove(session.getId());
     }
 
-    protected boolean validateSessionName(String name) {
+    protected boolean validateSessionName(Object name) {
         return stateManager.insert(name);
     }
     

@@ -40,7 +40,7 @@ public class ReadOnlyCacheEntry extends AbstractCacheEntry {
             AccessListener accessListener,
             GlobalObjectStore globalObjectStore,
             Streamer streamer,
-            String key) {
+            Object key) {
         super(manager, accessListener, globalObjectStore, key, CacheEntryState.READ_ONLY);
         if (null == streamer) {
             throw new IllegalArgumentException("streamer is required");
@@ -96,7 +96,7 @@ public class ReadOnlyCacheEntry extends AbstractCacheEntry {
         return new PessimisticCacheEntry(this, objectInfo, exclusiveObjectInfoEntry);
     }
 
-    protected ObjectInfo acquireOptimistic(String key, AcquisitionInfo acquisitionInfo) {
+    protected ObjectInfo acquireOptimistic(Object key, AcquisitionInfo acquisitionInfo) {
         CacheInvocation invocation = new CacheInvocation(key, acquisitionInfo);
         ObjectInfoEntry objectInfoEntry = fetchObjectInfoEntry(invocation);
         
@@ -105,7 +105,7 @@ public class ReadOnlyCacheEntry extends AbstractCacheEntry {
         return objectInfoEntry.getObjectInfo();
     }
 
-    protected ObjectInfo acquireReadOnly(String key, AcquisitionInfo acquisitionInfo) {
+    protected ObjectInfo acquireReadOnly(Object key, AcquisitionInfo acquisitionInfo) {
         CacheInvocation invocation = new CacheInvocation(key, acquisitionInfo);
         ObjectInfoEntry objectInfoEntry = fetchObjectInfoEntry(invocation);
         

@@ -32,13 +32,13 @@ import org.codehaus.wadi.cache.basic.entry.CacheEntryException;
  * @version $Rev:$ $Date:$
  */
 public interface InTxCache {
-    CacheEntry getRequiredEntry(String key) throws CacheEntryException;
+    CacheEntry getRequiredEntry(Object key) throws CacheEntryException;
 
-    CacheEntry getEntry(String key) throws CacheEntryException;
+    CacheEntry getEntry(Object key) throws CacheEntryException;
 
-    void addEntry(String key, CacheEntry entry) throws CacheEntryException;
+    void addEntry(Object key, CacheEntry entry) throws CacheEntryException;
 
-    void updateEntry(String key, CacheEntry entry) throws CacheEntryException;
+    void updateEntry(Object key, CacheEntry entry) throws CacheEntryException;
 
     void commit() throws TimeoutException, OptimisticUpdateException;
     

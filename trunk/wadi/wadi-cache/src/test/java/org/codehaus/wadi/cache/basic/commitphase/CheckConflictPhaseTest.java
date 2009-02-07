@@ -72,7 +72,7 @@ public class CheckConflictPhaseTest extends RMockTestCase {
         startVerification();
 
         try {
-            phase.execute(Collections.singletonMap("key", entry));
+            phase.execute(Collections.singletonMap((Object) "key", entry));
             fail();
         } catch (OptimisticUpdateException e) {
         }
@@ -83,7 +83,7 @@ public class CheckConflictPhaseTest extends RMockTestCase {
 
         startVerification();
         
-        phase.execute(Collections.singletonMap("key", entry));
+        phase.execute(Collections.singletonMap((Object) "key", entry));
     }
 
     private void executeChecksConflict(CacheEntryState state) {
@@ -93,7 +93,7 @@ public class CheckConflictPhaseTest extends RMockTestCase {
 
         startVerification();
         
-        phase.execute(Collections.singletonMap("key", entry));
+        phase.execute(Collections.singletonMap((Object) "key", entry));
     }
 
     private void recordExclusiveObjectInfoEntryAndObjectInfo(int exclusiveVersion, int newVersion) {

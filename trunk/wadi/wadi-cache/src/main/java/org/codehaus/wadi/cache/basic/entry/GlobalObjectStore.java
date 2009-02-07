@@ -31,9 +31,9 @@ import org.codehaus.wadi.cache.basic.TimeoutException;
  * @version $Rev:$ $Date:$
  */
 public interface GlobalObjectStore {
-    CacheEntry acquire(String key, AcquisitionPolicy policy);
+    CacheEntry acquire(Object key, AcquisitionPolicy policy);
     
-    void commit(Map<String, CacheEntry> keyToEntry) throws TimeoutException, OptimisticUpdateException;
+    void commit(Map<Object, CacheEntry> keyToEntry) throws TimeoutException, OptimisticUpdateException;
 
-    void rollback(Map<String, CacheEntry> keyToEntry);
+    void rollback(Map<Object, CacheEntry> keyToEntry);
 }

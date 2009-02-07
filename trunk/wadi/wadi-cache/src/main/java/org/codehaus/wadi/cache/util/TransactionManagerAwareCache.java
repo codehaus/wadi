@@ -54,22 +54,22 @@ public class TransactionManagerAwareCache implements Cache {
         this.tm = tm;
     }
     
-    public void delete(Collection<String> keys, UpdateAcquisitionPolicy policy) throws CacheException {
+    public void delete(Collection<Object> keys, UpdateAcquisitionPolicy policy) throws CacheException {
         synchronizeWithTransactionManagerTx();
         delegate.delete(keys, policy);
     }
 
-    public void delete(String key, UpdateAcquisitionPolicy policy) throws CacheException {
+    public void delete(Object key, UpdateAcquisitionPolicy policy) throws CacheException {
         synchronizeWithTransactionManagerTx();
         delegate.delete(key, policy);
     }
 
-    public Map<String, Object> get(Collection<String> keys, AcquisitionPolicy policy) throws CacheException {
+    public Map<Object, Object> get(Collection<Object> keys, AcquisitionPolicy policy) throws CacheException {
         synchronizeWithTransactionManagerTx();
         return delegate.get(keys, policy);
     }
 
-    public Object get(String key, AcquisitionPolicy policy) throws CacheException {
+    public Object get(Object key, AcquisitionPolicy policy) throws CacheException {
         synchronizeWithTransactionManagerTx();
         return delegate.get(key, policy);
     }
@@ -79,32 +79,32 @@ public class TransactionManagerAwareCache implements Cache {
         return delegate.getCacheTransaction();
     }
 
-    public void insert(Map<String, Object> keyToValue, PutPolicy policy) throws CacheException {
+    public void insert(Map<Object, Object> keyToValue, PutPolicy policy) throws CacheException {
         synchronizeWithTransactionManagerTx();
         delegate.insert(keyToValue, policy);
     }
 
-    public void insert(String key, Object value, PutPolicy policy) throws CacheException {
+    public void insert(Object key, Object value, PutPolicy policy) throws CacheException {
         synchronizeWithTransactionManagerTx();
         delegate.insert(key, value, policy);
     }
 
-    public void update(Collection<String> keys) throws CacheException {
+    public void update(Collection<Object> keys) throws CacheException {
         synchronizeWithTransactionManagerTx();
         delegate.update(keys);
     }
 
-    public void update(Map<String, Object> keyToValues) throws CacheException {
+    public void update(Map<Object, Object> keyToValues) throws CacheException {
         synchronizeWithTransactionManagerTx();
         delegate.update(keyToValues);
     }
 
-    public void update(String key, Object value) throws CacheException {
+    public void update(Object key, Object value) throws CacheException {
         synchronizeWithTransactionManagerTx();
         delegate.update(key, value);
     }
 
-    public void update(String key) throws CacheException {
+    public void update(Object key) throws CacheException {
         synchronizeWithTransactionManagerTx();
         delegate.update(key);
     }
