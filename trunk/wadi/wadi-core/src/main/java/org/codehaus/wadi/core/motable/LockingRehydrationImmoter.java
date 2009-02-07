@@ -39,7 +39,7 @@ public class LockingRehydrationImmoter extends RehydrationImmoter {
         this.lockHandler = lockHandler;
     }
 
-    public boolean contextualise(Invocation invocation, String id, Motable immotable) throws InvocationException {
+    public boolean contextualise(Invocation invocation, Object id, Motable immotable) throws InvocationException {
         try {
             return super.contextualise(invocation, id, immotable);
         } finally {

@@ -24,19 +24,19 @@ import java.io.Serializable;
  * @version $Revision: 1924 $
  */
 public abstract class SessionRequestImpl implements SessionRequestMessage, Serializable {
-    protected final Object _key;
+    protected final Object id;
     private int version;
     private int numberOfExpectedMerge;
 
-    public SessionRequestImpl(Object key) {
-        if (null == key) {
+    public SessionRequestImpl(Object id) {
+        if (null == id) {
             throw new IllegalArgumentException("key is required");
         }
-        _key = key;
+        this.id = id;
     }
 
-    public Object getKey() {
-        return _key;
+    public Object getId() {
+        return id;
     }
 
     public void setVersion(int version) {

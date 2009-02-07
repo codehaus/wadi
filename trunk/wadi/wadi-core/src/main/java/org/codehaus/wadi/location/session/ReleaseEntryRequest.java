@@ -61,8 +61,8 @@ public class ReleaseEntryRequest implements SessionRequestMessage, Serializable 
         return replicaInfo;
     }
 
-    public Object getKey() {
-        return motable.getName();
+    public Object getId() {
+        return motable.getId();
     }
 
     public int getVersion() {
@@ -86,7 +86,7 @@ public class ReleaseEntryRequest implements SessionRequestMessage, Serializable 
     }
     
     public String toString() {
-        return "<ReleaseEntryRequest: " + motable.getName() + ">";
+        return "<ReleaseEntryRequest: " + motable.getId() + ">";
     }
 
 }

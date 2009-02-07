@@ -61,7 +61,7 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
         return new MemoryEmoter(map);
     }
 
-    protected boolean handleLocally(Invocation invocation, String id, Motable motable) throws InvocationException {
+    protected boolean handleLocally(Invocation invocation, Object id, Motable motable) throws InvocationException {
         motable.setLastAccessedTime(System.currentTimeMillis());
         invocation.setSession((Session) motable); 
         if (invocation.isProxiedInvocation()) {
@@ -103,7 +103,7 @@ public class MemoryContextualiser extends AbstractExclusiveContextualiser {
             return success;
         }
         
-        public boolean contextualise(Invocation invocation, String id, Motable immotable)
+        public boolean contextualise(Invocation invocation, Object id, Motable immotable)
                 throws InvocationException {
             return handleLocally(invocation, id, immotable);
         }

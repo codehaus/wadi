@@ -27,8 +27,8 @@ import java.io.Serializable;
  */
 public class DeleteIMToPM extends SessionRequestImpl implements Serializable {
 
-    public DeleteIMToPM(String name) {
-        super(name);
+    public DeleteIMToPM(Object id) {
+        super(id);
     }
 
     public SessionResponseMessage newResponseFailure() {
@@ -36,7 +36,7 @@ public class DeleteIMToPM extends SessionRequestImpl implements Serializable {
     }
 
     public String toString() {
-    	return "<DeleteIMToPM:"+_key+">";
+    	return "<DeleteIMToPM:"+id+">";
     }
     
 }

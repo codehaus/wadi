@@ -118,10 +118,10 @@ public class ClusteredStateSessionTest extends RMockTestCase {
         String key = "key";
         session.addState(key, node);
         
-        byte[] state = clientStateHandler.extractFullState(session.getName(), session);
+        byte[] state = clientStateHandler.extractFullState(session.getId(), session);
         
         ClusteredStateSession restoredSession = 
-            (ClusteredStateSession) serverStateHandler.restoreFromFullState(session.getName(), state);
+            (ClusteredStateSession) serverStateHandler.restoreFromFullState(session.getId(), state);
         assertSession(node, key, restoredSession);
     }
 
@@ -133,10 +133,10 @@ public class ClusteredStateSessionTest extends RMockTestCase {
         String key = "key";
         session.addState(key, node);
         
-        byte[] state = clientStateHandler.extractFullState(session.getName(), session);
+        byte[] state = clientStateHandler.extractFullState(session.getId(), session);
         clientStateHandler.resetObjectState(session);
         ClusteredStateSession restoredSession = 
-            (ClusteredStateSession) serverStateHandler.restoreFromFullState(session.getName(), state);
+            (ClusteredStateSession) serverStateHandler.restoreFromFullState(session.getId(), state);
         
         session.setLastAccessedTime(10);
         session.setMaxInactiveInterval(20);
@@ -144,8 +144,8 @@ public class ClusteredStateSessionTest extends RMockTestCase {
         node.value = 2;
         node.child.value = 3;
 
-        state = clientStateHandler.extractUpdatedState(session.getName(), session);
-        restoredSession = (ClusteredStateSession) serverStateHandler.restoreFromUpdatedState(session.getName(), state);
+        state = clientStateHandler.extractUpdatedState(session.getId(), session);
+        restoredSession = (ClusteredStateSession) serverStateHandler.restoreFromUpdatedState(session.getId(), state);
 
         assertSession(node, key, restoredSession);
     }

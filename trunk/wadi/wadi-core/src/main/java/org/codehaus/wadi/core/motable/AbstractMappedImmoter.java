@@ -34,7 +34,7 @@ public abstract class AbstractMappedImmoter extends AbstractImmoter {
     }
 
     public boolean immote(Motable emotable, Motable immotable) {
-        map.put(emotable.getName(), immotable);
+        map.put(emotable.getId(), immotable);
         return true;
     }
 

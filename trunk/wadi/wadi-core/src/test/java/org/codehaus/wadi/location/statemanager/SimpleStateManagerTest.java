@@ -58,7 +58,7 @@ public class SimpleStateManagerTest extends RMockTestCase {
     
     public void testOfferEmigrant() throws Exception {
         Motable emotable = (Motable) mock(Motable.class);
-        emotable.getName();
+        emotable.getId();
         String key = "key";
         modify().returnValue(key);
         

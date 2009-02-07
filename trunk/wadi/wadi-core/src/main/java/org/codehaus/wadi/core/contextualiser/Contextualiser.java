@@ -54,23 +54,23 @@ public interface Contextualiser extends Lifecycle {
      * Contextualise the given Invocation. 
      * 
      * @param invocation the Invocation
-     * @param key the Session key
+     * @param id the Session key
      * @param immoter an Immoter that can be used to promote the Session when found
      * @param exclusiveOnly whether we should only look in exclusive stores, or descend to shared ones as well
      * @return whether or not the Invocation was contextualised.
      * @throws InvocationException
      */
-    public boolean contextualise(Invocation invocation, String key, Immoter immoter, boolean exclusiveOnly) throws InvocationException;
+    public boolean contextualise(Invocation invocation, Object id, Immoter immoter, boolean exclusiveOnly) throws InvocationException;
 
 	/**
 	 * Return an immoter to the first Contextualiser below us, which would be happy to accept this Motable -
      * in other words - would not evict() it.
 
-	 * @param name - uid of the Motable
+	 * @param id - uid of the Motable
 	 * @param motable - the Motable in question
 	 * @return - a Demoter - a delegate capable of arranging immotion into the correct Contextualiser
 	 */
-	Immoter getDemoter(String name, Motable motable);
+	Immoter getDemoter(Object id, Motable motable);
     
 	/**
      * Return an Immoter to the first SharedContextualiser below us.

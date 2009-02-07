@@ -51,10 +51,10 @@ public class SerialContextualiser extends AbstractDelegatingContextualiser {
     }
 
     public boolean contextualise(Invocation invocation,
-            String key,
+            Object id,
             Immoter immoter,
             boolean exclusiveOnly) throws InvocationException {
-        Lock invocationLock = collapser.getLock(key);
+        Lock invocationLock = collapser.getLock(id);
 
         // the promotion begins here. allocate a lock and continue...
         try {
@@ -63,23 +63,23 @@ public class SerialContextualiser extends AbstractDelegatingContextualiser {
             Thread.currentThread().interrupt();
             throw new InvocationException(e);
         } catch (Exception e) {
-            throw new InvocationException("Could not acquire serialization lock for session " + key, e);
+            throw new InvocationException("Could not acquire serialization lock for session " + id, e);
         }
 
         try {
             // whilst we were waiting for the motionLock, the session in question may have been moved back into memory 
             // somehow. before we proceed, confirm that this has not happened.
-            Motable context = lockHandler.acquire(invocation, key);
+            Motable context = lockHandler.acquire(invocation, id);
             if (null != context) {
                 try {
-                    return immoter.contextualise(invocation, key, context);
+                    return immoter.contextualise(invocation, id, context);
                 } finally {
                     lockHandler.release(invocation, context);
                 }
             }
 
             // session was not promoted whilst we were waiting for motionLock. Continue down Contextualiser stack.
-            return next.contextualise(invocation, key, immoter, exclusiveOnly);
+            return next.contextualise(invocation, id, immoter, exclusiveOnly);
         } finally {
             invocationLock.unlock();
         }

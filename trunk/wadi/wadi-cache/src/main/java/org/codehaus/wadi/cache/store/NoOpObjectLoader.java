@@ -32,11 +32,11 @@ public class NoOpObjectLoader implements ObjectLoader {
 	private NoOpObjectLoader() {
 	}
 	
-	public Object load(String key) {
+	public Object load(Object id) {
 		return null;
 	}
 
-	public Map<String, Object> load(Set<String> keys) {
+	public Map<Object, Object> load(Set<Object> ids) {
 		return null;
 	}
 

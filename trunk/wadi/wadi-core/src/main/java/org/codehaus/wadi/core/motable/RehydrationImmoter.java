@@ -33,7 +33,7 @@ public class RehydrationImmoter implements Immoter {
         this.delegate = delegate;
     }
 
-    public boolean contextualise(Invocation invocation, String id, Motable immotable) throws InvocationException {
+    public boolean contextualise(Invocation invocation, Object id, Motable immotable) throws InvocationException {
         return delegate.contextualise(invocation, id, immotable);
     }
 
@@ -47,7 +47,7 @@ public class RehydrationImmoter implements Immoter {
             immotable.rehydrate(emotable.getCreationTime(),
                     emotable.getLastAccessedTime(),
                     emotable.getMaxInactiveInterval(),
-                    emotable.getName(),
+                    emotable.getId(),
                     emotable.getBodyAsByteArray());
         } catch (Exception e) {
             throw new WADIRuntimeException(e);

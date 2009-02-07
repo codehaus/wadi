@@ -27,7 +27,7 @@ import org.codehaus.wadi.core.session.StandardAttributesMemento;
  */
 @ClusteredState(trackingLevel=TrackingLevel.METHOD)
 public class ClusteredStateSessionMemento extends DistributableSessionMemento {
-    private String name;
+    private Object id;
     private long creationTime;
     private long lastAccessedTime;
     private int maxInactiveInterval;
@@ -35,9 +35,9 @@ public class ClusteredStateSessionMemento extends DistributableSessionMemento {
     
     @TrackedMethod
     @Override
-    public void setName(String name) {
-        this.name = name;
-        super.setName(name);
+    public void setId(Object id) {
+        this.id = id;
+        super.setId(id);
     }
 
     @TrackedMethod
@@ -70,7 +70,7 @@ public class ClusteredStateSessionMemento extends DistributableSessionMemento {
     
     public void onRestore() {
         setNewSession(false);
-        super.setName(name);
+        super.setId(id);
         super.setCreationTime(creationTime);
         super.setLastAccessedTime(lastAccessedTime);
         super.setMaxInactiveInterval(maxInactiveInterval);

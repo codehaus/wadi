@@ -26,7 +26,7 @@ import org.codehaus.wadi.core.motable.Motable;
  * @version $Rev:$ $Date:$
  */
 public interface ExclusiveContextualiserLockHandler {
-    Motable acquire(Invocation invocation, String id);
+    Motable acquire(Invocation invocation, Object id);
     
     void release(Invocation invocation, Motable motable);
 }

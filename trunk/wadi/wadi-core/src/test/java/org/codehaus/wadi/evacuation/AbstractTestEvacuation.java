@@ -12,20 +12,20 @@ public abstract class AbstractTestEvacuation extends AbstractTwoNodesTest {
     public void testEvacuation() throws Exception {
         Session session = red.getManager().create(null);
         session.onEndProcessing();
-        String name = session.getName();
+        Object id = session.getId();
 
-        stopRedAndInvokeAgainstGreen(greenSSDispatcher, red, green, name);
-        startRedAndInvokeAgainstRed(redSSDispatcher, greenD, red, name);
+        stopRedAndInvokeAgainstGreen(greenSSDispatcher, red, green, id);
+        startRedAndInvokeAgainstRed(redSSDispatcher, greenD, red, id);
 	}
 
-    private void startRedAndInvokeAgainstRed(Dispatcher redD, Dispatcher greenD, StackContext red, String id) throws Exception {
+    private void startRedAndInvokeAgainstRed(Dispatcher redD, Dispatcher greenD, StackContext red, Object id) throws Exception {
         red.getServiceSpace().start();
         TestUtil.waitForDispatcherSeeOthers(new Dispatcher[] { redD, greenD }, 5000);
         boolean success = red.getManager().contextualise(new ThrowExceptionIfNoSessionInvocation(id, 2000));
         assertTrue(success);
     }
 
-    private void stopRedAndInvokeAgainstGreen(Dispatcher greenD, StackContext red, StackContext green, String id) throws Exception {
+    private void stopRedAndInvokeAgainstGreen(Dispatcher greenD, StackContext red, StackContext green, Object id) throws Exception {
         red.getServiceSpace().stop();
         TestUtil.waitForDispatcherSeeOthers(new Dispatcher[] { greenD }, 5000);
         boolean success = green.getManager().contextualise(new ThrowExceptionIfNoSessionInvocation(id, 2000));

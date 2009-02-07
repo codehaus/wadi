@@ -29,12 +29,12 @@ import java.util.Set;
  */
 public abstract class ObjectLoaderSupport implements ObjectLoader {
 
-	public Map<String, Object> load(Set<String> keys) {
-		Map<String, Object> result = new HashMap<String, Object>();
-		for (String key : keys) {
-			Object object = load(key);
+	public Map<Object, Object> load(Set<Object> ids) {
+		Map<Object, Object> result = new HashMap<Object, Object>();
+		for (Object id : ids) {
+			Object object = load(id);
 			if (null != object) {
-				result.put(key, object);
+				result.put(id, object);
 			}
 		}
 		return result;

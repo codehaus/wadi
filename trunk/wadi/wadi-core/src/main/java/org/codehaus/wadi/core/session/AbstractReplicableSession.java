@@ -43,15 +43,15 @@ public abstract class AbstractReplicableSession extends DistributableSession {
 
     public synchronized void onEndProcessing() {
         if (getAbstractMotableMemento().isNewSession()) {
-            replicationManager.create(getName(), this);
+            replicationManager.create(getId(), this);
             getAbstractMotableMemento().setNewSession(false);
         } else if (isDirty()) {
-            replicationManager.update(getName(), this);
+            replicationManager.update(getId(), this);
         }
     }
 
     public synchronized void destroy() throws Exception {
-        replicationManager.destroy(getName());
+        replicationManager.destroy(getId());
         super.destroy();
     }
 

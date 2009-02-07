@@ -26,15 +26,15 @@ import org.codehaus.wadi.core.eviction.SimpleEvictableMemento;
  * @version $Revision: 1538 $
  */
 public class AbstractMotableMemento extends SimpleEvictableMemento {
-    protected String name;
+    protected Object id;
     protected boolean newSession = true;
     
-    public String getName() {
-        return name;
+    public Object getId() {
+        return id;
     }
     
-    public void setName(String name) {
-        this.name = name;
+    public void setId(Object id) {
+        this.id = id;
     }
     
     public boolean isNewSession() {
@@ -47,13 +47,13 @@ public class AbstractMotableMemento extends SimpleEvictableMemento {
 
     public synchronized void readExternal(ObjectInput oi) throws IOException, ClassNotFoundException {
         super.readExternal(oi);
-        name = oi.readUTF();
+        id = oi.readObject();
         newSession = false;
     }
 
     public synchronized void writeExternal(ObjectOutput oo) throws IOException {
         super.writeExternal(oo);
-        oo.writeUTF(name);
+        oo.writeObject(id);
     }
 
 }

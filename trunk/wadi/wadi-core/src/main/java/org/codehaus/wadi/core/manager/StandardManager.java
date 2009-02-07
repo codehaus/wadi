@@ -112,7 +112,7 @@ public class StandardManager implements Lifecycle, Manager {
         if (log.isDebugEnabled()) {
             log.debug("Destroy [" + session + "]");
         }
-        motableMap.remove(session.getName());
+        motableMap.remove(session.getId());
         sessionMonitor.notifySessionDestruction(session);
         onSessionDestruction(session);
     }
@@ -135,8 +135,8 @@ public class StandardManager implements Lifecycle, Manager {
     }
 
     public boolean contextualise(Invocation invocation) throws InvocationException {
-        String key = invocation.getSessionKey();
-        if (null == key) {
+        Object id = invocation.getSessionId();
+        if (null == id) {
             return processStateless(invocation);
         } else {
             return processStateful(invocation);
@@ -144,14 +144,14 @@ public class StandardManager implements Lifecycle, Manager {
     }
 
     protected boolean processStateful(Invocation invocation) throws InvocationException {
-        String key = invocation.getSessionKey();
+        Object id = invocation.getSessionId();
         // already associated with a session. strip off any routing info.
-        String name = router.strip(key);
-        boolean contextualised = contextualiser.contextualise(invocation, name, null, false);
+        id = router.strip(id);
+        boolean contextualised = contextualiser.contextualise(invocation, id, null, false);
         if (!contextualised) {
-            log.debug("Could not acquire session [" + name + "]");
+            log.debug("Could not acquire session [" + id + "]");
             if (invocation.isErrorIfSessionNotAcquired()) {
-                invocation.sendError(503, "Session [" + name + "] is not known");
+                invocation.sendError(503, "Session [" + id + "] is not known");
             } else {
                 contextualised = processStateless(invocation);
             }

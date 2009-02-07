@@ -71,12 +71,12 @@ public class StatelessContextualiser extends AbstractDelegatingContextualiser {
 		_uriFlag=uriFlag;
 	}
 
-	public boolean contextualise(Invocation invocation, String key, Immoter immoter, boolean exclusiveOnly) throws InvocationException {
+	public boolean contextualise(Invocation invocation, Object id, Immoter immoter, boolean exclusiveOnly) throws InvocationException {
 		WebInvocation webInvocation = (WebInvocation) invocation;
 		HttpServletRequest hreq = webInvocation.getHreq();
 		if (hreq==null || isStateful(hreq)) {
 			// we cannot optimise...
-			return next.contextualise(invocation, key, immoter, exclusiveOnly);
+			return next.contextualise(invocation, id, immoter, exclusiveOnly);
 		} else {
 			// wrap the request so that session is inaccessible and process here...
             HttpInvocationContext invocationContext = new BasicHttpInvocationContext(invocation);

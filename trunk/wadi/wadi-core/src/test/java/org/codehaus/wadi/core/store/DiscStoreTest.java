@@ -62,7 +62,7 @@ public class DiscStoreTest extends RMockTestCase {
         edm0.destroy();
         assertTrue(!file.exists());
 
-        assertEquals(name, sm1.getName());
+        assertEquals(name, sm1.getId());
         assertEquals(creationTime, sm1.getCreationTime());
         assertEquals(lastAccessedTime, sm1.getLastAccessedTime());
         assertEquals(maxInactiveInterval, sm1.getMaxInactiveInterval());

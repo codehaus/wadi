@@ -52,7 +52,7 @@ public class ReplicaAwareContextualiserTest extends RMockTestCase {
         emotable.getMaxInactiveInterval();
         int maxInactiveInterval = 3;
         modify().returnValue(maxInactiveInterval);
-        emotable.getName();
+        emotable.getId();
         String name = "name";
         modify().returnValue(name);
         emotable.getBodyAsByteArray();
@@ -70,7 +70,7 @@ public class ReplicaAwareContextualiserTest extends RMockTestCase {
 
     public void testGet() throws Exception {
         Motable motable = (Motable) mock(Motable.class);
-        motable.getName();
+        motable.getId();
         String key = "id";
         modify().returnValue(key);
         manager.retrieveReplica(key);

@@ -27,8 +27,8 @@ import org.codehaus.wadi.group.Peer;
 public class EvacuateIMToPM extends SessionRequestImpl implements Serializable {
     private final Peer peer;
     
-    public EvacuateIMToPM(String name, Peer peer) {
-        super(name);
+    public EvacuateIMToPM(Object id, Peer peer) {
+        super(id);
         if (null == peer) {
             throw new IllegalArgumentException("peer is required");
         }
@@ -44,7 +44,7 @@ public class EvacuateIMToPM extends SessionRequestImpl implements Serializable {
     }
 
     public String toString() {
-        return "<EvacuateIMToPM: " + _key + ">";
+        return "<EvacuateIMToPM: " + id + ">";
     }
 
 }

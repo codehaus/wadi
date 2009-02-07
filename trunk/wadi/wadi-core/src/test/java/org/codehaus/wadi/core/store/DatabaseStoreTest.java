@@ -164,7 +164,7 @@ public class DatabaseStoreTest extends RMockTestCase {
         Motable motable = (Motable) mock(Motable.class);
         
         beginSection(s.ordered("Load body"));
-        motable.getName();
+        motable.getId();
         String name = "name";
         modify().returnValue(name);
 
@@ -195,7 +195,7 @@ public class DatabaseStoreTest extends RMockTestCase {
         Connection connection = dataSource.getConnection();
         PreparedStatement ps = connection.prepareStatement("INSERT INTO TABLE_NAME (name, creation_time, last_accessed_time, max_inactive_interval, body) VALUES (?, ?, ?, ?, ?)");
         
-        motable.getName();
+        motable.getId();
         modify().returnValue("name");
         ps.setString(1, "name");
         
@@ -235,7 +235,7 @@ public class DatabaseStoreTest extends RMockTestCase {
         Connection connection = dataSource.getConnection();
         PreparedStatement ps = connection.prepareStatement("DELETE FROM TABLE_NAME WHERE name = ?");
         
-        motable.getName();
+        motable.getId();
         modify().returnValue("name");
         ps.setString(1, "name");
 

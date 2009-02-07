@@ -62,7 +62,7 @@ public class ObjectWriterContextualiserTest extends RMockTestCase {
     public void testImmoterImmoteWritesObjectAndNotifiesStateAndReplicationManagers() throws Exception {
         Session session = (Session) mock(Session.class);
         String key = "key";
-        session.getName();
+        session.getId();
         modify().returnValue(key);
         
         SessionUtil.getObjectInfoEntry(session);

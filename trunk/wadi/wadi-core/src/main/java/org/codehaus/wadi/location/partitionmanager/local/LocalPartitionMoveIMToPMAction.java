@@ -43,7 +43,7 @@ public class LocalPartitionMoveIMToPMAction extends AbstractLocalPartitionAction
     }
 
     public void onMessage(Envelope message, MoveIMToPM request) {
-        Object key = request.getKey();
+        Object key = request.getId();
         try {
             Location location;
             synchronized (nameToLocation) {

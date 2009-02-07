@@ -76,13 +76,13 @@ public class ClusterContextualiser extends AbstractSharedContextualiser {
         return emoter;
     }
 
-    public Immoter getDemoter(String name, Motable motable) {
+    public Immoter getDemoter(Object id, Motable motable) {
         // how many partitions are we responsible for ?
         if (partitionManager.getBalancingInfo().getNumberOfLocalPartitionInfos() == 0) {
             // evacuate sessions to their respective partition masters...
             return getImmoter();
         } else {
-            return next.getDemoter(name, motable);
+            return next.getDemoter(id, motable);
         }
     }
 
@@ -97,12 +97,12 @@ public class ClusterContextualiser extends AbstractSharedContextualiser {
         }
     }
 
-    protected boolean handle(Invocation invocation, String id, Immoter immoter, boolean exclusiveOnly)
+    protected boolean handle(Invocation invocation, Object id, Immoter immoter, boolean exclusiveOnly)
             throws InvocationException {
         return relocater.relocate(invocation, id, immoter, shuttingDown.get());
     }
 
-    protected Motable get(String id, boolean exclusiveOnly) {
+    protected Motable get(Object id, boolean exclusiveOnly) {
         throw new UnsupportedOperationException();
     }
 
@@ -116,11 +116,11 @@ public class ClusterContextualiser extends AbstractSharedContextualiser {
         }
 
         public boolean immote(Motable emotable, Motable immotable) {
-            ReplicaInfo replicaInfo = replicationManager.releaseReplicaInfo(immotable.getName(), null);
+            ReplicaInfo replicaInfo = replicationManager.releaseReplicaInfo(immotable.getId(), null);
             return stateManager.offerEmigrant(immotable, replicaInfo);
         }
 
-        public boolean contextualise(Invocation invocation, String id, Motable immotable)
+        public boolean contextualise(Invocation invocation, Object id, Motable immotable)
                 throws InvocationException {
             return false;
         }

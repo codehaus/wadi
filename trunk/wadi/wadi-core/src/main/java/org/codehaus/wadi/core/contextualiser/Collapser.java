@@ -25,5 +25,5 @@ import java.util.concurrent.locks.Lock;
  * @version $Revision$
  */
 public interface Collapser {
-	Lock getLock(String id);
+	Lock getLock(Object id);
 }

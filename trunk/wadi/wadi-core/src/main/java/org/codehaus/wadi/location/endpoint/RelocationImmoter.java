@@ -74,7 +74,7 @@ class RelocationImmoter implements Immoter {
         return true;
     }
     
-    public boolean contextualise(Invocation invocation, String id, Motable immotable) throws InvocationException {
+    public boolean contextualise(Invocation invocation, Object id, Motable immotable) throws InvocationException {
         motableToRelocate = immotable;
         return true;
     }
@@ -99,15 +99,15 @@ class RelocationImmoter implements Immoter {
 
         public void setBodyAsByteArray(byte[] bytes) throws Exception {
             Motable immotable = new SimpleMotable();
-            String name = getAbstractMotableMemento().getName();
+            Object id = getAbstractMotableMemento().getId();
             immotable.init(memento.getCreationTime(),
                 memento.getLastAccessedTime(),
                 memento.getMaxInactiveInterval(),
-                name);
+                id);
             immotable.setBodyAsByteArray(bytes);
 
             Peer imPeer = pmToSm.getIMPeer();
-            ReplicaInfo replicaInfo = replicationManager.releaseReplicaInfo(name, imPeer);
+            ReplicaInfo replicaInfo = replicationManager.releaseReplicaInfo(id, imPeer);
             
             Envelope reply = dispatcher.createEnvelope();
             reply.setPayload(new MoveSMToIM(immotable, replicaInfo));
@@ -118,7 +118,7 @@ class RelocationImmoter implements Immoter {
             if (null != ackFromIM) {
                 successfulRelocation = true;
             } else {
-                replicationManager.insertReplicaInfo(name, replicaInfo);
+                replicationManager.insertReplicaInfo(id, replicaInfo);
             }
         }
 

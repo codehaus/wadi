@@ -27,7 +27,7 @@ import java.util.Set;
  * @version $Rev:$ $Date:$
  */
 public interface ObjectLoader {
-    Object load(String key);
+    Object load(Object id);
     
-    Map<String, Object> load(Set<String> keys);
+    Map<Object, Object> load(Set<Object> ids);
 }

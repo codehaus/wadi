@@ -37,7 +37,7 @@ public class LocalPartitionInsertIMToPMAction extends AbstractLocalPartitionActi
     }
 
     public void onMessage(Envelope message, InsertIMToPM request) {
-        Object key = request.getKey();
+        Object key = request.getId();
         Peer newPeer = request.getPeer();
         boolean success = false;
         Location newLocation = new Location(key, newPeer);

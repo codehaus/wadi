@@ -37,7 +37,7 @@ public abstract class AbstractTestRelocation extends AbstractTwoNodesTest {
     }
 
     private Session executeTestSuccessfulRelocation(Session session) throws Exception {
-        Invocation invocation = new BasicInvocation(session.getName(), 1000);
+        Invocation invocation = new BasicInvocation(session.getId(), 1000);
         invocation.setErrorIfSessionNotAcquired(true);
         boolean success = green.getManager().contextualise(invocation);
         assertTrue(success);
@@ -50,7 +50,7 @@ public abstract class AbstractTestRelocation extends AbstractTwoNodesTest {
     private void executeTestThrowExceptionIfSessionIsBuzy(Session session) throws Exception {
         session.getReadWriteLock().writeLock().lock();
         
-        Invocation invocation = new BasicInvocation(session.getName(), 1000);
+        Invocation invocation = new BasicInvocation(session.getId(), 1000);
         invocation.setErrorIfSessionNotAcquired(true);
         try {
             green.getManager().contextualise(invocation);

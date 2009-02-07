@@ -55,13 +55,13 @@ public class ClusteredStateSession extends AbstractReplicableSession {
     
     @Override
     public synchronized byte[] getBodyAsByteArray() throws Exception {
-        return stateHandler.extractFullState(getName(), this);
+        return stateHandler.extractFullState(getId(), this);
     }
     
     @Override
     public synchronized void setBodyAsByteArray(byte[] bytes) throws IOException, ClassNotFoundException {
         ClusteredStateSession session =
-            (ClusteredStateSession) stateHandler.restoreFromFullStateTransient(getName(), bytes);
+            (ClusteredStateSession) stateHandler.restoreFromFullStateTransient(getId(), bytes);
         ClusteredStateSessionMemento clusteredMemento =
             (ClusteredStateSessionMemento) session.getDistributableSessionMemento();
 

@@ -72,7 +72,7 @@ public class ObjectLoaderContextualiser extends AbstractSharedContextualiser {
     }
 
     @Override
-    protected Motable get(final String id, boolean exclusiveOnly) {
+    protected Motable get(final Object id, boolean exclusiveOnly) {
         final ObjectInfoEntry objectInfoEntry = loadObjectInfoEntry(id);
         if (null == objectInfoEntry) {
             return null;
@@ -87,7 +87,7 @@ public class ObjectLoaderContextualiser extends AbstractSharedContextualiser {
         return session;
     }
 
-    protected ObjectInfoEntry loadObjectInfoEntry(String id) {
+    protected ObjectInfoEntry loadObjectInfoEntry(Object id) {
         Object object = objectLoader.load(id);
         if (null == object) {
             return null;
@@ -95,7 +95,7 @@ public class ObjectLoaderContextualiser extends AbstractSharedContextualiser {
         return new ObjectInfoEntry(id, new ObjectInfo(object));
     }
 
-    protected Session createSession(String id, ObjectInfoEntry objectInfoEntry) {
+    protected Session createSession(Object id, ObjectInfoEntry objectInfoEntry) {
         Session session = sessionFactory.create();
         long timeAsMs = System.currentTimeMillis();
         session.init(timeAsMs, timeAsMs, 0, id);

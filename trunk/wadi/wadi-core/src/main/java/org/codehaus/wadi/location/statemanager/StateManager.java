@@ -31,9 +31,9 @@ public interface StateManager extends Lifecycle {
     
     boolean offerEmigrant(Motable emotable, ReplicaInfo replicaInfo);
 
-    boolean insert(String name);
+    boolean insert(Object id);
 
-    void remove(String name);
+    void remove(Object id);
 
-    void relocate(String name);
+    void relocate(Object id);
 }

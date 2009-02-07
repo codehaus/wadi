@@ -75,8 +75,8 @@ public class LoggingLock implements Lock {
         delegate.unlock();
     }
 
-    public interface NameAccessor {
-        String getName();
+    public interface IdAccessor {
+        Object getId();
     }
 
 }

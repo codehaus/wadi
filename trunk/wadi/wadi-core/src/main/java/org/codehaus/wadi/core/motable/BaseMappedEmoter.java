@@ -37,7 +37,7 @@ public class BaseMappedEmoter extends BaseEmoter {
 
     public boolean emote(Motable emotable, Motable immotable) {
         if (super.emote(emotable, immotable)) {
-            map.remove(immotable.getName());
+            map.remove(immotable.getId());
             return true;
         } else {
             return false;

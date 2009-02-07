@@ -130,17 +130,17 @@ public class DatabaseStore implements Store {
         PreparedStatement ps = null;
         ResultSet rs = null;
         
-        String name = motable.getName();
+        Object id = motable.getId();
         byte[] body = null;
         try {
             conn = getConnection();
             ps = conn.prepareStatement(selectMotableBodySQL);
-            ps.setString(1, name);
+            ps.setString(1, transformIdToString(id));
             rs = ps.executeQuery();
             if (rs.next()) {
                 body = loadBody(rs);
                 if (log.isTraceEnabled()) {
-                    log.trace("Body of Motable [" + name + "] has been loaded");
+                    log.trace("Body of Motable [" + id + "] has been loaded");
                 }
                 return body;
             } else {
@@ -163,8 +163,8 @@ public class DatabaseStore implements Store {
             conn = getConnection();
             ps = conn.prepareStatement(insertMotableSQL);
             int i = 1;
-            String name = motable.getName();
-            ps.setString(i++, name);
+            Object id = motable.getId();
+            ps.setString(i++, transformIdToString(id));
             ps.setLong(i++, motable.getCreationTime());
             ps.setLong(i++, motable.getLastAccessedTime());
             ps.setInt(i++, motable.getMaxInactiveInterval());
@@ -172,7 +172,7 @@ public class DatabaseStore implements Store {
             ps.setBinaryStream(i++, new ByteArrayInputStream(body), body.length);
             ps.executeUpdate();
             if (log.isTraceEnabled()) {
-                log.trace("Motable [" + name + "] has been inserted");
+                log.trace("Motable [" + id + "] has been inserted");
             }
         } catch (SQLException e) {
             log.warn("See nested", e);
@@ -245,7 +245,7 @@ public class DatabaseStore implements Store {
             while (rs.next()) {
                 Motable motable = load(putter, time, rs, conn);
                 if (null != motable) {
-                    putter.put(motable.getName(), motable);
+                    putter.put(motable.getId(), motable);
                     count++;
                 }
             }
@@ -269,7 +269,7 @@ public class DatabaseStore implements Store {
             int maxInactiveInterval = rs.getInt("max_inactive_interval");
             motable.init(creationTime, lastAccessedTime, maxInactiveInterval, name);
             if (motable.getTimedOut(time)) {
-                log.warn("Loaded dead Motable [" + motable.getName() + "]");
+                log.warn("Loaded dead Motable [" + motable.getId() + "]");
                 delete(motable, conn);
                 return null;
             }
@@ -297,7 +297,7 @@ public class DatabaseStore implements Store {
         PreparedStatement ps = null;
         try {
             ps = conn.prepareStatement(deleteMotableSQL);
-            ps.setString(1, motable.getName());
+            ps.setString(1, transformIdToString(motable.getId()));
             ps.executeUpdate();
             if (log.isTraceEnabled()) {
                 log.trace("Motable [" +  motable + "] has been deleted");
@@ -337,6 +337,10 @@ public class DatabaseStore implements Store {
         } catch (SQLException e) {
             log.warn("See nested", e);
         }
+    }
+    
+    protected String transformIdToString(Object id) {
+        return id.toString();
     }
 
 }

@@ -69,8 +69,8 @@ public class ExclusiveStoreContextualiser extends AbstractExclusiveContextualise
             store.clean();
         } else {
             Store.Putter putter = new Store.Putter() {
-                public void put(String name, Motable motable) {
-                    map.put(name, motable);
+                public void put(Object id, Motable motable) {
+                    map.put(id, motable);
                 }
             };
             store.load(putter);

@@ -30,17 +30,17 @@ import org.codehaus.wadi.core.eviction.Evictable;
  * @version $Revision$
  */
 public interface Motable extends Evictable {
-    void init(long creationTime, long lastAccessedTime, int maxInactiveInterval, String name);
+    void init(long creationTime, long lastAccessedTime, int maxInactiveInterval, Object id);
 
-    void rehydrate(long creationTime, long lastAccessedTime, int maxInactiveInterval, String name, byte[] body) throws RehydrationException;
+    void rehydrate(long creationTime, long lastAccessedTime, int maxInactiveInterval, Object id, byte[] body) throws RehydrationException;
 
-    void restore(long creationTime, long lastAccessedTime, int maxInactiveInterval, String name, byte[] body) throws RehydrationException;
+    void restore(long creationTime, long lastAccessedTime, int maxInactiveInterval, Object id, byte[] body) throws RehydrationException;
 
     void copy(Motable motable) throws Exception;
 	
 	void mote(Motable recipient) throws Exception;
 
-	String getName();
+	Object getId();
     
     boolean isNew();
 

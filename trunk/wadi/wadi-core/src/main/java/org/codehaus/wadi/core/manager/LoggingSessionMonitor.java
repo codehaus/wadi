@@ -49,22 +49,22 @@ public class LoggingSessionMonitor implements SessionMonitor {
     }
 
     public void notifyInboundSessionMigration(Session session) {
-        LOG.debug(delegate + " - notifyInboundSessionMigration [" + session.getName() + "]");
+        LOG.debug(delegate + " - notifyInboundSessionMigration [" + session.getId() + "]");
         delegate.notifyInboundSessionMigration(session);
     }
 
     public void notifyOutboundSessionMigration(Session session) {
-        LOG.debug(delegate + " - notifyOutboundSessionMigration [" + session.getName() + "]");
+        LOG.debug(delegate + " - notifyOutboundSessionMigration [" + session.getId() + "]");
         delegate.notifyOutboundSessionMigration(session);
     }
 
     public void notifySessionCreation(Session session) {
-        LOG.debug(delegate + " - notifySessionCreation [" + session.getName() + "]");
+        LOG.debug(delegate + " - notifySessionCreation [" + session.getId() + "]");
         delegate.notifySessionCreation(session);
     }
 
     public void notifySessionDestruction(Session session) {
-        LOG.debug(delegate + " - notifySessionDestruction [" + session.getName() + "]");
+        LOG.debug(delegate + " - notifySessionDestruction [" + session.getId() + "]");
         delegate.notifySessionDestruction(session);
     }
 }

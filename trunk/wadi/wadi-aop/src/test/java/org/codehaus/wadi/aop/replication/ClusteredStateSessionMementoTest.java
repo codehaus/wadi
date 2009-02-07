@@ -73,13 +73,13 @@ public class ClusteredStateSessionMementoTest extends RMockTestCase {
         setField(memento, "creationTime", new Long(1));
         setField(memento, "lastAccessedTime", new Long(2));
         setField(memento, "maxInactiveInterval", new Integer(3));
-        setField(memento, "name", "name");
+        setField(memento, "id", "id");
         setField(memento, "memento", new ClusteredStateAttributesMemento());
         
         assertEquals(0, memento.getCreationTime());
         assertEquals(0, memento.getLastAccessedTime());
         assertEquals(0, memento.getMaxInactiveInterval());
-        assertNull(memento.getName());
+        assertNull(memento.getId());
         assertTrue(memento.isNewSession());
         
         memento.onRestore();
@@ -87,7 +87,7 @@ public class ClusteredStateSessionMementoTest extends RMockTestCase {
         assertEquals(1, memento.getCreationTime());
         assertEquals(2, memento.getLastAccessedTime());
         assertEquals(3, memento.getMaxInactiveInterval());
-        assertEquals("name", memento.getName());
+        assertEquals("id", memento.getId());
         assertFalse(memento.isNewSession());
         assertNotNull(memento.getAttributesMemento());
     }

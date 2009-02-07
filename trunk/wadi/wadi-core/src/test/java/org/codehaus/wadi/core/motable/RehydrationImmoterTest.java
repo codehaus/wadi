@@ -42,7 +42,7 @@ public class RehydrationImmoterTest extends RMockTestCase {
         motable.getMaxInactiveInterval();
         int maxInactiveInterval = 3;
         modify().returnValue(maxInactiveInterval);
-        motable.getName();
+        motable.getId();
         String name = "name";
         modify().returnValue(name);
         motable.getBodyAsByteArray();

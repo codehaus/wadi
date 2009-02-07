@@ -36,7 +36,7 @@ public class BasicExclusiveContextualiserLockHandler implements ExclusiveContext
         this.map = map;
     }
 
-    public Motable acquire(Invocation invocation, String id) {
+    public Motable acquire(Invocation invocation, Object id) {
         if (invocation.isAcquireLockOnInvocationStart()) {
             if (invocation.isWithExclusiveLock()) {
                 return map.acquireExclusive(id, invocation.getExclusiveSessionLockWaitTime());

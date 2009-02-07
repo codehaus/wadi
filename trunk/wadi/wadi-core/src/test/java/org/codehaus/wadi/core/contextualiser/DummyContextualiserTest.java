@@ -32,7 +32,7 @@ public class DummyContextualiserTest extends RMockTestCase {
         
         StateManager stateManager = (StateManager) mock(StateManager.class);
         Motable emotable = (Motable) mock(Motable.class);
-        emotable.getName();
+        emotable.getId();
         String name = "name";
         modify().returnValue(name);
         

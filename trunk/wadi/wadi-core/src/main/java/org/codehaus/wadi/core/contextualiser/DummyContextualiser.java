@@ -52,7 +52,7 @@ public class DummyContextualiser implements Contextualiser {
         this.replicationManager = replicationManager;
     }
 
-    public boolean contextualise(Invocation invocation, String key, Immoter immoter, boolean exclusiveOnly)
+    public boolean contextualise(Invocation invocation, Object id, Immoter immoter, boolean exclusiveOnly)
             throws InvocationException {
         return false;
     }
@@ -68,7 +68,7 @@ public class DummyContextualiser implements Contextualiser {
     public void findRelevantSessionNames(PartitionMapper mapper, Map keyToSessionNames) {
     }
 
-    public Immoter getDemoter(String name, Motable motable) {
+    public Immoter getDemoter(Object id, Motable motable) {
         return _immoter;
     }
 
@@ -87,9 +87,9 @@ public class DummyContextualiser implements Contextualiser {
 
     public class DummyImmoter implements Immoter {
         public boolean immote(Motable emotable, Motable immotable) {
-            String key = emotable.getName();
-            stateManager.remove(key);
-            replicationManager.destroy(key);
+            Object id = emotable.getId();
+            stateManager.remove(id);
+            replicationManager.destroy(id);
             return true;
         }
         
@@ -97,7 +97,7 @@ public class DummyContextualiser implements Contextualiser {
             return new SimpleMotable();
         }
 
-        public boolean contextualise(Invocation invocation, String id, Motable immotable)
+        public boolean contextualise(Invocation invocation, Object id, Motable immotable)
                 throws InvocationException {
             return false;
         }

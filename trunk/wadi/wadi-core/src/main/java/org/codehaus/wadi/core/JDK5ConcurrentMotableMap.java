@@ -27,13 +27,13 @@ import org.codehaus.wadi.core.motable.Motable;
  * @version $Revision: 1538 $
  */
 public class JDK5ConcurrentMotableMap implements ConcurrentMotableMap {
-    private final ConcurrentHashMap<String, Motable> delegate = new ConcurrentHashMap<String, Motable>();
+    private final ConcurrentHashMap<Object, Motable> delegate = new ConcurrentHashMap<Object, Motable>();
 
-    public Motable get(String id) {
+    public Motable get(Object id) {
         return delegate.get(id);
     }
     
-    public Motable acquire(String id) {
+    public Motable acquire(Object id) {
         Motable motable = delegate.get(id);
         if (null != motable) {
             Lock lock = getSharedLock(motable);
@@ -51,7 +51,7 @@ public class JDK5ConcurrentMotableMap implements ConcurrentMotableMap {
         return motable;
     }
     
-    public Motable acquireExclusive(String id, long exclusiveSessionLockWaitTime) {
+    public Motable acquireExclusive(Object id, long exclusiveSessionLockWaitTime) {
         Motable motable = delegate.get(id);
         if (null != motable) {
             Lock lock = getExclusiveLock(motable);
@@ -74,7 +74,7 @@ public class JDK5ConcurrentMotableMap implements ConcurrentMotableMap {
         return motable;
     }
 
-    public Set getNames() {
+    public Set<Object> getIds() {
         return delegate.keySet();
     }
 
@@ -82,8 +82,8 @@ public class JDK5ConcurrentMotableMap implements ConcurrentMotableMap {
         return delegate.isEmpty();
     }
 
-    public void put(String name, Motable motable) {
-        delegate.put(name, motable);
+    public void put(Object id, Motable motable) {
+        delegate.put(id, motable);
     }
 
     public void release(Motable motable) {
@@ -94,8 +94,8 @@ public class JDK5ConcurrentMotableMap implements ConcurrentMotableMap {
         getExclusiveLock(motable).unlock();
     }
     
-    public void remove(String name) {
-        delegate.remove(name);
+    public void remove(Object id) {
+        delegate.remove(id);
     }
 
     public int size() {

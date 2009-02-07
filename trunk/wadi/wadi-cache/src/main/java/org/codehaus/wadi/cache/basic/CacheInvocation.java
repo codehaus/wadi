@@ -59,7 +59,7 @@ public class CacheInvocation extends BasicInvocation {
     }
 
     protected ObjectInfoEntry newObjectInfoEntry() {
-        return new ObjectInfoEntry(sessionKey, new ObjectInfo());
+        return new ObjectInfoEntry(sessionId, new ObjectInfo());
     }
 
 }

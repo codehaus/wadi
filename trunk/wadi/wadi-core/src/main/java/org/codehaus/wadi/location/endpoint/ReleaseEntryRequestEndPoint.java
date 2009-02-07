@@ -81,14 +81,14 @@ public class ReleaseEntryRequestEndPoint implements Lifecycle, ReleaseEntryReque
     
     public void onReleaseEntryRequest(Envelope message, ReleaseEntryRequest request) {
         Motable emotable = request.getMotable();
-        String name = emotable.getName();
+        Object id = emotable.getId();
         Emoter emoter = new ReleaseEntryRequestEmoter(message);
-        Immoter immoter = contextualiser.getDemoter(name, emotable);
+        Immoter immoter = contextualiser.getDemoter(id, emotable);
         immoter = new RehydrationImmoter(immoter);
-        Motable motable = Utils.mote(emoter, immoter, emotable, name);
+        Motable motable = Utils.mote(emoter, immoter, emotable);
 
-        stateManager.relocate(name);
-        replicationManager.promoteToMaster(name, request.getReplicaInfo(), motable, request.getReleasingPeer());
+        stateManager.relocate(id);
+        replicationManager.promoteToMaster(id, request.getReplicaInfo(), motable, request.getReleasingPeer());
     }
     
     /**

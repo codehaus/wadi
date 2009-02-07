@@ -22,7 +22,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.codehaus.wadi.core.eviction.SimpleEvictable;
 import org.codehaus.wadi.core.eviction.SimpleEvictableMemento;
 import org.codehaus.wadi.core.util.LoggingReadWriteLock;
-import org.codehaus.wadi.core.util.LoggingLock.NameAccessor;
+import org.codehaus.wadi.core.util.LoggingLock.IdAccessor;
 
 /**
  * Implement all of Motable except for the Bytes field. This is the field most likely to have different representations.
@@ -51,24 +51,24 @@ public abstract class AbstractMotable extends SimpleEvictable implements Motable
         return readWriteLock;
     }
     
-    public synchronized void init(long creationTime, long lastAccessedTime, int maxInactiveInterval, String name) {
+    public synchronized void init(long creationTime, long lastAccessedTime, int maxInactiveInterval, Object id) {
         init(creationTime, lastAccessedTime, maxInactiveInterval);
-        getAbstractMotableMemento().setName(name);
+        getAbstractMotableMemento().setId(id);
     }
 
-    public synchronized void rehydrate(long creationTime, long lastAccessedTime, int maxInactiveInterval, String name, byte[] body)
+    public synchronized void rehydrate(long creationTime, long lastAccessedTime, int maxInactiveInterval, Object id, byte[] body)
             throws RehydrationException {
-        initExisting(creationTime, lastAccessedTime, maxInactiveInterval, name, body);
+        initExisting(creationTime, lastAccessedTime, maxInactiveInterval, id, body);
     }
 
-    public synchronized void restore(long creationTime, long lastAccessedTime, int maxInactiveInterval, String name, byte[] body)
+    public synchronized void restore(long creationTime, long lastAccessedTime, int maxInactiveInterval, Object id, byte[] body)
             throws RehydrationException {
-        initExisting(creationTime, lastAccessedTime, maxInactiveInterval, name, body);
+        initExisting(creationTime, lastAccessedTime, maxInactiveInterval, id, body);
     }
 
     public synchronized void copy(Motable motable) throws Exception {
         super.copy(motable);
-        getAbstractMotableMemento().setName(motable.getName());
+        getAbstractMotableMemento().setId(motable.getId());
         getAbstractMotableMemento().setNewSession(false);
         setBodyAsByteArray(motable.getBodyAsByteArray());
     }
@@ -78,8 +78,8 @@ public abstract class AbstractMotable extends SimpleEvictable implements Motable
         destroyForMotion();
     }
 
-    public synchronized String getName() {
-        return getAbstractMotableMemento().getName();
+    public synchronized Object getId() {
+        return getAbstractMotableMemento().getId();
     }
     
     public synchronized boolean isNew() {
@@ -98,9 +98,9 @@ public abstract class AbstractMotable extends SimpleEvictable implements Motable
     
     protected ReadWriteLock newReadWriteLock() {
         ReadWriteLock delegate = new ReentrantReadWriteLock(true);
-        return new LoggingReadWriteLock(new NameAccessor() {
-            public String getName() {
-                return AbstractMotable.this.getName();
+        return new LoggingReadWriteLock(new IdAccessor() {
+            public Object getId() {
+                return AbstractMotable.this.getId();
             }
         }, delegate);
     }
@@ -108,10 +108,10 @@ public abstract class AbstractMotable extends SimpleEvictable implements Motable
     protected synchronized void initExisting(long creationTime,
             long lastAccessedTime,
             int maxInactiveInterval,
-            String name,
+            Object id,
             byte[] body) throws RehydrationException {
         getAbstractMotableMemento().setNewSession(false);
-        init(creationTime, lastAccessedTime, maxInactiveInterval, name);
+        init(creationTime, lastAccessedTime, maxInactiveInterval, id);
         try {
             setBodyAsByteArray(body);
         } catch (Exception e) {
