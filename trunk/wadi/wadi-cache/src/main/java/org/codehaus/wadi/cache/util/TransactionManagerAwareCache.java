@@ -54,14 +54,14 @@ public class TransactionManagerAwareCache implements Cache {
         this.tm = tm;
     }
     
-    public void delete(Collection<Object> keys, UpdateAcquisitionPolicy policy) throws CacheException {
+    public Map<Object, Object> delete(Collection<Object> keys, UpdateAcquisitionPolicy policy) throws CacheException {
         synchronizeWithTransactionManagerTx();
-        delegate.delete(keys, policy);
+        return delegate.delete(keys, policy);
     }
 
-    public void delete(Object key, UpdateAcquisitionPolicy policy) throws CacheException {
+    public Object delete(Object key, UpdateAcquisitionPolicy policy) throws CacheException {
         synchronizeWithTransactionManagerTx();
-        delegate.delete(key, policy);
+        return delegate.delete(key, policy);
     }
 
     public Map<Object, Object> get(Collection<Object> keys, AcquisitionPolicy policy) throws CacheException {

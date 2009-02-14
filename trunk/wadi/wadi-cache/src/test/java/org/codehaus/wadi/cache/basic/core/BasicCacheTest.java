@@ -129,11 +129,16 @@ public class BasicCacheTest extends RMockTestCase {
         
         inTxCache.addEntry(key, entry);
         
+        entry.getObjectInfo();
+        Object deletedObject = new Object();
+        modify().returnValue(new ObjectInfo(deletedObject));
+        
         entry.delete();
         
         startVerification();
         
-        cache.delete(key, policy);
+        Object actualDeletedObject = cache.delete(key, policy);
+        assertSame(deletedObject, actualDeletedObject);
     }
     
     public void testDeleteInTxCacheObject() throws Exception {
@@ -146,11 +151,16 @@ public class BasicCacheTest extends RMockTestCase {
         
         inTxCache.updateEntry(key, entry);
 
+        entry.getObjectInfo();
+        Object deletedObject = new Object();
+        modify().returnValue(new ObjectInfo(deletedObject));
+
         entry.delete();
         
         startVerification();
         
-        cache.delete(key, policy);
+        Object actualDeletedObject = cache.delete(key, policy);
+        assertSame(deletedObject, actualDeletedObject);
     }
     
     private Object recordGetObjectFromCacheEntry(CacheEntry entry) {

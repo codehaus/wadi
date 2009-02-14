@@ -43,9 +43,9 @@ public interface Cache {
     
     void update(Map<Object, Object> keyToValues) throws CacheException;
 
-    void delete(Object key, UpdateAcquisitionPolicy policy) throws CacheException;
+    Object delete(Object key, UpdateAcquisitionPolicy policy) throws CacheException;
     
-    void delete(Collection<Object> keys, UpdateAcquisitionPolicy policy) throws CacheException;
+    Map<Object, Object>  delete(Collection<Object> keys, UpdateAcquisitionPolicy policy) throws CacheException;
 
     CacheTransaction getCacheTransaction();
 }
