@@ -42,6 +42,10 @@ public interface Evictable {
     int  getMaxInactiveInterval();
 	
     void setMaxInactiveInterval(int maxInactiveInterval);
+    
+    boolean isNeverEvict();
+
+    void setNeverEvict(boolean neverEvict);
 	
     long getTimeToLive(long time);
 	

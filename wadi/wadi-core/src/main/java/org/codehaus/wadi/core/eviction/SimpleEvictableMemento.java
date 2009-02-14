@@ -29,6 +29,7 @@ public class SimpleEvictableMemento implements Externalizable {
     protected long creationTime;
     protected long lastAccessedTime;
     protected int maxInactiveInterval;
+    protected boolean neverEvict;
 
     public long getCreationTime() {
         return creationTime;
@@ -62,16 +63,26 @@ public class SimpleEvictableMemento implements Externalizable {
         return getTimeToLive(time) <= 0;
     }
     
+    public void setNeverEvict(boolean neverEvict) {
+        this.neverEvict = neverEvict;
+    }
+    
+    public boolean isNeverEvict() {
+        return neverEvict;
+    }
+    
     public synchronized void readExternal(ObjectInput oi) throws IOException, ClassNotFoundException {
         creationTime = oi.readLong();
         lastAccessedTime = oi.readLong();
         maxInactiveInterval = oi.readInt();
+        neverEvict = oi.readBoolean();
     }
 
     public synchronized void writeExternal(ObjectOutput oo) throws IOException {
         oo.writeLong(creationTime);
         oo.writeLong(lastAccessedTime);
         oo.writeInt(maxInactiveInterval);
+        oo.writeBoolean(neverEvict);
     }
 
 }
