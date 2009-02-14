@@ -76,6 +76,30 @@ public class CacheInvocationTest extends RMockTestCase {
         ObjectInfoEntry actualEntry = invocation.getObjectInfoEntry();
         assertSame(expectedEntry, actualEntry);
     }
+
+    public void testPin() throws Exception {
+        Session session = (Session) mock(Session.class);
+        session.setNeverEvict(true);
+        startVerification();
+        
+        AcquisitionInfo pinAcquisitionInfo = new AcquisitionInfo(AcquisitionInfo.DEFAULT, true, false);
+        CacheInvocation invocation = new CacheInvocation("key", pinAcquisitionInfo);
+        invocation.setSession(session);
+        
+        invocation.pinOrUnPin();
+    }
+
+    public void testUnPin() throws Exception {
+        Session session = (Session) mock(Session.class);
+        session.setNeverEvict(false);
+        startVerification();
+        
+        AcquisitionInfo pinAcquisitionInfo = new AcquisitionInfo(AcquisitionInfo.DEFAULT, false, true);
+        CacheInvocation invocation = new CacheInvocation("key", pinAcquisitionInfo);
+        invocation.setSession(session);
+        
+        invocation.pinOrUnPin();
+    }
     
     private void assertUndefinedEntry(CacheInvocation invocation) {
         ObjectInfoEntry objectInfoEntry = invocation.getObjectInfoEntry();

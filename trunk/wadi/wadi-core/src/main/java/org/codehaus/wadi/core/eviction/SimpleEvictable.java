@@ -28,7 +28,7 @@ import java.io.ObjectOutput;
  * @author <a href="mailto:jules@coredevelopers.net">Jules Gosnell</a>
  * @version $Revision: 2244 $
  */
-public abstract class SimpleEvictable implements Evictable, Externalizable {
+public class SimpleEvictable implements Evictable, Externalizable {
     protected SimpleEvictableMemento memento;
 
     public SimpleEvictable() {
@@ -52,6 +52,7 @@ public abstract class SimpleEvictable implements Evictable, Externalizable {
         memento.setCreationTime(evictable.getCreationTime());
         memento.setLastAccessedTime(evictable.getLastAccessedTime());
         memento.setMaxInactiveInterval(evictable.getMaxInactiveInterval());
+        memento.setNeverEvict(evictable.isNeverEvict());
     }
 
     public synchronized void mote(Evictable recipient) throws Exception {
@@ -85,6 +86,14 @@ public abstract class SimpleEvictable implements Evictable, Externalizable {
 
     public synchronized boolean getTimedOut(long time) {
         return memento.getTimedOut(time);
+    }
+    
+    public void setNeverEvict(boolean neverEvict) {
+        memento.setNeverEvict(neverEvict);
+    }
+    
+    public boolean isNeverEvict() {
+        return memento.isNeverEvict();
     }
     
     public synchronized void readExternal(ObjectInput oi) throws IOException, ClassNotFoundException {

@@ -30,10 +30,12 @@ import org.codehaus.wadi.core.contextualiser.InvocationException;
  */
 public class CacheInvocation extends BasicInvocation {
 
+    private final AcquisitionInfo acquisitionInfo;
     private ObjectInfoEntry objectInfoEntry;
     
     public CacheInvocation(Object sessionKey, AcquisitionInfo acquisitionInfo) {
         super(sessionKey, acquisitionInfo.getCacheEntryAccessWaitTime());
+        this.acquisitionInfo = acquisitionInfo;
     }
 
     public ObjectInfoEntry getObjectInfoEntry() {
@@ -50,11 +52,21 @@ public class CacheInvocation extends BasicInvocation {
             return;
         }
 
+        pinOrUnPin();
+        
         objectInfoEntry = SessionUtil.getObjectInfoEntry(session);
         
         if (null == objectInfoEntry) {
             objectInfoEntry = newObjectInfoEntry();
             SessionUtil.setObjectInfoEntry(session, objectInfoEntry);
+        }
+    }
+
+    protected void pinOrUnPin() {
+        if (acquisitionInfo.isPin()) {
+            session.setNeverEvict(true);
+        } else if (acquisitionInfo.isUnpin()) {
+            session.setNeverEvict(false);
         }
     }
 

@@ -84,6 +84,10 @@ public abstract class AbstractBestEffortEvicter extends AbstractEvicter {
     }
 
     protected boolean isReadyToDemote(Motable motable, long time) {
+        if (motable.isNeverEvict()) {
+            return false;
+        }
+        
         long ttl = motable.getTimeToLive(time);
         if (testForDemotion(motable, time, ttl)) {
             return true;

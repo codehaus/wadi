@@ -25,22 +25,32 @@ package org.codehaus.wadi.cache;
  * @version $Rev:$ $Date:$
  */
 public class AcquisitionInfo {
-    public static final AcquisitionInfo DEFAULT = new AcquisitionInfo(20000, 4000);
-    public static final AcquisitionInfo EXCLUSIVE_LOCAL_INFO = new AcquisitionInfo(1, 1);
+    public static final AcquisitionInfo DEFAULT = new AcquisitionInfo(20000, 4000, false, false);
+    public static final AcquisitionInfo EXCLUSIVE_LOCAL_INFO = new AcquisitionInfo(1, 1, false, false);
     
     private final long cacheEntryAccessWaitTime; 
     private final long exclusiveLockWaitTime;
+    protected final boolean pin;
+    protected final boolean unpin;
     
-    public AcquisitionInfo(long cacheEntryAccessWaitTime, long exclusiveLockWaitTime) {
+    public AcquisitionInfo(long cacheEntryAccessWaitTime, long exclusiveLockWaitTime, boolean pin, boolean unpin) {
         if (1 > cacheEntryAccessWaitTime) {
             throw new IllegalArgumentException("cacheEntryAccessWaitTime must be greater than 0");
         } else if (1 > exclusiveLockWaitTime) {
             throw new IllegalArgumentException("exclusiveLockWaitTime must be greater than 0");
-        } 
+        } else if (pin && unpin) {
+            throw new IllegalArgumentException("only pin or unpin can be true");
+        }
         this.cacheEntryAccessWaitTime = cacheEntryAccessWaitTime;
         this.exclusiveLockWaitTime = exclusiveLockWaitTime;
+        this.pin = pin;
+        this.unpin = unpin;
     }
 
+    public AcquisitionInfo(AcquisitionInfo prototype, boolean pin, boolean unpin) {
+        this(prototype.cacheEntryAccessWaitTime, prototype.exclusiveLockWaitTime, pin, unpin);
+    }
+    
     public long getCacheEntryAccessWaitTime() {
         return cacheEntryAccessWaitTime;   
     }
@@ -49,6 +59,14 @@ public class AcquisitionInfo {
         return exclusiveLockWaitTime;
     }
     
+    public boolean isPin() {
+        return pin;
+    }
+
+    public boolean isUnpin() {
+        return unpin;
+    }
+
     @Override
     public String toString() {
         return "AcquisitionInfo [cacheEntryAccessWaitTime=" + cacheEntryAccessWaitTime + "; exclusiveLockWaitTime="
