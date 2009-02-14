@@ -130,26 +130,24 @@ public class TxDecoratorCache implements Cache {
         txOperation.execute();
     }
 
-    public void delete(final Object key, final UpdateAcquisitionPolicy policy) throws CacheException {
+    public Object delete(final Object key, final UpdateAcquisitionPolicy policy) throws CacheException {
         TransactionalOperation<Object> txOperation = new TransactionalOperation<Object>(cache) {
             @Override
             protected Object doExecute() {
-                cache.delete(key, policy);
-                return null;
+                return cache.delete(key, policy);
             }
         };
-        txOperation.execute();
+        return txOperation.execute();
     }
     
-    public void delete(final Collection<Object> keys, final UpdateAcquisitionPolicy policy) throws CacheException {
-        TransactionalOperation<Object> txOperation = new TransactionalOperation<Object>(cache) {
+    public Map<Object, Object> delete(final Collection<Object> keys, final UpdateAcquisitionPolicy policy) throws CacheException {
+        TransactionalOperation<Map<Object, Object>> txOperation = new TransactionalOperation<Map<Object, Object>>(cache) {
             @Override
-            protected Object doExecute() {
-                cache.delete(keys, policy);
-                return null;
+            protected Map<Object, Object> doExecute() {
+                return cache.delete(keys, policy);
             }
         };
-        txOperation.execute();
+        return txOperation.execute();
     }
     
     public CacheTransaction getCacheTransaction() {

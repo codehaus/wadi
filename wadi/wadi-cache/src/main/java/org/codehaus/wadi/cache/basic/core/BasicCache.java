@@ -126,7 +126,7 @@ public class BasicCache implements Cache {
         }
     }
 
-    public void delete(Object key, UpdateAcquisitionPolicy policy) throws CacheException {
+    public Object delete(Object key, UpdateAcquisitionPolicy policy) throws CacheException {
         InTxCache inTxCache = cacheTransaction.getInTxCache();
         CacheEntry entry = inTxCache.getEntry(key);
 
@@ -139,12 +139,17 @@ public class BasicCache implements Cache {
         }
         
         entry.delete();
+        
+        return entry.getObjectInfo().getObject();
     }
     
-    public void delete(Collection<Object> keys, UpdateAcquisitionPolicy policy) throws CacheException {
+    public Map<Object, Object> delete(Collection<Object> keys, UpdateAcquisitionPolicy policy) throws CacheException {
+        Map<Object, Object> deletedEntries = new HashMap<Object, Object>();
         for (Object key : keys) {
-            delete(key, policy);
+            Object deletedEntry = delete(key, policy);
+            deletedEntries.put(key, deletedEntry);
         }
+        return deletedEntries;
     }
     
     public CacheTransaction getCacheTransaction() {
