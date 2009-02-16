@@ -62,7 +62,7 @@ public abstract class AbstractBestEffortEvicter extends AbstractEvicter {
     protected void identifyDemotions(ConcurrentMotableMap idToEvictable, List<Motable> toDemote) {
         long time = System.currentTimeMillis();
         for (Iterator iter = idToEvictable.getIds().iterator(); iter.hasNext();) {
-            String id = (String) iter.next();
+            Object id = iter.next();
             Motable motable = null;
             try {
                 motable = idToEvictable.acquireExclusive(id, 1);
