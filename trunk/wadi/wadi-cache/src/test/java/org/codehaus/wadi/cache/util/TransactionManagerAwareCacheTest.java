@@ -55,14 +55,10 @@ public class TransactionManagerAwareCacheTest extends RMockTestCase {
         executeDelegatedOperation();
     }
     
-    public void testDoesNotRegisterSynchronisationWhenNoTransactionStatus() throws Exception {
-        executeDoesNotRegisterSynchronizationForTransactionStatus(Status.STATUS_NO_TRANSACTION);
+    public void testDoesNotRegisterSynchronisationWhenTransactionStatusIsNotActive() throws Exception {
+        executeDoesNotRegisterSynchronizationForTransactionStatus(Status.STATUS_COMMITTED);
     }
 
-    public void testDoesNotRegisterSynchronisationWhenUnknownTransactionStatus() throws Exception {
-        executeDoesNotRegisterSynchronizationForTransactionStatus(Status.STATUS_UNKNOWN);
-    }
-    
     public void testDoesNotRegisterSynchronisationWhenActiveCacheTransaction() throws Exception {
         Transaction tx = tm.getTransaction();
         tx.getStatus();
