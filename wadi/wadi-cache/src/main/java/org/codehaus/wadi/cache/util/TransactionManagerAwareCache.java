@@ -112,11 +112,7 @@ public class TransactionManagerAwareCache implements Cache {
     protected void synchronizeWithTransactionManagerTx() {
         try {
             Transaction transaction = tm.getTransaction();
-            if (null == transaction) {
-                return;
-            }
-            int status = transaction.getStatus();
-            if (status == Status.STATUS_NO_TRANSACTION || status == Status.STATUS_UNKNOWN) {
+            if (null == transaction || transaction.getStatus() != Status.STATUS_ACTIVE) {
                 return;
             }
             
