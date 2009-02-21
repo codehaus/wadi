@@ -35,7 +35,7 @@ public class AbstractUpdatableCacheEntryTest extends BaseCacheEntryTestCase {
         super.setUp();
         
         ObjectInfo objectInfo = new ObjectInfo(1, new Object());
-        entry = new AbstractUpdatableCacheEntry(prototype, objectInfo) {
+        entry = new AbstractUpdatableCacheEntry(prototype, objectInfo, CacheEntryState.CLEAN) {
             public CacheEntry acquire(AcquisitionPolicy policy) throws CacheEntryException {
                 throw new UnsupportedOperationException();
             }

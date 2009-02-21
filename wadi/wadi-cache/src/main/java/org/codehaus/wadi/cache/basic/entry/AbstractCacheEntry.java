@@ -20,36 +20,28 @@
 package org.codehaus.wadi.cache.basic.entry;
 
 import org.codehaus.wadi.cache.AcquisitionInfo;
-import org.codehaus.wadi.cache.basic.CacheInvocation;
 import org.codehaus.wadi.cache.basic.ObjectInfo;
 import org.codehaus.wadi.cache.basic.ObjectInfoEntry;
 import org.codehaus.wadi.cache.basic.TimeoutException;
-import org.codehaus.wadi.core.WADIRuntimeException;
-import org.codehaus.wadi.core.contextualiser.InvocationException;
-import org.codehaus.wadi.core.manager.Manager;
 
 
 /**
  * @version $Rev:$ $Date:$
  */
 public abstract class AbstractCacheEntry implements CacheEntry {
-    protected final Manager manager;
-    protected final AccessListener accessListener;
+    protected final ObjectInfoAccessor objectInfoAccessor;
     protected final GlobalObjectStore globalObjectStore;
     protected final Object key;
     protected ObjectInfo objectInfo;
     protected CacheEntryState state;
     protected ObjectInfoEntry exclusiveObjectInfoEntry;
     
-    public AbstractCacheEntry(Manager manager,
-            AccessListener accessListener,
+    public AbstractCacheEntry(ObjectInfoAccessor objectInfoAccessor,
             GlobalObjectStore globalObjectStore,
             Object key,
             CacheEntryState state) {
-        if (null == manager) {
-            throw new IllegalArgumentException("manager is required");
-        } else if (null == accessListener) {
-            throw new IllegalArgumentException("accessListener is required");
+        if (null == objectInfoAccessor) {
+            throw new IllegalArgumentException("objectInfoAccessor is required");
         } else if (null == globalObjectStore) {
             throw new IllegalArgumentException("globalObjectStore is required");
         } else if (null == key) {
@@ -57,8 +49,7 @@ public abstract class AbstractCacheEntry implements CacheEntry {
         } else if (null == state) {
             throw new IllegalArgumentException("state is required");
         }
-        this.manager = manager;
-        this.accessListener = accessListener;
+        this.objectInfoAccessor = objectInfoAccessor;
         this.globalObjectStore = globalObjectStore;
         this.key = key;
         this.state = state;
@@ -73,8 +64,7 @@ public abstract class AbstractCacheEntry implements CacheEntry {
         this.state = state;
         this.objectInfo = objectInfo;
 
-        manager = prototype.manager;
-        accessListener = prototype.accessListener;
+        objectInfoAccessor = prototype.objectInfoAccessor;
         globalObjectStore = prototype.globalObjectStore;
         key = prototype.key;
     }
@@ -91,16 +81,14 @@ public abstract class AbstractCacheEntry implements CacheEntry {
     }
 
     public void acquireExclusiveLock() throws TimeoutException {
-        exclusiveObjectInfoEntry = acquirePessimistic(key, AcquisitionInfo.EXCLUSIVE_LOCAL_INFO);
+        exclusiveObjectInfoEntry = objectInfoAccessor.acquirePessimistic(key, AcquisitionInfo.EXCLUSIVE_LOCAL_INFO);
     }
     
     public void releaseExclusiveLock() {
         if (null == exclusiveObjectInfoEntry) {
             return;
         }
-        CacheInvocation invocation = new ReleaseExclusiveLockInvocation(key, AcquisitionInfo.EXCLUSIVE_LOCAL_INFO);
-        fetchObjectInfoEntry(invocation);
-        accessListener.exitExclusiveAccess(exclusiveObjectInfoEntry);
+        objectInfoAccessor.releaseExclusiveLock(key);
     }
     
     public ObjectInfoEntry getExclusiveObjectInfoEntry() {
@@ -109,29 +97,4 @@ public abstract class AbstractCacheEntry implements CacheEntry {
         }
         return exclusiveObjectInfoEntry;
     }
-
-    protected ObjectInfoEntry acquirePessimistic(Object key, AcquisitionInfo acquisitionInfo) {
-        CacheInvocation invocation = new AcquireExclusiveLockInvocation(key, acquisitionInfo);
-        ObjectInfoEntry objectInfoEntry = fetchObjectInfoEntry(invocation);
-        
-        accessListener.enterExclusiveAccess(objectInfoEntry);
-
-        return objectInfoEntry;
-    }
-
-    protected ObjectInfoEntry fetchObjectInfoEntry(CacheInvocation invocation) {
-        invocation.setDoNotExecuteOnEndProcessing(true);
-        
-        boolean contextualised;
-        try {
-            contextualised = manager.contextualise(invocation);
-        } catch (InvocationException e) {
-            throw new WADIRuntimeException(e);
-        }
-        if (!contextualised) {
-            throw new WADIRuntimeException("Problem during cacheInvocation " + invocation);
-        }
-        return invocation.getObjectInfoEntry();
-    }
-    
 }

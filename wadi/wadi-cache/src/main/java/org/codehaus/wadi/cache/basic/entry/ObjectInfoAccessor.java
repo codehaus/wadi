@@ -19,6 +19,7 @@
 
 package org.codehaus.wadi.cache.basic.entry;
 
+import org.codehaus.wadi.cache.AcquisitionInfo;
 import org.codehaus.wadi.cache.basic.ObjectInfo;
 import org.codehaus.wadi.cache.basic.ObjectInfoEntry;
 
@@ -26,26 +27,12 @@ import org.codehaus.wadi.cache.basic.ObjectInfoEntry;
  *
  * @version $Rev:$ $Date:$
  */
-public class PessimisticCacheEntryTest extends BaseCacheEntryTestCase {
+public interface ObjectInfoAccessor {
+    ObjectInfoEntry acquirePessimistic(Object key, AcquisitionInfo acquisitionInfo);
 
-    private PessimisticCacheEntry entry;
+    ObjectInfo acquireOptimistic(Object key, AcquisitionInfo acquisitionInfo);
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-        
-        ObjectInfo objectInfo = new ObjectInfo(1, new Object());
-        ObjectInfoEntry exclusiveObjectInfoEntry = new ObjectInfoEntry("key", objectInfo);
-        entry = new PessimisticCacheEntry(prototype, objectInfo, exclusiveObjectInfoEntry, CacheEntryState.CLEAN);
-    }
-    
-    public void testAcquireReturnsMe() throws Exception {
-        CacheEntry returnedEntry = entry.acquire(null);
-        assertSame(entry, returnedEntry);
-    }
-    
-    public void testAcquireExclusiveLockDoesNothing() throws Exception {
-        entry.acquireExclusiveLock();
-    }
-    
+    ObjectInfo acquireReadOnly(Object key, AcquisitionInfo acquisitionInfo);
+
+    void releaseExclusiveLock(Object key);
 }

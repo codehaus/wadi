@@ -34,8 +34,10 @@ import org.codehaus.wadi.cache.basic.commitphase.InsertPhase;
 import org.codehaus.wadi.cache.basic.commitphase.LockExclusivePhase;
 import org.codehaus.wadi.cache.basic.commitphase.MergePhase;
 import org.codehaus.wadi.cache.basic.entry.AccessListener;
+import org.codehaus.wadi.cache.basic.entry.BasicObjectInfoAccessor;
 import org.codehaus.wadi.cache.basic.entry.CacheEntry;
 import org.codehaus.wadi.cache.basic.entry.GlobalObjectStore;
+import org.codehaus.wadi.cache.basic.entry.ObjectInfoAccessor;
 import org.codehaus.wadi.cache.basic.entry.ReadOnlyCacheEntry;
 import org.codehaus.wadi.core.manager.Manager;
 import org.codehaus.wadi.core.util.Streamer;
@@ -89,7 +91,8 @@ public class BasicGlobalObjectStore implements GlobalObjectStore {
     }
 
     protected CacheEntry newCacheEntry(Object key) {
-        return new ReadOnlyCacheEntry(manager, accessListener, this, streamer, key);
+        ObjectInfoAccessor objectInfoAccessor = new BasicObjectInfoAccessor(accessListener, manager);
+        return new ReadOnlyCacheEntry(objectInfoAccessor, this, streamer, key);
     }
 
     protected List<CommitPhase> newCommitPhases() {

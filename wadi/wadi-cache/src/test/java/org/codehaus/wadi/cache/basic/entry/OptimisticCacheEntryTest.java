@@ -48,7 +48,13 @@ public class OptimisticCacheEntryTest extends BaseCacheEntryTestCase {
         assertSame(entry, returnedEntry);
     }
     
-    public void testAcquirePessimisticUpgradeToPessimisticEntry() throws Exception {
+    public void testAcquirePessimisticUpgradeToPessimisticEntryAndStateIsRetained() throws Exception {
+        String key = "key";
+
+        ObjectInfoEntry objectInfoEntry = new ObjectInfoEntry(key, new ObjectInfo(1, new Object()));
+        objectInfoAccessor.acquirePessimistic(key, null);
+        modify().args(is.AS_RECORDED, is.NOT_NULL).returnValue(objectInfoEntry);
+        
         policy.isAcquireForPessimisticUpdate();
         modify().returnValue(true);
         
@@ -57,17 +63,13 @@ public class OptimisticCacheEntryTest extends BaseCacheEntryTestCase {
         
         startVerification();
         
-        final ObjectInfoEntry objectInfoEntry = new ObjectInfoEntry("key", new ObjectInfo(1, new Object()));
-        entry = new OptimisticCacheEntry(prototype, new ObjectInfo(1, new Object())) {
-            @Override
-            protected ObjectInfoEntry acquirePessimistic(Object key, AcquisitionInfo acquisitionInfo) {
-                return objectInfoEntry;
-            }
-        };
+        entry = new OptimisticCacheEntry(prototype, new ObjectInfo(1, new Object()));
+        entry.insert(new Object());
 
         CacheEntry returnedEntry = entry.acquire(policy);
         assertTrue(returnedEntry instanceof PessimisticCacheEntry);
         assertSame(objectInfoEntry, returnedEntry.getExclusiveObjectInfoEntry());
+        assertSame(CacheEntryState.INSERTED, returnedEntry.getState());
     }
     
 }

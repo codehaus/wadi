@@ -19,16 +19,10 @@
 
 package org.codehaus.wadi.cache.basic.entry;
 
+import org.codehaus.wadi.cache.AcquisitionInfo;
 import org.codehaus.wadi.cache.AcquisitionPolicy;
-import org.codehaus.wadi.cache.basic.CacheInvocation;
 import org.codehaus.wadi.cache.basic.ObjectInfo;
 import org.codehaus.wadi.cache.basic.ObjectInfoEntry;
-import org.codehaus.wadi.cache.basic.SessionUtil;
-import org.codehaus.wadi.core.contextualiser.InvocationException;
-import org.codehaus.wadi.core.session.Session;
-
-import com.agical.rmock.core.Action;
-import com.agical.rmock.core.MethodHandle;
 
 /**
  *
@@ -37,10 +31,13 @@ import com.agical.rmock.core.MethodHandle;
 public class AbstractCacheEntryTest extends BaseCacheEntryTestCase {
 
     private AbstractCacheEntry entry;
+    private ObjectInfoEntry objectInfoEntry;
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        
+        objectInfoEntry = new ObjectInfoEntry(key, new ObjectInfo(1, new Object()));
         
         entry = new AbstractCacheEntry(prototype, new ObjectInfo(), CacheEntryState.CLEAN) {
             public CacheEntry acquire(AcquisitionPolicy policy) throws CacheEntryException {
@@ -66,12 +63,9 @@ public class AbstractCacheEntryTest extends BaseCacheEntryTestCase {
     }
     
     public void testAcquiredExclusiveLock() throws Exception {
-        Session session = (Session) mock(Session.class);
-        ObjectInfoEntry objectInfoEntry = recordGetObjectInfoEntry(session);
+        objectInfoAccessor.acquirePessimistic(key, AcquisitionInfo.EXCLUSIVE_LOCAL_INFO);
+        modify().returnValue(objectInfoEntry);
 
-        recordContextualiseInvocation(session, AcquireExclusiveLockInvocation.class);
-        accessListener.enterExclusiveAccess(objectInfoEntry);
-        
         startVerification();
         
         entry.acquireExclusiveLock();
@@ -80,39 +74,15 @@ public class AbstractCacheEntryTest extends BaseCacheEntryTestCase {
     }
 
     public void testReleaseExclusiveLock() throws Exception {
-        Session session = (Session) mock(Session.class);
-        ObjectInfoEntry objectInfoEntry = recordGetObjectInfoEntry(session);
+        objectInfoAccessor.acquirePessimistic(key, AcquisitionInfo.EXCLUSIVE_LOCAL_INFO);
+        modify().returnValue(objectInfoEntry);
 
-        recordContextualiseInvocation(session, AcquireExclusiveLockInvocation.class);
-        accessListener.enterExclusiveAccess(objectInfoEntry);
-
-        recordContextualiseInvocation(session, ReleaseExclusiveLockInvocation.class);
-        accessListener.exitExclusiveAccess(objectInfoEntry);
+        objectInfoAccessor.releaseExclusiveLock(key);
         
         startVerification();
         
         entry.acquireExclusiveLock();
         entry.releaseExclusiveLock();
-    }
-
-    private ObjectInfoEntry recordGetObjectInfoEntry(final Session session) {
-        ObjectInfoEntry objectInfoEntry = new ObjectInfoEntry("key", new ObjectInfo(1, new Object()));
-        SessionUtil.getObjectInfoEntry(session);
-        modify().multiplicity(expect.from(1)).args(is.ANYTHING).returnValue(objectInfoEntry);
-        return objectInfoEntry;
-    }
-
-    private void recordContextualiseInvocation(final Session session, Class invocationClass) throws InvocationException {
-        manager.contextualise(null);
-        modify().args(is.instanceOf(invocationClass)).perform(new Action() {
-            public Object invocation(Object[] arg0, MethodHandle arg1) throws Throwable {
-                CacheInvocation invocation = (CacheInvocation) arg0[0];
-                assertTrue(invocation.isDoNotExecuteOnEndProcessing());
-                invocation.setSession(session);
-                invocation.invoke(null);
-                return true;
-            }
-        });
     }
 
 }

@@ -31,7 +31,7 @@ import org.codehaus.wadi.cache.basic.ObjectInfoEntry;
 public class OptimisticCacheEntry extends AbstractUpdatableCacheEntry {
 
     public OptimisticCacheEntry(ReadOnlyCacheEntry prototype, ObjectInfo objectInfo) {
-        super(prototype, objectInfo);
+        super(prototype, objectInfo, CacheEntryState.CLEAN);
     }
 
     public CacheEntry acquire(AcquisitionPolicy policy) throws CacheEntryException {
@@ -43,7 +43,7 @@ public class OptimisticCacheEntry extends AbstractUpdatableCacheEntry {
     }
 
     protected CacheEntry upgradeToUpdatePessimistic(AcquisitionInfo acquisitionInfo) {
-        ObjectInfoEntry exclusiveObjectInfoEntry = acquirePessimistic(key, acquisitionInfo);
-        return new PessimisticCacheEntry(this, objectInfo, exclusiveObjectInfoEntry);
+        ObjectInfoEntry exclusiveObjectInfoEntry = objectInfoAccessor.acquirePessimistic(key, acquisitionInfo);
+        return new PessimisticCacheEntry(this, objectInfo, exclusiveObjectInfoEntry, state);
     }
 }
