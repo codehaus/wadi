@@ -21,10 +21,8 @@ package org.codehaus.wadi.cache.basic.entry;
 
 import org.codehaus.wadi.cache.AcquisitionInfo;
 import org.codehaus.wadi.cache.AcquisitionPolicy;
-import org.codehaus.wadi.cache.basic.CacheInvocation;
 import org.codehaus.wadi.cache.basic.ObjectInfo;
 import org.codehaus.wadi.cache.basic.ObjectInfoEntry;
-import org.codehaus.wadi.core.manager.Manager;
 import org.codehaus.wadi.core.util.Streamer;
 
 
@@ -33,15 +31,13 @@ import org.codehaus.wadi.core.util.Streamer;
  * @version $Rev:$ $Date:$
  */
 public class ReadOnlyCacheEntry extends AbstractCacheEntry {
-    
     private final Streamer streamer;
 
-    public ReadOnlyCacheEntry(Manager manager,
-            AccessListener accessListener,
+    public ReadOnlyCacheEntry(ObjectInfoAccessor objectInfoAccessor,
             GlobalObjectStore globalObjectStore,
             Streamer streamer,
             Object key) {
-        super(manager, accessListener, globalObjectStore, key, CacheEntryState.READ_ONLY);
+        super(objectInfoAccessor, globalObjectStore, key, CacheEntryState.READ_ONLY);
         if (null == streamer) {
             throw new IllegalArgumentException("streamer is required");
         }
@@ -79,39 +75,21 @@ public class ReadOnlyCacheEntry extends AbstractCacheEntry {
 
     protected Object getOrFetchObject(AcquisitionInfo acquisitionInfo) {
         if (null == objectInfo) {
-            objectInfo = acquireReadOnly(key, acquisitionInfo);
+            objectInfo = objectInfoAccessor.acquireReadOnly(key, acquisitionInfo);
         }
         return objectInfo.getObject();
     }
 
     protected CacheEntry cloneForUpdateOptimistic(AcquisitionInfo acquisitionInfo) {
-        ObjectInfo objectInfo = acquireOptimistic(key, acquisitionInfo);
+        ObjectInfo objectInfo = objectInfoAccessor.acquireOptimistic(key, acquisitionInfo);
         objectInfo = objectInfo.incrementVersion(streamer);
         return new OptimisticCacheEntry(this, objectInfo);
     }
 
     protected CacheEntry cloneForUpdatePessimistic(AcquisitionInfo acquisitionInfo) {
-        ObjectInfoEntry exclusiveObjectInfoEntry = acquirePessimistic(key, acquisitionInfo);
+        ObjectInfoEntry exclusiveObjectInfoEntry = objectInfoAccessor.acquirePessimistic(key, acquisitionInfo);
         ObjectInfo objectInfo = exclusiveObjectInfoEntry.getObjectInfo().incrementVersion(streamer);
-        return new PessimisticCacheEntry(this, objectInfo, exclusiveObjectInfoEntry);
-    }
-
-    protected ObjectInfo acquireOptimistic(Object key, AcquisitionInfo acquisitionInfo) {
-        CacheInvocation invocation = new CacheInvocation(key, acquisitionInfo);
-        ObjectInfoEntry objectInfoEntry = fetchObjectInfoEntry(invocation);
-        
-        accessListener.enterOptimisticAccess(objectInfoEntry);
-
-        return objectInfoEntry.getObjectInfo();
-    }
-
-    protected ObjectInfo acquireReadOnly(Object key, AcquisitionInfo acquisitionInfo) {
-        CacheInvocation invocation = new CacheInvocation(key, acquisitionInfo);
-        ObjectInfoEntry objectInfoEntry = fetchObjectInfoEntry(invocation);
-        
-        accessListener.enterReadOnlyAccess(objectInfoEntry);
-        
-        return objectInfoEntry.getObjectInfo();
+        return new PessimisticCacheEntry(this, objectInfo, exclusiveObjectInfoEntry, CacheEntryState.CLEAN);
     }
 
 }

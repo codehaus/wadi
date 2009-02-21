@@ -28,8 +28,8 @@ import org.codehaus.wadi.cache.basic.ObjectInfo;
  */
 public abstract class AbstractUpdatableCacheEntry extends AbstractCacheEntry {
 
-    public AbstractUpdatableCacheEntry(AbstractCacheEntry prototype, ObjectInfo objectInfo) {
-        super(prototype, objectInfo, CacheEntryState.CLEAN);
+    public AbstractUpdatableCacheEntry(AbstractCacheEntry prototype, ObjectInfo objectInfo, CacheEntryState state) {
+        super(prototype, objectInfo, state);
     }
     
     public void insert(Object value) {

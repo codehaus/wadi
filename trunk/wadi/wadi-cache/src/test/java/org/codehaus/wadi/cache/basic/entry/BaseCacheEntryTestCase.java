@@ -20,7 +20,6 @@
 package org.codehaus.wadi.cache.basic.entry;
 
 import org.codehaus.wadi.cache.AcquisitionPolicy;
-import org.codehaus.wadi.core.manager.Manager;
 import org.codehaus.wadi.core.util.Streamer;
 
 import com.agical.rmock.extension.junit.RMockTestCase;
@@ -33,20 +32,21 @@ public abstract class BaseCacheEntryTestCase extends RMockTestCase {
 
     protected AcquisitionPolicy policy;
     protected ReadOnlyCacheEntry prototype;
-    protected Manager manager;
-    protected AccessListener accessListener;
+    protected ObjectInfoAccessor objectInfoAccessor;
     protected GlobalObjectStore globalStore;
     protected Streamer streamer;
+    protected String key;
 
     @Override
     protected void setUp() throws Exception {
         policy = (AcquisitionPolicy) mock(AcquisitionPolicy.class);
 
-        manager = (Manager) mock(Manager.class);
-        accessListener = (AccessListener) mock(AccessListener.class);
+        objectInfoAccessor = (ObjectInfoAccessor) mock(ObjectInfoAccessor.class);
         globalStore = (GlobalObjectStore) mock(GlobalObjectStore.class);
         streamer = (Streamer) mock(Streamer.class);
-        prototype = new ReadOnlyCacheEntry(manager , accessListener, globalStore , streamer , "key");
+        
+        key = "key";
+        prototype = new ReadOnlyCacheEntry(objectInfoAccessor, globalStore , streamer , key);
     }
     
 }

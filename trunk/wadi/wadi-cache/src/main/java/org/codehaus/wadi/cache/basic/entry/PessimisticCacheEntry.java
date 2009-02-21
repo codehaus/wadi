@@ -32,8 +32,9 @@ public class PessimisticCacheEntry extends AbstractUpdatableCacheEntry {
 
     public PessimisticCacheEntry(AbstractCacheEntry prototype,
             ObjectInfo objectInfo,
-            ObjectInfoEntry exclusiveObjectInfoEntry) {
-        super(prototype, objectInfo);
+            ObjectInfoEntry exclusiveObjectInfoEntry,
+            CacheEntryState state) {
+        super(prototype, objectInfo, state);
         if (null == exclusiveObjectInfoEntry) {
             throw new IllegalArgumentException("exclusiveObjectInfoEntry is required");
         }
