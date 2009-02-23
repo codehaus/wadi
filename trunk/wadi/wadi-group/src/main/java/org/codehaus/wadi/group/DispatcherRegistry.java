@@ -28,5 +28,5 @@ public interface DispatcherRegistry {
     
     Collection getDispatchers();
     
-    Dispatcher getDispatcherByClusterName(String clusterName);
+    Dispatcher getDispatcherByClusterName(String clusterName) throws IllegalStateException;
 }
