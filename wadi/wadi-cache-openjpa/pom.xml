@@ -33,12 +33,6 @@
     </dependency>
     
     <dependency>
-      <groupId>org.codehaus.wadi</groupId>
-      <artifactId>wadi-tribes</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    
-    <dependency>
       <groupId>org.apache.openjpa</groupId>
       <artifactId>openjpa</artifactId>
       <version>1.2.0</version>
