@@ -30,4 +30,8 @@ public class WADIRuntimeException extends RuntimeException {
         super(message);
     }
 
+    public WADIRuntimeException(String message, Throwable cause) {
+        super(message, cause);
+    }
+    
 }
