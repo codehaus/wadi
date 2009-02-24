@@ -67,7 +67,10 @@ public class InsertPhaseTest extends RMockTestCase {
         modify().multiplicity(expect.from(1)).returnValue(expectedObjectInfo);
         
         String key = "key";
-        Session session = manager.createWithName(key);
+
+        Session session = manager.createWithName(key, null);
+        modify().args(is.AS_RECORDED, is.instanceOf(AcquireExclusiveLockCallback.class));
+
         SessionUtil.setObjectInfoEntry(session, new ObjectInfoEntry(key, expectedObjectInfo));
         modify().args(is.ANYTHING, new AbstractExpression() {
             public void describeWith(ExpressionDescriber arg0) throws IOException {
@@ -79,8 +82,6 @@ public class InsertPhaseTest extends RMockTestCase {
                 return true;
             }
         });
-        
-        entry.acquireExclusiveLock();
         
         startVerification();
         

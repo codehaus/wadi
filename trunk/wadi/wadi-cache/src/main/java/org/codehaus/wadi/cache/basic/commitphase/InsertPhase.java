@@ -54,9 +54,8 @@ public class InsertPhase implements CommitPhase {
                 Object key = entry.getKey();
                 CacheEntry cacheEntry = entry.getValue();
                 if (cacheEntry.getState() == CacheEntryState.INSERTED) {
-                    Session session = manager.createWithName(key);
+                    Session session = manager.createWithName(key, new AcquireExclusiveLockCallback());
                     SessionUtil.setObjectInfoEntry(session, new ObjectInfoEntry(key, cacheEntry.getObjectInfo()));
-                    cacheEntry.acquireExclusiveLock();
                     createdSessions.add(session);
                 }
             }

@@ -784,7 +784,7 @@ public class TestHttpSession extends RMockTestCase {
     }
 
     public void testIsNew() throws Exception {
-        WADIHttpSession session = (WADIHttpSession) _standardManager.createWithName("name");
+        WADIHttpSession session = (WADIHttpSession) _standardManager.createWithName("name", null);
         HttpSession httpSession = session.getWrapper();
         assertTrue(httpSession.isNew());
         session.onEndProcessing();
