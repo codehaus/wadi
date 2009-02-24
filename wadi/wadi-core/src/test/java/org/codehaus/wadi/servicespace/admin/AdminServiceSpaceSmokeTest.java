@@ -96,8 +96,8 @@ public class AdminServiceSpaceSmokeTest extends TestCase {
     private void testGetSessionInfos(AdminServiceSpace adminServiceSpace, Manager manager) throws Exception {
         CommandEndPoint commandEndPoint = adminServiceSpace.getCommandEndPoint();
         
-        manager.createWithName("1");
-        manager.createWithName("2");
+        manager.createWithName("1", null);
+        manager.createWithName("2", null);
         
         Set sessionInfos = (Set) commandEndPoint.execute(new GetSessionInfos(new ServiceSpaceName(new URI("space1"))));
         assertEquals(2, sessionInfos.size());

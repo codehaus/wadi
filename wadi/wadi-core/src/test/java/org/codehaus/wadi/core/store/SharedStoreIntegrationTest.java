@@ -50,7 +50,7 @@ public class SharedStoreIntegrationTest extends TestCase {
         
         Manager manager = stackContext.getManager();
         String name = "name";
-        Session session = manager.createWithName(name);
+        Session session = manager.createWithName(name, null);
         final String key = "key";
         final String value = "value";
         session.addState(key, value);

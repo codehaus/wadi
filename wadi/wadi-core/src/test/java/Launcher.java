@@ -64,7 +64,7 @@ public class Launcher {
         stackContexts[0].getServiceSpace().start();
         Manager firstManager = stackContexts[0].getManager();
         
-        Session session = firstManager.createWithName(SESSION_ID);
+        Session session = firstManager.createWithName(SESSION_ID, null);
         session.addState(LAST_MANAGER_HASHCODE, firstManager.hashCode());
         session.addState(SESSION_RELOCATION, new Long(0));
         session.addState(ATTRIBUTE, new Long(0));

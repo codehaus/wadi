@@ -93,11 +93,11 @@ public class StandardManager implements Lifecycle, Manager {
         contextualiser.stop();
     }
 
-    public Session createWithName(Object name) throws SessionAlreadyExistException {
+    public Session createWithName(Object name, PreRegistrationCallback callback) throws SessionAlreadyExistException {
         if (!validateSessionName(name)) {
             throw new SessionAlreadyExistException("Session [" + name + "] already exists");
         }
-        return createSession(name);
+        return createSession(name, callback);
     }
 
     public Session create(Invocation invocation) {
@@ -105,7 +105,7 @@ public class StandardManager implements Lifecycle, Manager {
         do {
             name = sessionIdFactory.create();
         } while (!validateSessionName(name));
-        return createSession(name);
+        return createSession(name, null);
     }
 
     public void destroy(Session session) {
@@ -177,10 +177,15 @@ public class StandardManager implements Lifecycle, Manager {
         return true;
     }
 
-    protected Session createSession(Object name) {
+    protected Session createSession(Object name, PreRegistrationCallback callback) {
         Session session = sessionFactory.create();
         long time = System.currentTimeMillis();
         session.init(time, time, maxInactiveInterval, name);
+        
+        if (null != callback) {
+            callback.callback(session);
+        }
+        
         motableMap.put(name, session);
         sessionMonitor.notifySessionCreation(session);
         onSessionCreation(session);
