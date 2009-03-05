@@ -56,14 +56,19 @@ import org.codehaus.wadi.servicespace.ServiceSpaceName;
  */
 public class WADIDataCache extends AbstractDataCache {
     protected String clusterName;
+    protected String globalDiscriminatorName;
     protected Class<DispatcherRegistry> dispatcherRegistryClass;
     protected Cache cache;
 
+    public void setGlobalDiscriminatorName(String globalDiscriminatorName) {
+        this.globalDiscriminatorName = globalDiscriminatorName;
+    }
+    
     public void setClusterName(String clusterName) {
         this.clusterName = clusterName;
     }
     
-    public void setDispatcherRegistry(String dispatcherRegistry) throws Exception {
+    public void setDispatcherRegistryClass(String dispatcherRegistry) throws Exception {
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         this.dispatcherRegistryClass = (Class<DispatcherRegistry>) Class.forName(dispatcherRegistry, true, tccl);
     }
@@ -78,17 +83,8 @@ public class WADIDataCache extends AbstractDataCache {
             throw new IllegalArgumentException("dispatcherRegistryClass is required");
         }
         
-        Dispatcher dispatcher = locateDispatcher();
-
         try {
-            CacheStackContext stackContext = newCacheStackContext(dispatcher);
-
-            ServiceSpace serviceSpace = stackContext.getServiceSpace();
-            serviceSpace.start();
-            
-            GlobalObjectStore globalObjectStore = newGlobalObjectStore(stackContext);
-            
-            cache = newCache(globalObjectStore);
+            cache = createAndStartCache();
         } catch (Exception e) {
             throw new WADIRuntimeException("Problem when creating Cache instance", e);
         }
@@ -164,6 +160,19 @@ public class WADIDataCache extends AbstractDataCache {
         }
     }
 
+    protected Cache createAndStartCache() throws Exception {
+        Dispatcher dispatcher = locateDispatcher();
+        
+        CacheStackContext stackContext = newCacheStackContext(dispatcher);
+
+        ServiceSpace serviceSpace = stackContext.getServiceSpace();
+        serviceSpace.start();
+        
+        GlobalObjectStore globalObjectStore = newGlobalObjectStore(stackContext);
+        
+        return newCache(globalObjectStore);
+    }
+
     protected CacheStackContext newCacheStackContext(Dispatcher dispatcher) throws Exception {
         ServiceSpaceName name = buildServiceSpaceName();
         
@@ -174,8 +183,11 @@ public class WADIDataCache extends AbstractDataCache {
     }
 
     protected ServiceSpaceName buildServiceSpaceName() {
-        // Add persistence unit name.
-        String cacheName = clusterName + "/" + getName();
+        String cacheName = clusterName + "/";
+        if (null != globalDiscriminatorName) {
+            cacheName += globalDiscriminatorName + "/";
+        }
+        cacheName += getName();
         return new ServiceSpaceName(URI.create(cacheName));
     }
     
