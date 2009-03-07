@@ -94,8 +94,8 @@ public class Main {
         cacheTxOnNode1.rollback();
         
         CountDownLatch startLatch = new CountDownLatch(1);
-        int nbThreads = 50;
-		CountDownLatch countDownLatch = new CountDownLatch(nbThreads);
+        int nbThreads = 10;
+        CountDownLatch countDownLatch = new CountDownLatch(nbThreads);
         for (int i = 0; i < nbThreads; i++) {
             new UpdatePessimistic(i % 2 == 0 ? cacheOnNode1 : cacheOnNode2, key1, startLatch, countDownLatch).start();
         }
@@ -181,13 +181,15 @@ public class Main {
             } catch (InterruptedException e) {
                 throw new IllegalStateException(e);
             }
-            
-            CacheTransaction cacheTransaction = cache.getCacheTransaction();
-            cacheTransaction.begin();
-            POJO pojo = (POJO) cache.get(key, PessimisticAcquisitionPolicy.DEFAULT);
-            pojo.field++;
-            cache.update(key);
-            cacheTransaction.commit();
+
+            for (int i = 0; i < 100; i++) {
+                CacheTransaction cacheTransaction = cache.getCacheTransaction();
+                cacheTransaction.begin();
+                POJO pojo = (POJO) cache.get(key, PessimisticAcquisitionPolicy.DEFAULT);
+                pojo.field++;
+                cache.update(key);
+                cacheTransaction.commit();
+            }
             
             countDownLatch.countDown();
         }
