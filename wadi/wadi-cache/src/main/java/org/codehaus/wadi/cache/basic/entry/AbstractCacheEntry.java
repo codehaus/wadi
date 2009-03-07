@@ -19,6 +19,8 @@
 
 package org.codehaus.wadi.cache.basic.entry;
 
+import java.util.concurrent.CopyOnWriteArraySet;
+
 import org.codehaus.wadi.cache.AcquisitionInfo;
 import org.codehaus.wadi.cache.basic.ObjectInfo;
 import org.codehaus.wadi.cache.basic.ObjectInfoEntry;
@@ -35,6 +37,7 @@ public abstract class AbstractCacheEntry implements CacheEntry {
     protected ObjectInfo objectInfo;
     protected CacheEntryState state;
     protected ObjectInfoEntry exclusiveObjectInfoEntry;
+    protected CopyOnWriteArraySet<LockListener> lockListeners;
     
     public AbstractCacheEntry(ObjectInfoAccessor objectInfoAccessor,
             GlobalObjectStore globalObjectStore,
@@ -53,6 +56,8 @@ public abstract class AbstractCacheEntry implements CacheEntry {
         this.globalObjectStore = globalObjectStore;
         this.key = key;
         this.state = state;
+        
+        lockListeners = new CopyOnWriteArraySet<LockListener>();
     }
 
     public AbstractCacheEntry(AbstractCacheEntry prototype, ObjectInfo objectInfo, CacheEntryState state) {
@@ -67,6 +72,7 @@ public abstract class AbstractCacheEntry implements CacheEntry {
         objectInfoAccessor = prototype.objectInfoAccessor;
         globalObjectStore = prototype.globalObjectStore;
         key = prototype.key;
+        lockListeners = prototype.lockListeners;
     }
 
     public CacheEntryState getState() {
@@ -81,20 +87,44 @@ public abstract class AbstractCacheEntry implements CacheEntry {
     }
 
     public void acquireExclusiveLock() throws TimeoutException {
+        notifyLockListenersAcquireExclusiveLock();
+
         exclusiveObjectInfoEntry = objectInfoAccessor.acquirePessimistic(key, AcquisitionInfo.EXCLUSIVE_LOCAL_INFO);
     }
-    
+
     public void releaseExclusiveLock() {
+        notifyLockListenersReleaseExclusiveLock();
+
         if (null == exclusiveObjectInfoEntry) {
             return;
         }
         objectInfoAccessor.releaseExclusiveLock(key);
     }
-    
+
     public ObjectInfoEntry getExclusiveObjectInfoEntry() {
         if (null == exclusiveObjectInfoEntry) {
             throw new IllegalStateException("exclusiveObjectInfo is null. Exclusive lock has not been acquired.");
         }
         return exclusiveObjectInfoEntry;
+    }
+
+    public void registerLockListener(LockListener lockListener) {
+        lockListeners.add(lockListener);
+    }
+    
+    public void unregisterLockListener(LockListener lockListener) {
+        lockListeners.remove(lockListener);
+    }
+    
+    protected void notifyLockListenersAcquireExclusiveLock() {
+        for (LockListener lockListener : lockListeners) {
+            lockListener.notifyAcquireExclusiveLock(this);
+        }
+    }
+    
+    protected void notifyLockListenersReleaseExclusiveLock() {
+        for (LockListener lockListener : lockListeners) {
+            lockListener.notifyReleaseExclusiveLock(this);
+        }
     }
 }

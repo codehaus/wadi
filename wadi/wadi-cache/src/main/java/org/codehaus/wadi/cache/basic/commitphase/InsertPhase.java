@@ -29,6 +29,7 @@ import org.codehaus.wadi.cache.basic.OptimisticUpdateException;
 import org.codehaus.wadi.cache.basic.SessionUtil;
 import org.codehaus.wadi.cache.basic.entry.CacheEntry;
 import org.codehaus.wadi.cache.basic.entry.CacheEntryState;
+import org.codehaus.wadi.cache.basic.entry.LockListener;
 import org.codehaus.wadi.core.manager.Manager;
 import org.codehaus.wadi.core.manager.SessionAlreadyExistException;
 import org.codehaus.wadi.core.session.Session;
@@ -54,9 +55,12 @@ public class InsertPhase implements CommitPhase {
                 Object key = entry.getKey();
                 CacheEntry cacheEntry = entry.getValue();
                 if (cacheEntry.getState() == CacheEntryState.INSERTED) {
-                    Session session = manager.createWithName(key, new AcquireExclusiveLockCallback());
+                    final Session session = manager.createWithName(key, new AcquireExclusiveLockCallback());
                     SessionUtil.setObjectInfoEntry(session, new ObjectInfoEntry(key, cacheEntry.getObjectInfo()));
                     createdSessions.add(session);
+                    
+                    LockListener unlockSessionListener = new ReleaseExclusiveLockListener(session);
+                    cacheEntry.registerLockListener(unlockSessionListener);
                 }
             }
         } catch (SessionAlreadyExistException e) {
