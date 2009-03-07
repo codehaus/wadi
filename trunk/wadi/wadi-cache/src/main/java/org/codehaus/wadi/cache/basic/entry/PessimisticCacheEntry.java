@@ -46,6 +46,7 @@ public class PessimisticCacheEntry extends AbstractUpdatableCacheEntry {
     }
 
     public void acquireExclusiveLock() throws TimeoutException {
+        notifyLockListenersAcquireExclusiveLock();
     }
     
 }

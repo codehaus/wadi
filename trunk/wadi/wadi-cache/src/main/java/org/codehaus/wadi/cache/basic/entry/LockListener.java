@@ -19,41 +19,12 @@
 
 package org.codehaus.wadi.cache.basic.entry;
 
-import org.codehaus.wadi.cache.AcquisitionPolicy;
-import org.codehaus.wadi.cache.basic.ObjectInfo;
-import org.codehaus.wadi.cache.basic.ObjectInfoEntry;
-import org.codehaus.wadi.cache.basic.TimeoutException;
-
-
-
-
-
 /**
  *
  * @version $Rev:$ $Date:$
  */
-public interface CacheEntry {
-    CacheEntryState getState();
-    
-    ObjectInfo getObjectInfo();
+public interface LockListener {
+    void notifyAcquireExclusiveLock(CacheEntry cacheEntry);
 
-    void insert(Object value) throws NotForUpdateException;
-
-    void update() throws NotForUpdateException;
-
-    void update(Object newValue) throws NotForUpdateException;
-
-    void delete() throws NotForUpdateException;
-
-    void acquireExclusiveLock() throws TimeoutException;
-
-    ObjectInfoEntry getExclusiveObjectInfoEntry();
-
-    void releaseExclusiveLock();
-
-    CacheEntry acquire(AcquisitionPolicy policy) throws CacheEntryException;
-
-    void registerLockListener(LockListener lockListener);
-    
-    void unregisterLockListener(LockListener lockListener);
+    void notifyReleaseExclusiveLock(CacheEntry cacheEntry);
 }

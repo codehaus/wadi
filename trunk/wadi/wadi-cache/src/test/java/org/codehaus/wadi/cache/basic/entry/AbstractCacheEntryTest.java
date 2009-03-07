@@ -63,6 +63,10 @@ public class AbstractCacheEntryTest extends BaseCacheEntryTestCase {
     }
     
     public void testAcquiredExclusiveLock() throws Exception {
+        LockListener lockListener = (LockListener) mock(LockListener.class);
+        entry.registerLockListener(lockListener);
+        lockListener.notifyAcquireExclusiveLock(entry);
+        
         objectInfoAccessor.acquirePessimistic(key, AcquisitionInfo.EXCLUSIVE_LOCAL_INFO);
         modify().returnValue(objectInfoEntry);
 
@@ -74,6 +78,11 @@ public class AbstractCacheEntryTest extends BaseCacheEntryTestCase {
     }
 
     public void testReleaseExclusiveLock() throws Exception {
+        LockListener lockListener = (LockListener) mock(LockListener.class);
+        entry.registerLockListener(lockListener);
+        lockListener.notifyAcquireExclusiveLock(entry);
+        lockListener.notifyReleaseExclusiveLock(entry);
+        
         objectInfoAccessor.acquirePessimistic(key, AcquisitionInfo.EXCLUSIVE_LOCAL_INFO);
         modify().returnValue(objectInfoEntry);
 
