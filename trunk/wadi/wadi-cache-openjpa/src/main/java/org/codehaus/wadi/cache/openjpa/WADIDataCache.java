@@ -28,6 +28,7 @@ import org.apache.openjpa.datacache.AbstractDataCache;
 import org.apache.openjpa.datacache.DataCachePCData;
 import org.codehaus.wadi.cache.AcquisitionInfo;
 import org.codehaus.wadi.cache.Cache;
+import org.codehaus.wadi.cache.CacheTransaction;
 import org.codehaus.wadi.cache.assembler.CacheStackContext;
 import org.codehaus.wadi.cache.basic.core.BasicCache;
 import org.codehaus.wadi.cache.basic.core.BasicGlobalObjectStore;
@@ -55,11 +56,16 @@ import org.codehaus.wadi.servicespace.ServiceSpaceName;
  * @version $Rev:$ $Date:$
  */
 public class WADIDataCache extends AbstractDataCache {
+    protected boolean transactional;
     protected String clusterName;
     protected String globalDiscriminatorName;
     protected Class<DispatcherRegistry> dispatcherRegistryClass;
     protected Cache cache;
 
+    public void setTransactional(boolean transactional) {
+        this.transactional = transactional;
+    }
+    
     public void setGlobalDiscriminatorName(String globalDiscriminatorName) {
         this.globalDiscriminatorName = globalDiscriminatorName;
     }
@@ -92,15 +98,20 @@ public class WADIDataCache extends AbstractDataCache {
 
     @Override
     public void commit(Collection additions, Collection newUpdates, Collection existingUpdates, Collection deletes) {
-        super.commit(additions, newUpdates, Collections.EMPTY_LIST, deletes);
-        
-        for (Iterator iterator = existingUpdates.iterator(); iterator.hasNext();) {
-            DataCachePCData pc = (DataCachePCData) iterator.next();
-            cache.get(pc.getId(), PessimisticAcquisitionPolicy.DEFAULT);
-            cache.update(pc.getId(), pc);
+        preCommit();
+        try {
+            super.commit(additions, newUpdates, Collections.EMPTY_LIST, deletes);
+            
+            for (Iterator iterator = existingUpdates.iterator(); iterator.hasNext();) {
+                DataCachePCData pc = (DataCachePCData) iterator.next();
+                cache.get(pc.getId(), PessimisticAcquisitionPolicy.DEFAULT);
+                cache.update(pc.getId(), pc);
+            }
+        } finally {
+            postCommit();
         }
     }
-    
+
     public void writeLock() {
     }
 
@@ -143,6 +154,20 @@ public class WADIDataCache extends AbstractDataCache {
         AcquisitionInfo pinAcquisition = new AcquisitionInfo(AcquisitionInfo.DEFAULT, false, true);
         Object object = cache.get(oid, new ReadOnlyAcquisitionPolicy(pinAcquisition));
         return null != object;
+    }
+
+    protected void postCommit() {
+        if (!transactional) {
+            CacheTransaction cacheTransaction = cache.getCacheTransaction();
+            cacheTransaction.commit();
+        }
+    }
+
+    protected void preCommit() {
+        if (!transactional) {
+            CacheTransaction cacheTransaction = cache.getCacheTransaction();
+            cacheTransaction.begin();
+        }
     }
 
     protected Dispatcher locateDispatcher() {
@@ -206,6 +231,9 @@ public class WADIDataCache extends AbstractDataCache {
         BasicInTxCacheFactory inTxCacheFactory = new BasicInTxCacheFactory(globalObjectStore);
         Cache cache = new BasicCache(globalObjectStore, inTxCacheFactory);
         cache = new TxDecoratorCache(cache);
+        if (!transactional) {
+            return cache;
+        }
         return new TransactionManagerAwareCache(cache, conf.getManagedRuntimeInstance().getTransactionManager());
     }
 
