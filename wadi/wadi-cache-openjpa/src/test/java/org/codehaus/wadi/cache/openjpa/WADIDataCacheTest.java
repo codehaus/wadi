@@ -25,6 +25,7 @@ import java.util.Collections;
 import org.apache.openjpa.datacache.DataCachePCData;
 import org.apache.openjpa.lib.log.Log;
 import org.codehaus.wadi.cache.Cache;
+import org.codehaus.wadi.cache.CacheTransaction;
 import org.codehaus.wadi.cache.policy.OptimisticAcquisitionPolicy;
 import org.codehaus.wadi.cache.policy.PessimisticAcquisitionPolicy;
 import org.codehaus.wadi.group.Dispatcher;
@@ -81,6 +82,30 @@ public class WADIDataCacheTest extends RMockTestCase {
         assertEquals(clusterName + "/" + globalDiscriminatorName + "/" + name, serviceSpaceName.toString());
     }
     
+    public void testPrecommitNotTransactionalStartCacheTransaction() throws Exception {
+        Cache underlyingCache = (Cache) mock(Cache.class);
+        
+        CacheTransaction cacheTransaction = underlyingCache.getCacheTransaction();
+        cacheTransaction.begin();
+        
+        startVerification();
+        
+        WADIDataCache cache = newWADIDataCache(underlyingCache);
+        cache.preCommit();
+    }
+
+    public void testPostCommitNotTransactionalCommitCacheTransaction() throws Exception {
+        Cache underlyingCache = (Cache) mock(Cache.class);
+        
+        CacheTransaction cacheTransaction = underlyingCache.getCacheTransaction();
+        cacheTransaction.commit();
+        
+        startVerification();
+        
+        WADIDataCache cache = newWADIDataCache(underlyingCache);
+        cache.postCommit();
+    }
+    
     public void testCommit() throws Exception {
         final Cache underlyingCache = (Cache) mock(Cache.class);
         final Log mockLog = (Log) mock(Log.class);
@@ -106,6 +131,7 @@ public class WADIDataCacheTest extends RMockTestCase {
                 return underlyingCache;
             }
         };
+        cache.setTransactional(true);
         cache.setClusterName("clusterName");
         cache.setName("name");
         cache.setDispatcherRegistryClass(StaticDispatcherRegistry.class.getName());
@@ -116,6 +142,20 @@ public class WADIDataCacheTest extends RMockTestCase {
         Collection existingUpdates = Collections.singleton(existingUpdate);
         Collection deletes = Collections.singleton("4");
         cache.commit(additions, newUpdates, existingUpdates, deletes);
+    }
+
+    private WADIDataCache newWADIDataCache(final Cache underlyingCache) throws Exception {
+        WADIDataCache cache = new WADIDataCache() {
+            @Override
+            protected Cache createAndStartCache() throws Exception {
+                return underlyingCache;
+            }
+        };
+        cache.setClusterName("clusterName");
+        cache.setName("name");
+        cache.setDispatcherRegistryClass(StaticDispatcherRegistry.class.getName());
+        cache.endConfiguration();
+        return cache;
     }
 
     private DataCachePCData newDataCachePCData(String id) {
