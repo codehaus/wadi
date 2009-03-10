@@ -83,6 +83,9 @@ public class InsertPhaseTest extends RMockTestCase {
             }
         });
         
+        entry.registerLockListener(null);
+        modify().args(is.NOT_NULL);
+        
         startVerification();
         
         phase.execute(Collections.singletonMap((Object) "key", entry));
