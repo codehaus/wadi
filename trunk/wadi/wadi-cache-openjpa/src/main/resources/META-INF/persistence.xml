@@ -7,10 +7,10 @@
     <provider>org.apache.openjpa.persistence.PersistenceProviderImpl</provider>
     <class>org.codehaus.wadi.cache.openjpa.itest.BasicEntity</class>
     <properties>
-      <property name="openjpa.ConnectionURL" value="jdbc:derby:target/derby/ITestDB;create=true" />
-      <property name="openjpa.ConnectionDriverName" value="org.apache.derby.jdbc.EmbeddedDriver" />
+      <property name="openjpa.ConnectionURL" value="jdbc:derby://localhost:1527/target/derby/ITestDB;create=true" />
+      <property name="openjpa.ConnectionDriverName" value="org.apache.derby.jdbc.ClientDriver" />
+      <property name="openjpa.DataCache" value="OVERRIDEN" />
       <property name="openjpa.jdbc.SynchronizeMappings" value="buildSchema(schemaAction='drop,add')" />
-      <property name="openjpa.DataCache" value="org.codehaus.wadi.cache.openjpa.WADIDataCache(clusterName=CLUSTER, name=default, dispatcherRegistryClass=org.codehaus.wadi.group.StaticDispatcherRegistry)" />
       <property name="openjpa.RemoteCommitProvider" value="sjvm" />
     </properties>
   </persistence-unit>
