@@ -88,6 +88,17 @@
           </execution>
         </executions>
       </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <excludes>
+            <exclude implementation="java.lang.String">**/*TestCase.java</exclude><!-- do not run TestCase base classes -->
+            <exclude implementation="java.lang.String">**/TestInVMReplicationManager.java</exclude>
+          </excludes>
+        </configuration>
+       </plugin>
     </plugins>
   </build>
   
