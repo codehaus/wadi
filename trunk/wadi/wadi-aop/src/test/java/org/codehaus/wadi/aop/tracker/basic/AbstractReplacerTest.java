@@ -31,7 +31,7 @@ import com.agical.rmock.extension.junit.RMockTestCase;
  * 
  * @version $Revision: 1538 $
  */
-public class AbstractReplacerTest extends RMockTestCase {
+public abstract class AbstractReplacerTest extends RMockTestCase {
 
     protected InstanceRegistry instanceRegistry;
     protected Set<InstanceTracker> trackers;
