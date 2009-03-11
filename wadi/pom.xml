@@ -444,31 +444,6 @@
 	  <!-- <targetPercentage>0%</targetPercentage> -->  <!-- adds clover to std build, too slow -->
         </configuration>
       </plugin>
-      <plugin>
-	<groupId>org.apache.maven.plugins</groupId>
-	<artifactId>maven-surefire-plugin</artifactId>
-	<configuration>
-	  <excludes>
-	    <exclude implementation="java.lang.String">**/*$*.java</exclude><!-- do not run nested classes -->
-	    <exclude implementation="java.lang.String">**/Abstract*.java</exclude><!-- do not run abstract classes -->
-	    <exclude implementation="java.lang.String">**/*TestCase.java</exclude><!-- do not run TestCase base classes -->
-	    <exclude implementation="java.lang.String">**/TestLease.java</exclude>
-
-            <!-- InVM -->
-            <exclude implementation="java.lang.String">**/TestInVMReplicationManager.java</exclude>
-
-	    <!-- JGroups -->
-	    <exclude implementation="java.lang.String">**/TestJGRelocation.java</exclude><!-- fails occasionally, investigate -->
-	    <exclude implementation="java.lang.String">**/TestJGEvacuation.java</exclude><!-- fails occasionally, investigate -->
-	  </excludes>
-          <systemProperties>
-            <property>
-              <name>log4j.configuration</name>
-              <value>log4j.properties</value>
-            </property>
-	  </systemProperties>
-	</configuration>
-      </plugin>
     </plugins>
   </build>
 
