@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd">
+	
+  <bean id="dispatcher" class="org.codehaus.wadi.tribes.TribesDispatcher" init-method="start">
+    <constructor-arg value="DEFAULT_CLUSTER" />
+    <constructor-arg value="NODE1" />
+    <constructor-arg><null/></constructor-arg>
+  </bean>
+
+  <bean id="adminServiceSpace" class="org.codehaus.wadi.servicespace.admin.AdminServiceSpace" init-method="start">
+    <constructor-arg ref="dispatcher" />
+  </bean>
+  
+  <bean id="dispatcherRegistry" class="org.codehaus.wadi.group.StaticDispatcherRegistry"/>
+
+  <bean id="aServiceSpace" class="org.codehaus.wadi.console.groovy.ServiceSpaceBuilder">
+    <constructor-arg value="Space1"/>
+    <constructor-arg value="createdBy1-"/>
+    <constructor-arg ref="dispatcher"/>
+    <constructor-arg ref="dispatcherRegistry"/>
+  </bean>
+  
+  <bean id="dispatcher2" class="org.codehaus.wadi.tribes.TribesDispatcher" init-method="start">
+    <constructor-arg value="DEFAULT_CLUSTER" />
+    <constructor-arg value="NODE2" />
+    <constructor-arg><null/></constructor-arg>
+  </bean>
+
+  <bean id="adminServiceSpace2" class="org.codehaus.wadi.servicespace.admin.AdminServiceSpace" init-method="start">
+    <constructor-arg ref="dispatcher2" />
+  </bean>
+  
+  <bean id="aServiceSpace2" class="org.codehaus.wadi.console.groovy.ServiceSpaceBuilder">
+    <constructor-arg value="Space1"/>
+    <constructor-arg value="createdBy2-"/>
+    <constructor-arg ref="dispatcher2"/>
+    <constructor-arg ref="dispatcherRegistry"/>
+  </bean>
+  
+</beans>

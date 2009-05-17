@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+<document>
+  <properties>
+    <title>Setting up a Load Balancer - mod_jk2</title>
+  </properties>
+  <body>
+    <section name="Setting up a Load Balancer - mod_jk2">
+      <p>
+	<ol>
+	  <li>Download, install and start Apache httpd (beyond the scope of this page! - try Google)</li>
+	  <li>If it does not include mod_jk2, do the same for that (beyond the scope of this page! - try Google)</li>
+	  <li>At the bottom of your e.g. /etc/httpd/conf/http.conf (file location may vary), place e.g. the following:
+
+	    <code><pre>
+    &lt;VirtualHost *:80&gt;
+        &lt;Location "/wadi"&gt;
+            JkUriSet group cluster
+        &lt;/Location&gt;
+    &lt;/VirtualHost&gt;
+
+    # Load the Tomcat/Apache connector module, if it isn't already
+    &lt;IfModule !mod_jk2.c&gt;
+        LoadModule jk2_module modules/mod_jk2.so
+    &lt;/IfModule&gt;
+	      </pre></code>
+	  </li>
+	  <li>Copy $WADI_HOME/conf/workers2.properties to e.g. /etc/httpd/conf/ (location may vary)</li>
+	  <li>Apachectl restart</li>
+	  <li>Point your browser at e.g. : <a href="http://localhost:80/jkstatus">http://localhost:80/jkstatus</a></li>
+	</ol>
+
+	You should see the mod_jk2 status page, listing all the potential nodes in your cluster along with their AJP ports.
+	Congratulations - you now have a two-tier deployment - Apache/mod_jk2 over a Jetty/Tomcat cluster with a distributable webapp.
+
+	<ol>
+	  <li>Restart your browser or throw out any cookies returned from your cluster</li>
+	  <li>Hit <a href="http://localhost/wadi/create.jsp">http://localhost:80/wadi/create.jsp</a> - the page colour informs you as to which node the session was created upon</li>
+	  <li>Hit <a href="http://localhost/wadi/index.jsp?limit=25&amp;refresh=3">http://localhost/wadi/index.jsp?limit=25&amp;refresh=3</a></li>
+	</ol>
+
+	<p>
+	You will see a page of nine frames
+	</p>
+	<p>
+	  <img src="../images/loadbalancing.0.jpg"/>
+	</p>
+	Each frame contains a rendering of your current session
+	The background colour of the frame informs you of the node rendering the frame
+	The cells within the frame represent the session itself
+	Each time you access the session you add a new cell (up to a maximum)
+	The cell's colour records the node on which the cell was added to the session
+
+	You should see the session moving from node to node as requests, landing [pseudo-]randomly within the cluster are rendered in the correct context.
+
+	Congratulations - you now have a working cluster - but no session affinity - an important optimisation which will prevent a lot of session relocation (migration) and request relocation (proxying/redirecting), by trying to consistantly deliver requests for the same session to the same node.
+
+	<ol>
+	  <li>Look in WEB-INF/wadi-web.xml to see how to enable the WADI/mod_jk[2] integration</li>
+	  <li>Restart your cluster and browser - try again</li>
+	</ol>
+
+	You should now see your session remaining in one place (unless you then take down that node, in which case WADI should find it on another node and restick your client to its new location).
+
+	Congratulations - you are now a web clustering expert.
+      </p>
+    </section>
+  </body>
+</document>
