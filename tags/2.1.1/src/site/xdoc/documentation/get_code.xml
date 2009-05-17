@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<document>
+    <properties>
+        <title>WADI - Source Code</title>
+    </properties>
+    <body>
+        <section name="Source Code">            
+            <p>
+                <b>WEB Access</b>
+                <br/>
+                    The web interface to the code can be found here <a href="http://cvs.wadi.codehaus.org/wadi/">http://cvs.wadi.codehaus.org/wadi/</a>.
+                <br/>
+                <b>Anonymous Access</b>
+                <br/>
+                    Describe this after the move to SVN is complete.
+                <br/>
+                <b>Developer Access</b>    
+                <br/>    
+                    Describe this after the move to SVN is complete.
+                <br/>
+            </p>
+        </section>
+    </body>
+</document>

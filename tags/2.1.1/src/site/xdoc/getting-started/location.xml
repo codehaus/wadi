@@ -1,0 +1,169 @@
+<?xml version="1.0"?>
+<document>
+  <properties>
+    <title>Getting Started: Location</title>
+  </properties>
+  <body>
+    <section name="Location">
+      "Location, Location, Location!"
+      <p>
+	The Location of resources is all-important in a Cluster. The
+	sum of all e.g. Sessions, may be too large for copies of all
+	of them to be held on every node (not to mention the issues
+	associated with trying to keep all these copies up to date).
+      </p>
+      <p>
+	A WADI Partition is responsible for maintaining a Map of
+	session-id:session-location for a distinct subset of the
+	cluster's sessions.
+      </p>
+      <p>
+	Each node can deduce the Partition to which a session belongs by
+	applying a simple algorithm to its ID.
+      </p>
+      <p>
+	Each node knows which node is responsible for each of the fixed
+	number of Partitions. (This information is disseminated around
+	the cluster every time ownership of a Partition changes).
+      </p>
+      <p>
+	Thus, it follows that any node can find the whereabouts of any
+	session, by using its ID to decide who knows where it is and
+	then asking them.
+      </p>
+      <p>
+	The flipside of this is that each time a session is created,
+	migrated, or destroyed, its corresponding Partition must be
+	notified of this change. (In future, WADI will try to ensure
+	that sessions are generally created and destroyed on the node
+	that holds their Partition, so minimising network traffic -
+	but in exceptional cases a session may have to be moved
+	elsewhere)..
+      </p>
+      We can watch this occurring in WADI.
+      <p>
+	Start your <font color="red">red</font> and <font color="green">green</font> nodes.
+      </p>
+      <p>
+	Create a Session on the <font color="red">red</font> node,
+	using e.g. the following link: <a href="http://localhost:8080/wadi/session.jsp">http://localhost:8080/wadi/session.jsp</a>.
+      </p>
+      <p>
+	Note that <font color="red">red</font> will say something like:
+      </p>
+      <p>
+	<code>
+	  2005/12/07 17:54:29:292 GMT [DEBUG] ClusteredManager - -creation: A931056AACF210B8058025F67E1204CB
+	</code>
+      </p>
+      <p>
+	and whichever node is the Partition Master for the newly
+	created session will report its notification e.g. thus (in
+	this case Partition #3, currently serviced by <font
+	color="green">green</font>, is reporting that it has just been
+	notified of the [re]location of a session on <font
+	color="red">red</font>):
+      </p>
+      <p>
+	<code>
+	  2005/12/07 17:54:29:271 GMT [DEBUG] LocalPartition#3@green - -insert: A931056AACF210B8058025F67E1204CB {red}
+	</code>
+      </p>
+      <p>
+	<code>
+	</code>
+      </p>
+      <p>
+	Your browser should be returning a page looking something like this:
+      </p>
+      <p>
+	<img src="../images/location.0.jpg"/>
+      </p>
+      <p>
+	The background of the page is <font color="red">red</font>
+	because it was served from the <font color="red">red</font>
+	node. There is a table containing one cell, because we have
+	only touched the page once. This cell is <font
+	color="red">red</font>, because it was allocated on the <font
+	color="red">red</font> node.
+      </p>
+      <p>
+	Refresh the page a couple of times. Notice that, since
+	everything is now local, we do not see any more
+	location-oriented messages. You should end up with something
+	like this :
+      </p>
+      <p>
+	<img src="../images/location.1.jpg"/>
+      </p>
+      <p>
+	Since we have touched the page three times now on the <font
+	color="red">red</font> node, we have three <font
+	color="red">red</font> cells.
+      </p>
+      <p>
+	Now we can try asking for the same session on the <font
+	color="green">green</font> node. Try hitting e.g. <a
+	href="http://localhost:8081/wadi/session.jsp">http://localhost:8081/wadi/session.jsp</a>.
+      </p>
+      <p>
+	<font color="red">red</font> should say something like this:
+      </p>
+      <p>
+	<code>
+	  2005/12/07 17:59:52:207 GMT [DEBUG] Utils - -motion: A9518C9C6BAB34CDBEE765DF60AE6A76 : memory -> emigration:green (74 millis)
+	</code>
+      </p>
+      <p>
+	<font color="green">green</font> should say something like this:
+      </p>
+      <p>
+	<code>
+	  2005/12/07 17:59:52:195 GMT [DEBUG] Utils - -motion: A9518C9C6BAB34CDBEE765DF60AE6A76 : immigration:red -> memory (40 millis)
+	</code>
+      </p>
+      <p>
+	and the Partition Master should report the change of session location:
+      </p>
+      <p>
+	<code>
+	  LocalPartition#46@red - -move: A9518C9C6BAB34CDBEE765DF60AE6A76 {red->green}
+	</code>
+      </p>
+      <p>
+	Finally your browser should now have a page like this:
+      </p>
+      <p>
+	<img src="../images/location.2.jpg"/>
+      </p>
+      <p>
+	The table may be thought of as a history of the session's
+	location in the cluster. You should be able to see from the
+	colour of the page and the new cell, that the session has now
+	moved to the <font color="green">green</font> node.
+      </p>
+      <p>
+	Just to be sure, refresh the page a couple of times.
+      </p>
+      <p>
+	<img src="../images/location.3.jpg"/>
+      </p>
+      <p>
+	You get the idea...
+      </p>
+      <p>
+	NOTE - we should demonstrate the destruction of the session
+	and its removal from the Partition as well...
+      </p>
+      <p>
+	The transparent relocation of sessions beneath incoming
+	requests is an important part of WADI's ability to ensure that
+	request and session meet somewhere in the cluster in order to
+	correctly render the response.
+      </p>
+    </section>
+      <p>
+      Try starting a number of different WADI nodes, then creating and moving a session around them...
+      </p>
+  </body>
+</document>

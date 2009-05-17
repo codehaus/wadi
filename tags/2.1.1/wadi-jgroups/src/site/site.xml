@@ -1,0 +1,21 @@
+<project name="wadi-jgroups">
+
+  <bannerLeft>
+    <name>WADI</name>
+    <src>../images/wadi.gif</src>
+    <href>http://wadi.codehaus.org</href>
+  </bannerLeft>
+
+  <body>
+    <links>
+      <item name="JGroups 2.2.x" href="http://www.jgroups.org"/>
+    </links>
+
+    <menu name="WADI">
+      <item name="WADI" href="../index.html"/>
+    </menu>
+
+    ${reports}
+
+  </body>
+</project>
