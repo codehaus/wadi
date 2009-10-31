@@ -16,7 +16,7 @@
 package org.codehaus.wadi.location.balancing;
 
 import java.util.Set;
-import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -36,7 +36,7 @@ public class BasicPartitionBalancerSingletonService implements PartitionBalancer
 
     private final ServiceSpace serviceSpace;
 	private final PartitionBalancer partitionBalancer;
-    private final SynchronousQueue<Boolean> rebalancingFlag;
+    private final LinkedBlockingQueue<Boolean> rebalancingFlag;
     private Thread thread;
 
     private LeavingServiceSpaceMonitor leavingServiceSpaceMonitor;
@@ -50,13 +50,15 @@ public class BasicPartitionBalancerSingletonService implements PartitionBalancer
         this.serviceSpace = serviceSpace;
         this.partitionBalancer = partitionBalancer;
 
-        rebalancingFlag = new SynchronousQueue<Boolean>();
+        rebalancingFlag = new LinkedBlockingQueue<Boolean>();
         leavingServiceSpaceMonitor = new LeavingServiceSpaceMonitor();
     }
 
     public void start() throws Exception {
         partitionBalancer.start();
+
         thread = new Thread(this, "WADI Partition Balancer");
+        thread.setDaemon(true);
         thread.start();
         
         serviceSpace.addServiceSpaceListener(leavingServiceSpaceMonitor);
@@ -85,6 +87,9 @@ public class BasicPartitionBalancerSingletonService implements PartitionBalancer
                     partitionBalancer.balancePartitions();
                 } catch (MessageExchangeException e) {
                     log.warn("Rebalancing has failed", e);
+                    scheduleRebalancing();
+                } catch (Exception e) {
+                    log.warn("Rebalancing has failed for an unexpected reason", e);
                     scheduleRebalancing();
                 }
             }
