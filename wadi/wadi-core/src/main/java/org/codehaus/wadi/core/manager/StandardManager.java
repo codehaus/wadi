@@ -93,6 +93,10 @@ public class StandardManager implements Lifecycle, Manager {
         contextualiser.stop();
     }
 
+    public Session createWithName(String name) throws SessionAlreadyExistException {
+        return createWithName(name, null);
+    }
+    
     public Session createWithName(Object name, PreRegistrationCallback callback) throws SessionAlreadyExistException {
         if (!validateSessionName(name)) {
             throw new SessionAlreadyExistException("Session [" + name + "] already exists");

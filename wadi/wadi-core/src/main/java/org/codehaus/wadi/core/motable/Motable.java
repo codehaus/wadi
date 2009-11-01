@@ -40,6 +40,12 @@ public interface Motable extends Evictable {
 	
 	void mote(Motable recipient) throws Exception;
 
+    /**
+     * Backward compatibility with 2.0 API.
+     */
+    @Deprecated
+	String getName();
+	
 	Object getId();
     
     boolean isNew();
