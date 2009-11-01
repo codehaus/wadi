@@ -154,7 +154,8 @@ public class SyncReplicationManager implements ReplicationManager {
 
     public void promoteToMaster(Object key, ReplicaInfo replicaInfo, Motable motable, Peer blackListedSecondary)
             throws InternalReplicationManagerException {
-        replicaInfo.setPayload(motable);
+        Motable restoredMotable = stateHandler.restoreFromFullState(key, motable);
+        replicaInfo.setPayload(restoredMotable);
         if (null == blackListedSecondary) {
             insertReplicaInfo(key, replicaInfo);
         } else {

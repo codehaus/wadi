@@ -211,6 +211,10 @@ public class SyncReplicationManagerTest extends RMockTestCase {
     
     public void testPromoteToMasterWithReplicaInfoSetPayloadAndAddReplicaInfo() throws Exception {
         Motable motable = (Motable) mock(Motable.class);
+
+        Motable restoredMotable = stateHandler.restoreFromFullState(key, motable);
+        modify().returnValue(restoredMotable);
+        
         localReplicaStorage.mergeDestroyIfExist(key);
         
         startVerification();
@@ -220,7 +224,7 @@ public class SyncReplicationManagerTest extends RMockTestCase {
         SyncReplicationManager manager = newReplicationManager();
         manager.promoteToMaster(key, replicaInfo, motable, null);
         
-        assertSame(motable, replicaInfo.getPayload());
+        assertSame(restoredMotable, replicaInfo.getPayload());
         assertTrue(keyToReplicaInfo.containsKey(key));
     }
     
