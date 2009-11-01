@@ -29,6 +29,8 @@ public interface ObjectStateHandler {
     
     void resetObjectState(Motable target);
     
+    Motable restoreFromFullState(Object key, Motable motable);
+
     Motable restoreFromFullState(Object key, byte[] state);
     
     Motable restoreFromUpdatedState(Object key, byte[] state);
@@ -40,4 +42,5 @@ public interface ObjectStateHandler {
     void discardState(Object key, Motable payload);
 
     void initState(Object key, Motable payload);
+
 }

@@ -70,14 +70,28 @@ public class SessionStateHandler implements ObjectStateHandler {
     public void resetObjectState(Motable target) {
     }
     
-    public Motable restoreFromFullState(Object key, byte[] state) {
-        Externalizable externalizable = newExternalizable(key);
+    public Motable restoreFromFullState(Object key, Motable motable) {
+        Session session = newSession(key);
         try {
-            Utils.setContent(externalizable, state, streamer);
+            session.restore(motable.getCreationTime(), 
+                    motable.getLastAccessedTime(),
+                    motable.getMaxInactiveInterval(),
+                    motable.getId(),
+                    motable.getBodyAsByteArray());
         } catch (Exception e) {
             throw new WADIRuntimeException(e);
         }
-        return (Session) externalizable;
+        return session;
+    }
+    
+    public Motable restoreFromFullState(Object key, byte[] state) {
+        Session session = newSession(key);
+        try {
+            Utils.setContent(session, state, streamer);
+        } catch (Exception e) {
+            throw new WADIRuntimeException(e);
+        }
+        return session;
     }
 
     public Motable restoreFromFullStateTransient(Object key, byte[] state) {
@@ -85,13 +99,13 @@ public class SessionStateHandler implements ObjectStateHandler {
     }
     
     public Motable restoreFromUpdatedState(Object key, byte[] state) {
-        Externalizable externalizable = newExternalizable(key);
+        Session session = newSession(key);
         try {
-            Utils.setContent(externalizable, state, streamer);
+            Utils.setContent(session, state, streamer);
         } catch (Exception e) {
             throw new WADIRuntimeException(e);
         }
-        return (Session) externalizable;
+        return session;
     }
     
     public void discardState(Object key, Motable payload) {
@@ -114,7 +128,7 @@ public class SessionStateHandler implements ObjectStateHandler {
         return (Session) target;
     }
     
-    protected Externalizable newExternalizable(Object key) {
+    protected Session newSession(Object key) {
         return sessionFactory.create();
     }
 
