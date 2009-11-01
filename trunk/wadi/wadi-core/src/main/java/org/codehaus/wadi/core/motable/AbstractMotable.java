@@ -78,6 +78,14 @@ public abstract class AbstractMotable extends SimpleEvictable implements Motable
         destroyForMotion();
     }
 
+    public String getName() {
+        Object id = getAbstractMotableMemento().getId();
+        if (id instanceof String) {
+            return (String) id;
+        }
+        throw new IllegalStateException("Session id [" + id + "] is not of type String.");
+    }
+    
     public synchronized Object getId() {
         return getAbstractMotableMemento().getId();
     }

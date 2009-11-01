@@ -39,6 +39,12 @@ public interface Manager extends Lifecycle {
      */
     void init(ManagerConfig config);
 
+    /**
+     * Backward compatibility with 2.0 API.
+     */
+    @Deprecated
+    Session createWithName(String name) throws SessionAlreadyExistException;
+
     Session createWithName(Object name, PreRegistrationCallback callback) throws SessionAlreadyExistException;
 
     /**
