@@ -1,0 +1,110 @@
+
+A Proposal for a replication tier for WADI.
+-------------------------------------------
+
+When to replicate:
+------------------
+
+(1). After each mutative session method invocation (except
+setLastAccessedTime()).
+
+Modifiers:
+ mode=sync/async
+ safe-distance=local-queue/network/remote-queue/remote-invocation
+ granularity=invocation
+
+Features:
+ most immediate point at which change can be notified.
+ no batching - many small changes will be replicated
+ highest cost/highest accuracy
+ object identity is per-attribute
+
+Problems:
+ assumes that objects being passed in and out of session are not being written by other app threads (can we make this assumption?)
+
+
+(2). At end of each request.
+
+Modifiers:
+ mode=ditto
+ safe-distance=ditto
+ granularity=batched-invocation, whole-session, diff?
+
+Features:
+ object identity will be either per-attribute (batched-invocation) or per-session (whole-session/diff?)
+ a reasonable point at which to backup
+
+Problems:
+
+ to maintain consistent semantics we would have to break spec and
+ serialise requests - this could be done by taking a write-lock for
+ period of request instead of a read-lock. It may be possible to avoid
+ the need for request serialisation if mode=batched-invocation by only
+ replicating changes that have happened on this request thread,
+ however session mutations performed by app-spawned threads will need
+ to be taken into account.
+
+(3). At end of request group.
+
+ mode=ditto
+ safe-distance=ditto
+ granularity=batched-invocation, whole-session, diff?
+
+Features:
+ object identity will be either per-attribute (batched-invocation) or per-session (whole-session/diff?)
+ a consistant point at which to backup
+
+Problems:
+
+ this may be a little too infrequest for some users, but is a pretty
+ good compromise. Each request attempt(-1)-s to get a write lock at
+ the end of its request, overlapping this with releasing its
+ read-lock. REPLICATION_PRIORITY should become top priority. If if
+ gets it the we know that there are no other readers and we can
+ replicate.
+
+
+
+Having decided when, what (granularity) and with what level of safety
+(mode/safe-distance) to replicate. We can now see how aspects, filter
+and manager might interact to send replication messages encapsulating
+session change.
+
+To whom to replicate?
+---------------------
+
+Each node needs to hold a model of every other node in the
+cluster. Each node will contain a list of attributes. Some of these
+will be deploy-time - e.g. ip-address, subnet, power-supply, room,
+building etc. Some of them will be dynamic e.g. free-mem,
+no-of-sessions-carried, no-of-rthreads-free etc...
+
+These attributes need to be user define/calculable and updated at a
+configurable interval.
+
+The user defines a stack of weightings factors that are combined into
+a single factor that is used as a Comparator to resort the set of
+nodes ach time an update comes in.
+
+The node uses this sorted list of nodes to decide which nodes to use
+as buddies for the next session created.
+
+The list is filtered so that work is distributed over a number of high
+value nodes rather than only the highest - to avoid storming single
+high-weighted nodes to death.
+
+The session may have to carry a serialisable reference to its buddy
+group, so that, no matter where it travels it knows to whom to
+replicate.
+
+If a session tries to migrate onto a peer holding its buddy, it should
+be possible to sync them then promote the buddy to primary and demote
+the primary to buddy.
+
+A buddygroup will be a cluster managed resource. If a buddy is lost it
+will be replaced with another. - this needs more thought - perhaps we
+need buckets here, otherwise we will get session aggregation when
+nodes fail and some nodes will end up
+
+sessions will listen to buddygroups. if a buddy is lost from the group
+they get an event and choose a replacement.
